@@ -9,9 +9,9 @@ import (
 	httpdesign "goa.design/goa/http/design"
 )
 
-// KitMountFiles produces the files containing the HTTP handler mount functions
+// MountFiles produces the files containing the HTTP handler mount functions
 // that configure the mux to serve the requests.
-func KitMountFiles(root *httpdesign.RootExpr) []*codegen.File {
+func MountFiles(root *httpdesign.RootExpr) []*codegen.File {
 	fw := make([]*codegen.File, len(root.HTTPServices))
 	for i, svc := range root.HTTPServices {
 		fw[i] = mountFile(svc)

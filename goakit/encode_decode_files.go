@@ -9,9 +9,9 @@ import (
 	httpdesign "goa.design/goa/http/design"
 )
 
-// KitEncodeDecodeFiles produces a set of go-kit transport encoders and decoders
+// EncodeDecodeFiles produces a set of go-kit transport encoders and decoders
 // that wrap the corresponding generated goa functions.
-func KitEncodeDecodeFiles(genpkg string, root *httpdesign.RootExpr) []*codegen.File {
+func EncodeDecodeFiles(genpkg string, root *httpdesign.RootExpr) []*codegen.File {
 	fw := make([]*codegen.File, 2*len(root.HTTPServices))
 	for i, r := range root.HTTPServices {
 		fw[i] = serverEncodeDecode(genpkg, r)
