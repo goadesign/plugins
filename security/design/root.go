@@ -12,10 +12,7 @@ type (
 		APISecurity []*SecurityExpr
 		// ServiceSecurity list service level security requirements.
 		ServiceSecurity []*ServiceSecurityExpr
-		// EndpointSecurity list endpoint level security requirements.
+		// EndpointSecurity list method level security requirements.
 		EndpointSecurity []*EndpointSecurityExpr
-		// FileServerSecurity list file server level security
-		// requirements.
-		FileServerSecurity []*FileServerSecurityExpr
 	}
 )

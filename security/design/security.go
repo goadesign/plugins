@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/url"
 
+	"goa.design/goa/design"
 	goadesign "goa.design/goa/design"
-	"goa.design/goa/http/design"
 )
 
 // SchemeKind is a type of security scheme.
@@ -23,6 +23,21 @@ const (
 	JWTKind
 	// NoKind means to have no security for this endpoint.
 	NoKind
+)
+
+// FlowKind is a type of OAuth2 flow.
+type FlowKind int
+
+const (
+	// AuthorizationCodeFlowKind identifies a OAuth2 authorization code
+	// flow.
+	AuthorizationCodeFlowKind FlowKind = iota + 1
+	// ImplicitFlowKind identifiers a OAuth2 implicit flow.
+	ImplicitFlowKind
+	// PasswordFlowKind identifies a Resource Owner Password flow.
+	PasswordFlowKind
+	// ClientCredentialsFlowKind identifies a OAuth Client Credentials flow.
+	ClientCredentialsFlowKind
 )
 
 type (
@@ -50,17 +65,9 @@ type (
 		*SecurityExpr
 		// Endpoint is the endpoint that the security requirements
 		// applies to.
-		Endpoint *design.EndpointExpr
+		Method *design.MethodExpr
 	}
 
-	// FileServerSecurityExpr defines a security requirement that applies to
-	// a file server.
-	FileServerSecurityExpr struct {
-		*SecurityExpr
-		// FileServer is the file server that the security requirements
-		// applies to.
-		FileServer *design.FileServerExpr
-	}
 	// SchemeExpr defines a security scheme used to authenticate against the
 	// method being designed.
 	SchemeExpr struct {
@@ -77,6 +84,8 @@ type (
 		// Name refers to a header or parameter name, based on In's
 		// value.
 		Name string
+		// Scopes lists the JWT or OAuth2 scopes.
+		Scopes []*ScopeExpr
 		// Flows determine the oauth2 flows supported by this scheme.
 		Flows []*FlowExpr
 		// Metadata is a list of key/value pairs
@@ -85,15 +94,16 @@ type (
 
 	// FlowExpr describes a specific OAuth2 flow.
 	FlowExpr struct {
+		// Kind is the kind of flow.
+		Kind FlowKind
 		// AuthorizationURL to be used for implicit or authorizationCode
 		// flows.
 		AuthorizationURL string
-		// TokenURL to be used for password, clientCredentials or authorizationCode flows.
+		// TokenURL to be used for password, clientCredentials or
+		// authorizationCode flows.
 		TokenURL string
 		// RefreshURL to be used for obtaining refresh token.
 		RefreshURL string
-		// Scopes is a list of available scopes for this scheme.
-		Scopes []*ScopeExpr
 	}
 
 	// A ScopeExpr defines a scope name and description.
@@ -105,7 +115,7 @@ type (
 	}
 )
 
-// Context returns the generic definition name used in error messages.
+// EvalName returns the generic definition name used in error messages.
 func (s *SecurityExpr) EvalName() string {
 	var suffix string
 	if len(s.Schemes) > 0 && len(s.Schemes[0].SchemeName) > 0 {
@@ -119,7 +129,7 @@ func (s *SchemeExpr) DSL() func() {
 	return s.DSLFunc
 }
 
-// Context returns the generic definition name used in error messages.
+// EvalName returns the generic definition name used in error messages.
 func (s *SchemeExpr) EvalName() string {
 	switch s.Kind {
 	case OAuth2Kind:
