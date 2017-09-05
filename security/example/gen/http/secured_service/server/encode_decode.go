@@ -1,0 +1,193 @@
+// Code generated with goa v2.0.0-wip, DO NOT EDIT.
+//
+// secured_service HTTP server encoders and decoders
+//
+// Command:
+// $ goa gen goa.design/plugins/security/example/design
+
+package server
+
+import (
+	"context"
+	"io"
+	"net/http"
+	"strconv"
+
+	goa "goa.design/goa"
+	goahttp "goa.design/goa/http"
+	"goa.design/plugins/security/example/gen/securedservice"
+)
+
+// EncodeSigninResponse returns an encoder for responses returned by the
+// secured_service signin endpoint.
+func EncodeSigninResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
+	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
+		res := v.(string)
+		w.Header().Set("Authorization", res.Authorization)
+		w.WriteHeader(http.StatusNoContent)
+		return nil
+	}
+}
+
+// DecodeSigninRequest returns a decoder for requests sent to the
+// secured_service signin endpoint.
+func DecodeSigninRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			body string
+			err  error
+		)
+		err = decoder(r).Decode(&body)
+		if err != nil {
+			if err == io.EOF {
+				return nil, goa.MissingPayloadError()
+			}
+			return nil, goa.DecodePayloadError(err.Error())
+		}
+
+		return body, nil
+	}
+}
+
+// EncodeSigninError returns an encoder for errors returned by the signin
+// secured_service endpoint.
+func EncodeSigninError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) {
+	encodeError := goahttp.ErrorEncoder(encoder)
+	return func(ctx context.Context, w http.ResponseWriter, v error) {
+		switch res := v.(type) {
+		case *securedservice.Unauthorized:
+			enc := encoder(ctx, w)
+			body := NewSigninUnauthorizedResponseBody(res)
+			w.WriteHeader(http.StatusUnauthorized)
+			if err := enc.Encode(body); err != nil {
+				encodeError(ctx, w, err)
+			}
+		default:
+			encodeError(ctx, w, v)
+		}
+	}
+}
+
+// EncodeSecureResponse returns an encoder for responses returned by the
+// secured_service secure endpoint.
+func EncodeSecureResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
+	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
+		res := v.(string)
+		enc := encoder(ctx, w)
+		body := res
+		w.WriteHeader(http.StatusOK)
+		return enc.Encode(body)
+	}
+}
+
+// DecodeSecureRequest returns a decoder for requests sent to the
+// secured_service secure endpoint.
+func DecodeSecureRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			body SecureRequestBody
+			err  error
+		)
+		err = decoder(r).Decode(&body)
+		if err != nil {
+			if err == io.EOF {
+				return nil, goa.MissingPayloadError()
+			}
+			return nil, goa.DecodePayloadError(err.Error())
+		}
+
+		var (
+			fail *bool
+		)
+		failRaw := r.URL.Query().Get("fail")
+		if failRaw != "" {
+			v, err := strconv.ParseBool(failRaw)
+			if err != nil {
+				return nil, goa.InvalidFieldTypeError("fail", failRaw, "boolean")
+			}
+			fail = &v
+		}
+
+		return NewSecureSecurePayload(&body, fail), nil
+	}
+}
+
+// EncodeDoublySecureResponse returns an encoder for responses returned by the
+// secured_service doubly_secure endpoint.
+func EncodeDoublySecureResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
+	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
+		res := v.(string)
+		enc := encoder(ctx, w)
+		body := res
+		w.WriteHeader(http.StatusOK)
+		return enc.Encode(body)
+	}
+}
+
+// DecodeDoublySecureRequest returns a decoder for requests sent to the
+// secured_service doubly_secure endpoint.
+func DecodeDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			body DoublySecureRequestBody
+			err  error
+		)
+		err = decoder(r).Decode(&body)
+		if err != nil {
+			if err == io.EOF {
+				return nil, goa.MissingPayloadError()
+			}
+			return nil, goa.DecodePayloadError(err.Error())
+		}
+
+		var (
+			key *string
+		)
+		keyRaw := r.URL.Query().Get("k")
+		if keyRaw != "" {
+			key = &keyRaw
+		}
+
+		return NewDoublySecureDoublySecurePayload(&body, key), nil
+	}
+}
+
+// EncodeAlsoDoublySecureResponse returns an encoder for responses returned by
+// the secured_service also_doubly_secure endpoint.
+func EncodeAlsoDoublySecureResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
+	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
+		res := v.(string)
+		enc := encoder(ctx, w)
+		body := res
+		w.WriteHeader(http.StatusOK)
+		return enc.Encode(body)
+	}
+}
+
+// DecodeAlsoDoublySecureRequest returns a decoder for requests sent to the
+// secured_service also_doubly_secure endpoint.
+func DecodeAlsoDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			body AlsoDoublySecureRequestBody
+			err  error
+		)
+		err = decoder(r).Decode(&body)
+		if err != nil {
+			if err == io.EOF {
+				return nil, goa.MissingPayloadError()
+			}
+			return nil, goa.DecodePayloadError(err.Error())
+		}
+
+		var (
+			key *string
+		)
+		keyRaw := r.Header.Get("Authorization")
+		if keyRaw != "" {
+			key = &keyRaw
+		}
+
+		return NewAlsoDoublySecureAlsoDoublySecurePayload(&body, key), nil
+	}
+}

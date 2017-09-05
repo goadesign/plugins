@@ -2,10 +2,32 @@ package dsl
 
 import (
 	goadesign "goa.design/goa/design"
-	"goa.design/goa/dsl"
 	"goa.design/goa/eval"
-	"goa.design/plugins/security/design"
+	"goa.design/goa/http/dsl"
+	"goa.design/plugins/security/http/design"
 )
+
+// Description sets the expression description.
+//
+// Description must appear in API, Docs, Type, Attribute, BasicAuthSecurity,
+// APIKeySecurity, OAuth2Security or JWTSecurity.
+//
+// Description accepts one arguments: the description string.
+//
+// Example:
+//
+//    API("adder", func() {
+//        Description("Adder API")
+//    })
+//
+func Description(d string) {
+	switch expr := eval.Current().(type) {
+	case *design.SchemeExpr:
+		expr.Description = d
+	default:
+		dsl.Description(d)
+	}
+}
 
 // BasicAuthSecurity defines a basic authentication security scheme.
 //
@@ -365,7 +387,8 @@ func Password(name string, args ...interface{}) {
 
 // APIKey defines the attribute used to provide the API key to an endpoint
 // secured with API keys. The parameters and usage of APIKey are the same as the
-// goa DSL Attribute function.
+// goa DSL Attribute function except that it accepts an extra first argument
+// corresponding to the name of the API key security scheme.
 //
 // The generated code produced by goa uses the value of the corresponding
 // payload field to set the API key value.
@@ -377,31 +400,31 @@ func Password(name string, args ...interface{}) {
 //    Method("secured_read", func() {
 //        Security(APIKeyAuth)
 //        Payload(func() {
-//            APIKey("key", String, "API key used to perform authorization")
+//            APIKey("api_key", "key", String, "API key used to perform authorization")
 //            Required("key")
 //        })
 //        Result(String)
 //        HTTP(func() {
 //            GET("/")
-//            Param("key:api_key") // Provide the key as a query string param
+//            Param("key:k") // Provide the key as a query string param "k"
 //        })
 //    })
 //
 //    Method("secured_write", func() {
 //        Security(APIKeyAuth)
 //        Payload(func() {
-//            APIKey("key", String, "API key used to perform authorization")
+//            APIKey("api_key", "key", String, "API key used to perform authorization")
 //            Attribute("data", String, "Data to be written")
 //            Required("key", "data")
 //        })
 //        HTTP(func() {
 //            POST("/")
-//            Header("key:Authorization") // Provide the key as a header (default)
+//            Header("key:Authorization") // Provide the key as Authorization header (default)
 //        })
 //    })
 //
-func APIKey(name string, args ...interface{}) {
-	args = useDSL(args, func() { dsl.Metadata("security:apikey") })
+func APIKey(scheme, name string, args ...interface{}) {
+	args = useDSL(args, func() { dsl.Metadata("security:apikey", scheme) })
 	dsl.Attribute(name, args...)
 }
 

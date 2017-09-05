@@ -1,3 +1,5 @@
+//go:generate  2 2
+
 package security
 
 import (

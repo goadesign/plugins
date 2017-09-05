@@ -5,7 +5,7 @@ import (
 	"net/url"
 
 	"goa.design/goa/design"
-	goadesign "goa.design/goa/design"
+	httpdesign "goa.design/goa/http/design"
 )
 
 // SchemeKind is a type of security scheme.
@@ -89,7 +89,7 @@ type (
 		// Flows determine the oauth2 flows supported by this scheme.
 		Flows []*FlowExpr
 		// Metadata is a list of key/value pairs
-		Metadata goadesign.MetadataExpr
+		Metadata design.MetadataExpr
 	}
 
 	// FlowExpr describes a specific OAuth2 flow.
@@ -122,11 +122,6 @@ func (s *SecurityExpr) EvalName() string {
 		suffix = "scheme " + s.Schemes[0].SchemeName
 	}
 	return "Security" + suffix
-}
-
-// DSL returns the DSL function
-func (s *SchemeExpr) DSL() func() {
-	return s.DSLFunc
 }
 
 // EvalName returns the generic definition name used in error messages.
@@ -172,6 +167,10 @@ func (s *FlowExpr) Validate() error {
 	if err != nil {
 		return fmt.Errorf("invalid authorization URL %#v: %s", s.AuthorizationURL, err)
 	}
+	_, err = url.Parse(s.RefreshURL)
+	if err != nil {
+		return fmt.Errorf("invalid refresh URL %#v: %s", s.RefreshURL, err)
+	}
 	return nil
 }
 
@@ -179,23 +178,35 @@ func (s *FlowExpr) Validate() error {
 func (s *FlowExpr) Finalize() {
 	tu, _ := url.Parse(s.TokenURL)         // validated in Validate
 	au, _ := url.Parse(s.AuthorizationURL) // validated in Validate
+	ru, _ := url.Parse(s.RefreshURL)       // validated in Validate
 	tokenOK := s.TokenURL == "" || tu.IsAbs()
 	authOK := s.AuthorizationURL == "" || au.IsAbs()
-	if tokenOK && authOK {
+	refreshOK := s.RefreshURL == "" || ru.IsAbs()
+	if tokenOK && authOK && refreshOK {
 		return
 	}
-	var scheme string
-	if len(Design.Schemes) > 0 {
-		scheme = Design.Schemes[0]
+	var (
+		scheme string
+		host   string
+	)
+	if len(httpdesign.Root.Design.API.Servers) > 0 {
+		u, _ := url.Parse(httpdesign.Root.Design.API.Servers[0].URL)
+		scheme = u.Scheme
+		host = u.Host
 	}
 	if !tokenOK {
 		tu.Scheme = scheme
-		tu.Host = Design.Host
+		tu.Host = host
 		s.TokenURL = tu.String()
 	}
 	if !authOK {
 		au.Scheme = scheme
-		au.Host = Design.Host
+		au.Host = host
 		s.AuthorizationURL = au.String()
+	}
+	if !refreshOK {
+		ru.Scheme = scheme
+		ru.Host = host
+		s.RefreshURL = ru.String()
 	}
 }
