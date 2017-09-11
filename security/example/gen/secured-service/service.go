@@ -9,7 +9,8 @@ package securedService
 
 import "context"
 
-// Service is the secured_service service interface.
+// The secured service exposes endpoints that require valid authorization
+// credentials.
 type Service interface {
 	// Creates a valid JWT
 	Signin(context.Context, string) (string, error)

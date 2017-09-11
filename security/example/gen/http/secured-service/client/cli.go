@@ -22,7 +22,7 @@ func BuildSecurePayload(securedServiceSecureBody string, securedServiceSecureFai
 	{
 		err := json.Unmarshal([]byte(securedServiceSecureBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"token\": \"Corrupti similique voluptatibus a alias quia est.\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"token\": \"Voluptatem architecto consequatur fuga nisi veritatis.\"\n   }'")
 		}
 	}
 	var fail *bool

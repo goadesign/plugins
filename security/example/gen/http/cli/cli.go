@@ -1,6 +1,6 @@
 // Code generated with goa v2.0.0-wip, DO NOT EDIT.
 //
-//  HTTP client CLI support package
+// secured HTTP client CLI support package
 //
 // Command:
 // $ goa gen goa.design/plugins/security/example/design
@@ -161,7 +161,7 @@ func ParseEndpoint(
 // securedServiceUsage displays the usage of the securedService command and its
 // subcommands.
 func securedServiceUsage() {
-	fmt.Fprintf(os.Stderr, `Service is the secured_service service interface.
+	fmt.Fprintf(os.Stderr, `The secured service exposes endpoints that require valid authorization credentials.
 Usage:
     %s [globalflags] securedService COMMAND [flags]
 
@@ -195,7 +195,7 @@ This action is secured with the jwt scheme
 
 Example:
     `+os.Args[0]+` securedService secure --body '{
-      "token": "Corrupti similique voluptatibus a alias quia est."
+      "token": "Voluptatem architecto consequatur fuga nisi veritatis."
    }' --fail false
 `, os.Args[0])
 }
