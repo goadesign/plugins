@@ -13,7 +13,7 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/goakit/examples/cellar/gen/sommelier"
+	sommelier "goa.design/plugins/goakit/examples/cellar/gen/sommelier"
 )
 
 // Server lists the sommelier service endpoint HTTP handlers.

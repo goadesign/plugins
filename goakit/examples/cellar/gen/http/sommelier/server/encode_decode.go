@@ -14,7 +14,7 @@ import (
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/goakit/examples/cellar/gen/sommelier"
+	sommelier "goa.design/plugins/goakit/examples/cellar/gen/sommelier"
 )
 
 // EncodePickResponse returns an encoder for responses returned by the
@@ -75,9 +75,9 @@ func EncodePickError(encoder func(context.Context, http.ResponseWriter) goahttp.
 	}
 }
 
-// wineryToWineryResponseBodyNoDefault builds a value of type
-// *WineryResponseBody from a value of type *sommelier.Winery.
-func wineryToWineryResponseBodyNoDefault(v *sommelier.Winery) *WineryResponseBody {
+// marshalWineryToWineryResponseBody builds a value of type *WineryResponseBody
+// from a value of type *sommelier.Winery.
+func marshalWineryToWineryResponseBody(v *sommelier.Winery) *WineryResponseBody {
 	res := &WineryResponseBody{
 		Name:    v.Name,
 		Region:  v.Region,
@@ -88,9 +88,9 @@ func wineryToWineryResponseBodyNoDefault(v *sommelier.Winery) *WineryResponseBod
 	return res
 }
 
-// componentToComponentResponseBodyNoDefault builds a value of type
+// marshalComponentToComponentResponseBody builds a value of type
 // *ComponentResponseBody from a value of type *sommelier.Component.
-func componentToComponentResponseBodyNoDefault(v *sommelier.Component) *ComponentResponseBody {
+func marshalComponentToComponentResponseBody(v *sommelier.Component) *ComponentResponseBody {
 	res := &ComponentResponseBody{
 		Varietal:   v.Varietal,
 		Percentage: v.Percentage,

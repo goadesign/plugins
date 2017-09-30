@@ -38,12 +38,19 @@ func mountFile(svc *httpdesign.ServiceExpr) *codegen.File {
 			Data:   e,
 		})
 	}
+	for _, fs := range data.FileServers {
+		sections = append(sections, &codegen.SectionTemplate{
+			Name:   "goakit-mount-file-server",
+			Source: mountFileServerT,
+			Data:   fs,
+		})
+	}
 
 	return &codegen.File{Path: path, SectionTemplates: sections}
 }
 
 // input: EndpointData
-const mountHandlerT = `{{ printf "%s configures the mux to serve the \"%s\" service \"%s\" endpoint." .MountHandler .ServiceName .Method.Name | comment }}
+const mountHandlerT = `{{ printf "%s configures the mux to serve the %q service %q endpoint." .MountHandler .ServiceName .Method.Name | comment }}
 func {{ .MountHandler }}(mux goahttp.Muxer, h http.Handler) {
 	f, ok := h.(http.HandlerFunc)
 	if !ok {
@@ -54,14 +61,18 @@ func {{ .MountHandler }}(mux goahttp.Muxer, h http.Handler) {
 	{{- range .Routes }}
 	mux.Handle("{{ .Verb }}", "{{ .Path }}", f)
 	{{- end }}
-	{{- range .FileServers }}
-		{{- if .IsDir }}
+}
+`
+
+// input: FileServerData
+const mountFileServerT = `{{ printf "%s configures the mux to serve GET request made to %q." .MountHandler .RequestPath | comment }}
+func {{ .MountHandler }}(mux goahttp.Muxer, h http.Handler) {
+{{- if .IsDir }}
 	mux.Handle("GET", "{{ .RequestPath }}", http.FileServer(http.Dir({{ printf "%q" .FilePath }})))
-		{{- else }}
+{{- else }}
 	mux.Handle("GET", "{{ .RequestPath }}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, {{ printf "%q" .FilePath }})
 		}))
-		{{- end }}
-	{{- end }}
+{{- end }}
 }
 `

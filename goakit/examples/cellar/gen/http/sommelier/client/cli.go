@@ -11,18 +11,22 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"goa.design/plugins/goakit/examples/cellar/gen/sommelier"
+	sommelier "goa.design/plugins/goakit/examples/cellar/gen/sommelier"
 )
 
-// BuildCriteria builds the payload for the sommelier pick endpoint from CLI
-// flags.
-func BuildCriteria(sommelierPickBody string) (*sommelier.Criteria, error) {
+// BuildPickCriteria builds the payload for the sommelier pick endpoint from
+// CLI flags.
+func BuildPickCriteria(sommelierPickBody string) (*sommelier.Criteria, error) {
+	var err error
 	var body PickRequestBody
 	{
-		err := json.Unmarshal([]byte(sommelierPickBody), &body)
+		err = json.Unmarshal([]byte(sommelierPickBody), &body)
 		if err != nil {
 			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"name\": \"Blue\\'s Cuvee\",\n      \"varietal\": [\n         \"pinot noir\",\n         \"merlot\",\n         \"cabernet franc\"\n      ],\n      \"winery\": \"longoria\"\n   }'")
 		}
+	}
+	if err != nil {
+		return nil, err
 	}
 	v := &sommelier.Criteria{
 		Name:   body.Name,

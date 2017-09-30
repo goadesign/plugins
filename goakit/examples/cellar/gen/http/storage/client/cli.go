@@ -13,12 +13,12 @@ import (
 	"unicode/utf8"
 
 	goa "goa.design/goa"
-	"goa.design/plugins/goakit/examples/cellar/gen/storage"
+	storage "goa.design/plugins/goakit/examples/cellar/gen/storage"
 )
 
-// BuildShowPayload builds the payload for the storage show endpoint from CLI
-// flags.
-func BuildShowPayload(storageShowID string) (*storage.ShowPayload, error) {
+// BuildShowShowPayload builds the payload for the storage show endpoint from
+// CLI flags.
+func BuildShowShowPayload(storageShowID string) (*storage.ShowPayload, error) {
 	var id string
 	{
 		id = storageShowID
@@ -29,11 +29,13 @@ func BuildShowPayload(storageShowID string) (*storage.ShowPayload, error) {
 	return payload, nil
 }
 
-// BuildBottle builds the payload for the storage add endpoint from CLI flags.
-func BuildBottle(storageAddBody string) (*storage.Bottle, error) {
+// BuildAddBottle builds the payload for the storage add endpoint from CLI
+// flags.
+func BuildAddBottle(storageAddBody string) (*storage.Bottle, error) {
+	var err error
 	var body AddRequestBody
 	{
-		err := json.Unmarshal([]byte(storageAddBody), &body)
+		err = json.Unmarshal([]byte(storageAddBody), &body)
 		if err != nil {
 			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"composition\": [\n         {\n            \"percentage\": 67,\n            \"varietal\": \"Syrah\"\n         },\n         {\n            \"percentage\": 67,\n            \"varietal\": \"Syrah\"\n         },\n         {\n            \"percentage\": 67,\n            \"varietal\": \"Syrah\"\n         }\n      ],\n      \"description\": \"Red wine blend with an emphasis on the Cabernet Franc grape and including other Bordeaux grape varietals and some Syrah\",\n      \"name\": \"Blue\\'s Cuvee\",\n      \"rating\": 3,\n      \"vintage\": 1905,\n      \"winery\": {\n         \"country\": \"USA\",\n         \"name\": \"Longoria\",\n         \"region\": \"Central Coast, California\",\n         \"url\": \"http://www.longoriawine.com/\"\n      }\n   }'")
 		}
@@ -80,13 +82,18 @@ func BuildBottle(storageAddBody string) (*storage.Bottle, error) {
 			return nil, err
 		}
 	}
+	if err != nil {
+		return nil, err
+	}
 	v := &storage.Bottle{
 		Name:        body.Name,
 		Vintage:     body.Vintage,
 		Description: body.Description,
 		Rating:      body.Rating,
 	}
-	v.Winery = wineryRequestBodyToWinery(body.Winery)
+	if body.Winery != nil {
+		v.Winery = marshalWineryRequestBodyToWinery(body.Winery)
+	}
 	if body.Composition != nil {
 		v.Composition = make([]*storage.Component, len(body.Composition))
 		for j, val := range body.Composition {
@@ -100,9 +107,9 @@ func BuildBottle(storageAddBody string) (*storage.Bottle, error) {
 	return v, nil
 }
 
-// BuildRemovePayload builds the payload for the storage remove endpoint from
-// CLI flags.
-func BuildRemovePayload(storageRemoveID string) (*storage.RemovePayload, error) {
+// BuildRemoveRemovePayload builds the payload for the storage remove endpoint
+// from CLI flags.
+func BuildRemoveRemovePayload(storageRemoveID string) (*storage.RemovePayload, error) {
 	var id string
 	{
 		id = storageRemoveID
