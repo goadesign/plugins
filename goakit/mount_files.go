@@ -54,5 +54,14 @@ func {{ .MountHandler }}(mux goahttp.Muxer, h http.Handler) {
 	{{- range .Routes }}
 	mux.Handle("{{ .Verb }}", "{{ .Path }}", f)
 	{{- end }}
+	{{- range .FileServers }}
+		{{- if .IsDir }}
+	mux.Handle("GET", "{{ .RequestPath }}", http.FileServer(http.Dir({{ printf "%q" .FilePath }})))
+		{{- else }}
+	mux.Handle("GET", "{{ .RequestPath }}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, {{ printf "%q" .FilePath }})
+		}))
+		{{- end }}
+	{{- end }}
 }
 `
