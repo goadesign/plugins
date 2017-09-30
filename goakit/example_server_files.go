@@ -142,12 +142,16 @@ const mainT = `func main() {
 	// Create the structs that implement the services.
 	var (
 	{{- range .Services }}
+		{{-  if .Endpoints }}
 		{{ .Service.PkgName }}s {{.Service.PkgName}}.Service
+		{{- end }}
 	{{- end }}
 	)
 	{
 	{{- range .Services }}
+		{{-  if .Endpoints }}
 		{{ .Service.PkgName }}s = {{ $.APIPkg }}.New{{ .Service.VarName }}(logger)
+		{{- end }}
 	{{- end }}
 	}
 
@@ -155,12 +159,16 @@ const mainT = `func main() {
 	// services potentially running in different processes.
 	var (
 	{{- range .Services }}
+		{{-  if .Endpoints }}
 		{{ .Service.PkgName }}e *{{.Service.PkgName}}.Endpoints
+		{{- end }}
 	{{- end }}
 	)
 	{
 	{{- range .Services }}
+		{{-  if .Endpoints }}
 		{{ .Service.PkgName }}e = {{ .Service.PkgName }}.NewEndpoints({{ .Service.PkgName }}s)
+		{{- end }}
 	{{- end }}
 	}
 
@@ -204,9 +212,12 @@ const mainT = `func main() {
 	}
 
 	// Configure the mux.
-	{{- range .Services }}
+	{{- range .Services }}{{ $service := . }}
 		{{- range .Endpoints }}
 	{{ .ServicePkgName}}svr.{{ .MountHandler }}(mux, {{ .ServicePkgName }}{{ .Method.VarName }}Handler)
+		{{- end }}
+		{{- range .FileServers }}
+	{{ $service.Service.PkgName}}svr.{{ .MountHandler }}(mux)
 		{{- end }}
 	{{- end }}
 

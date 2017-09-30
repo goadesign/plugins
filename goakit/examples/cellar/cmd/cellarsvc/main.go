@@ -16,6 +16,7 @@ import (
 	cellar "goa.design/plugins/goakit/examples/cellar"
 	sommeliersvr "goa.design/plugins/goakit/examples/cellar/gen/http/sommelier/kitserver"
 	storagesvr "goa.design/plugins/goakit/examples/cellar/gen/http/storage/kitserver"
+	swaggersvr "goa.design/plugins/goakit/examples/cellar/gen/http/swagger/kitserver"
 	"goa.design/plugins/goakit/examples/cellar/gen/sommelier"
 	"goa.design/plugins/goakit/examples/cellar/gen/storage"
 )
@@ -116,6 +117,7 @@ func main() {
 	storagesvr.MountShowHandler(mux, storageShowHandler)
 	storagesvr.MountAddHandler(mux, storageAddHandler)
 	storagesvr.MountRemoveHandler(mux, storageRemoveHandler)
+	swaggersvr.MountGenHTTPOpenapiJSON(mux)
 
 	// Create channel used by both the signal handler and server goroutines
 	// to notify the main goroutine when to stop the server.

@@ -19,6 +19,7 @@ func main() {
 	var (
 		addr    = flag.String("url", "http://localhost:8080", "`URL` to service host")
 		verbose = flag.Bool("verbose", false, "Print request and response details")
+		v       = flag.Bool("v", false, "Print request and response details")
 		timeout = flag.Int("timeout", 30, "Maximum number of `seconds` to wait for response")
 	)
 	flag.Usage = usage
@@ -27,6 +28,7 @@ func main() {
 	var (
 		scheme string
 		host   string
+		debug  bool
 	)
 	{
 		u, err := url.Parse(*addr)
@@ -39,6 +41,7 @@ func main() {
 		if scheme == "" {
 			scheme = "http"
 		}
+		debug = *verbose || *v
 	}
 
 	var (
@@ -46,7 +49,7 @@ func main() {
 	)
 	{
 		doer = &http.Client{Timeout: time.Duration(*timeout) * time.Second}
-		if *verbose {
+		if debug {
 			doer = goahttp.NewDebugDoer(doer)
 		}
 	}
@@ -57,7 +60,7 @@ func main() {
 		doer,
 		goahttp.RequestEncoder,
 		goahttp.ResponseDecoder,
-		*verbose,
+		debug,
 	)
 	if err != nil {
 		if err == flag.ErrHelp {
@@ -70,7 +73,7 @@ func main() {
 
 	data, err := endpoint(context.Background(), payload)
 
-	if *verbose {
+	if debug {
 		doer.(goahttp.DebugDoer).Fprint(os.Stderr)
 	}
 
@@ -79,7 +82,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if data != nil && !*verbose {
+	if data != nil && !debug {
 		m, _ := json.MarshalIndent(data, "", "    ")
 		fmt.Println(string(m))
 	}
@@ -89,11 +92,11 @@ func usage() {
 	fmt.Fprintf(os.Stderr, `%s is a command line client for the cellar API.
 
 Usage:
-    %s [-url URL][-timeout SECONDS][-verbose] SERVICE ENDPOINT [flags]
+    %s [-url URL][-timeout SECONDS][-verbose|-v] SERVICE ENDPOINT [flags]
 
-    -url URL: specify service URL (http://localhost:8080)
-    -timeout: Maximum number of seconds to wait for response (30)
-    -debug:   print debug details (false)
+    -url URL:    specify service URL (http://localhost:8080)
+    -timeout:    maximum number of seconds to wait for response (30)
+    -verbose|-v: print request and response details (false)
 
 Commands:
 %s
