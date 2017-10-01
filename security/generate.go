@@ -50,7 +50,6 @@ func Generate(_ string, _ []eval.Root, files []*codegen.File) ([]*codegen.File, 
 const secureEndpointMethodT = `// {{ printf "New%sEndpoint returns an endpoint function that calls method %q of service %q." .VarName .Name .ServiceName | comment }}
 func New{{ .VarName }}Endpoint(s {{ .ServiceName }}) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		ctx = context.WithValue(ctx, security.ContextKey, reqs)
 		reqs := make([]*security.Requirement, {{ len .Requirements }})
 		{{- range $i, $req := .Requirements }}
 			{{- if $req.Scopes }}
@@ -90,6 +89,7 @@ func New{{ .VarName }}Endpoint(s {{ .ServiceName }}) goa.Endpoint {
 				{{- end }}
 			{{- end }}
 		{{- end }}
+		ctx = context.WithValue(ctx, security.ContextKey, reqs)
 		{{- if .PayloadRef }}
 		p := req.({{ .PayloadRef }})
 		{{- end }}
