@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"goa.design/goa/design"
+	"goa.design/goa/eval"
 	httpdesign "goa.design/goa/http/design"
 )
 
@@ -130,9 +131,7 @@ func Requirements(svc, ep string) []*SecurityExpr {
 					break
 				}
 			}
-			if sexpr != nil {
-				sexpr = append(sexpr, es.SecurityExpr)
-			}
+			sexpr = append(sexpr, es.SecurityExpr)
 			found = true
 		}
 	}
@@ -178,12 +177,57 @@ func (s *SchemeExpr) EvalName() string {
 
 // Validate ensures that TokenURL and AuthorizationURL are valid URLs.
 func (s *SchemeExpr) Validate() error {
-	for _, f := range s.Flows {
-		if err := f.Validate(); err != nil {
-			return err
+	verr := new(eval.ValidationErrors)
+	payloads := make(map[string]*design.AttributeExpr)
+	for _, svc := range design.Root.Services {
+		for _, m := range svc.Methods {
+			found := false
+			for _, req := range Requirements(svc.Name, m.Name) {
+				for _, scheme := range req.Schemes {
+					if scheme == s {
+						loc := fmt.Sprintf("method %q of service %q", m.Name, svc.Name)
+						payloads[loc] = m.Payload
+						found = true
+						break
+					}
+				}
+				if found {
+					break
+				}
+			}
 		}
 	}
-	return nil
+	for loc, payload := range payloads {
+		switch s.Kind {
+		case BasicAuthKind:
+			if !hasTaggedField(payload, "security:username") {
+				verr.Add(s, "payload of %s does not define a username attribute, use Username to define one.", loc)
+			}
+			if !hasTaggedField(payload, "security:password") {
+				verr.Add(s, "payload of %s does not define a password attribute, use Password to define one.", loc)
+			}
+		case APIKeyKind:
+			if !hasTaggedField(payload, "security:apikey:"+s.SchemeName) {
+				verr.Add(s, "payload of %s does not define an API key attribute, use APIKey to define one.", loc)
+			}
+		case JWTKind:
+			if !hasTaggedField(payload, "security:token") {
+				verr.Add(s, "payload of %s does not define a JWT attribute, use Token to define one.", loc)
+			}
+		case OAuth2Kind:
+			if !hasTaggedField(payload, "security:accesstoken") {
+				verr.Add(s, "payload of %s does not define a OAuth2 access token attribute, use AccessToken to define one.", loc)
+			}
+		default:
+			panic(fmt.Sprintf("unknown kind %#v", s.Kind)) // bug
+		}
+	}
+	for _, f := range s.Flows {
+		if err := f.Validate(); err != nil {
+			verr.Merge(err)
+		}
+	}
+	return verr
 }
 
 // Finalize makes the TokenURL and AuthorizationURL complete if needed.
@@ -191,23 +235,37 @@ func (s *SchemeExpr) Finalize() {
 	for _, f := range s.Flows {
 		f.Finalize()
 	}
+	if s.Kind == OAuth2Kind || s.Kind == JWTKind {
+		if s.Name == "" {
+			s.Name = "Authorization"
+		}
+	}
+}
+
+// EvalName returns the name of the expression used in error messages.
+func (s *FlowExpr) EvalName() string {
+	if s.TokenURL != "" {
+		return fmt.Sprintf("flow with token URL %q", s.TokenURL)
+	}
+	return fmt.Sprintf("flow with refresh URL %q", s.RefreshURL)
 }
 
 // Validate ensures that TokenURL and AuthorizationURL are valid URLs.
-func (s *FlowExpr) Validate() error {
+func (s *FlowExpr) Validate() *eval.ValidationErrors {
+	verr := new(eval.ValidationErrors)
 	_, err := url.Parse(s.TokenURL)
 	if err != nil {
-		return fmt.Errorf("invalid token URL %#v: %s", s.TokenURL, err)
+		verr.Add(s, "invalid token URL %q: %s", s.TokenURL, err)
 	}
 	_, err = url.Parse(s.AuthorizationURL)
 	if err != nil {
-		return fmt.Errorf("invalid authorization URL %#v: %s", s.AuthorizationURL, err)
+		verr.Add(s, "invalid authorization URL %q: %s", s.AuthorizationURL, err)
 	}
 	_, err = url.Parse(s.RefreshURL)
 	if err != nil {
-		return fmt.Errorf("invalid refresh URL %#v: %s", s.RefreshURL, err)
+		verr.Add(s, "invalid refresh URL %q: %s", s.RefreshURL, err)
 	}
-	return nil
+	return verr
 }
 
 // Finalize makes the TokenURL and AuthorizationURL complete if needed.
@@ -245,4 +303,19 @@ func (s *FlowExpr) Finalize() {
 		ru.Host = host
 		s.RefreshURL = ru.String()
 	}
+}
+
+// hasTaggedField returns true if the given attribute is an object that has an
+// attribute with the given tag.
+func hasTaggedField(att *design.AttributeExpr, tag string) bool {
+	obj := design.AsObject(att.Type)
+	if obj == nil {
+		return false
+	}
+	for _, at := range *obj {
+		if _, ok := at.Attribute.Metadata[tag]; ok {
+			return true
+		}
+	}
+	return false
 }

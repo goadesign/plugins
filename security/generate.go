@@ -37,7 +37,9 @@ func Generate(_ string, _ []eval.Root, files []*codegen.File) ([]*codegen.File, 
 	output := make([]*codegen.File, len(files))
 	for i, f := range files {
 		output[i] = f
-		if s := f.Section("endpoint-method"); s != nil {
+		needsImport := false
+		for _, s := range f.Section("endpoint-method") {
+			needsImport = true
 			data := s.Data.(*service.EndpointMethodData)
 			reqs := design.Requirements(data.ServiceName, data.Name)
 			if len(reqs) == 0 {
@@ -50,6 +52,10 @@ func Generate(_ string, _ []eval.Root, files []*codegen.File) ([]*codegen.File, 
 					Requirements: reqs,
 				},
 			})
+		}
+		if needsImport {
+			codegen.AddImport(f.SectionTemplates[0],
+				&codegen.ImportSpec{Path: "goa.design/plugins/security"})
 		}
 	}
 	http.Generate(files)
@@ -74,15 +80,21 @@ var (
 func Example(_ string, _ []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	output := make([]*codegen.File, len(files))
 	for i, f := range files {
+		needsImport := false
 		output[i] = f
-		if s := f.Section("endpoint-method"); s != nil {
+		for _, s := range f.Section("endpoint-method") {
 			data := s.Data.(*service.EndpointMethodData)
 			reqs := design.Requirements(data.ServiceName, data.Name)
 			if len(reqs) == 0 {
 				continue
 			}
+			needsImport = true
 		}
-		if s := f.Section("service-main"); s != nil {
+		if needsImport {
+			codegen.AddImport(f.SectionTemplates[0],
+				&codegen.ImportSpec{Path: "goa.design/plugins/security"})
+		}
+		for _, s := range f.Section("service-main") {
 			var buffer bytes.Buffer
 			if err := wrapperTmpl.Execute(&buffer, s.Data); err != nil {
 				panic(err) // bug
@@ -105,42 +117,42 @@ const wrapperCodeT = `{{- range .Services }}{{ $service := . }}
 `
 
 // input: securedServiceMethodData
-const secureEndpointContextT = `// {{ printf "Secure%sEndpoint returns an endpoint function which initializes the context with the security requirements and calls ep." .VarName | comment }}
+const secureEndpointContextT = `{{ printf "Secure%sEndpoint returns an endpoint function which initializes the context with the security requirements and calls ep." .VarName | comment }}
 func Secure{{ .VarName }}Endpoint(ep goa.Endpoint) goa.Endpoint {
 	reqs := make([]*security.Requirement, {{ len .Requirements }})
 	{{- range $i, $req := .Requirements }}
 		{{- if $req.Scopes }}
-	reqs[$i].RequiredScopes = []string{ {{- range $req.Scopes }}{{ printf "%q" . }}, {{ end }} }
+	reqs[{{ $i }}].RequiredScopes = []string{ {{- range $req.Scopes }}{{ printf "%q" . }}, {{ end }} }
 		{{- end }}
-	reqs.Schemes := make([]*security.Schemes, {{ len .Schemes }})
-		{{- range $i, $scheme := .Schemes }}
-	reqs.Schemes[$i] = &security.Scheme{
+	reqs[{{ $i }}].Schemes = make([]*security.Scheme, {{ len .Schemes }})
+		{{- range $j, $scheme := .Schemes }}
+	reqs[{{ $i }}].Schemes[{{ $j }}] = &security.Scheme{
 		Kind: security.SchemeKind({{ $scheme.Kind }}),
-		Name: {{ $scheme.SchemeName }},
+		Name: {{ printf "%q" $scheme.SchemeName }},
 	}
 			{{- if .Scopes }}
-	reqs.Schemes[$i].Scopes = []string{ {{- range $scheme.Scopes }}{{ printf "%q" . }}, {{ end }} }
+	reqs[{{ $i }}].Schemes[{{ $j }}].Scopes = []string{ {{- range $scheme.Scopes }}{{ printf "%q" .Name }}, {{ end }} }
 			{{- end }}
 			{{- if .In }}
-	reqs.Schemes[$i].RequiredKey = &security.Key{
+	reqs[{{ $i }}].Schemes[{{ $j }}].RequiredKey = &security.Key{
 		In: {{ printf "%q" .In }},
 		Name: {{ printf "%q" .Name }},
 	}
 			{{- end }}
 			{{- if .Flows }}
-	reqs.Schemes[$i].Flows = make([]*security.OAuthFlow, {{ len .Flows }})
+	reqs[{{ $i }}].Schemes[{{ $j }}].Flows = make([]*security.OAuthFlow, {{ len .Flows }})
 				{{- range $j, $flow := .Flows }}
-	reqs.Schemes[$i].Flows[$j] = &security.OAuthFlow{
+	reqs[{{ $i }}].Schemes[{{ $j }}].Flows[{{ $j }}] = &security.OAuthFlow{
 		Kind: security.FlowKind({{ $flow.Kind }}),
 	}
 					{{- if .AuthorizationURL }}
-	reqs.Schemes[$i].Flows[$j].AuthorizationURL = {{ printf "%q" .AuthorizationURL }}
+	reqs[{{ $i }}].Schemes[{{ $j }}].Flows[{{ $j }}].AuthorizationURL = {{ printf "%q" .AuthorizationURL }}
 					{{- end }}
 					{{- if .TokenURL }}
-	reqs.Schemes[$i].Flows[$j].TokenURL = {{ printf "%q" .TokenURL }}
+	reqs[{{ $i }}].Schemes[{{ $j }}].Flows[{{ $j }}].TokenURL = {{ printf "%q" .TokenURL }}
 					{{- end }}
 					{{- if .RefreshURL }}
-	reqs.Schemes[$i].Flows[$j].RefreshURL = {{ printf "%q" .RefreshURL }}
+	reqs[{{ $i }}].Schemes[{{ $j }}].Flows[{{ $j }}].RefreshURL = {{ printf "%q" .RefreshURL }}
 					{{- end }}
 				{{- end }}
 			{{- end }}

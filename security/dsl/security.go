@@ -4,7 +4,7 @@ import (
 	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
 	"goa.design/goa/http/dsl"
-	"goa.design/plugins/security/http/design"
+	"goa.design/plugins/security/design"
 )
 
 // Description sets the expression description.
