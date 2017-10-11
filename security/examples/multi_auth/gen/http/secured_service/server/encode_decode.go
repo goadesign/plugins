@@ -3,7 +3,7 @@
 // secured_service HTTP server encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/security/example/design
+// $ goa gen goa.design/plugins/security/examples/multi_auth/design
 
 package server
 
@@ -15,7 +15,7 @@ import (
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/security/example/gen/securedservice"
+	securedservice "goa.design/plugins/security/examples/multi_auth/gen/secured_service"
 )
 
 // EncodeSigninResponse returns an encoder for responses returned by the
@@ -23,7 +23,7 @@ import (
 func EncodeSigninResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
 		res := v.(string)
-		w.Header().Set("Authorization", res.Authorization)
+		w.Header().Set("Authorization", res)
 		w.WriteHeader(http.StatusNoContent)
 		return nil
 	}
@@ -34,7 +34,7 @@ func EncodeSigninResponse(encoder func(context.Context, http.ResponseWriter) goa
 func DecodeSigninRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
 	return func(r *http.Request) (interface{}, error) {
 		var (
-			body string
+			body SigninRequestBody
 			err  error
 		)
 		err = decoder(r).Decode(&body)
@@ -45,7 +45,7 @@ func DecodeSigninRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 			return nil, goa.DecodePayloadError(err.Error())
 		}
 
-		return body, nil
+		return NewSigninSigninPayload(&body), nil
 	}
 }
 
@@ -101,11 +101,14 @@ func DecodeSecureRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 		)
 		failRaw := r.URL.Query().Get("fail")
 		if failRaw != "" {
-			v, err := strconv.ParseBool(failRaw)
-			if err != nil {
-				return nil, goa.InvalidFieldTypeError("fail", failRaw, "boolean")
+			v, err2 := strconv.ParseBool(failRaw)
+			if err2 != nil {
+				err = goa.MergeErrors(err, goa.InvalidFieldTypeError("fail", failRaw, "boolean"))
 			}
 			fail = &v
+		}
+		if err != nil {
+			return nil, err
 		}
 
 		return NewSecureSecurePayload(&body, fail), nil

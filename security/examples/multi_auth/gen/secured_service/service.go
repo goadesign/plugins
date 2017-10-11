@@ -3,9 +3,9 @@
 // secured_service service
 //
 // Command:
-// $ goa gen goa.design/plugins/security/example/design
+// $ goa gen goa.design/plugins/security/examples/multi_auth/design
 
-package securedService
+package securedservice
 
 import "context"
 
@@ -13,13 +13,23 @@ import "context"
 // credentials.
 type Service interface {
 	// Creates a valid JWT
-	Signin(context.Context, string) (string, error)
+	Signin(context.Context, *SigninPayload) (string, error)
 	// This action is secured with the jwt scheme
 	Secure(context.Context, *SecurePayload) (string, error)
-	// This action is secured with the jwt scheme and also requires an API key query string.
+	// This action is secured with the jwt scheme and also requires an API key
+	// query string.
 	DoublySecure(context.Context, *DoublySecurePayload) (string, error)
-	// This action is secured with the jwt scheme and also requires an API key header.
+	// This action is secured with the jwt scheme and also requires an API key
+	// header.
 	AlsoDoublySecure(context.Context, *AlsoDoublySecurePayload) (string, error)
+}
+
+// Credentials used to authenticate to retrieve JWT token
+type SigninPayload struct {
+	// Username used to perform signin
+	Username *string
+	// Username used to perform signin
+	Password *string
 }
 
 // SecurePayload is the payload type of the secured_service service secure

@@ -3,24 +3,25 @@
 // secured_service HTTP client encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/security/example/design
+// $ goa gen goa.design/plugins/security/examples/multi_auth/design
 
 package client
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/security/example/gen/securedservice"
+	securedservice "goa.design/plugins/security/examples/multi_auth/gen/secured_service"
 )
 
 // BuildSigninRequest instantiates a HTTP request object with method and path
-// set to call the secured_service signin endpoint.
-func (c *Client) BuildSigninRequest() (*http.Request, error) {
+// set to call the "secured_service" service "signin" endpoint
+func (c *Client) BuildSigninRequest(v interface{}) (*http.Request, error) {
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: SigninSecuredServicePath()}
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
@@ -34,11 +35,11 @@ func (c *Client) BuildSigninRequest() (*http.Request, error) {
 // secured_service signin server.
 func EncodeSigninRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
 	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(string)
+		p, ok := v.(*securedservice.SigninPayload)
 		if !ok {
-			return goahttp.ErrInvalidType("secured_service", "signin", "string", v)
+			return goahttp.ErrInvalidType("secured_service", "signin", "*securedservice.SigninPayload", v)
 		}
-		body := p
+		body := NewSigninRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
 			return goahttp.ErrEncodingError("secured_service", "signin", err)
 		}
@@ -74,7 +75,7 @@ func DecodeSigninResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 				err = goa.MergeErrors(err, goa.MissingFieldError("Authorization", "header"))
 			}
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("invalid response: %s", err)
 			}
 			return nil, nil
 		case http.StatusUnauthorized:
@@ -86,6 +87,10 @@ func DecodeSigninResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("secured_service", "signin", err)
 			}
+			err = body.Validate()
+			if err != nil {
+				return nil, fmt.Errorf("invalid response: %s", err)
+			}
 
 			return NewSigninUnauthorized(&body), nil
 		default:
@@ -96,8 +101,8 @@ func DecodeSigninResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 }
 
 // BuildSecureRequest instantiates a HTTP request object with method and path
-// set to call the secured_service secure endpoint.
-func (c *Client) BuildSecureRequest() (*http.Request, error) {
+// set to call the "secured_service" service "secure" endpoint
+func (c *Client) BuildSecureRequest(v interface{}) (*http.Request, error) {
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: SecureSecuredServicePath()}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
@@ -160,8 +165,8 @@ func DecodeSecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 }
 
 // BuildDoublySecureRequest instantiates a HTTP request object with method and
-// path set to call the secured_service doubly_secure endpoint.
-func (c *Client) BuildDoublySecureRequest() (*http.Request, error) {
+// path set to call the "secured_service" service "doubly_secure" endpoint
+func (c *Client) BuildDoublySecureRequest(v interface{}) (*http.Request, error) {
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: DoublySecureSecuredServicePath()}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
@@ -224,8 +229,9 @@ func DecodeDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder, re
 }
 
 // BuildAlsoDoublySecureRequest instantiates a HTTP request object with method
-// and path set to call the secured_service also_doubly_secure endpoint.
-func (c *Client) BuildAlsoDoublySecureRequest() (*http.Request, error) {
+// and path set to call the "secured_service" service "also_doubly_secure"
+// endpoint
+func (c *Client) BuildAlsoDoublySecureRequest(v interface{}) (*http.Request, error) {
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: AlsoDoublySecureSecuredServicePath()}
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
@@ -243,7 +249,9 @@ func EncodeAlsoDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) 
 		if !ok {
 			return goahttp.ErrInvalidType("secured_service", "also_doubly_secure", "*securedservice.AlsoDoublySecurePayload", v)
 		}
-		req.Header.Set("Authorization", p.Key)
+		if p.Key != nil {
+			req.Header.Set("Authorization", *p.Key)
+		}
 		body := NewAlsoDoublySecureRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
 			return goahttp.ErrEncodingError("secured_service", "also_doubly_secure", err)

@@ -530,7 +530,8 @@ func Scope(name string, desc ...string) {
 		if len(desc) == 1 {
 			d = desc[0]
 		}
-		current.Scopes = append(current.Scopes, &design.ScopeExpr{name, d})
+		current.Scopes = append(current.Scopes,
+			&design.ScopeExpr{Name: name, Description: d})
 	default:
 		eval.IncompatibleDSL()
 	}

@@ -3,7 +3,7 @@
 // secured_service client HTTP transport
 //
 // Command:
-// $ goa gen goa.design/plugins/security/example/design
+// $ goa gen goa.design/plugins/security/examples/multi_auth/design
 
 package client
 
@@ -72,7 +72,7 @@ func (c *Client) Signin() goa.Endpoint {
 		decodeResponse = DecodeSigninResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildSigninRequest()
+		req, err := c.BuildSigninRequest(v)
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +98,7 @@ func (c *Client) Secure() goa.Endpoint {
 		decodeResponse = DecodeSecureResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildSecureRequest()
+		req, err := c.BuildSecureRequest(v)
 		if err != nil {
 			return nil, err
 		}
@@ -124,7 +124,7 @@ func (c *Client) DoublySecure() goa.Endpoint {
 		decodeResponse = DecodeDoublySecureResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildDoublySecureRequest()
+		req, err := c.BuildDoublySecureRequest(v)
 		if err != nil {
 			return nil, err
 		}
@@ -150,7 +150,7 @@ func (c *Client) AlsoDoublySecure() goa.Endpoint {
 		decodeResponse = DecodeAlsoDoublySecureResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildAlsoDoublySecureRequest()
+		req, err := c.BuildAlsoDoublySecureRequest(v)
 		if err != nil {
 			return nil, err
 		}

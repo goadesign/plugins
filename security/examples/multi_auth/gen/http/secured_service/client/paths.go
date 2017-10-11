@@ -3,9 +3,9 @@
 // HTTP request path constructors for the secured_service service.
 //
 // Command:
-// $ goa gen goa.design/plugins/security/example/design
+// $ goa gen goa.design/plugins/security/examples/multi_auth/design
 
-package server
+package client
 
 // SigninSecuredServicePath returns the URL path to the secured_service service signin HTTP endpoint.
 func SigninSecuredServicePath() string {

@@ -3,7 +3,7 @@
 // secured_service HTTP server
 //
 // Command:
-// $ goa gen goa.design/plugins/security/example/design
+// $ goa gen goa.design/plugins/security/examples/multi_auth/design
 
 package server
 
@@ -13,7 +13,7 @@ import (
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/security/example/gen/securedservice"
+	securedservice "goa.design/plugins/security/examples/multi_auth/gen/secured_service"
 )
 
 // Server lists the secured_service service endpoint HTTP handlers.

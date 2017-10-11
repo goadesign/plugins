@@ -3,50 +3,68 @@
 // secured_service HTTP server types
 //
 // Command:
-// $ goa gen goa.design/plugins/security/example/design
+// $ goa gen goa.design/plugins/security/examples/multi_auth/design
 
 package server
 
 import (
-	"goa.design/plugins/security/example/gen/securedservice"
+	securedservice "goa.design/plugins/security/examples/multi_auth/gen/secured_service"
 )
 
-// SecureRequestBody is the type of the secured_service secure HTTP endpoint
-// request body.
+// SigninRequestBody is the type of the "secured_service" service "signin"
+// endpoint HTTP request body.
+type SigninRequestBody struct {
+	// Username used to perform signin
+	Username *string `form:"username,omitempty" json:"username,omitempty" xml:"username,omitempty"`
+	// Username used to perform signin
+	Password *string `form:"password,omitempty" json:"password,omitempty" xml:"password,omitempty"`
+}
+
+// SecureRequestBody is the type of the "secured_service" service "secure"
+// endpoint HTTP request body.
 type SecureRequestBody struct {
 	// JWT used for authentication
 	Token *string `form:"token,omitempty" json:"token,omitempty" xml:"token,omitempty"`
 }
 
-// DoublySecureRequestBody is the type of the secured_service doubly_secure
-// HTTP endpoint request body.
+// DoublySecureRequestBody is the type of the "secured_service" service
+// "doubly_secure" endpoint HTTP request body.
 type DoublySecureRequestBody struct {
 	// JWT used for authentication
 	Token *string `form:"token,omitempty" json:"token,omitempty" xml:"token,omitempty"`
 }
 
-// AlsoDoublySecureRequestBody is the type of the secured_service
-// also_doubly_secure HTTP endpoint request body.
+// AlsoDoublySecureRequestBody is the type of the "secured_service" service
+// "also_doubly_secure" endpoint HTTP request body.
 type AlsoDoublySecureRequestBody struct {
 	// JWT used for authentication
 	Token *string `form:"token,omitempty" json:"token,omitempty" xml:"token,omitempty"`
 }
 
-// SigninUnauthorizedResponseBody is the type of the secured_service "signin"
-// HTTP endpoint unauthorized error response body.
+// SigninUnauthorizedResponseBody is the type of the "secured_service" service
+// "signin" endpoint HTTP response body for the "unauthorized" error.
 type SigninUnauthorizedResponseBody struct {
 	// Credentials are invalid
 	Value string `form:"value" json:"value" xml:"value"`
 }
 
-// NewSigninUnauthorizedResponseBody builds the secured_service service signin
-// endpoint response body from a result.
+// NewSigninUnauthorizedResponseBody builds the HTTP response body from the
+// result of the "signin" endpoint of the "secured_service" service.
 func NewSigninUnauthorizedResponseBody(res *securedservice.Unauthorized) *SigninUnauthorizedResponseBody {
 	body := &SigninUnauthorizedResponseBody{
 		Value: res.Value,
 	}
-
 	return body
+}
+
+// NewSigninSigninPayload builds a secured_service service signin endpoint
+// payload.
+func NewSigninSigninPayload(body *SigninRequestBody) *securedservice.SigninPayload {
+	v := &securedservice.SigninPayload{
+		Username: body.Username,
+		Password: body.Password,
+	}
+	return v
 }
 
 // NewSecureSecurePayload builds a secured_service service secure endpoint
@@ -56,7 +74,6 @@ func NewSecureSecurePayload(body *SecureRequestBody, fail *bool) *securedservice
 		Token: body.Token,
 	}
 	v.Fail = fail
-
 	return v
 }
 
@@ -67,7 +84,6 @@ func NewDoublySecureDoublySecurePayload(body *DoublySecureRequestBody, key *stri
 		Token: body.Token,
 	}
 	v.Key = key
-
 	return v
 }
 
@@ -78,6 +94,5 @@ func NewAlsoDoublySecureAlsoDoublySecurePayload(body *AlsoDoublySecureRequestBod
 		Token: body.Token,
 	}
 	v.Key = key
-
 	return v
 }
