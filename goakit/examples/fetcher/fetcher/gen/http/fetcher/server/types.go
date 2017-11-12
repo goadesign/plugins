@@ -3,12 +3,12 @@
 // fetcher HTTP server types
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/fetcher/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
 
 package server
 
 import (
-	fetcher "goa.design/plugins/goakit/examples/client/fetcher/gen/fetcher"
+	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // FetchResponseBody is the type of the "fetcher" service "fetch" endpoint HTTP
@@ -25,14 +25,12 @@ type FetchResponseBody struct {
 type FetchBadRequestResponseBody struct {
 	// a unique identifier for this particular occurrence of the problem.
 	ID string `form:"id" json:"id" xml:"id"`
-	// the HTTP status code applicable to this problem, expressed as a string value.
-	Status *string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
+	// the HTTP status code applicable to this problem.
+	Status int `form:"status" json:"status" xml:"status"`
 	// an application-specific error code, expressed as a string value.
 	Code string `form:"code" json:"code" xml:"code"`
 	// a human-readable explanation specific to this occurrence of the problem.
-	Detail string `form:"detail" json:"detail" xml:"detail"`
-	// a meta object containing non-standard meta-information about the error.
-	Meta map[string]interface{} `form:"meta,omitempty" json:"meta,omitempty" xml:"meta,omitempty"`
+	Message string `form:"message" json:"message" xml:"message"`
 }
 
 // FetchInternalErrorResponseBody is the type of the "fetcher" service "fetch"
@@ -40,14 +38,12 @@ type FetchBadRequestResponseBody struct {
 type FetchInternalErrorResponseBody struct {
 	// a unique identifier for this particular occurrence of the problem.
 	ID string `form:"id" json:"id" xml:"id"`
-	// the HTTP status code applicable to this problem, expressed as a string value.
-	Status *string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
+	// the HTTP status code applicable to this problem.
+	Status int `form:"status" json:"status" xml:"status"`
 	// an application-specific error code, expressed as a string value.
 	Code string `form:"code" json:"code" xml:"code"`
 	// a human-readable explanation specific to this occurrence of the problem.
-	Detail string `form:"detail" json:"detail" xml:"detail"`
-	// a meta object containing non-standard meta-information about the error.
-	Meta map[string]interface{} `form:"meta,omitempty" json:"meta,omitempty" xml:"meta,omitempty"`
+	Message string `form:"message" json:"message" xml:"message"`
 }
 
 // NewFetchResponseBody builds the HTTP response body from the result of the
@@ -64,18 +60,10 @@ func NewFetchResponseBody(res *fetcher.FetchMedia) *FetchResponseBody {
 // of the "fetch" endpoint of the "fetcher" service.
 func NewFetchBadRequestResponseBody(res *fetcher.Error) *FetchBadRequestResponseBody {
 	body := &FetchBadRequestResponseBody{
-		ID:     res.ID,
-		Status: res.Status,
-		Code:   res.Code,
-		Detail: res.Detail,
-	}
-	if res.Meta != nil {
-		body.Meta = make(map[string]interface{}, len(res.Meta))
-		for key, val := range res.Meta {
-			tk := key
-			tv := val
-			body.Meta[tk] = tv
-		}
+		ID:      res.ID,
+		Status:  res.Status,
+		Code:    res.Code,
+		Message: res.Message,
 	}
 	return body
 }
@@ -84,18 +72,10 @@ func NewFetchBadRequestResponseBody(res *fetcher.Error) *FetchBadRequestResponse
 // result of the "fetch" endpoint of the "fetcher" service.
 func NewFetchInternalErrorResponseBody(res *fetcher.Error) *FetchInternalErrorResponseBody {
 	body := &FetchInternalErrorResponseBody{
-		ID:     res.ID,
-		Status: res.Status,
-		Code:   res.Code,
-		Detail: res.Detail,
-	}
-	if res.Meta != nil {
-		body.Meta = make(map[string]interface{}, len(res.Meta))
-		for key, val := range res.Meta {
-			tk := key
-			tv := val
-			body.Meta[tk] = tv
-		}
+		ID:      res.ID,
+		Status:  res.Status,
+		Code:    res.Code,
+		Message: res.Message,
 	}
 	return body
 }

@@ -3,7 +3,7 @@
 // health go-kit HTTP client encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/archiver/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
 
 package client
 
@@ -13,7 +13,7 @@ import (
 
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/goakit/examples/client/archiver/gen/http/health/client"
+	"goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/client"
 )
 
 // DecodeShowResponse returns a go-kit DecodeResponseFunc suitable for decoding

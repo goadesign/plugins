@@ -13,10 +13,10 @@ import (
 	"github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
-	archiversvc "goa.design/plugins/goakit/examples/client/archiver/gen/archiver"
-	archiverkc "goa.design/plugins/goakit/examples/client/archiver/gen/http/archiver/kitclient"
-	archiverks "goa.design/plugins/goakit/examples/client/archiver/gen/http/archiver/server"
-	"goa.design/plugins/goakit/examples/client/fetcher/gen/fetcher"
+	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiverkc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitclient"
+	archiverks "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"
+	"goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // fetcher service implementation.
@@ -60,9 +60,9 @@ func (s *fetchersvc) Fetch(ctx context.Context, p *fetcher.FetchPayload) (*fetch
 	now := int(time.Now().Unix())
 	if err != nil {
 		return nil, &fetcher.Error{
-			ID:     strconv.Itoa(now),
-			Code:   "bad_request",
-			Detail: fmt.Sprintf("failed to decode response: %s", err),
+			ID:      strconv.Itoa(now),
+			Code:    "bad_request",
+			Message: fmt.Sprintf("failed to decode response: %s", err),
 		}
 	}
 
@@ -70,9 +70,9 @@ func (s *fetchersvc) Fetch(ctx context.Context, p *fetcher.FetchPayload) (*fetch
 	res, err := s.archive(ctx, &archiversvc.ArchivePayload{Status: resp.StatusCode, Body: string(body)})
 	if err != nil {
 		return nil, &fetcher.Error{
-			ID:     strconv.Itoa(now),
-			Code:   "bad_request",
-			Detail: fmt.Sprintf("failed to decode response: %s", err),
+			ID:      strconv.Itoa(now),
+			Code:    "bad_request",
+			Message: fmt.Sprintf("failed to decode response: %s", err),
 		}
 	}
 

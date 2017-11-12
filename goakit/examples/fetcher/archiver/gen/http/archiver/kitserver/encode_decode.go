@@ -3,7 +3,7 @@
 // archiver go-kit HTTP server encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/archiver/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
 
 package server
 
@@ -13,7 +13,7 @@ import (
 
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/goakit/examples/client/archiver/gen/http/archiver/server"
+	"goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"
 )
 
 // EncodeArchiveResponse returns a go-kit EncodeResponseFunc suitable for

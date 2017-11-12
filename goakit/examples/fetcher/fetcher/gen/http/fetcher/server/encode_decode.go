@@ -3,7 +3,7 @@
 // fetcher HTTP server encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/fetcher/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
 
 package server
 
@@ -13,7 +13,7 @@ import (
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	fetcher "goa.design/plugins/goakit/examples/client/fetcher/gen/fetcher"
+	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // EncodeFetchResponse returns an encoder for responses returned by the fetcher

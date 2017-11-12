@@ -3,7 +3,7 @@
 // health go-kit HTTP server encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/fetcher/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
 
 package server
 
@@ -13,7 +13,7 @@ import (
 
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/goakit/examples/client/fetcher/gen/http/health/server"
+	"goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/health/server"
 )
 
 // EncodeShowResponse returns a go-kit EncodeResponseFunc suitable for encoding

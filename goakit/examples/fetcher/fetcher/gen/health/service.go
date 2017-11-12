@@ -3,11 +3,13 @@
 // health service
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/fetcher/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
 
 package health
 
-import "context"
+import (
+	"context"
+)
 
 // Service is the health service interface.
 type Service interface {

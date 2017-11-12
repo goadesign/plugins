@@ -3,13 +3,13 @@
 // archiver HTTP server types
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/archiver/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
 
 package server
 
 import (
 	goa "goa.design/goa"
-	archiver "goa.design/plugins/goakit/examples/client/archiver/gen/archiver"
+	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 )
 
 // ArchiveRequestBody is the type of the "archiver" service "archive" endpoint
@@ -48,14 +48,12 @@ type ReadResponseBody struct {
 type ReadNotFoundResponseBody struct {
 	// a unique identifier for this particular occurrence of the problem.
 	ID string `form:"id" json:"id" xml:"id"`
-	// the HTTP status code applicable to this problem, expressed as a string value.
-	Status *string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
+	// the HTTP status code applicable to this problem.
+	Status int `form:"status" json:"status" xml:"status"`
 	// an application-specific error code, expressed as a string value.
 	Code string `form:"code" json:"code" xml:"code"`
 	// a human-readable explanation specific to this occurrence of the problem.
-	Detail string `form:"detail" json:"detail" xml:"detail"`
-	// a meta object containing non-standard meta-information about the error.
-	Meta map[string]interface{} `form:"meta,omitempty" json:"meta,omitempty" xml:"meta,omitempty"`
+	Message string `form:"message" json:"message" xml:"message"`
 }
 
 // ReadBadRequestResponseBody is the type of the "archiver" service "read"
@@ -63,14 +61,12 @@ type ReadNotFoundResponseBody struct {
 type ReadBadRequestResponseBody struct {
 	// a unique identifier for this particular occurrence of the problem.
 	ID string `form:"id" json:"id" xml:"id"`
-	// the HTTP status code applicable to this problem, expressed as a string value.
-	Status *string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
+	// the HTTP status code applicable to this problem.
+	Status int `form:"status" json:"status" xml:"status"`
 	// an application-specific error code, expressed as a string value.
 	Code string `form:"code" json:"code" xml:"code"`
 	// a human-readable explanation specific to this occurrence of the problem.
-	Detail string `form:"detail" json:"detail" xml:"detail"`
-	// a meta object containing non-standard meta-information about the error.
-	Meta map[string]interface{} `form:"meta,omitempty" json:"meta,omitempty" xml:"meta,omitempty"`
+	Message string `form:"message" json:"message" xml:"message"`
 }
 
 // NewArchiveResponseBody builds the HTTP response body from the result of the
@@ -99,18 +95,10 @@ func NewReadResponseBody(res *archiver.ArchiveMedia) *ReadResponseBody {
 // the "read" endpoint of the "archiver" service.
 func NewReadNotFoundResponseBody(res *archiver.Error) *ReadNotFoundResponseBody {
 	body := &ReadNotFoundResponseBody{
-		ID:     res.ID,
-		Status: res.Status,
-		Code:   res.Code,
-		Detail: res.Detail,
-	}
-	if res.Meta != nil {
-		body.Meta = make(map[string]interface{}, len(res.Meta))
-		for key, val := range res.Meta {
-			tk := key
-			tv := val
-			body.Meta[tk] = tv
-		}
+		ID:      res.ID,
+		Status:  res.Status,
+		Code:    res.Code,
+		Message: res.Message,
 	}
 	return body
 }
@@ -119,18 +107,10 @@ func NewReadNotFoundResponseBody(res *archiver.Error) *ReadNotFoundResponseBody 
 // of the "read" endpoint of the "archiver" service.
 func NewReadBadRequestResponseBody(res *archiver.Error) *ReadBadRequestResponseBody {
 	body := &ReadBadRequestResponseBody{
-		ID:     res.ID,
-		Status: res.Status,
-		Code:   res.Code,
-		Detail: res.Detail,
-	}
-	if res.Meta != nil {
-		body.Meta = make(map[string]interface{}, len(res.Meta))
-		for key, val := range res.Meta {
-			tk := key
-			tv := val
-			body.Meta[tk] = tv
-		}
+		ID:      res.ID,
+		Status:  res.Status,
+		Code:    res.Code,
+		Message: res.Message,
 	}
 	return body
 }

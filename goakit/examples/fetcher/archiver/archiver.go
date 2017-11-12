@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	"goa.design/plugins/goakit/examples/client/archiver/gen/archiver"
-	"goa.design/plugins/goakit/examples/client/archiver/gen/http/archiver/server"
+	"goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	"goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"
 )
 
 type (
@@ -40,9 +40,9 @@ func (s *archiversvc) Read(ctx context.Context, p *archiver.ReadPayload) (*archi
 	doc := s.db.Read(p.ID)
 	if doc == nil {
 		return nil, &archiver.Error{
-			ID:     strconv.Itoa(int(time.Now().Unix())),
-			Code:   "bad_request",
-			Detail: fmt.Sprintf("could not find document with ID %q", p.ID),
+			ID:      strconv.Itoa(int(time.Now().Unix())),
+			Code:    "bad_request",
+			Message: fmt.Sprintf("could not find document with ID %q", p.ID),
 		}
 	}
 	return archiveMedia(doc), nil

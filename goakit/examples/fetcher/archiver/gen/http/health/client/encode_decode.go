@@ -3,7 +3,7 @@
 // health HTTP client encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/archiver/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
 
 package client
 

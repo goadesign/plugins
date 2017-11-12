@@ -3,7 +3,7 @@
 // health HTTP server
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/fetcher/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
 
 package server
 
@@ -13,7 +13,7 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/http"
-	health "goa.design/plugins/goakit/examples/client/fetcher/gen/health"
+	health "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
 )
 
 // Server lists the health service endpoint HTTP handlers.

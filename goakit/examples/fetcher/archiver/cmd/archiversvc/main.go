@@ -13,18 +13,18 @@ import (
 	"github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/goakit/examples/client/archiver"
-	genarchiver "goa.design/plugins/goakit/examples/client/archiver/gen/archiver"
-	"goa.design/plugins/goakit/examples/client/archiver/gen/health"
-	archiversvr "goa.design/plugins/goakit/examples/client/archiver/gen/http/archiver/kitserver"
-	healthsvr "goa.design/plugins/goakit/examples/client/archiver/gen/http/health/kitserver"
+	"goa.design/plugins/goakit/examples/fetcher/archiver"
+	genarchiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiversvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitserver"
+	healthsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/kitserver"
+	"goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
 )
 
 func main() {
 	// Define command line flags, add any other flag required to configure
 	// the service.
 	var (
-		addr = flag.String("listen", ":8080", "HTTP listen `address`")
+		addr = flag.String("listen", ":8081", "HTTP listen `address`")
 	)
 	flag.Parse()
 

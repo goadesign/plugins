@@ -3,7 +3,7 @@
 // fetcher HTTP client encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/fetcher/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
 
 package client
 
@@ -15,7 +15,7 @@ import (
 	"net/url"
 
 	goahttp "goa.design/goa/http"
-	fetcher "goa.design/plugins/goakit/examples/client/fetcher/gen/fetcher"
+	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // BuildFetchRequest instantiates a HTTP request object with method and path

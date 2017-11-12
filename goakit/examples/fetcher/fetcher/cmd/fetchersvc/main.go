@@ -13,11 +13,11 @@ import (
 	"github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
-	fetcher "goa.design/plugins/goakit/examples/client/fetcher"
-	fetchersvc "goa.design/plugins/goakit/examples/client/fetcher/gen/fetcher"
-	healthsvc "goa.design/plugins/goakit/examples/client/fetcher/gen/health"
-	fetchersvr "goa.design/plugins/goakit/examples/client/fetcher/gen/http/fetcher/kitserver"
-	healthsvr "goa.design/plugins/goakit/examples/client/fetcher/gen/http/health/kitserver"
+	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher"
+	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	healthsvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
+	fetchersvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/kitserver"
+	healthsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/health/kitserver"
 )
 
 func main() {

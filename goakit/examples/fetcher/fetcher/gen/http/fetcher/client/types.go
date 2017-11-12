@@ -3,13 +3,13 @@
 // fetcher HTTP client types
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/fetcher/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
 
 package client
 
 import (
 	goa "goa.design/goa"
-	fetcher "goa.design/plugins/goakit/examples/client/fetcher/gen/fetcher"
+	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // FetchResponseBody is the type of the "fetcher" service "fetch" endpoint HTTP
@@ -26,14 +26,12 @@ type FetchResponseBody struct {
 type FetchBadRequestResponseBody struct {
 	// a unique identifier for this particular occurrence of the problem.
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	// the HTTP status code applicable to this problem, expressed as a string value.
-	Status *string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
+	// the HTTP status code applicable to this problem.
+	Status *int `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
 	// an application-specific error code, expressed as a string value.
 	Code *string `form:"code,omitempty" json:"code,omitempty" xml:"code,omitempty"`
 	// a human-readable explanation specific to this occurrence of the problem.
-	Detail *string `form:"detail,omitempty" json:"detail,omitempty" xml:"detail,omitempty"`
-	// a meta object containing non-standard meta-information about the error.
-	Meta map[string]interface{} `form:"meta,omitempty" json:"meta,omitempty" xml:"meta,omitempty"`
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
 }
 
 // FetchInternalErrorResponseBody is the type of the "fetcher" service "fetch"
@@ -41,14 +39,12 @@ type FetchBadRequestResponseBody struct {
 type FetchInternalErrorResponseBody struct {
 	// a unique identifier for this particular occurrence of the problem.
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	// the HTTP status code applicable to this problem, expressed as a string value.
-	Status *string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
+	// the HTTP status code applicable to this problem.
+	Status *int `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
 	// an application-specific error code, expressed as a string value.
 	Code *string `form:"code,omitempty" json:"code,omitempty" xml:"code,omitempty"`
 	// a human-readable explanation specific to this occurrence of the problem.
-	Detail *string `form:"detail,omitempty" json:"detail,omitempty" xml:"detail,omitempty"`
-	// a meta object containing non-standard meta-information about the error.
-	Meta map[string]interface{} `form:"meta,omitempty" json:"meta,omitempty" xml:"meta,omitempty"`
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
 }
 
 // NewFetchFetchMediaOK builds a "fetcher" service "fetch" endpoint result from
@@ -64,16 +60,10 @@ func NewFetchFetchMediaOK(body *FetchResponseBody) *fetcher.FetchMedia {
 // NewFetchBadRequest builds a fetcher service fetch endpoint bad_request error.
 func NewFetchBadRequest(body *FetchBadRequestResponseBody) *fetcher.Error {
 	v := &fetcher.Error{
-		ID:     *body.ID,
-		Status: body.Status,
-		Code:   *body.Code,
-		Detail: *body.Detail,
-	}
-	v.Meta = make(map[string]interface{}, len(body.Meta))
-	for key, val := range body.Meta {
-		tk := key
-		tv := val
-		v.Meta[tk] = tv
+		ID:      *body.ID,
+		Status:  *body.Status,
+		Code:    *body.Code,
+		Message: *body.Message,
 	}
 	return v
 }
@@ -82,16 +72,10 @@ func NewFetchBadRequest(body *FetchBadRequestResponseBody) *fetcher.Error {
 // error.
 func NewFetchInternalError(body *FetchInternalErrorResponseBody) *fetcher.Error {
 	v := &fetcher.Error{
-		ID:     *body.ID,
-		Status: body.Status,
-		Code:   *body.Code,
-		Detail: *body.Detail,
-	}
-	v.Meta = make(map[string]interface{}, len(body.Meta))
-	for key, val := range body.Meta {
-		tk := key
-		tv := val
-		v.Meta[tk] = tv
+		ID:      *body.ID,
+		Status:  *body.Status,
+		Code:    *body.Code,
+		Message: *body.Message,
 	}
 	return v
 }
@@ -123,8 +107,11 @@ func (body *FetchBadRequestResponseBody) Validate() (err error) {
 	if body.Code == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("code", "body"))
 	}
-	if body.Detail == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("detail", "body"))
+	if body.Status == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
+	}
+	if body.Message == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
 	}
 	return
 }
@@ -137,8 +124,11 @@ func (body *FetchInternalErrorResponseBody) Validate() (err error) {
 	if body.Code == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("code", "body"))
 	}
-	if body.Detail == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("detail", "body"))
+	if body.Status == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
+	}
+	if body.Message == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
 	}
 	return
 }

@@ -3,11 +3,15 @@
 // archiver service
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/archiver/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
 
 package archiver
 
-import "context"
+import (
+	"context"
+
+	"goa.design/goa"
+)
 
 // Service is the archiver service interface.
 type Service interface {
@@ -45,17 +49,35 @@ type ReadPayload struct {
 type Error struct {
 	// a unique identifier for this particular occurrence of the problem.
 	ID string
-	// the HTTP status code applicable to this problem, expressed as a string value.
-	Status *string
+	// the HTTP status code applicable to this problem.
+	Status int
 	// an application-specific error code, expressed as a string value.
 	Code string
 	// a human-readable explanation specific to this occurrence of the problem.
-	Detail string
-	// a meta object containing non-standard meta-information about the error.
-	Meta map[string]interface{}
+	Message string
 }
 
 // Error returns "error".
 func (e *Error) Error() string {
 	return "error"
+}
+
+// NewNotFound initilializes a Error struct reference from a goa.Error
+func NewNotFound(err goa.Error) *Error {
+	return &Error{
+		ID:      err.ID(),
+		Status:  int(err.Status()),
+		Code:    "not_found",
+		Message: err.Message(),
+	}
+}
+
+// NewBadRequest initilializes a Error struct reference from a goa.Error
+func NewBadRequest(err goa.Error) *Error {
+	return &Error{
+		ID:      err.ID(),
+		Status:  int(err.Status()),
+		Code:    "bad_request",
+		Message: err.Message(),
+	}
 }

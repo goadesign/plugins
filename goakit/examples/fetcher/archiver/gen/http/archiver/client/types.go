@@ -3,13 +3,13 @@
 // archiver HTTP client types
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/client/archiver/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
 
 package client
 
 import (
 	goa "goa.design/goa"
-	archiver "goa.design/plugins/goakit/examples/client/archiver/gen/archiver"
+	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 )
 
 // ArchiveRequestBody is the type of the "archiver" service "archive" endpoint
@@ -48,14 +48,12 @@ type ReadResponseBody struct {
 type ReadNotFoundResponseBody struct {
 	// a unique identifier for this particular occurrence of the problem.
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	// the HTTP status code applicable to this problem, expressed as a string value.
-	Status *string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
+	// the HTTP status code applicable to this problem.
+	Status *int `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
 	// an application-specific error code, expressed as a string value.
 	Code *string `form:"code,omitempty" json:"code,omitempty" xml:"code,omitempty"`
 	// a human-readable explanation specific to this occurrence of the problem.
-	Detail *string `form:"detail,omitempty" json:"detail,omitempty" xml:"detail,omitempty"`
-	// a meta object containing non-standard meta-information about the error.
-	Meta map[string]interface{} `form:"meta,omitempty" json:"meta,omitempty" xml:"meta,omitempty"`
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
 }
 
 // ReadBadRequestResponseBody is the type of the "archiver" service "read"
@@ -63,14 +61,12 @@ type ReadNotFoundResponseBody struct {
 type ReadBadRequestResponseBody struct {
 	// a unique identifier for this particular occurrence of the problem.
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	// the HTTP status code applicable to this problem, expressed as a string value.
-	Status *string `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
+	// the HTTP status code applicable to this problem.
+	Status *int `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
 	// an application-specific error code, expressed as a string value.
 	Code *string `form:"code,omitempty" json:"code,omitempty" xml:"code,omitempty"`
 	// a human-readable explanation specific to this occurrence of the problem.
-	Detail *string `form:"detail,omitempty" json:"detail,omitempty" xml:"detail,omitempty"`
-	// a meta object containing non-standard meta-information about the error.
-	Meta map[string]interface{} `form:"meta,omitempty" json:"meta,omitempty" xml:"meta,omitempty"`
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
 }
 
 // NewArchiveRequestBody builds the HTTP request body from the payload of the
@@ -108,16 +104,10 @@ func NewReadArchiveMediaOK(body *ReadResponseBody) *archiver.ArchiveMedia {
 // NewReadNotFound builds a archiver service read endpoint not_found error.
 func NewReadNotFound(body *ReadNotFoundResponseBody) *archiver.Error {
 	v := &archiver.Error{
-		ID:     *body.ID,
-		Status: body.Status,
-		Code:   *body.Code,
-		Detail: *body.Detail,
-	}
-	v.Meta = make(map[string]interface{}, len(body.Meta))
-	for key, val := range body.Meta {
-		tk := key
-		tv := val
-		v.Meta[tk] = tv
+		ID:      *body.ID,
+		Status:  *body.Status,
+		Code:    *body.Code,
+		Message: *body.Message,
 	}
 	return v
 }
@@ -125,16 +115,10 @@ func NewReadNotFound(body *ReadNotFoundResponseBody) *archiver.Error {
 // NewReadBadRequest builds a archiver service read endpoint bad_request error.
 func NewReadBadRequest(body *ReadBadRequestResponseBody) *archiver.Error {
 	v := &archiver.Error{
-		ID:     *body.ID,
-		Status: body.Status,
-		Code:   *body.Code,
-		Detail: *body.Detail,
-	}
-	v.Meta = make(map[string]interface{}, len(body.Meta))
-	for key, val := range body.Meta {
-		tk := key
-		tv := val
-		v.Meta[tk] = tv
+		ID:      *body.ID,
+		Status:  *body.Status,
+		Code:    *body.Code,
+		Message: *body.Message,
 	}
 	return v
 }
@@ -191,8 +175,11 @@ func (body *ReadNotFoundResponseBody) Validate() (err error) {
 	if body.Code == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("code", "body"))
 	}
-	if body.Detail == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("detail", "body"))
+	if body.Status == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
+	}
+	if body.Message == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
 	}
 	return
 }
@@ -205,8 +192,11 @@ func (body *ReadBadRequestResponseBody) Validate() (err error) {
 	if body.Code == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("code", "body"))
 	}
-	if body.Detail == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("detail", "body"))
+	if body.Status == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
+	}
+	if body.Message == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
 	}
 	return
 }
