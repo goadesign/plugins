@@ -72,7 +72,7 @@ implements the "eval.Root" interface), for example:
 	}
 
 The [eval](https://godoc.org/goa.design/goa/codegen/eval) package contains a
-number of functions that can be leveraged to implement the DSL such error
+number of functions that can be leveraged to implement the DSL such as error
 reporting functions.
 
 The plugin design root object is then given to the plugin Generate function (if
