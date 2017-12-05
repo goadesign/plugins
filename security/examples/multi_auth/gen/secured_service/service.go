@@ -7,7 +7,9 @@
 
 package securedservice
 
-import "context"
+import (
+	"context"
+)
 
 // The secured service exposes endpoints that require valid authorization
 // credentials.

@@ -50,6 +50,9 @@ func EncodeSigninRequest(encoder func(*http.Request) goahttp.Encoder) func(*http
 // DecodeSigninResponse returns a decoder for responses returned by the
 // secured_service signin endpoint. restoreBody controls whether the response
 // body should be restored after having been read.
+// DecodeSigninResponse may return the following error types:
+//	- *securedservice.Unauthorized: http.StatusUnauthorized
+//	- error: generic transport error.
 func DecodeSigninResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {
@@ -92,7 +95,7 @@ func DecodeSigninResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 				return nil, fmt.Errorf("invalid response: %s", err)
 			}
 
-			return NewSigninUnauthorized(&body), nil
+			return nil, NewSigninUnauthorized(&body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))
@@ -120,6 +123,11 @@ func EncodeSecureRequest(encoder func(*http.Request) goahttp.Encoder) func(*http
 		if !ok {
 			return goahttp.ErrInvalidType("secured_service", "secure", "*securedservice.SecurePayload", v)
 		}
+		values := req.URL.Query()
+		if p.Fail != nil {
+			values.Add("fail", fmt.Sprintf("%v", *p.Fail))
+		}
+		req.URL.RawQuery = values.Encode()
 		body := NewSecureRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
 			return goahttp.ErrEncodingError("secured_service", "secure", err)
@@ -184,6 +192,11 @@ func EncodeDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) func
 		if !ok {
 			return goahttp.ErrInvalidType("secured_service", "doubly_secure", "*securedservice.DoublySecurePayload", v)
 		}
+		values := req.URL.Query()
+		if p.Key != nil {
+			values.Add("k", *p.Key)
+		}
+		req.URL.RawQuery = values.Encode()
 		body := NewDoublySecureRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
 			return goahttp.ErrEncodingError("secured_service", "doubly_secure", err)

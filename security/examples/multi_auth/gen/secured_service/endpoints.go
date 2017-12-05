@@ -13,17 +13,16 @@ import (
 	goa "goa.design/goa"
 )
 
-type (
-	// Endpoints wraps the secured_service service endpoints.
-	Endpoints struct {
-		Signin           goa.Endpoint
-		Secure           goa.Endpoint
-		DoublySecure     goa.Endpoint
-		AlsoDoublySecure goa.Endpoint
-	}
-)
+// Endpoints wraps the "secured_service" service endpoints.
+type Endpoints struct {
+	Signin           goa.Endpoint
+	Secure           goa.Endpoint
+	DoublySecure     goa.Endpoint
+	AlsoDoublySecure goa.Endpoint
+}
 
-// NewEndpoints wraps the methods of a secured_service service with endpoints.
+// NewEndpoints wraps the methods of the "secured_service" service with
+// endpoints.
 func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
 		Signin:           NewSigninEndpoint(s),
@@ -33,8 +32,8 @@ func NewEndpoints(s Service) *Endpoints {
 	}
 }
 
-// NewSigninEndpoint returns an endpoint function that calls method "signin" of
-// service "secured_service".
+// NewSigninEndpoint returns an endpoint function that calls the method
+// "signin" of service "secured_service".
 func NewSigninEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*SigninPayload)
@@ -42,8 +41,8 @@ func NewSigninEndpoint(s Service) goa.Endpoint {
 	}
 }
 
-// NewSecureEndpoint returns an endpoint function that calls method "secure" of
-// service "secured_service".
+// NewSecureEndpoint returns an endpoint function that calls the method
+// "secure" of service "secured_service".
 func NewSecureEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*SecurePayload)
@@ -51,7 +50,7 @@ func NewSecureEndpoint(s Service) goa.Endpoint {
 	}
 }
 
-// NewDoublySecureEndpoint returns an endpoint function that calls method
+// NewDoublySecureEndpoint returns an endpoint function that calls the method
 // "doubly_secure" of service "secured_service".
 func NewDoublySecureEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
@@ -60,8 +59,8 @@ func NewDoublySecureEndpoint(s Service) goa.Endpoint {
 	}
 }
 
-// NewAlsoDoublySecureEndpoint returns an endpoint function that calls method
-// "also_doubly_secure" of service "secured_service".
+// NewAlsoDoublySecureEndpoint returns an endpoint function that calls the
+// method "also_doubly_secure" of service "secured_service".
 func NewAlsoDoublySecureEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*AlsoDoublySecurePayload)

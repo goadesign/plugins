@@ -172,20 +172,21 @@ func Generate(files []*codegen.File) {
 					}
 				}
 			}
-			if len(schemes) > 0 {
-				secureData := &SecureDecoderData{
-					SecureRequestDecoder: "Secure" + data.RequestDecoder,
-					RequestDecoder:       data.RequestDecoder,
-					PayloadType:          data.Payload.Ref,
-					Schemes:              schemes,
-				}
-				f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
-					Name:    "secure-request-decoder",
-					Source:  authDecoderT,
-					Data:    secureData,
-					FuncMap: codegen.TemplateFuncs(),
-				})
+			if len(schemes) == 0 {
+				continue
 			}
+			secureData := &SecureDecoderData{
+				SecureRequestDecoder: "Secure" + data.RequestDecoder,
+				RequestDecoder:       data.RequestDecoder,
+				PayloadType:          data.Payload.Ref,
+				Schemes:              schemes,
+			}
+			f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
+				Name:    "secure-request-decoder",
+				Source:  authDecoderT,
+				Data:    secureData,
+				FuncMap: codegen.TemplateFuncs(),
+			})
 		}
 	}
 }
