@@ -176,7 +176,7 @@ func DecodeSecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 // path set to call the "secured_service" service "doubly_secure" endpoint
 func (c *Client) BuildDoublySecureRequest(v interface{}) (*http.Request, error) {
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: DoublySecureSecuredServicePath()}
-	req, err := http.NewRequest("GET", u.String(), nil)
+	req, err := http.NewRequest("PUT", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("secured_service", "doubly_secure", u.String(), err)
 	}

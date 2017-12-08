@@ -114,7 +114,7 @@ var _ = Service("secured_service", func() {
 		})
 		Error("unauthorized", String)
 		HTTP(func() {
-			GET("/secure")
+			PUT("/secure")
 
 			Param("key:k")
 

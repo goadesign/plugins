@@ -112,6 +112,9 @@ func main() {
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: *addr, Handler: handler}
 	go func() {
+		for _, m := range securedserviceServer.Mounts {
+			logger.Printf("[INFO] service %q method %q mounted on %s %s", securedserviceServer.Service(), m.Method, m.Verb, m.Pattern)
+		}
 		logger.Printf("[INFO] listening on %s", *addr)
 		errc <- srv.ListenAndServe()
 	}()

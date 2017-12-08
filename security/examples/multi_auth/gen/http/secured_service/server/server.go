@@ -18,10 +18,22 @@ import (
 
 // Server lists the secured_service service endpoint HTTP handlers.
 type Server struct {
+	Mounts           []*MountPoint
 	Signin           http.Handler
 	Secure           http.Handler
 	DoublySecure     http.Handler
 	AlsoDoublySecure http.Handler
+}
+
+// MountPoint holds information about the mounted endpoints.
+type MountPoint struct {
+	// Method is the name of the service method served by the mounted HTTP handler.
+	Method string
+	// Verb is the HTTP method used to match requests to the mounted handler.
+	Verb string
+	// Pattern is the HTTP request path pattern used to match requests to the
+	// mounted handler.
+	Pattern string
 }
 
 // New instantiates HTTP handlers for all the secured_service service endpoints.
@@ -32,12 +44,21 @@ func New(
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
 ) *Server {
 	return &Server{
+		Mounts: []*MountPoint{
+			{"Signin", "POST", "/signin"},
+			{"Secure", "GET", "/secure"},
+			{"DoublySecure", "PUT", "/secure"},
+			{"AlsoDoublySecure", "POST", "/secure"},
+		},
 		Signin:           NewSigninHandler(e.Signin, mux, dec, enc),
 		Secure:           NewSecureHandler(e.Secure, mux, dec, enc),
 		DoublySecure:     NewDoublySecureHandler(e.DoublySecure, mux, dec, enc),
 		AlsoDoublySecure: NewAlsoDoublySecureHandler(e.AlsoDoublySecure, mux, dec, enc),
 	}
 }
+
+// Service returns the name of the service served.
+func (s *Server) Service() string { return "secured_service" }
 
 // Mount configures the mux to serve the secured_service endpoints.
 func Mount(mux goahttp.Muxer, h *Server) {
@@ -68,7 +89,7 @@ func NewSigninHandler(
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
 ) http.Handler {
 	var (
-		decodeRequest  = DecodeSigninRequest(mux, dec)
+		decodeRequest  = SecureDecodeSigninRequest(mux, dec)
 		encodeResponse = EncodeSigninResponse(enc)
 		encodeError    = EncodeSigninError(enc)
 	)
@@ -114,7 +135,7 @@ func NewSecureHandler(
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
 ) http.Handler {
 	var (
-		decodeRequest  = DecodeSecureRequest(mux, dec)
+		decodeRequest  = SecureDecodeSecureRequest(mux, dec)
 		encodeResponse = EncodeSecureResponse(enc)
 		encodeError    = goahttp.ErrorEncoder(enc)
 	)
@@ -148,7 +169,7 @@ func MountDoublySecureHandler(mux goahttp.Muxer, h http.Handler) {
 			h.ServeHTTP(w, r)
 		}
 	}
-	mux.Handle("GET", "/secure", f)
+	mux.Handle("PUT", "/secure", f)
 }
 
 // NewDoublySecureHandler creates a HTTP handler which loads the HTTP request
@@ -160,7 +181,7 @@ func NewDoublySecureHandler(
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
 ) http.Handler {
 	var (
-		decodeRequest  = DecodeDoublySecureRequest(mux, dec)
+		decodeRequest  = SecureDecodeDoublySecureRequest(mux, dec)
 		encodeResponse = EncodeDoublySecureResponse(enc)
 		encodeError    = goahttp.ErrorEncoder(enc)
 	)
@@ -207,7 +228,7 @@ func NewAlsoDoublySecureHandler(
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
 ) http.Handler {
 	var (
-		decodeRequest  = DecodeAlsoDoublySecureRequest(mux, dec)
+		decodeRequest  = SecureDecodeAlsoDoublySecureRequest(mux, dec)
 		encodeResponse = EncodeAlsoDoublySecureResponse(enc)
 		encodeError    = goahttp.ErrorEncoder(enc)
 	)

@@ -180,6 +180,8 @@ func Generate(files []*codegen.File) {
 				RequestDecoder:       data.RequestDecoder,
 				PayloadType:          data.Payload.Ref,
 				Schemes:              schemes,
+				ServiceName:          data.ServiceName,
+				MethodName:           data.Method.Name,
 			}
 			f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
 				Name:    "secure-request-decoder",
@@ -208,7 +210,7 @@ func findSecurityField(p *goadesign.MappedAttributeExpr, tag string) (string, st
 }
 
 // input: SecureDecoderData
-const authDecoderT = `{{ printf "%s returns a decoder for requests sent to the %s %s endpoint that is security scheme aware." .RequestDecoder .ServiceName .MethodName | comment }}
+const authDecoderT = `{{ printf "%s returns a decoder for requests sent to the %s %s endpoint that is security scheme aware." .SecureRequestDecoder .ServiceName .MethodName | comment }}
 func {{ .SecureRequestDecoder }}(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
 	rawDecoder := {{ .RequestDecoder }}(mux, decoder)
 	return func(r *http.Request) (interface{}, error) {

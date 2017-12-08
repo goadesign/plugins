@@ -37,7 +37,7 @@ This plugins adds the following functions to the goa DSL:
   top level functions that describe security schemes.
 * `Security` is used in `API`, `Service` and `Method` DSLs to define the
   security schemes that apply globally to all the endpoints defined in the
-  design (`API`), to all the endpoints in aservice (`Service`) or to a specific
+  design (`API`), to all the endpoints in a service (`Service`) or to a specific
   endpoint (`Method`). The functions also describe the scopes that must be
   provided in the authorization credentials if the scheme supports it (JWT or
   OAuth2).
@@ -100,13 +100,13 @@ func SecuredJWTMethod(ctx context.Context, p *SecuredMethodPayload) error {
        // design expression.
        return &service.Unauthorized{Message: err.Error()}
     }
-    
+
     // 2. Extract scopes from security requirements stored in context.
     var reqs *security.Requirements
     if rs := context.Value(ctx, security.ContextKey); rs != nil {
         reqs := rs.([]*security.Requirements)
     }
-    
+
     // 3. Validate JWT claims against required scopes.
     //    At least one requirement must be validated.
     var err error
@@ -134,7 +134,7 @@ requests. A requirement is thus an "and-ed" list of security schemes:
 Method("secured", func() {
     // Require both basic auth and API key
     Security(BasicAuth, APIKey)
-    
+
     ...
 }
 ```
@@ -159,7 +159,7 @@ Method("secured", func() {
     Security(JWT, func() {
         Scope("api:read")
     })
-    
+
     ...
 }
 ```
