@@ -68,7 +68,7 @@ func NewClient(
 // service signin server.
 func (c *Client) Signin() goa.Endpoint {
 	var (
-		encodeRequest  = EncodeSigninRequest(c.encoder)
+		encodeRequest  = SecureEncodeSigninRequest(c.encoder)
 		decodeResponse = DecodeSigninResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
@@ -94,7 +94,7 @@ func (c *Client) Signin() goa.Endpoint {
 // service secure server.
 func (c *Client) Secure() goa.Endpoint {
 	var (
-		encodeRequest  = EncodeSecureRequest(c.encoder)
+		encodeRequest  = SecureEncodeSecureRequest(c.encoder)
 		decodeResponse = DecodeSecureResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
@@ -120,7 +120,7 @@ func (c *Client) Secure() goa.Endpoint {
 // secured_service service doubly_secure server.
 func (c *Client) DoublySecure() goa.Endpoint {
 	var (
-		encodeRequest  = EncodeDoublySecureRequest(c.encoder)
+		encodeRequest  = SecureEncodeDoublySecureRequest(c.encoder)
 		decodeResponse = DecodeDoublySecureResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
@@ -146,7 +146,7 @@ func (c *Client) DoublySecure() goa.Endpoint {
 // secured_service service also_doubly_secure server.
 func (c *Client) AlsoDoublySecure() goa.Endpoint {
 	var (
-		encodeRequest  = EncodeAlsoDoublySecureRequest(c.encoder)
+		encodeRequest  = SecureEncodeAlsoDoublySecureRequest(c.encoder)
 		decodeResponse = DecodeAlsoDoublySecureResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {

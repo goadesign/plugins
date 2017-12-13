@@ -350,8 +350,8 @@ func NoSecurity() {
 //    Method("login", func() {
 //        Security(Basic)
 //        Payload(func() {
-//            Username("user")
-//            Password("pass")
+//            Username("user", String)
+//            Password("pass", String)
 //        })
 //        HTTP(func() {
 //            // The "Authorization" header is defined implicitly.
@@ -378,8 +378,8 @@ func Username(name string, args ...interface{}) {
 //    Method("login", func() {
 //        Security(Basic)
 //        Payload(func() {
-//            Username("user")
-//            Password("pass")
+//            Username("user", String)
+//            Password("pass", String)
 //        })
 //        HTTP(func() {
 //            // The "Authorization" header is defined implicitly.
@@ -584,8 +584,6 @@ func ImplicitFlow(authorizationURL, refreshURL string) {
 		RefreshURL:       refreshURL,
 	})
 }
-
-// PasswordFlow defines a Resource Owner Password Credentials OAuth2 flow.  Use within an OAuth2Security expression.
 
 // PasswordFlow defines an Resource Owner Password Credentials OAuth2 flow as
 // described in section 1.3.3 of RFC 6749.

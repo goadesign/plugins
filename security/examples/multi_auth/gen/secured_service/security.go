@@ -83,10 +83,6 @@ func SecureDoublySecure(ep goa.Endpoint) goa.Endpoint {
 				&security.Scheme{
 					Kind: security.SchemeKind(3),
 					Name: "api_key",
-					APIKey: &security.Key{
-						In:   "header",
-						Name: "key",
-					},
 				},
 			},
 		},
@@ -113,10 +109,6 @@ func SecureAlsoDoublySecure(ep goa.Endpoint) goa.Endpoint {
 				&security.Scheme{
 					Kind: security.SchemeKind(3),
 					Name: "api_key",
-					APIKey: &security.Key{
-						In:   "header",
-						Name: "key",
-					},
 				},
 			},
 		},

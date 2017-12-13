@@ -27,7 +27,7 @@ var APIKeyAuth = APIKeySecurity("api_key", func() {
 	Description("Secures endpoint by requiring an API key.")
 })
 
-// Basic defines a security scheme using basic authentication. The scheme
+// BasicAuth defines a security scheme using basic authentication. The scheme
 // protects the "signin" action used to create JWTs.
 var BasicAuth = BasicAuthSecurity("basic", func() {
 	Description("Basic authentication used to authenticate security principal during signin")

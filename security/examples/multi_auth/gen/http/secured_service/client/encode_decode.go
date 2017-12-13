@@ -308,3 +308,62 @@ func DecodeAlsoDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder
 		}
 	}
 }
+
+// SecureEncodeSigninRequest returns an encoder for requests sent to the
+// secured_service signin endpoint that is security scheme aware.
+func SecureEncodeSigninRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeSigninRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*securedservice.SigninPayload)
+		req.SetBasicAuth(*payload.Username, *payload.Password)
+		return nil
+	}
+}
+
+// SecureEncodeSecureRequest returns an encoder for requests sent to the
+// secured_service secure endpoint that is security scheme aware.
+func SecureEncodeSecureRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeSecureRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*securedservice.SecurePayload)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
+		return nil
+	}
+}
+
+// SecureEncodeDoublySecureRequest returns an encoder for requests sent to the
+// secured_service doubly_secure endpoint that is security scheme aware.
+func SecureEncodeDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeDoublySecureRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*securedservice.DoublySecurePayload)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
+		req.URL.Query().Set("key", *payload.Key)
+		return nil
+	}
+}
+
+// SecureEncodeAlsoDoublySecureRequest returns an encoder for requests sent to
+// the secured_service also_doubly_secure endpoint that is security scheme
+// aware.
+func SecureEncodeAlsoDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeAlsoDoublySecureRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*securedservice.AlsoDoublySecurePayload)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
+		req.Header.Set("key", *payload.Key)
+		return nil
+	}
+}

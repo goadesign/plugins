@@ -27,8 +27,6 @@ with it.
 The plugin also modifies the generated OpenAPI specs to include security
 information.
 
-At this time the plugin does not have any effect on generated client code.
-
 ## Design
 
 This plugins adds the following functions to the goa DSL:

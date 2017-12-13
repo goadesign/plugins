@@ -71,9 +71,9 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 					files = append(files, f)
 				}
 			}
-			http.Generate(files)
 		}
 	}
+	http.Generate(files)
 	return files, nil
 }
 
@@ -154,7 +154,7 @@ func BuildSecureServiceData(svc *goadesign.ServiceExpr) *ServiceData {
 			FieldName:        varn,
 			ServiceName:      svc.Name,
 			MethodName:       m.Name,
-			Requirements:     design.Requirements(svc.Name, m.Name),
+			Requirements:     reqs,
 		})
 	}
 	return data
@@ -188,12 +188,6 @@ const secureEndpointContextT = `{{ printf "%s returns an endpoint function which
 						{{- if .Scopes }}
 						Scopes: []string{ {{- range $scheme.Scopes }}{{ printf "%q" .Name }}, {{ end }} },
 						{{- end }}
-						{{- if .In }}
-						APIKey: &security.Key{
-							In: {{ printf "%q" .In }},
-							Name: {{ printf "%q" .Name }},
-						},
-						{{- end }}
 						{{- if .Flows }}
 						Flows: []*security.OAuthFlow{
 							{{- range $flow := .Flows }}
@@ -206,7 +200,7 @@ const secureEndpointContextT = `{{ printf "%s returns an endpoint function which
 								TokenURL: {{ printf "%q" .TokenURL }},
 								{{- end }}
 								{{- if .RefreshURL }}
-								RefreshURL: {{ printf "%q" .RefreshURL }}
+								RefreshURL: {{ printf "%q" .RefreshURL }},
 								{{- end }}
 							},
 							{{- end }}

@@ -29,8 +29,6 @@ type (
 		Kind SchemeKind
 		// Name is the scheme name as defined in the design.
 		Name string
-		// APIKey describes the API key if Kind is APIKeyKind.
-		APIKey *Key
 		// Scopes list the scopes that are defined by the scheme.
 		// Applies to JWT and OAuth2 schemes only. Note: this lists the
 		// scopes that are possible - not the scopes actually provided
@@ -40,14 +38,6 @@ type (
 		// Flows provide information specific to the OAuth2 security
 		// scheme.
 		Flows []*OAuthFlow
-	}
-
-	// Key describes an API key.
-	Key struct {
-		// In is the location of the key: header or query string.
-		In string
-		// Name is the name of the header or query string.
-		Name string
 	}
 
 	// OAuthFlow provide information about a OAuth2 security scheme.
