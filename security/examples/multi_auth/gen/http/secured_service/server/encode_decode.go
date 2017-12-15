@@ -252,7 +252,7 @@ func SecureDecodeDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Reque
 		}
 		token := strings.TrimPrefix(h, "Bearer ")
 		payload.Token = &token
-		key := r.URL.Query().Get("key")
+		key := r.URL.Query().Get("k")
 		if key == "" {
 			return p, nil
 		}
@@ -278,7 +278,7 @@ func SecureDecodeAlsoDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.R
 		}
 		token := strings.TrimPrefix(h, "Bearer ")
 		payload.Token = &token
-		key := r.Header.Get("key")
+		key := r.Header.Get("Authorization")
 		if key == "" {
 			return p, nil
 		}

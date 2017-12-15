@@ -347,7 +347,7 @@ func SecureEncodeDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder
 		}
 		payload := v.(*securedservice.DoublySecurePayload)
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
-		req.URL.Query().Set("key", *payload.Key)
+		req.URL.Query().Set("k", *payload.Key)
 		return nil
 	}
 }
@@ -363,7 +363,7 @@ func SecureEncodeAlsoDoublySecureRequest(encoder func(*http.Request) goahttp.Enc
 		}
 		payload := v.(*securedservice.AlsoDoublySecurePayload)
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
-		req.Header.Set("key", *payload.Key)
+		req.Header.Set("Authorization", *payload.Key)
 		return nil
 	}
 }

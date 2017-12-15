@@ -9,7 +9,9 @@ import (
 	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
 	"goa.design/plugins/security/design"
-	"goa.design/plugins/security/http"
+
+	// Initializes the HTTP generator
+	_ "goa.design/plugins/security/http"
 )
 
 type (
@@ -73,7 +75,6 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 			}
 		}
 	}
-	http.Generate(files)
 	return files, nil
 }
 

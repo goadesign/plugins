@@ -6,7 +6,9 @@ import (
 
 	"goa.design/goa/codegen"
 	goadesign "goa.design/goa/design"
+	"goa.design/goa/eval"
 	httpcodegen "goa.design/goa/http/codegen"
+	httpdesign "goa.design/goa/http/design"
 	"goa.design/plugins/security/design"
 )
 
@@ -71,22 +73,34 @@ type SchemeData struct {
 	Scheme *design.SchemeExpr
 }
 
-// Generate produces HTTP decoders and encoders that initialize the
-// security attributes.
-func Generate(files []*codegen.File) {
-	for _, f := range files {
-		secureDecoders(f)
-		secureEncoders(f)
-	}
+// Register the plugin HTTP Generator function.
+func init() {
+	codegen.RegisterPlugin("gen", Generate)
 }
 
-// secureDecoders initializes the security attributes for HTTP decoders.
-func secureDecoders(f *codegen.File) {
+// Generate produces HTTP decoders and encoders that initialize the
+// security attributes.
+func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
+	for _, root := range roots {
+		switch r := root.(type) {
+		case *httpdesign.RootExpr:
+			for _, f := range files {
+				SecureRequestDecoders(r, f)
+				SecureRequestEncoders(r, f)
+			}
+		}
+	}
+	return files, nil
+}
+
+// SecureRequestDecoders initializes the security attributes for HTTP request decoders.
+func SecureRequestDecoders(r *httpdesign.RootExpr, f *codegen.File) {
 	needsImport := false
 	for _, s := range f.Section("server-handler-init") {
 		needsImport = true
 		data := s.Data.(*httpcodegen.EndpointData)
-		if len(design.Requirements(data.ServiceName, data.Method.Name)) > 0 {
+		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
+		if len(design.Requirements(e.Service.Name(), e.Name())) > 0 {
 			s.Source = strings.Replace(s.Source, "{{ .RequestDecoder }}", "Secure{{ .RequestDecoder }}", -1)
 		}
 	}
@@ -97,7 +111,8 @@ func secureDecoders(f *codegen.File) {
 	var schemes []*SchemeData
 	for _, s := range f.Section("request-decoder") {
 		data := s.Data.(*httpcodegen.EndpointData)
-		schemes = getSchemesForEndpoint(data)
+		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
+		schemes = getSchemesForEndpoint(e)
 		if len(schemes) == 0 {
 			continue
 		}
@@ -117,13 +132,14 @@ func secureDecoders(f *codegen.File) {
 	}
 }
 
-// secureEncoders initializes the security attributes for HTTP encoders.
-func secureEncoders(f *codegen.File) {
+// SecureRequestEncoders initializes the security attributes for HTTP encoders.
+func SecureRequestEncoders(r *httpdesign.RootExpr, f *codegen.File) {
 	needsImport := false
 	for _, s := range f.Section("client-endpoint-init") {
 		needsImport = true
 		data := s.Data.(*httpcodegen.EndpointData)
-		if len(design.Requirements(data.ServiceName, data.Method.Name)) > 0 {
+		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
+		if len(design.Requirements(e.Service.Name(), e.Name())) > 0 {
 			s.Source = strings.Replace(s.Source, "{{ .RequestEncoder }}", "Secure{{ .RequestEncoder }}", -1)
 		}
 	}
@@ -134,7 +150,8 @@ func secureEncoders(f *codegen.File) {
 	var schemes []*SchemeData
 	for _, s := range f.Section("request-encoder") {
 		data := s.Data.(*httpcodegen.EndpointData)
-		schemes = getSchemesForEndpoint(data)
+		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
+		schemes = getSchemesForEndpoint(e)
 		if len(schemes) == 0 {
 			continue
 		}
@@ -155,18 +172,17 @@ func secureEncoders(f *codegen.File) {
 }
 
 // getSchemesForEndpoint collects the security schemes for the given endpoint.
-func getSchemesForEndpoint(data *httpcodegen.EndpointData) []*SchemeData {
-	payload := goadesign.Root.Service(data.ServiceName).Method(data.Method.Name).Payload
+func getSchemesForEndpoint(e *httpdesign.EndpointExpr) []*SchemeData {
+	payload := e.MethodExpr.Payload
 	var schemes []*SchemeData
-	for _, req := range design.Requirements(data.ServiceName, data.Method.Name) {
+	for _, req := range design.Requirements(e.Service.Name(), e.Name()) {
 		for _, s := range req.Schemes {
 			scheme := *s
 			switch scheme.Kind {
 			case design.BasicAuthKind:
 				if goadesign.IsObject(payload.Type) {
-					matt := goadesign.NewMappedAttributeExpr(payload)
-					userAtt, user := findSecurityField(matt, "security:username")
-					passAtt, pass := findSecurityField(matt, "security:password")
+					userAtt, user := findSecurityField(payload, "security:username")
+					passAtt, pass := findSecurityField(payload, "security:password")
 					schemes = append(schemes, &SchemeData{
 						UsernameField:   user,
 						UsernamePointer: payload.IsPrimitivePointer(userAtt, true),
@@ -178,24 +194,18 @@ func getSchemesForEndpoint(data *httpcodegen.EndpointData) []*SchemeData {
 
 			case design.APIKeyKind:
 				if goadesign.IsObject(payload.Type) {
-					matt := goadesign.NewMappedAttributeExpr(payload)
-					keyAtt, key := findSecurityField(matt, "security:apikey:"+scheme.SchemeName)
+					keyAtt, key := findSecurityField(payload, "security:apikey:"+scheme.SchemeName)
 					if key == "" {
 						continue
 					}
-					scheme.Name = matt.ElemName(keyAtt)
-					inHeader := false
-					for _, h := range data.Payload.Request.Headers {
-						if h.AttributeName == keyAtt {
-							inHeader = true
-							break
-						}
-					}
-					if inHeader {
-						scheme.In = "header"
-					} else {
+					name := findMappedName(e.AllParams(), keyAtt)
+					if name != "" {
 						scheme.In = "query"
+					} else {
+						name = findMappedName(e.MappedHeaders(), keyAtt)
+						scheme.In = "header"
 					}
+					scheme.Name = name
 					schemes = append(schemes, &SchemeData{
 						CredField:   key,
 						CredPointer: payload.IsPrimitivePointer(keyAtt, true),
@@ -205,8 +215,7 @@ func getSchemesForEndpoint(data *httpcodegen.EndpointData) []*SchemeData {
 
 			case design.JWTKind:
 				if goadesign.IsObject(payload.Type) {
-					matt := goadesign.NewMappedAttributeExpr(payload)
-					keyAtt, key := findSecurityField(matt, "security:token")
+					keyAtt, key := findSecurityField(payload, "security:token")
 					if key == "" {
 						continue
 					}
@@ -219,10 +228,19 @@ func getSchemesForEndpoint(data *httpcodegen.EndpointData) []*SchemeData {
 
 			case design.OAuth2Kind:
 				if goadesign.IsObject(payload.Type) {
-					matt := goadesign.NewMappedAttributeExpr(payload)
-					keyAtt, key := findSecurityField(matt, "security:accesstoken")
+					keyAtt, key := findSecurityField(payload, "security:accesstoken")
 					if key == "" {
 						continue
+					}
+					name := findMappedName(e.AllParams(), keyAtt)
+					if name != "" {
+						scheme.In = "query"
+					} else {
+						name = findMappedName(e.MappedHeaders(), keyAtt)
+						scheme.In = "header"
+					}
+					if name != "" {
+						scheme.Name = name
 					}
 					schemes = append(schemes, &SchemeData{
 						CredField:   key,
@@ -239,17 +257,30 @@ func getSchemesForEndpoint(data *httpcodegen.EndpointData) []*SchemeData {
 	return schemes
 }
 
+// findMappedName returns the mapped name for the given attribute name.
+func findMappedName(p *goadesign.MappedAttributeExpr, keyAtt string) string {
+	obj := goadesign.AsObject(p.Type)
+	if obj == nil {
+		return ""
+	}
+	for _, at := range *obj {
+		if at.Name == keyAtt {
+			return p.ElemName(keyAtt)
+		}
+	}
+	return ""
+}
+
 // findSecurityField returns the name and corresponding field name of child
 // attribute of p with the given tag if p is an object.
-func findSecurityField(p *goadesign.MappedAttributeExpr, tag string) (string, string) {
-	obj := goadesign.AsObject(p.Type)
+func findSecurityField(a *goadesign.AttributeExpr, tag string) (string, string) {
+	obj := goadesign.AsObject(a.Type)
 	if obj == nil {
 		return "", ""
 	}
 	for _, at := range *obj {
 		if _, ok := at.Attribute.Metadata[tag]; ok {
-			n := p.ElemName(at.Name)
-			return at.Name, codegen.Goify(n, true)
+			return at.Name, codegen.Goify(at.Name, true)
 		}
 	}
 	return "", ""
