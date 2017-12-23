@@ -307,7 +307,7 @@ func Security(args ...interface{}) {
 	case *goadesign.ServiceExpr:
 		sec := &design.ServiceSecurityExpr{SecurityExpr: security, Service: actual}
 		design.Root.ServiceSecurity = append(design.Root.ServiceSecurity, sec)
-	case *goadesign.RootExpr:
+	case *goadesign.APIExpr:
 		design.Root.APISecurity = append(design.Root.APISecurity, security)
 	default:
 		eval.IncompatibleDSL()
