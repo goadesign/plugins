@@ -112,7 +112,7 @@ func SecureRequestDecoders(r *httpdesign.RootExpr, f *codegen.File) {
 	for _, s := range f.Section("request-decoder") {
 		data := s.Data.(*httpcodegen.EndpointData)
 		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
-		schemes = getSchemesForEndpoint(e)
+		schemes = computeSchemes(e)
 		if len(schemes) == 0 {
 			continue
 		}
@@ -151,7 +151,7 @@ func SecureRequestEncoders(r *httpdesign.RootExpr, f *codegen.File) {
 	for _, s := range f.Section("request-encoder") {
 		data := s.Data.(*httpcodegen.EndpointData)
 		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
-		schemes = getSchemesForEndpoint(e)
+		schemes = computeSchemes(e)
 		if len(schemes) == 0 {
 			continue
 		}
@@ -171,8 +171,8 @@ func SecureRequestEncoders(r *httpdesign.RootExpr, f *codegen.File) {
 	}
 }
 
-// getSchemesForEndpoint collects the security schemes for the given endpoint.
-func getSchemesForEndpoint(e *httpdesign.EndpointExpr) []*SchemeData {
+// computeSchemes collects the security schemes for the given endpoint.
+func computeSchemes(e *httpdesign.EndpointExpr) []*SchemeData {
 	payload := e.MethodExpr.Payload
 	var schemes []*SchemeData
 	for _, req := range design.Requirements(e.Service.Name(), e.Name()) {
@@ -198,14 +198,7 @@ func getSchemesForEndpoint(e *httpdesign.EndpointExpr) []*SchemeData {
 					if key == "" {
 						continue
 					}
-					name := findMappedName(e.AllParams(), keyAtt)
-					if name != "" {
-						scheme.In = "query"
-					} else {
-						name = findMappedName(e.MappedHeaders(), keyAtt)
-						scheme.In = "header"
-					}
-					scheme.Name = name
+					scheme.Name, scheme.In = findKey(e, keyAtt)
 					schemes = append(schemes, &SchemeData{
 						CredField:   key,
 						CredPointer: payload.IsPrimitivePointer(keyAtt, true),
@@ -232,16 +225,7 @@ func getSchemesForEndpoint(e *httpdesign.EndpointExpr) []*SchemeData {
 					if key == "" {
 						continue
 					}
-					name := findMappedName(e.AllParams(), keyAtt)
-					if name != "" {
-						scheme.In = "query"
-					} else {
-						name = findMappedName(e.MappedHeaders(), keyAtt)
-						scheme.In = "header"
-					}
-					if name != "" {
-						scheme.Name = name
-					}
+					scheme.Name, scheme.In = findKey(e, keyAtt)
 					schemes = append(schemes, &SchemeData{
 						CredField:   key,
 						CredPointer: payload.IsPrimitivePointer(keyAtt, true),
@@ -257,18 +241,16 @@ func getSchemesForEndpoint(e *httpdesign.EndpointExpr) []*SchemeData {
 	return schemes
 }
 
-// findMappedName returns the mapped name for the given attribute name.
-func findMappedName(p *goadesign.MappedAttributeExpr, keyAtt string) string {
-	obj := goadesign.AsObject(p.Type)
-	if obj == nil {
-		return ""
+// findKey finds the given key in the endpoint expression and returns the
+// transport element name and the position (header or query).
+func findKey(e *httpdesign.EndpointExpr, keyAtt string) (string, string) {
+	if n, exists := e.AllParams().FindKey(keyAtt); exists {
+		return n, "query"
+	} else if n, exists := e.MappedHeaders().FindKey(keyAtt); exists {
+		return n, "header"
+	} else {
+		return keyAtt, "header"
 	}
-	for _, at := range *obj {
-		if at.Name == keyAtt {
-			return p.ElemName(keyAtt)
-		}
-	}
-	return ""
 }
 
 // findSecurityField returns the name and corresponding field name of child
