@@ -198,7 +198,11 @@ func computeSchemes(e *httpdesign.EndpointExpr) []*SchemeData {
 					if key == "" {
 						continue
 					}
-					scheme.Name, scheme.In = findKey(e, keyAtt)
+					var name string
+					name, scheme.In = findKey(e, keyAtt)
+					if name != "" {
+						scheme.Name = name
+					}
 					schemes = append(schemes, &SchemeData{
 						CredField:   key,
 						CredPointer: payload.IsPrimitivePointer(keyAtt, true),
@@ -225,7 +229,11 @@ func computeSchemes(e *httpdesign.EndpointExpr) []*SchemeData {
 					if key == "" {
 						continue
 					}
-					scheme.Name, scheme.In = findKey(e, keyAtt)
+					var name string
+					name, scheme.In = findKey(e, keyAtt)
+					if name != "" {
+						scheme.Name = name
+					}
 					schemes = append(schemes, &SchemeData{
 						CredField:   key,
 						CredPointer: payload.IsPrimitivePointer(keyAtt, true),
@@ -249,7 +257,7 @@ func findKey(e *httpdesign.EndpointExpr, keyAtt string) (string, string) {
 	} else if n, exists := e.MappedHeaders().FindKey(keyAtt); exists {
 		return n, "header"
 	} else {
-		return keyAtt, "header"
+		return "", "header"
 	}
 }
 
