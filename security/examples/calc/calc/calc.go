@@ -6,10 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"goa.design/plugins/security/examples/calc/adder/gen/adder"
-
 	jwt "github.com/dgrijalva/jwt-go"
 	goahttp "goa.design/goa/http"
+	adder "goa.design/plugins/security/examples/calc/adder/gen/adder"
 	addercli "goa.design/plugins/security/examples/calc/adder/gen/http/adder/client"
 	"goa.design/plugins/security/examples/calc/calc/gen/calc"
 )

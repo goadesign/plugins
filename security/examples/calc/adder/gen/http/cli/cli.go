@@ -48,7 +48,7 @@ func ParseEndpoint(
 		adderAddFlags   = flag.NewFlagSet("add", flag.ExitOnError)
 		adderAddAFlag   = adderAddFlags.String("a", "REQUIRED", "Left operand")
 		adderAddBFlag   = adderAddFlags.String("b", "REQUIRED", "Right operand")
-		adderAddKeyFlag = adderAddFlags.String("key", "", "")
+		adderAddKeyFlag = adderAddFlags.String("key", "REQUIRED", "")
 	)
 	adderFlags.Usage = adderUsage
 	adderAddFlags.Usage = adderAddUsage

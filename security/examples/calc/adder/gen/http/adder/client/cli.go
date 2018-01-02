@@ -38,9 +38,7 @@ func BuildAddAddPayload(adderAddA string, adderAddB string, adderAddKey string) 
 	}
 	var key string
 	{
-		if adderAddKey != "" {
-			key = &adderAddKey
-		}
+		key = adderAddKey
 	}
 	if err != nil {
 		return nil, err
