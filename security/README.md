@@ -19,15 +19,19 @@ the service methods.
 
 ## Enabling the plugin
 
-Enable this plugin by importing its package with name `_` and its DSL package
-in the API design.
+To enable the plugin and make use of the security DSL simply import both the
+`security` and the `dsl` packages as follows:
 
 ```go
 import (
-  _ "goa.design/plugins/security"
-  . "goa.design/plugins/security/dsl"
+   _ "goa.design/plugins/security"
+   . "goa.design/plugins/security/dsl"
+   . "goa.design/goa/http/design"
 )
 ```
+
+Note the use of the blank identifier to import the security package which is
+necessary as the package is imported solely for its side-effects (initialization).
 
 ## Effects on Code Generation
 
