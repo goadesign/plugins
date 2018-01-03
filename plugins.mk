@@ -21,6 +21,7 @@ DEPEND=\
   github.com/sergi/go-diff/diffmatchpatch \
   github.com/golang/lint/golint \
   golang.org/x/tools/cmd/goimports \
+	goa.design/goa/...
 
 all: depend test lint
 
