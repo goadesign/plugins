@@ -29,11 +29,15 @@ func NewSecureEndpoints(s Service) *Endpoints {
 // the security requirements for the method "signin" of service
 // "secured_service".
 func SecureSignin(ep goa.Endpoint) goa.Endpoint {
-	reqs := make([]*security.Requirement, 1)
-	reqs[0].Schemes = make([]*security.Scheme, 1)
-	reqs[0].Schemes[0] = &security.Scheme{
-		Kind: security.SchemeKind(2),
-		Name: "basic",
+	reqs := []*security.Requirement{
+		&security.Requirement{
+			Schemes: []*security.Scheme{
+				&security.Scheme{
+					Kind: security.SchemeKind(2),
+					Name: "basic",
+				},
+			},
+		},
 	}
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		ctx = context.WithValue(ctx, security.ContextKey, reqs)
@@ -45,14 +49,18 @@ func SecureSignin(ep goa.Endpoint) goa.Endpoint {
 // the security requirements for the method "secure" of service
 // "secured_service".
 func SecureSecure(ep goa.Endpoint) goa.Endpoint {
-	reqs := make([]*security.Requirement, 1)
-	reqs[0].RequiredScopes = []string{"api:read"}
-	reqs[0].Schemes = make([]*security.Scheme, 1)
-	reqs[0].Schemes[0] = &security.Scheme{
-		Kind: security.SchemeKind(4),
-		Name: "jwt",
+	reqs := []*security.Requirement{
+		&security.Requirement{
+			RequiredScopes: []string{"api:read"},
+			Schemes: []*security.Scheme{
+				&security.Scheme{
+					Kind:   security.SchemeKind(4),
+					Name:   "jwt",
+					Scopes: []string{"api:read", "api:write"},
+				},
+			},
+		},
 	}
-	reqs[0].Schemes[0].Scopes = []string{"api:read", "api:write"}
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		ctx = context.WithValue(ctx, security.ContextKey, reqs)
 		return ep(ctx, req)
@@ -63,17 +71,21 @@ func SecureSecure(ep goa.Endpoint) goa.Endpoint {
 // context with the security requirements for the method "doubly_secure" of
 // service "secured_service".
 func SecureDoublySecure(ep goa.Endpoint) goa.Endpoint {
-	reqs := make([]*security.Requirement, 1)
-	reqs[0].RequiredScopes = []string{"api:read", "api:write"}
-	reqs[0].Schemes = make([]*security.Scheme, 2)
-	reqs[0].Schemes[0] = &security.Scheme{
-		Kind: security.SchemeKind(4),
-		Name: "jwt",
-	}
-	reqs[0].Schemes[0].Scopes = []string{"api:read", "api:write"}
-	reqs[0].Schemes[1] = &security.Scheme{
-		Kind: security.SchemeKind(3),
-		Name: "api_key",
+	reqs := []*security.Requirement{
+		&security.Requirement{
+			RequiredScopes: []string{"api:read", "api:write"},
+			Schemes: []*security.Scheme{
+				&security.Scheme{
+					Kind:   security.SchemeKind(4),
+					Name:   "jwt",
+					Scopes: []string{"api:read", "api:write"},
+				},
+				&security.Scheme{
+					Kind: security.SchemeKind(3),
+					Name: "api_key",
+				},
+			},
+		},
 	}
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		ctx = context.WithValue(ctx, security.ContextKey, reqs)
@@ -85,17 +97,21 @@ func SecureDoublySecure(ep goa.Endpoint) goa.Endpoint {
 // context with the security requirements for the method "also_doubly_secure"
 // of service "secured_service".
 func SecureAlsoDoublySecure(ep goa.Endpoint) goa.Endpoint {
-	reqs := make([]*security.Requirement, 1)
-	reqs[0].RequiredScopes = []string{"api:read", "api:write"}
-	reqs[0].Schemes = make([]*security.Scheme, 2)
-	reqs[0].Schemes[0] = &security.Scheme{
-		Kind: security.SchemeKind(4),
-		Name: "jwt",
-	}
-	reqs[0].Schemes[0].Scopes = []string{"api:read", "api:write"}
-	reqs[0].Schemes[1] = &security.Scheme{
-		Kind: security.SchemeKind(3),
-		Name: "api_key",
+	reqs := []*security.Requirement{
+		&security.Requirement{
+			RequiredScopes: []string{"api:read", "api:write"},
+			Schemes: []*security.Scheme{
+				&security.Scheme{
+					Kind:   security.SchemeKind(4),
+					Name:   "jwt",
+					Scopes: []string{"api:read", "api:write"},
+				},
+				&security.Scheme{
+					Kind: security.SchemeKind(3),
+					Name: "api_key",
+				},
+			},
+		},
 	}
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		ctx = context.WithValue(ctx, security.ContextKey, reqs)

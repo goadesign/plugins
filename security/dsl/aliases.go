@@ -1,9 +1,7 @@
 //************************************************************************//
+// Code generated with aliaser, DO NOT EDIT.
+//
 // Aliased DSL Functions
-//
-// Generated with aliaser
-//
-// The content of this file is auto-generated, DO NOT MODIFY
 //************************************************************************//
 
 package dsl
@@ -310,10 +308,143 @@ func Contact(fn func()) {
 // ContentType sets the value of the Content-Type response header. By default
 // the ID of the result type is used.
 //
-//    ContentType("application/json")
+// ContentType may appear in a ResultType or a Response expression.
+// ContentType accepts one argument: the mime type as defined by RFC 6838.
+//
+//    var _ = ResultType("application/vnd.myapp.mytype") {
+//        ContentType("application/json")
+//    }
+//
+//    var _ = Method("add", func() {
+//	  HTTP(func() {
+//            Response(OK, func() {
+//                ContentType("application/json")
+//            })
+//        })
+//    })
 //
 func ContentType(typ string) {
 	dsl.ContentType(typ)
+}
+
+// ConvertTo specifies an external type that instances of the generated struct
+// are converted into. The generated struct is equipped with a method that makes
+// it possible to instantiate the external type. The default algorithm used to
+// match the external type fields to the design attributes is as follows:
+//
+//    1. Look for an attribute with the same name as the field
+//    2. Look for an attribute with the same name as the field but with the
+//       first letter being lowercase
+//    3. Look for an attribute with a name corresponding to the snake_case
+//       version of the field name
+//
+// This algorithm does not apply if the attribute is equipped with the
+// "struct.field.external" metadata. In this case the matching is done by
+// looking up the field with a name corresponding to the value of the metadata.
+// If the value of the metadata is "-" the attribute isn't matched and no
+// conversion code is generated for it. In all other cases it is an error if no
+// match is found or if the matching field type does not correspond to the
+// attribute type.
+//
+// ConvertTo must appear in Type or ResutType.
+//
+// ConvertTo accepts one arguments: an instance of the external type.
+//
+// Example:
+//
+// Service design:
+//
+//    var Bottle = Type("bottle", func() {
+//        Description("A bottle")
+//        ConvertTo(models.Bottle{})
+//        // The "rating" attribute is matched to the external
+//        // typ "Rating" field.
+//        Attribute("rating", Int)
+//        Attribute("name", String, func() {
+//            // The "name" attribute is matched to the external
+//            // type "MyName" field.
+//            Metadata("struct.field.external", "MyName")
+//        })
+//        Attribute("vineyard", String, func() {
+//            // The "vineyard" attribute is not converted.
+//            Metadata("struct.field.external", "-")
+//        })
+//    })
+//
+// External (i.e. non design) package:
+//
+//    package model
+//
+//    type Bottle struct {
+//        Rating int
+//        // Mapped field
+//        MyName string
+//        // Additional fields are OK
+//        Description string
+//    }
+//
+func ConvertTo(obj interface{}) {
+	dsl.ConvertTo(obj)
+}
+
+// CreateFrom specifies an external type that instances of the generated struct
+// can be initialized from. The generated struct is equipped with a method that
+// initializes its fields from an instance of the external type. The default
+// algorithm used to match the external type fields to the design attributes is
+// as follows:
+//
+//    1. Look for an attribute with the same name as the field
+//    2. Look for an attribute with the same name as the field but with the
+//       first letter being lowercase
+//    3. Look for an attribute with a name corresponding to the snake_case
+//       version of the field name
+//
+// This algorithm does not apply if the attribute is equipped with the
+// "struct.field.external" metadata. In this case the matching is done by
+// looking up the field with a name corresponding to the value of the metadata.
+// If the value of the metadata is "-" the attribute isn't matched and no
+// conversion code is generated for it. In all other cases it is an error if no
+// match is found or if the matching field type does not correspond to the
+// attribute type.
+//
+// CreateFrom must appear in Type or ResutType.
+//
+// CreateFrom accepts one arguments: an instance of the external type.
+//
+// Example:
+//
+// Service design:
+//
+//    var Bottle = Type("bottle", func() {
+//        Description("A bottle")
+//        CreateFrom(models.Bottle{})
+//        Attribute("rating", Int)
+//        Attribute("name", String, func() {
+//            // The "name" attribute is matched to the external
+//            // type "MyName" field.
+//            Metadata("struct.field.external", "MyName")
+//        })
+//        Attribute("vineyard", String, func() {
+//            // The "vineyard" attribute is not initialized by the
+//            // generated constructor method.
+//            Metadata("struct.field.external", "-")
+//        })
+//    })
+//
+// External (i.e. non design) package:
+//
+//    package model
+//
+//    type Bottle struct {
+//        Rating int
+//        // Mapped field
+//        MyName string
+//        // Additional fields are OK
+//        Description string
+//    }
+//
+func CreateFrom(obj interface{}) {
+	dsl.CreateFrom(obj)
 }
 
 // DELETE creates a route using the DELETE HTTP method. See GET.
@@ -419,6 +550,32 @@ func Example(args ...interface{}) {
 	dsl.Example(args...)
 }
 
+// Extend adds the parameter type attributes to the type using Extend. The
+// parameter type must be an object.
+//
+// Extend may be used in Type or ResultType. Extend accepts a single argument:
+// the type or result type containing the attributes to be copied.
+//
+// Example:
+//
+//    var CreateBottlePayload = Type("CreateBottlePayload", func() {
+//       Attribute("name", String, func() {
+//          MinLength(3)
+//       })
+//       Attribute("vintage", Int32, func() {
+//          Minimum(1970)
+//       })
+//    })
+//
+//    var UpdateBottlePayload = Type("UpatePayload", func() {
+//        Atribute("id", String, "ID of bottle to update")
+//        Extend(CreateBottlePayload) // Adds attributes "name" and "vintage"
+//    })
+//
+func Extend(t design.DataType) {
+	dsl.Extend(t)
+}
+
 // Field is syntactic sugar to define an attribute with the "rpc:tag" metadata
 // set with the value of the first argument.
 //
@@ -483,6 +640,8 @@ func Files(path, filename string, fns ...func()) {
 //
 // FormatDateTime: RFC3339 date time
 //
+// FormatUUID: RFC4122 uuid
+//
 // FormatEmail: RFC5322 email address
 //
 // FormatHostname: RFC1035 internet host name
@@ -496,6 +655,8 @@ func Files(path, filename string, fns ...func()) {
 // FormatCIDR: RFC4632 or RFC4291 CIDR notation IP address
 //
 // FormatRegexp: RE2 regular expression
+//
+// FormatRFC1123: RFC1123 date time
 func Format(f design.ValidationFormat) {
 	dsl.Format(f)
 }
@@ -867,7 +1028,7 @@ func PUT(path string) *httpdesign.RouteExpr {
 //            Payload(ShowPayload)
 //            Result(AccountResult)
 //            HTTP(func() {
-//                Routing(GET("/{id}"))  // HTTP request uses ShowPayload "id"
+//                GET("/{id}")           // HTTP request uses ShowPayload "id"
 //                                       // attribute to define "id" parameter.
 //                Params(func() {        // Params makes it possible to group
 //                                       // Param expressions.
@@ -1032,7 +1193,10 @@ func Produces(args ...string) {
 // type or a result type. The reference type attributes define the default
 // properties for attributes with the same name in the type using the reference.
 //
-// Reference may be used in Type or ResultType.
+// Reference may be used in Type or ResultType, it may appear multiple times in
+// which case attributes are looked up in each reference in order of appearance
+// in the DSL.
+//
 // Reference accepts a single argument: the type or result type containing the
 // attributes that define the default properties of the attributes of the type
 // or result type that uses Reference.
@@ -1283,8 +1447,9 @@ func Result(val interface{}, args ...interface{}) {
 
 // ResultType defines a result type used to describe a method response.
 //
-// Result types have a unique identifier as described in RFC6838. The identifier
-// defines the default value for the Content-Type header of HTTP responses.
+// Result types have a unique identifier as described in RFC 6838. The
+// identifier defines the default value for the Content-Type header of HTTP
+// responses.
 //
 // The result type expression includes a listing of all the response attributes.
 // Views specify which of the attributes are actually rendered so that the same
@@ -1296,6 +1461,7 @@ func Result(val interface{}, args ...interface{}) {
 // result type attributes.
 //
 // ResultType is a top level DSL.
+//
 // ResultType accepts two arguments: the result type identifier and the defining
 // DSL.
 //

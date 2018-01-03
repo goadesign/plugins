@@ -9,6 +9,9 @@ import (
 	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
 	"goa.design/plugins/security/design"
+
+	// Initializes the HTTP generator
+	_ "goa.design/plugins/security/http"
 )
 
 type (
@@ -152,7 +155,7 @@ func BuildSecureServiceData(svc *goadesign.ServiceExpr) *ServiceData {
 			FieldName:        varn,
 			ServiceName:      svc.Name,
 			MethodName:       m.Name,
-			Requirements:     design.Requirements(svc.Name, m.Name),
+			Requirements:     reqs,
 		})
 	}
 	return data
@@ -172,45 +175,44 @@ const secureEndpointsInitT = `{{ printf "NewSecure%s wraps the methods of a %s s
 // input: securedServiceMethodData
 const secureEndpointContextT = `{{ printf "%s returns an endpoint function which initializes the context with the security requirements for the method %q of service %q." .VarName .MethodName .ServiceName | comment }}
 	func {{ .VarName }}(ep goa.Endpoint) goa.Endpoint {
-		reqs := make([]*security.Requirement, {{ len .Requirements }})
-		{{- range $i, $req := .Requirements }}
-		{{- if $req.Scopes }}
-		reqs[{{ $i }}].RequiredScopes = []string{ {{- range $req.Scopes }}{{ printf "%q" . }}, {{ end }} }
-		{{- end }}
-		reqs[{{ $i }}].Schemes = make([]*security.Scheme, {{ len .Schemes }})
-		{{- range $j, $scheme := .Schemes }}
-		reqs[{{ $i }}].Schemes[{{ $j }}] = &security.Scheme{
-			Kind: security.SchemeKind({{ $scheme.Kind }}),
-			Name: {{ printf "%q" $scheme.SchemeName }},
+		reqs := []*security.Requirement{
+			{{- range $req := .Requirements }}
+			&security.Requirement{
+				{{- if $req.Scopes }}
+				RequiredScopes: []string{ {{- range $req.Scopes }}{{ printf "%q" . }}, {{ end }} },
+				{{- end }}
+				Schemes: []*security.Scheme{
+					{{- range $scheme := .Schemes }}
+					&security.Scheme{
+						Kind: security.SchemeKind({{ $scheme.Kind }}),
+						Name: {{ printf "%q" $scheme.SchemeName }},
+						{{- if .Scopes }}
+						Scopes: []string{ {{- range $scheme.Scopes }}{{ printf "%q" .Name }}, {{ end }} },
+						{{- end }}
+						{{- if .Flows }}
+						Flows: []*security.OAuthFlow{
+							{{- range $flow := .Flows }}
+							&security.OAuthFlow{
+								Kind: security.FlowKind({{ $flow.Kind }}),
+								{{- if .AuthorizationURL }}
+								AuthorizationURL: {{ printf "%q" .AuthorizationURL }},
+								{{- end }}
+								{{- if .TokenURL }}
+								TokenURL: {{ printf "%q" .TokenURL }},
+								{{- end }}
+								{{- if .RefreshURL }}
+								RefreshURL: {{ printf "%q" .RefreshURL }},
+								{{- end }}
+							},
+							{{- end }}
+						},
+						{{- end }}
+					},
+					{{- end }}
+				},
+			},
+			{{- end }}
 		}
-		{{- if .Scopes }}
-		reqs[{{ $i }}].Schemes[{{ $j }}].Scopes = []string{ {{- range $scheme.Scopes }}{{ printf "%q" .Name }}, {{ end }} }
-		{{- end }}
-		{{- if .In }}
-		reqs[{{ $i }}].Schemes[{{ $j }}].APIKey = &security.Key{
-			In: {{ printf "%q" .In }},
-			Name: {{ printf "%q" .Name }},
-		}
-		{{- end }}
-		{{- if .Flows }}
-		reqs[{{ $i }}].Schemes[{{ $j }}].Flows = make([]*security.OAuthFlow, {{ len .Flows }})
-		{{- range $j, $flow := .Flows }}
-		reqs[{{ $i }}].Schemes[{{ $j }}].Flows[{{ $j }}] = &security.OAuthFlow{
-			Kind: security.FlowKind({{ $flow.Kind }}),
-		}
-		{{- if .AuthorizationURL }}
-		reqs[{{ $i }}].Schemes[{{ $j }}].Flows[{{ $j }}].AuthorizationURL = {{ printf "%q" .AuthorizationURL }}
-		{{- end }}
-		{{- if .TokenURL }}
-		reqs[{{ $i }}].Schemes[{{ $j }}].Flows[{{ $j }}].TokenURL = {{ printf "%q" .TokenURL }}
-		{{- end }}
-		{{- if .RefreshURL }}
-		reqs[{{ $i }}].Schemes[{{ $j }}].Flows[{{ $j }}].RefreshURL = {{ printf "%q" .RefreshURL }}
-		{{- end }}
-		{{- end }}
-		{{- end }}
-		{{- end }}
-		{{- end }}
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			ctx = context.WithValue(ctx, security.ContextKey, reqs)
 			return ep(ctx, req)

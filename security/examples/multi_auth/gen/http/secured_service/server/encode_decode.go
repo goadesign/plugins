@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
@@ -192,5 +193,96 @@ func DecodeAlsoDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Request
 		}
 
 		return NewAlsoDoublySecureAlsoDoublySecurePayload(&body, key), nil
+	}
+}
+
+// SecureDecodeSigninRequest returns a decoder for requests sent to the
+// secured_service signin endpoint that is security scheme aware.
+func SecureDecodeSigninRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	rawDecoder := DecodeSigninRequest(mux, decoder)
+	return func(r *http.Request) (interface{}, error) {
+		p, err := rawDecoder(r)
+		if err != nil {
+			return nil, err
+		}
+		payload := p.(*securedservice.SigninPayload)
+		user, pass, ok := r.BasicAuth()
+		if !ok {
+			return p, nil
+		}
+		payload.Username = &user
+		payload.Password = &pass
+		return payload, nil
+	}
+}
+
+// SecureDecodeSecureRequest returns a decoder for requests sent to the
+// secured_service secure endpoint that is security scheme aware.
+func SecureDecodeSecureRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	rawDecoder := DecodeSecureRequest(mux, decoder)
+	return func(r *http.Request) (interface{}, error) {
+		p, err := rawDecoder(r)
+		if err != nil {
+			return nil, err
+		}
+		payload := p.(*securedservice.SecurePayload)
+		h := r.Header.Get("Authorization")
+		if h == "" {
+			return p, nil
+		}
+		token := strings.TrimPrefix(h, "Bearer ")
+		payload.Token = &token
+		return payload, nil
+	}
+}
+
+// SecureDecodeDoublySecureRequest returns a decoder for requests sent to the
+// secured_service doubly_secure endpoint that is security scheme aware.
+func SecureDecodeDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	rawDecoder := DecodeDoublySecureRequest(mux, decoder)
+	return func(r *http.Request) (interface{}, error) {
+		p, err := rawDecoder(r)
+		if err != nil {
+			return nil, err
+		}
+		payload := p.(*securedservice.DoublySecurePayload)
+		h := r.Header.Get("Authorization")
+		if h == "" {
+			return p, nil
+		}
+		token := strings.TrimPrefix(h, "Bearer ")
+		payload.Token = &token
+		key := r.URL.Query().Get("k")
+		if key == "" {
+			return p, nil
+		}
+		payload.Key = &key
+		return payload, nil
+	}
+}
+
+// SecureDecodeAlsoDoublySecureRequest returns a decoder for requests sent to
+// the secured_service also_doubly_secure endpoint that is security scheme
+// aware.
+func SecureDecodeAlsoDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	rawDecoder := DecodeAlsoDoublySecureRequest(mux, decoder)
+	return func(r *http.Request) (interface{}, error) {
+		p, err := rawDecoder(r)
+		if err != nil {
+			return nil, err
+		}
+		payload := p.(*securedservice.AlsoDoublySecurePayload)
+		h := r.Header.Get("Authorization")
+		if h == "" {
+			return p, nil
+		}
+		token := strings.TrimPrefix(h, "Bearer ")
+		payload.Token = &token
+		key := r.Header.Get("Authorization")
+		if key == "" {
+			return p, nil
+		}
+		payload.Key = &key
+		return payload, nil
 	}
 }
