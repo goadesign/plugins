@@ -13,7 +13,7 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/goakit/examples/cellar/gen/storage"
+	storage "goa.design/plugins/goakit/examples/cellar/gen/storage"
 )
 
 // Server lists the storage service endpoint HTTP handlers.

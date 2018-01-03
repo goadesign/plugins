@@ -14,7 +14,7 @@ import (
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/goakit/examples/cellar/gen/storage"
+	storage "goa.design/plugins/goakit/examples/cellar/gen/storage"
 )
 
 // EncodeListResponse returns an encoder for responses returned by the storage
@@ -102,8 +102,7 @@ func DecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Dec
 			}
 			return nil, goa.DecodePayloadError(err.Error())
 		}
-		err = goa.MergeErrors(err, body.Validate())
-
+		err = body.Validate()
 		if err != nil {
 			return nil, err
 		}
@@ -136,9 +135,9 @@ func DecodeRemoveRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 	}
 }
 
-// wineryToWineryResponseBodyNoDefault builds a value of type
-// *WineryResponseBody from a value of type *storage.Winery.
-func wineryToWineryResponseBodyNoDefault(v *storage.Winery) *WineryResponseBody {
+// marshalWineryToWineryResponseBody builds a value of type *WineryResponseBody
+// from a value of type *storage.Winery.
+func marshalWineryToWineryResponseBody(v *storage.Winery) *WineryResponseBody {
 	res := &WineryResponseBody{
 		Name:    v.Name,
 		Region:  v.Region,
@@ -149,9 +148,9 @@ func wineryToWineryResponseBodyNoDefault(v *storage.Winery) *WineryResponseBody 
 	return res
 }
 
-// componentToComponentResponseBodyNoDefault builds a value of type
+// marshalComponentToComponentResponseBody builds a value of type
 // *ComponentResponseBody from a value of type *storage.Component.
-func componentToComponentResponseBodyNoDefault(v *storage.Component) *ComponentResponseBody {
+func marshalComponentToComponentResponseBody(v *storage.Component) *ComponentResponseBody {
 	res := &ComponentResponseBody{
 		Varietal:   v.Varietal,
 		Percentage: v.Percentage,
@@ -160,9 +159,9 @@ func componentToComponentResponseBodyNoDefault(v *storage.Component) *ComponentR
 	return res
 }
 
-// wineryToWineryNoDefault builds a value of type *Winery from a value of type
+// marshalWineryToWinery builds a value of type *Winery from a value of type
 // *storage.Winery.
-func wineryToWineryNoDefault(v *storage.Winery) *Winery {
+func marshalWineryToWinery(v *storage.Winery) *Winery {
 	res := &Winery{
 		Name:    v.Name,
 		Region:  v.Region,
@@ -173,9 +172,9 @@ func wineryToWineryNoDefault(v *storage.Winery) *Winery {
 	return res
 }
 
-// componentToComponentNoDefault builds a value of type *Component from a value
+// marshalComponentToComponent builds a value of type *Component from a value
 // of type *storage.Component.
-func componentToComponentNoDefault(v *storage.Component) *Component {
+func marshalComponentToComponent(v *storage.Component) *Component {
 	res := &Component{
 		Varietal:   v.Varietal,
 		Percentage: v.Percentage,
@@ -184,9 +183,9 @@ func componentToComponentNoDefault(v *storage.Component) *Component {
 	return res
 }
 
-// wineryRequestBodyToWinerySrcPtr builds a value of type *storage.Winery from
-// a value of type *WineryRequestBody.
-func wineryRequestBodyToWinerySrcPtr(v *WineryRequestBody) *storage.Winery {
+// unmarshalWineryRequestBodyToWinery builds a value of type *storage.Winery
+// from a value of type *WineryRequestBody.
+func unmarshalWineryRequestBodyToWinery(v *WineryRequestBody) *storage.Winery {
 	res := &storage.Winery{
 		Name:    *v.Name,
 		Region:  *v.Region,
@@ -197,9 +196,9 @@ func wineryRequestBodyToWinerySrcPtr(v *WineryRequestBody) *storage.Winery {
 	return res
 }
 
-// componentRequestBodyToComponentSrcPtr builds a value of type
+// unmarshalComponentRequestBodyToComponent builds a value of type
 // *storage.Component from a value of type *ComponentRequestBody.
-func componentRequestBodyToComponentSrcPtr(v *ComponentRequestBody) *storage.Component {
+func unmarshalComponentRequestBodyToComponent(v *ComponentRequestBody) *storage.Component {
 	res := &storage.Component{
 		Varietal:   *v.Varietal,
 		Percentage: v.Percentage,

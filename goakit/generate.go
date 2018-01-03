@@ -9,7 +9,7 @@ import (
 	httpdesign "goa.design/goa/http/design"
 )
 
-// Register the plugin GenerateFunc.
+// Register the plugin Generator functions.
 func init() {
 	codegen.RegisterPlugin("gen", Generate)
 	codegen.RegisterPlugin("example", Example)
