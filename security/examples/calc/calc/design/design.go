@@ -16,7 +16,7 @@ var _ = API("calc", func() {
 })
 
 // BasicAuth defines a security scheme that uses basic authentication.
-var BasicAuth = BasicAuth("basic", func() {
+var BasicAuth = BasicAuthSecurity("basic", func() {
 	Description("Secures the login endpoint.")
 })
 
@@ -28,123 +28,71 @@ var JWTAuth = JWTSecurity("jwt", func() {
 
 var _ = Service("calc", func() {
 	Description("The calc service exposes public endpoints that require valid authorization credentials.")
+
 	Method("login", func() {
 		Description("Creates a valid JWT")
 
 		// The signin endpoint is secured via basic auth
 		Security(BasicAuth)
 
-		Payload(String, func() {
+		// Payload contains the username and password used to perform
+		// basic authentication.
+		Payload(func() {
 			Description("Credentials used to authenticate to retrieve JWT token")
-			Example("user:password")
+			Username("user", String, func() {
+				Example("username")
+			})
+			Password("password", String, func() {
+				Example("password")
+			})
+			Required("user", "password")
 		})
+
+		// Result is a JWT token
 		Result(String, func() {
-			Description("New JWT")
+			Description("New JWT token")
 		})
+
+		// Error returned in case login failed because of invalid
+		// username/password combination.
 		Error("unauthorized", String, "Credentials are invalid")
 
 		HTTP(func() {
 			POST("/login")
-			// Use Authorization header to provide basic auth value.
-			Response(StatusNoContent, func() {
-				Headers(func() {
-					Header("Authorization", String, "Generated JWT")
-				})
-			})
-			Response("unauthorized", StatusUnauthorized)
+
+			Response(StatusOK)                           // Body contains JWT token
+			Response("unauthorized", StatusUnauthorized) // Use HTTP status 401 when credentials are invalid
 		})
 	})
 
 	Method("add", func() {
-		Description("Add adds up the two integer parameters and returns the results. This action is secured with the jwt scheme")
+		Description("Add adds up the two integer parameters and returns the results. This endpoint is secured with the JWT scheme")
 
 		// Use JWT to auth requests to this endpoint.
 		Security(JWTAuth, func() {
-			Scope("calc:add") // Enforce presence of "api:read" scope in JWT claims.
+			Scope("calc:add") // Enforce presence of "calc:add" scope in JWT claims.
 		})
 
 		Payload(func() {
-			Attribute("left", Int, func() {
+			Attribute("a", Int, func() {
 				Description("Left operand")
 				Example(1)
 			})
-			Attribute("right", Int, func() {
+			Attribute("b", Int, func() {
 				Description("Right operand")
 				Example(2)
 			})
-			Attribute("token", String, func() {
+			Token("token", String, func() {
 				Description("JWT used for authentication")
 			})
+			Required("a", "b", "token")
 		})
 		Result(Int, func() {
 			Description("Result of addition")
 			Example(3)
 		})
 		HTTP(func() {
-			GET("/add")
-
-			Param("left")
-			Param("right")
-
-			Response(StatusOK)
-			Response(StatusUnauthorized)
-		})
-	})
-
-	Method("doubly_secure", func() {
-		Description("This action is secured with the jwt scheme and also requires an API key query string.")
-		Security(JWTAuth, APIKeyAuth, func() { // Use JWT and an API key to secure this endpoint.
-			Scope("api:read")  // Enforce presence of both "api:read"
-			Scope("api:write") // and "api:write" scopes in JWT claims.
-		})
-		Payload(func() {
-			APIKey("api_key", "key", String, func() {
-				Description("API key")
-				Example("abcdef12345")
-			})
-			Attribute("token", String, func() {
-				Description("JWT used for authentication")
-				Example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ")
-			})
-		})
-		Result(String, func() {
-			Example("JWT secured data")
-		})
-		Error("unauthorized", String)
-		HTTP(func() {
-			GET("/secure")
-
-			Param("key:k")
-
-			Response(StatusOK)
-			Response(StatusUnauthorized)
-		})
-	})
-
-	Method("also_doubly_secure", func() {
-		Description("This action is secured with the jwt scheme and also requires an API key header.")
-		Security(JWTAuth, APIKeyAuth, func() { // Use JWT and an API key to secure this endpoint.
-			Scope("api:read")  // Enforce presence of both "api:read"
-			Scope("api:write") // and "api:write" scopes in JWT claims.
-		})
-		Payload(func() {
-			APIKey("api_key", "key", String, func() {
-				Description("API key")
-				Example("abcdef12345")
-			})
-			Attribute("token", String, func() {
-				Description("JWT used for authentication")
-				Example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ")
-			})
-		})
-		Result(String, func() {
-			Example("JWT secured data")
-		})
-		Error("unauthorized", String)
-		HTTP(func() {
-			POST("/secure")
-
-			Header("key:Authorization")
+			GET("/add/{a}/{b}")
 
 			Response(StatusOK)
 			Response(StatusUnauthorized)
