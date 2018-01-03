@@ -11,8 +11,7 @@ import (
 // Origin defines the CORS policy for a given origin. The origin can use a wildcard prefix
 // such as "https://*.mydomain.com". The special value "*" defines the policy for all origins
 // (in which case there should be only one Origin DSL in the parent resource).
-// The origin can also be a regular expression wrapped into "/".
-// Example:
+// The origin can also be a regular expression in which case it must be wrapped with "/".
 //
 // Origin must appear in API or Service Expression.
 //
@@ -21,33 +20,25 @@ import (
 //
 // Example:
 //
-//		var _ = API("calc", func() {
+//    var _ = API("calc", func() {
 //        Origin("http://swagger.goa.design", func() { // Define CORS policy, may be prefixed with "*" wildcard
-//                Headers("X-Shared-Secret")           // One or more authorized headers, use "*" to authorize all
-//                Methods("GET", "POST")               // One or more authorized HTTP methods
-//                Expose("X-Time")                     // One or more headers exposed to clients
-//                MaxAge(600)                          // How long to cache a preflight request response
-//                Credentials()                        // Sets Access-Control-Allow-Credentials header
+//           Headers("X-Shared-Secret")           // One or more authorized headers, use "*" to authorize all
+//           Methods("GET", "POST")               // One or more authorized HTTP methods
+//           Expose("X-Time")                     // One or more headers exposed to clients
+//           MaxAge(600)                          // How long to cache a preflight request response
+//           Credentials()                        // Sets Access-Control-Allow-Credentials header
 //        })
-//		})
+//    })
 //
-//		var _ = Service("calculator", func() {
+//    var _ = Service("calculator", func() {
 //        Origin("/(api|swagger)[.]goa[.]design/") // Define CORS policy with a regular expression
 //
 //        Method("add", func() {
-//            Description("Add two operands")
-//
-//            // Override default service security requirements. Require
-//            // both basic auth and OAuth2 access token with "api:write"
-//            // scope.
-//            Security(BasicAuth, "oauth2", func() {
-//                Scope("api:write")
-//            })
-//
-//            Payload(Operands)
-//            Error(ErrBadRequest, ErrorResult)
+//           Description("Add two operands")
+//           Payload(Operands)
+//           Error(ErrBadRequest, ErrorResult)
 //        })
-//		})
+//    })
 //
 func Origin(origin string, args ...interface{}) {
 	o := &design.OriginExpr{Origin: origin}
@@ -89,7 +80,7 @@ func Origin(origin string, args ...interface{}) {
 // Example:
 //
 // Origin("http://swagger.goa.design", func() {
-//				 Methods("GET", "POST")								// One or more authorized HTTP methods
+//        Methods("GET", "POST")               // One or more authorized HTTP methods
 // })
 //
 func Methods(vals ...string) {
@@ -108,7 +99,7 @@ func Methods(vals ...string) {
 // Example:
 //
 // Origin("http://swagger.goa.design", func() {
-//         Expose("X-Time")                     // One or more headers exposed to clients
+//        Expose("X-Time")                     // One or more headers exposed to clients
 // })
 //
 func Expose(vals ...string) {
@@ -127,11 +118,11 @@ func Expose(vals ...string) {
 // Example:
 //
 // Origin("http://swagger.goa.design", func() {
-//				 Headers("X-Shared-Secret")
+//        Headers("X-Shared-Secret")
 // })
 //
 // Origin("http://swagger.goa.design", func() {
-//				 Headers("*")
+//        Headers("*")
 // })
 //
 func Headers(vals ...string) {
@@ -150,7 +141,7 @@ func Headers(vals ...string) {
 // Example:
 //
 // Origin("http://swagger.goa.design", func() {
-// 				 MaxAge(600)                          // How long to cache a preflight request response
+//        MaxAge(600)                          // How long to cache a preflight request response
 // })
 //
 func MaxAge(val uint) {
@@ -169,7 +160,7 @@ func MaxAge(val uint) {
 // Example:
 //
 // Origin("http://swagger.goa.design", func() {
-//				 Credentials()                        // Sets Access-Control-Allow-Credentials header
+//        Credentials()                        // Sets Access-Control-Allow-Credentials header
 // })
 //
 func Credentials() {

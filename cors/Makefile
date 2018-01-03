@@ -12,5 +12,5 @@ ALIASER_SRC=goa.design/goa/http/dsl
 include $(GOPATH)/src/goa.design/plugins/plugins.mk
 
 gen:
-	@cd examples/multi_auth && \
-	goa gen goa.design/plugins/security/examples/multi_auth/design
+	@cd examples/calc && \
+	goa gen goa.design/plugins/cors/examples/calc/design

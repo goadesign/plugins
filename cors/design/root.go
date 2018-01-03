@@ -1,8 +1,8 @@
 package design
 
 import (
-	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
+	httpdesign "goa.design/goa/http/design"
 )
 
 // Root is the design root expression.
@@ -49,12 +49,12 @@ func (r *RootExpr) WalkSets(walk eval.SetWalker) {
 
 // DependsOn tells the eval engine to run the goa DSL first.
 func (r *RootExpr) DependsOn() []eval.Root {
-	return []eval.Root{goadesign.Root}
+	return []eval.Root{httpdesign.Root}
 }
 
 // Packages returns the import path to the Go packages that make
 // up the DSL. This is used to skip frames that point to files
 // in these packages when computing the location of errors.
 func (r *RootExpr) Packages() []string {
-	return []string{}
+	return []string{"goa.design/plugins/cors/dsl"}
 }

@@ -12,7 +12,7 @@ import (
 )
 
 type (
-	// OriginExpr describes a CORS definition.
+	// OriginExpr describes a CORS policy.
 	OriginExpr struct {
 		// Origin is the origin string.
 		Origin string
@@ -104,16 +104,16 @@ func PreflightPaths(svc string) []string {
 	return paths
 }
 
-// EvalName returns the generic definition name used in error messages.
+// EvalName returns the generic expression name used in error messages.
 func (o *OriginExpr) EvalName() string {
 	var suffix string
 	if o.Parent != nil {
 		suffix = fmt.Sprintf(" of %s", o.Parent.EvalName())
 	}
-	return "CORS definition" + suffix
+	return "CORS" + suffix
 }
 
-// Validate ensures the CORS definition origin is valid.
+// Validate ensures the origin expression is valid.
 func (o *OriginExpr) Validate() *eval.ValidationErrors {
 	verr := new(eval.ValidationErrors)
 	if !o.Regexp && strings.Count(o.Origin, "*") > 1 {
