@@ -5,7 +5,7 @@
 // Command:
 // $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
 
-package archiver
+package archiversvc
 
 import (
 	"context"

@@ -36,7 +36,7 @@ func serverEncodeDecode(genpkg string, svc *httpdesign.ServiceExpr) *codegen.Fil
 			{Path: "github.com/go-kit/kit/transport/http", Name: "kithttp"},
 			{Path: "goa.design/goa", Name: "goa"},
 			{Path: "goa.design/goa/http", Name: "goahttp"},
-			{Path: genpkg + "/http/" + data.Service.PkgName + "/server"},
+			{Path: genpkg + "/http/" + data.Service.Name + "/server"},
 		}),
 	}
 
@@ -49,7 +49,7 @@ func serverEncodeDecode(genpkg string, svc *httpdesign.ServiceExpr) *codegen.Fil
 
 		if e.Payload.Ref != "" {
 			sections = append(sections, &codegen.SectionTemplate{
-				Name:   "goakit-response-encoder",
+				Name:   "goakit-request-decoder",
 				Source: requestDecoderT,
 				Data:   e,
 			})
@@ -81,7 +81,7 @@ func clientEncodeDecode(genpkg string, svc *httpdesign.ServiceExpr) *codegen.Fil
 			{Path: "github.com/go-kit/kit/transport/http", Name: "kithttp"},
 			{Path: "goa.design/goa", Name: "goa"},
 			{Path: "goa.design/goa/http", Name: "goahttp"},
-			{Path: genpkg + "/http/" + data.Service.PkgName + "/client"},
+			{Path: genpkg + "/http/" + data.Service.Name + "/client"},
 		}),
 	}
 
@@ -134,7 +134,7 @@ const responseEncoderT = `{{ printf "%s returns a go-kit EncodeResponseFunc suit
 `
 
 // input: EndpointData
-const errorEncoderT = `{{ printf "%s returns a go-kit EncodeResponseFunc suitable for encoding errors returned by the %s %s endpoint." .ResponseEncoder .ServiceName .Method.Name | comment }}
+const errorEncoderT = `{{ printf "%s returns a go-kit EncodeResponseFunc suitable for encoding errors returned by the %s %s endpoint." .ErrorEncoder .ServiceName .Method.Name | comment }}
  func {{ .ErrorEncoder }}(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.EncodeResponseFunc {
  	enc := server.{{ .ErrorEncoder }}(encoder)
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {

@@ -9,7 +9,7 @@ package server
 
 import (
 	goa "goa.design/goa"
-	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 )
 
 // ArchiveRequestBody is the type of the "archiver" service "archive" endpoint
@@ -71,7 +71,7 @@ type ReadBadRequestResponseBody struct {
 
 // NewArchiveResponseBody builds the HTTP response body from the result of the
 // "archive" endpoint of the "archiver" service.
-func NewArchiveResponseBody(res *archiver.ArchiveMedia) *ArchiveResponseBody {
+func NewArchiveResponseBody(res *archiversvc.ArchiveMedia) *ArchiveResponseBody {
 	body := &ArchiveResponseBody{
 		Href:   res.Href,
 		Status: res.Status,
@@ -82,7 +82,7 @@ func NewArchiveResponseBody(res *archiver.ArchiveMedia) *ArchiveResponseBody {
 
 // NewReadResponseBody builds the HTTP response body from the result of the
 // "read" endpoint of the "archiver" service.
-func NewReadResponseBody(res *archiver.ArchiveMedia) *ReadResponseBody {
+func NewReadResponseBody(res *archiversvc.ArchiveMedia) *ReadResponseBody {
 	body := &ReadResponseBody{
 		Href:   res.Href,
 		Status: res.Status,
@@ -93,7 +93,7 @@ func NewReadResponseBody(res *archiver.ArchiveMedia) *ReadResponseBody {
 
 // NewReadNotFoundResponseBody builds the HTTP response body from the result of
 // the "read" endpoint of the "archiver" service.
-func NewReadNotFoundResponseBody(res *archiver.Error) *ReadNotFoundResponseBody {
+func NewReadNotFoundResponseBody(res *archiversvc.Error) *ReadNotFoundResponseBody {
 	body := &ReadNotFoundResponseBody{
 		ID:      res.ID,
 		Status:  res.Status,
@@ -105,7 +105,7 @@ func NewReadNotFoundResponseBody(res *archiver.Error) *ReadNotFoundResponseBody 
 
 // NewReadBadRequestResponseBody builds the HTTP response body from the result
 // of the "read" endpoint of the "archiver" service.
-func NewReadBadRequestResponseBody(res *archiver.Error) *ReadBadRequestResponseBody {
+func NewReadBadRequestResponseBody(res *archiversvc.Error) *ReadBadRequestResponseBody {
 	body := &ReadBadRequestResponseBody{
 		ID:      res.ID,
 		Status:  res.Status,
@@ -116,8 +116,8 @@ func NewReadBadRequestResponseBody(res *archiver.Error) *ReadBadRequestResponseB
 }
 
 // NewArchiveArchivePayload builds a archiver service archive endpoint payload.
-func NewArchiveArchivePayload(body *ArchiveRequestBody) *archiver.ArchivePayload {
-	v := &archiver.ArchivePayload{
+func NewArchiveArchivePayload(body *ArchiveRequestBody) *archiversvc.ArchivePayload {
+	v := &archiversvc.ArchivePayload{
 		Status: *body.Status,
 		Body:   *body.Body,
 	}
@@ -125,8 +125,8 @@ func NewArchiveArchivePayload(body *ArchiveRequestBody) *archiver.ArchivePayload
 }
 
 // NewReadReadPayload builds a archiver service read endpoint payload.
-func NewReadReadPayload(id int) *archiver.ReadPayload {
-	return &archiver.ReadPayload{
+func NewReadReadPayload(id int) *archiversvc.ReadPayload {
+	return &archiversvc.ReadPayload{
 		ID: id,
 	}
 }

@@ -15,7 +15,7 @@ import (
 	"net/url"
 
 	goahttp "goa.design/goa/http"
-	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // BuildFetchRequest instantiates a HTTP request object with method and path
@@ -25,9 +25,9 @@ func (c *Client) BuildFetchRequest(v interface{}) (*http.Request, error) {
 		url_ string
 	)
 	{
-		p, ok := v.(*fetcher.FetchPayload)
+		p, ok := v.(*fetchersvc.FetchPayload)
 		if !ok {
-			return nil, goahttp.ErrInvalidType("fetcher", "fetch", "*fetcher.FetchPayload", v)
+			return nil, goahttp.ErrInvalidType("fetcher", "fetch", "*fetchersvc.FetchPayload", v)
 		}
 		url_ = p.URL
 	}
@@ -43,6 +43,10 @@ func (c *Client) BuildFetchRequest(v interface{}) (*http.Request, error) {
 // DecodeFetchResponse returns a decoder for responses returned by the fetcher
 // fetch endpoint. restoreBody controls whether the response body should be
 // restored after having been read.
+// DecodeFetchResponse may return the following error types:
+//	- *fetchersvc.Error: http.StatusBadRequest
+//	- *fetchersvc.Error: http.StatusInternalServerError
+//	- error: generic transport error.
 func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {
@@ -87,7 +91,7 @@ func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 				return nil, fmt.Errorf("invalid response: %s", err)
 			}
 
-			return NewFetchBadRequest(&body), nil
+			return nil, NewFetchBadRequest(&body)
 		case http.StatusInternalServerError:
 			var (
 				body FetchInternalErrorResponseBody
@@ -102,7 +106,7 @@ func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 				return nil, fmt.Errorf("invalid response: %s", err)
 			}
 
-			return NewFetchInternalError(&body), nil
+			return nil, NewFetchInternalError(&body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))

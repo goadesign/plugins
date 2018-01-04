@@ -5,7 +5,7 @@
 // Command:
 // $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
 
-package archiver
+package archiversvc
 
 import (
 	"context"
@@ -13,15 +13,13 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
-type (
-	// Endpoints wraps the archiver service endpoints.
-	Endpoints struct {
-		Archive endpoint.Endpoint
-		Read    endpoint.Endpoint
-	}
-)
+// Endpoints wraps the "archiver" service endpoints.
+type Endpoints struct {
+	Archive endpoint.Endpoint
+	Read    endpoint.Endpoint
+}
 
-// NewEndpoints wraps the methods of a archiver service with endpoints.
+// NewEndpoints wraps the methods of the "archiver" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
 		Archive: NewArchiveEndpoint(s),
@@ -29,8 +27,8 @@ func NewEndpoints(s Service) *Endpoints {
 	}
 }
 
-// NewArchiveEndpoint returns an endpoint function that calls method "archive"
-// of service "archiver".
+// NewArchiveEndpoint returns an endpoint function that calls the method
+// "archive" of service "archiver".
 func NewArchiveEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*ArchivePayload)
@@ -38,7 +36,7 @@ func NewArchiveEndpoint(s Service) endpoint.Endpoint {
 	}
 }
 
-// NewReadEndpoint returns an endpoint function that calls method "read" of
+// NewReadEndpoint returns an endpoint function that calls the method "read" of
 // service "archiver".
 func NewReadEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {

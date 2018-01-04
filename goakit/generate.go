@@ -20,17 +20,16 @@ func init() {
 // and adding the corresponding import. Generate also generates go-kit
 // specific decoders and encoders.
 func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
-	var output []*codegen.File
 	for _, f := range files {
-		output = append(output, goakitify(f))
+		goakitify(f)
 	}
 	for _, root := range roots {
 		if r, ok := root.(*httpdesign.RootExpr); ok {
-			output = append(output, EncodeDecodeFiles(genpkg, r)...)
-			output = append(output, MountFiles(r)...)
+			files = append(files, EncodeDecodeFiles(genpkg, r)...)
+			files = append(files, MountFiles(r)...)
 		}
 	}
-	return output, nil
+	return files, nil
 }
 
 // Example iterates through the roots and returns files that implement an
@@ -70,9 +69,8 @@ var goaEndpointRegexp = regexp.MustCompile(`([^\p{L}_])goa\.Endpoint([^\p{L}_])`
 // goakitify replaces all occurrences of goa.Endpoint with endpoint.Endpoint in
 // the file section template sources. It also adds
 // "github.com/go-kit/kit/endpoint" to the list of imported packages if
-// occurrences were replaces. goakitify modifies the given files and returns
-// them.
-func goakitify(f *codegen.File) *codegen.File {
+// occurrences were replaces.
+func goakitify(f *codegen.File) {
 	var hasEndpoint bool
 	for _, s := range f.SectionTemplates {
 		if !hasEndpoint {
@@ -86,5 +84,4 @@ func goakitify(f *codegen.File) *codegen.File {
 			&codegen.ImportSpec{Path: "github.com/go-kit/kit/endpoint"},
 		)
 	}
-	return f
 }

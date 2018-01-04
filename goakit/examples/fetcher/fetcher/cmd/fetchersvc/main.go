@@ -15,8 +15,8 @@ import (
 	goahttp "goa.design/goa/http"
 	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher"
 	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
-	healthsvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
-	fetchersvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/kitserver"
+	health "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
+	fetchersvcsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/kitserver"
 	healthsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/health/kitserver"
 )
 
@@ -45,23 +45,23 @@ func main() {
 
 	// Create the structs that implement the services.
 	var (
-		healths  healthsvc.Service
-		fetchers fetchersvc.Service
+		healths     health.Service
+		fetchersvcs fetchersvc.Service
 	)
 	{
 		healths = fetcher.NewHealth(logger)
-		fetchers = fetcher.NewFetcher(logger, *archiverHost)
+		fetchersvcs = fetcher.NewFetcher(logger, *archiverHost)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other
 	// services potentially running in different processes.
 	var (
-		healthe  *healthsvc.Endpoints
-		fetchere *fetchersvc.Endpoints
+		healthe     *health.Endpoints
+		fetchersvce *fetchersvc.Endpoints
 	)
 	{
-		healthe = healthsvc.NewEndpoints(healths)
-		fetchere = fetchersvc.NewEndpoints(fetchers)
+		healthe = health.NewEndpoints(healths)
+		fetchersvce = fetchersvc.NewEndpoints(fetchersvcs)
 	}
 
 	// Provide the transport specific request decoder and response encoder.
@@ -81,8 +81,8 @@ func main() {
 
 	// Wrap the endpoints with the transport specific layer.
 	var (
-		healthShowHandler   *kithttp.Server
-		fetcherFetchHandler *kithttp.Server
+		healthShowHandler      *kithttp.Server
+		fetchersvcFetchHandler *kithttp.Server
 	)
 	{
 		healthShowHandler = kithttp.NewServer(
@@ -90,16 +90,16 @@ func main() {
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			healthsvr.EncodeShowResponse(enc),
 		)
-		fetcherFetchHandler = kithttp.NewServer(
-			endpoint.Endpoint(fetchere.Fetch),
-			fetchersvr.DecodeFetchRequest(mux, dec),
-			fetchersvr.EncodeFetchResponse(enc),
+		fetchersvcFetchHandler = kithttp.NewServer(
+			endpoint.Endpoint(fetchersvce.Fetch),
+			fetchersvcsvr.DecodeFetchRequest(mux, dec),
+			fetchersvcsvr.EncodeFetchResponse(enc),
 		)
 	}
 
 	// Configure the mux.
 	healthsvr.MountShowHandler(mux, healthShowHandler)
-	fetchersvr.MountFetchHandler(mux, fetcherFetchHandler)
+	fetchersvcsvr.MountFetchHandler(mux, fetchersvcFetchHandler)
 
 	// Create channel used by both the signal handler and server goroutines
 	// to notify the main goroutine when to stop the server.

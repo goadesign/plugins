@@ -16,17 +16,18 @@ import (
 	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 	archiverkc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitclient"
 	archiverks "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"
-	"goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
-// fetcher service implementation.
-type fetchersvc struct {
+// fetcher service example implementation.
+// The example methods log the requests and return zero values.
+type fetchersvcsvc struct {
 	logger  log.Logger
 	archive endpoint.Endpoint
 }
 
 // NewFetcher returns the fetcher service implementation.
-func NewFetcher(logger log.Logger, archiverHost string) fetcher.Service {
+func NewFetcher(logger log.Logger, archiverHost string) fetchersvc.Service {
 	u := url.URL{
 		Scheme: "http",
 		Host:   archiverHost,
@@ -42,16 +43,16 @@ func NewFetcher(logger log.Logger, archiverHost string) fetcher.Service {
 		archiverkc.EncodeArchiveRequest(enc),
 		archiverkc.DecodeArchiveResponse(dec),
 	)
-	return &fetchersvc{logger: logger, archive: arc.Endpoint()}
+	return &fetchersvcsvc{logger: logger, archive: arc.Endpoint()}
 }
 
 // Fetch makes a GET request to the given URL and stores the results in the
 // archiver service which must be running or the request fails
-func (s *fetchersvc) Fetch(ctx context.Context, p *fetcher.FetchPayload) (*fetcher.FetchMedia, error) {
+func (s *fetchersvcsvc) Fetch(ctx context.Context, p *fetchersvc.FetchPayload) (*fetchersvc.FetchMedia, error) {
 	// Make request to external endpoint
 	resp, err := http.Get(p.URL)
 	if err != nil {
-		return nil, &fetcher.Error{}
+		return nil, &fetchersvc.Error{}
 	}
 
 	// Read response
@@ -59,7 +60,7 @@ func (s *fetchersvc) Fetch(ctx context.Context, p *fetcher.FetchPayload) (*fetch
 	body, err := ioutil.ReadAll(resp.Body)
 	now := int(time.Now().Unix())
 	if err != nil {
-		return nil, &fetcher.Error{
+		return nil, &fetchersvc.Error{
 			ID:      strconv.Itoa(now),
 			Code:    "bad_request",
 			Message: fmt.Sprintf("failed to decode response: %s", err),
@@ -69,7 +70,7 @@ func (s *fetchersvc) Fetch(ctx context.Context, p *fetcher.FetchPayload) (*fetch
 	// Archive response using archiver service
 	res, err := s.archive(ctx, &archiversvc.ArchivePayload{Status: resp.StatusCode, Body: string(body)})
 	if err != nil {
-		return nil, &fetcher.Error{
+		return nil, &fetchersvc.Error{
 			ID:      strconv.Itoa(now),
 			Code:    "bad_request",
 			Message: fmt.Sprintf("failed to decode response: %s", err),
@@ -78,7 +79,7 @@ func (s *fetchersvc) Fetch(ctx context.Context, p *fetcher.FetchPayload) (*fetch
 
 	// Return response
 	media := res.(*archiversvc.ArchiveMedia)
-	return &fetcher.FetchMedia{
+	return &fetchersvc.FetchMedia{
 		ArchiveHref: media.Href,
 		Status:      media.Status,
 	}, nil

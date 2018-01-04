@@ -13,11 +13,11 @@ import (
 	"github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/goakit/examples/fetcher/archiver"
-	genarchiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
-	archiversvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitserver"
+	archiver "goa.design/plugins/goakit/examples/fetcher/archiver"
+	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	health "goa.design/plugins/goakit/examples/fetcher/archiver/gen/health"
+	archiversvcsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitserver"
 	healthsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/kitserver"
-	"goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
 )
 
 func main() {
@@ -40,22 +40,22 @@ func main() {
 
 	// Create the structs that implement the services.
 	var (
-		archivers genarchiver.Service
-		healths   health.Service
+		archiversvcs archiversvc.Service
+		healths      health.Service
 	)
 	{
-		archivers = archiver.NewArchiver(logger)
+		archiversvcs = archiver.NewArchiver(logger)
 		healths = archiver.NewHealth(logger)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other
 	// services potentially running in different processes.
 	var (
-		archivere *genarchiver.Endpoints
-		healthe   *health.Endpoints
+		archiversvce *archiversvc.Endpoints
+		healthe      *health.Endpoints
 	)
 	{
-		archivere = genarchiver.NewEndpoints(archivers)
+		archiversvce = archiversvc.NewEndpoints(archiversvcs)
 		healthe = health.NewEndpoints(healths)
 	}
 
@@ -76,20 +76,20 @@ func main() {
 
 	// Wrap the endpoints with the transport specific layer.
 	var (
-		archiverArchiveHandler *kithttp.Server
-		archiverReadHandler    *kithttp.Server
-		healthShowHandler      *kithttp.Server
+		archiversvcArchiveHandler *kithttp.Server
+		archiversvcReadHandler    *kithttp.Server
+		healthShowHandler         *kithttp.Server
 	)
 	{
-		archiverArchiveHandler = kithttp.NewServer(
-			endpoint.Endpoint(archivere.Archive),
-			archiversvr.DecodeArchiveRequest(mux, dec),
-			archiversvr.EncodeArchiveResponse(enc),
+		archiversvcArchiveHandler = kithttp.NewServer(
+			endpoint.Endpoint(archiversvce.Archive),
+			archiversvcsvr.DecodeArchiveRequest(mux, dec),
+			archiversvcsvr.EncodeArchiveResponse(enc),
 		)
-		archiverReadHandler = kithttp.NewServer(
-			endpoint.Endpoint(archivere.Read),
-			archiversvr.DecodeReadRequest(mux, dec),
-			archiversvr.EncodeReadResponse(enc),
+		archiversvcReadHandler = kithttp.NewServer(
+			endpoint.Endpoint(archiversvce.Read),
+			archiversvcsvr.DecodeReadRequest(mux, dec),
+			archiversvcsvr.EncodeReadResponse(enc),
 		)
 		healthShowHandler = kithttp.NewServer(
 			endpoint.Endpoint(healthe.Show),
@@ -99,8 +99,8 @@ func main() {
 	}
 
 	// Configure the mux.
-	archiversvr.MountArchiveHandler(mux, archiverArchiveHandler)
-	archiversvr.MountReadHandler(mux, archiverReadHandler)
+	archiversvcsvr.MountArchiveHandler(mux, archiversvcArchiveHandler)
+	archiversvcsvr.MountReadHandler(mux, archiversvcReadHandler)
 	healthsvr.MountShowHandler(mux, healthShowHandler)
 
 	// Create channel used by both the signal handler and server goroutines

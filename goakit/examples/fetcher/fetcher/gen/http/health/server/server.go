@@ -18,7 +18,19 @@ import (
 
 // Server lists the health service endpoint HTTP handlers.
 type Server struct {
-	Show http.Handler
+	Mounts []*MountPoint
+	Show   http.Handler
+}
+
+// MountPoint holds information about the mounted endpoints.
+type MountPoint struct {
+	// Method is the name of the service method served by the mounted HTTP handler.
+	Method string
+	// Verb is the HTTP method used to match requests to the mounted handler.
+	Verb string
+	// Pattern is the HTTP request path pattern used to match requests to the
+	// mounted handler.
+	Pattern string
 }
 
 // New instantiates HTTP handlers for all the health service endpoints.
@@ -29,9 +41,15 @@ func New(
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
 ) *Server {
 	return &Server{
+		Mounts: []*MountPoint{
+			{"Show", "GET", "/health"},
+		},
 		Show: NewShowHandler(e.Show, mux, dec, enc),
 	}
 }
+
+// Service returns the name of the service served.
+func (s *Server) Service() string { return "health" }
 
 // Mount configures the mux to serve the health endpoints.
 func Mount(mux goahttp.Muxer, h *Server) {

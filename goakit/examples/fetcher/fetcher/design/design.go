@@ -27,12 +27,8 @@ var _ = Service("fetcher", func() {
 		HTTP(func() {
 			GET("fetch/{*url}")
 			Response(StatusOK)
-			Response("bad_request", StatusBadRequest, func() {
-				Tag("code", "bad_request")
-			})
-			Response("internal_error", StatusInternalServerError, func() {
-				Tag("code", "internal_error")
-			})
+			Response("bad_request", StatusBadRequest)
+			Response("internal_error", StatusInternalServerError)
 		})
 	})
 })

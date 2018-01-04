@@ -13,21 +13,19 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
-type (
-	// Endpoints wraps the health service endpoints.
-	Endpoints struct {
-		Show endpoint.Endpoint
-	}
-)
+// Endpoints wraps the "health" service endpoints.
+type Endpoints struct {
+	Show endpoint.Endpoint
+}
 
-// NewEndpoints wraps the methods of a health service with endpoints.
+// NewEndpoints wraps the methods of the "health" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
 		Show: NewShowEndpoint(s),
 	}
 }
 
-// NewShowEndpoint returns an endpoint function that calls method "show" of
+// NewShowEndpoint returns an endpoint function that calls the method "show" of
 // service "health".
 func NewShowEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {

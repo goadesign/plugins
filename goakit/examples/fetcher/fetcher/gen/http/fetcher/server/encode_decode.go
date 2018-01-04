@@ -13,14 +13,14 @@ import (
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // EncodeFetchResponse returns an encoder for responses returned by the fetcher
 // fetch endpoint.
 func EncodeFetchResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(*fetcher.FetchMedia)
+		res := v.(*fetchersvc.FetchMedia)
 		enc := encoder(ctx, w)
 		body := NewFetchResponseBody(res)
 		w.WriteHeader(http.StatusOK)
@@ -55,7 +55,7 @@ func EncodeFetchError(encoder func(context.Context, http.ResponseWriter) goahttp
 	encodeError := goahttp.ErrorEncoder(encoder)
 	return func(ctx context.Context, w http.ResponseWriter, v error) {
 		switch res := v.(type) {
-		case *fetcher.Error:
+		case *fetchersvc.Error:
 			if res.Code == "bad_request" {
 				enc := encoder(ctx, w)
 				body := NewFetchBadRequestResponseBody(res)
