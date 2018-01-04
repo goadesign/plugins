@@ -20,7 +20,7 @@ func MatchOrigin(origin, spec string) bool {
 	if strings.HasPrefix(spec, "/") && strings.HasSuffix(spec, "/") {
 		stripped := strings.Trim(spec, "/")
 		r := regexp.MustCompile(stripped)
-		return r.Match([]byte(origin))
+		return MatchOriginRegexp(origin, r)
 	}
 
 	if !strings.Contains(spec, "*") {

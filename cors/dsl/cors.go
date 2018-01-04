@@ -22,11 +22,11 @@ import (
 //
 //    var _ = API("calc", func() {
 //        Origin("http://swagger.goa.design", func() { // Define CORS policy, may be prefixed with "*" wildcard
-//           Headers("X-Shared-Secret")           // One or more authorized headers, use "*" to authorize all
-//           Methods("GET", "POST")               // One or more authorized HTTP methods
-//           Expose("X-Time")                     // One or more headers exposed to clients
-//           MaxAge(600)                          // How long to cache a preflight request response
-//           Credentials()                        // Sets Access-Control-Allow-Credentials header
+//            Headers("X-Shared-Secret")           // One or more authorized headers, use "*" to authorize all
+//            Methods("GET", "POST")               // One or more authorized HTTP methods
+//            Expose("X-Time")                     // One or more headers exposed to clients
+//            MaxAge(600)                          // How long to cache a preflight request response
+//            Credentials()                        // Sets Access-Control-Allow-Credentials header
 //        })
 //    })
 //
@@ -34,9 +34,9 @@ import (
 //        Origin("/(api|swagger)[.]goa[.]design/") // Define CORS policy with a regular expression
 //
 //        Method("add", func() {
-//           Description("Add two operands")
-//           Payload(Operands)
-//           Error(ErrBadRequest, ErrorResult)
+//            Description("Add two operands")
+//            Payload(Operands)
+//            Error(ErrBadRequest, ErrorResult)
 //        })
 //    })
 //
@@ -49,9 +49,11 @@ func Origin(origin string, args ...interface{}) {
 
 	var dsl func()
 	{
-		if d, ok := args[len(args)-1].(func()); ok {
-			args = args[:len(args)-1]
-			dsl = d
+		if len(args) > 0 {
+			if d, ok := args[len(args)-1].(func()); ok {
+				args = args[:len(args)-1]
+				dsl = d
+			}
 		}
 	}
 	if dsl != nil {
@@ -79,9 +81,9 @@ func Origin(origin string, args ...interface{}) {
 //
 // Example:
 //
-// Origin("http://swagger.goa.design", func() {
-//        Methods("GET", "POST")               // One or more authorized HTTP methods
-// })
+//     Origin("http://swagger.goa.design", func() {
+//         Methods("GET", "POST")           // One or more authorized HTTP methods
+//     })
 //
 func Methods(vals ...string) {
 	switch o := eval.Current().(type) {
@@ -98,9 +100,9 @@ func Methods(vals ...string) {
 //
 // Example:
 //
-// Origin("http://swagger.goa.design", func() {
-//        Expose("X-Time")                     // One or more headers exposed to clients
-// })
+//     Origin("http://swagger.goa.design", func() {
+//         Expose("X-Time")               // One or more headers exposed to clients
+//     })
 //
 func Expose(vals ...string) {
 	switch o := eval.Current().(type) {
@@ -117,13 +119,13 @@ func Expose(vals ...string) {
 //
 // Example:
 //
-// Origin("http://swagger.goa.design", func() {
-//        Headers("X-Shared-Secret")
-// })
+//     Origin("http://swagger.goa.design", func() {
+//         Headers("X-Shared-Secret")
+//     })
 //
-// Origin("http://swagger.goa.design", func() {
-//        Headers("*")
-// })
+//     Origin("http://swagger.goa.design", func() {
+//         Headers("*")
+//     })
 //
 func Headers(vals ...string) {
 	switch o := eval.Current().(type) {
@@ -140,9 +142,9 @@ func Headers(vals ...string) {
 //
 // Example:
 //
-// Origin("http://swagger.goa.design", func() {
-//        MaxAge(600)                          // How long to cache a preflight request response
-// })
+//     Origin("http://swagger.goa.design", func() {
+//         MaxAge(600)            // How long to cache a preflight request response
+//     })
 //
 func MaxAge(val uint) {
 	switch o := eval.Current().(type) {
@@ -159,9 +161,9 @@ func MaxAge(val uint) {
 //
 // Example:
 //
-// Origin("http://swagger.goa.design", func() {
-//        Credentials()                        // Sets Access-Control-Allow-Credentials header
-// })
+//     Origin("http://swagger.goa.design", func() {
+//         Credentials()            // Sets Access-Control-Allow-Credentials header
+//     })
 //
 func Credentials() {
 	switch o := eval.Current().(type) {
