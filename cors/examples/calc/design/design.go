@@ -19,7 +19,7 @@ var _ = API("calc", func() {
 })
 
 var _ = Service("calc", func() {
-	Description("The calc service exposes public endpoints that require valid authorization credentials.")
+	Description("The calc service exposes public endpoints that defines CORS policy.")
 	Origin("/.*localhost.*/", func() {
 		Methods("GET", "POST")
 		Expose("X-Time", "X-Api-Version")
