@@ -1,3 +1,5 @@
 /goakit/examples/cellar/cmd/cellarsvc/cellarsvc
+/cors/examples/calc/cmd/calcsvc/calcsvc
+/cors/examples/calc/cmd/calccli/calccli
 
 *.swp
