@@ -22,4 +22,4 @@ gen:
 aliases:
 	@echo "Nothing to alias"
 
-test-aliases: aliases
+test-aliaser: aliases
