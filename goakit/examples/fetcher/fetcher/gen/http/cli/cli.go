@@ -15,7 +15,7 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/http"
-	fetcherc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/client"
+	fetchersvcc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/client"
 	healthc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/health/client"
 )
 
@@ -32,7 +32,7 @@ fetcher fetch
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
 	return os.Args[0] + ` health show` + "\n" +
-		os.Args[0] + ` fetcher fetch --url- "http://skilespurdy.name/oma.ruecker"` + "\n" +
+		os.Args[0] + ` fetcher fetch --url "http://brekke.biz/mylene.keebler"` + "\n" +
 		""
 }
 
@@ -53,7 +53,7 @@ func ParseEndpoint(
 		fetcherFlags = flag.NewFlagSet("fetcher", flag.ContinueOnError)
 
 		fetcherFetchFlags   = flag.NewFlagSet("fetch", flag.ExitOnError)
-		fetcherFetchURLFlag = fetcherFetchFlags.String("url-", "REQUIRED", "URL to be fetched")
+		fetcherFetchURLFlag = fetcherFetchFlags.String("url", "REQUIRED", "URL to be fetched")
 	)
 	healthFlags.Usage = healthUsage
 	healthShowFlags.Usage = healthShowUsage
@@ -137,11 +137,11 @@ func ParseEndpoint(
 				data = nil
 			}
 		case "fetcher":
-			c := fetcherc.NewClient(scheme, host, doer, enc, dec, restore)
+			c := fetchersvcc.NewClient(scheme, host, doer, enc, dec, restore)
 			switch epn {
 			case "fetch":
 				endpoint = c.Fetch()
-				data, err = fetcherc.BuildFetchFetchPayload(*fetcherFetchURLFlag)
+				data, err = fetchersvcc.BuildFetchFetchPayload(*fetcherFetchURLFlag)
 			}
 		}
 	}
@@ -189,12 +189,12 @@ Additional help:
 `, os.Args[0], os.Args[0])
 }
 func fetcherFetchUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] fetcher fetch -url- STRING
+	fmt.Fprintf(os.Stderr, `%s [flags] fetcher fetch -url STRING
 
 Fetch makes a GET request to the given URL and stores the results in the archiver service which must be running or the request fails
-    -url- STRING: URL to be fetched
+    -url STRING: URL to be fetched
 
 Example:
-    `+os.Args[0]+` fetcher fetch --url- "http://skilespurdy.name/oma.ruecker"
+    `+os.Args[0]+` fetcher fetch --url "http://brekke.biz/mylene.keebler"
 `, os.Args[0])
 }

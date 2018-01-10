@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/go-kit/kit/log"
-	"goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
+	health "goa.design/plugins/goakit/examples/fetcher/archiver/gen/health"
 )
 
 // health service example implementation.

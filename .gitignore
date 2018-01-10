@@ -1,5 +1,12 @@
-/goakit/examples/cellar/cmd/cellarsvc/cellarsvc
 /cors/examples/calc/cmd/calcsvc/calcsvc
 /cors/examples/calc/cmd/calccli/calccli
+/goakit/examples/calc/cmd/calcsvc/calcsvc
+/goakit/examples/calc/cmd/calccli/calccli
+/goakit/examples/fetcher/fetcher/cmd/fetchersvc/fetchersvc
+/goakit/examples/fetcher/fetcher/cmd/fetchersvc/fetchersvc
+/goakit/examples/fetcher/archiver/cmd/archiversvc/archiversvc
+/goakit/examples/fetcher/archiver/cmd/archivercli/archivercli
+/goakit/examples/calc/cmd/calccli/calccli
+/goakit/examples/calc/cmd/calccli/calccli
 
 *.swp

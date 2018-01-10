@@ -9,7 +9,7 @@ package client
 
 import (
 	goa "goa.design/goa"
-	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 )
 
 // ArchiveRequestBody is the type of the "archiver" service "archive" endpoint
@@ -71,7 +71,7 @@ type ReadBadRequestResponseBody struct {
 
 // NewArchiveRequestBody builds the HTTP request body from the payload of the
 // "archive" endpoint of the "archiver" service.
-func NewArchiveRequestBody(p *archiver.ArchivePayload) *ArchiveRequestBody {
+func NewArchiveRequestBody(p *archiversvc.ArchivePayload) *ArchiveRequestBody {
 	body := &ArchiveRequestBody{
 		Status: p.Status,
 		Body:   p.Body,
@@ -81,8 +81,8 @@ func NewArchiveRequestBody(p *archiver.ArchivePayload) *ArchiveRequestBody {
 
 // NewArchiveArchiveMediaOK builds a "archiver" service "archive" endpoint
 // result from a HTTP "OK" response.
-func NewArchiveArchiveMediaOK(body *ArchiveResponseBody) *archiver.ArchiveMedia {
-	v := &archiver.ArchiveMedia{
+func NewArchiveArchiveMediaOK(body *ArchiveResponseBody) *archiversvc.ArchiveMedia {
+	v := &archiversvc.ArchiveMedia{
 		Href:   *body.Href,
 		Status: *body.Status,
 		Body:   *body.Body,
@@ -92,8 +92,8 @@ func NewArchiveArchiveMediaOK(body *ArchiveResponseBody) *archiver.ArchiveMedia 
 
 // NewReadArchiveMediaOK builds a "archiver" service "read" endpoint result
 // from a HTTP "OK" response.
-func NewReadArchiveMediaOK(body *ReadResponseBody) *archiver.ArchiveMedia {
-	v := &archiver.ArchiveMedia{
+func NewReadArchiveMediaOK(body *ReadResponseBody) *archiversvc.ArchiveMedia {
+	v := &archiversvc.ArchiveMedia{
 		Href:   *body.Href,
 		Status: *body.Status,
 		Body:   *body.Body,
@@ -102,8 +102,8 @@ func NewReadArchiveMediaOK(body *ReadResponseBody) *archiver.ArchiveMedia {
 }
 
 // NewReadNotFound builds a archiver service read endpoint not_found error.
-func NewReadNotFound(body *ReadNotFoundResponseBody) *archiver.Error {
-	v := &archiver.Error{
+func NewReadNotFound(body *ReadNotFoundResponseBody) *archiversvc.Error {
+	v := &archiversvc.Error{
 		ID:      *body.ID,
 		Status:  *body.Status,
 		Code:    *body.Code,
@@ -113,8 +113,8 @@ func NewReadNotFound(body *ReadNotFoundResponseBody) *archiver.Error {
 }
 
 // NewReadBadRequest builds a archiver service read endpoint bad_request error.
-func NewReadBadRequest(body *ReadBadRequestResponseBody) *archiver.Error {
-	v := &archiver.Error{
+func NewReadBadRequest(body *ReadBadRequestResponseBody) *archiversvc.Error {
+	v := &archiversvc.Error{
 		ID:      *body.ID,
 		Status:  *body.Status,
 		Code:    *body.Code,

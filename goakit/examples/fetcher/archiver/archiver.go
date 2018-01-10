@@ -8,38 +8,36 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	"goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 	"goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"
 )
 
-type (
-	// archiver service implementation.
-	archiversvc struct {
-		logger log.Logger
-		db     *Archive
-	}
-)
+// archiver service example implementation.
+type archiversvcsvc struct {
+	logger log.Logger
+	db     *Archive
+}
 
 // NewArchiver returns the archiver service implementation.
-func NewArchiver(logger log.Logger) archiver.Service {
-	return &archiversvc{
+func NewArchiver(logger log.Logger) archiversvc.Service {
+	return &archiversvcsvc{
 		logger: logger,
 		db:     &Archive{RWMutex: &sync.RWMutex{}},
 	}
 }
 
 // Archive HTTP response
-func (s *archiversvc) Archive(ctx context.Context, p *archiver.ArchivePayload) (*archiver.ArchiveMedia, error) {
+func (s *archiversvcsvc) Archive(ctx context.Context, p *archiversvc.ArchivePayload) (*archiversvc.ArchiveMedia, error) {
 	doc := &Document{Status: p.Status, Body: p.Body}
 	s.db.Store(doc)
 	return archiveMedia(doc), nil
 }
 
 // Read HTTP response from archive
-func (s *archiversvc) Read(ctx context.Context, p *archiver.ReadPayload) (*archiver.ArchiveMedia, error) {
+func (s *archiversvcsvc) Read(ctx context.Context, p *archiversvc.ReadPayload) (*archiversvc.ArchiveMedia, error) {
 	doc := s.db.Read(p.ID)
 	if doc == nil {
-		return nil, &archiver.Error{
+		return nil, &archiversvc.Error{
 			ID:      strconv.Itoa(int(time.Now().Unix())),
 			Code:    "bad_request",
 			Message: fmt.Sprintf("could not find document with ID %q", p.ID),
@@ -49,8 +47,8 @@ func (s *archiversvc) Read(ctx context.Context, p *archiver.ReadPayload) (*archi
 }
 
 // archiveMedia converts a Document into a app.ArchiveMedia
-func archiveMedia(doc *Document) *archiver.ArchiveMedia {
-	return &archiver.ArchiveMedia{
+func archiveMedia(doc *Document) *archiversvc.ArchiveMedia {
+	return &archiversvc.ArchiveMedia{
 		Href:   server.ReadArchiverPath(doc.ID),
 		Status: doc.Status,
 		Body:   doc.Body,

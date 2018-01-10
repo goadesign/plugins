@@ -15,7 +15,7 @@ import (
 	"net/url"
 
 	goahttp "goa.design/goa/http"
-	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 )
 
 // BuildArchiveRequest instantiates a HTTP request object with method and path
@@ -34,9 +34,9 @@ func (c *Client) BuildArchiveRequest(v interface{}) (*http.Request, error) {
 // archive server.
 func EncodeArchiveRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
 	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(*archiver.ArchivePayload)
+		p, ok := v.(*archiversvc.ArchivePayload)
 		if !ok {
-			return goahttp.ErrInvalidType("archiver", "archive", "*archiver.ArchivePayload", v)
+			return goahttp.ErrInvalidType("archiver", "archive", "*archiversvc.ArchivePayload", v)
 		}
 		body := NewArchiveRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
@@ -93,9 +93,9 @@ func (c *Client) BuildReadRequest(v interface{}) (*http.Request, error) {
 		id int
 	)
 	{
-		p, ok := v.(*archiver.ReadPayload)
+		p, ok := v.(*archiversvc.ReadPayload)
 		if !ok {
-			return nil, goahttp.ErrInvalidType("archiver", "read", "*archiver.ReadPayload", v)
+			return nil, goahttp.ErrInvalidType("archiver", "read", "*archiversvc.ReadPayload", v)
 		}
 		id = p.ID
 	}
@@ -111,6 +111,10 @@ func (c *Client) BuildReadRequest(v interface{}) (*http.Request, error) {
 // DecodeReadResponse returns a decoder for responses returned by the archiver
 // read endpoint. restoreBody controls whether the response body should be
 // restored after having been read.
+// DecodeReadResponse may return the following error types:
+//	- *archiversvc.Error: http.StatusNotFound
+//	- *archiversvc.Error: http.StatusBadRequest
+//	- error: generic transport error.
 func DecodeReadResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {
@@ -155,7 +159,7 @@ func DecodeReadResponse(decoder func(*http.Response) goahttp.Decoder, restoreBod
 				return nil, fmt.Errorf("invalid response: %s", err)
 			}
 
-			return NewReadNotFound(&body), nil
+			return nil, NewReadNotFound(&body)
 		case http.StatusBadRequest:
 			var (
 				body ReadBadRequestResponseBody
@@ -170,7 +174,7 @@ func DecodeReadResponse(decoder func(*http.Response) goahttp.Decoder, restoreBod
 				return nil, fmt.Errorf("invalid response: %s", err)
 			}
 
-			return NewReadBadRequest(&body), nil
+			return nil, NewReadBadRequest(&body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))

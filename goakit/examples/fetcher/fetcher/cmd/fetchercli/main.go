@@ -89,7 +89,7 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, `%s is a command line fetcher for the fetcher API.
+	fmt.Fprintf(os.Stderr, `%s is a command line client for the fetcher API.
 
 Usage:
     %s [-url URL][-timeout SECONDS][-verbose|-v] SERVICE ENDPOINT [flags]

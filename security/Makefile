@@ -14,3 +14,13 @@ include $(GOPATH)/src/goa.design/plugins/plugins.mk
 gen:
 	@cd examples/multi_auth && \
 	goa gen goa.design/plugins/security/examples/multi_auth/design
+
+aliases:
+	@aliaser -src goa.design/goa/http/dsl -dest $(PLUGIN_DIR)/$(PLUGIN_NAME)/dsl > /dev/null
+
+test-aliaser: aliases
+	@if [ "`git diff */aliases.go | tee /dev/stderr`" ]; then \
+		echo "^ - Aliaser tool output not identical!" && echo && exit 1; \
+	else \
+		echo "Aliaser tool output identical"; \
+	fi

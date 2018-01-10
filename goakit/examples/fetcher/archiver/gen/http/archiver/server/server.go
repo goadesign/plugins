@@ -13,27 +13,46 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/http"
-	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 )
 
 // Server lists the archiver service endpoint HTTP handlers.
 type Server struct {
+	Mounts  []*MountPoint
 	Archive http.Handler
 	Read    http.Handler
 }
 
+// MountPoint holds information about the mounted endpoints.
+type MountPoint struct {
+	// Method is the name of the service method served by the mounted HTTP handler.
+	Method string
+	// Verb is the HTTP method used to match requests to the mounted handler.
+	Verb string
+	// Pattern is the HTTP request path pattern used to match requests to the
+	// mounted handler.
+	Pattern string
+}
+
 // New instantiates HTTP handlers for all the archiver service endpoints.
 func New(
-	e *archiver.Endpoints,
+	e *archiversvc.Endpoints,
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
 ) *Server {
 	return &Server{
+		Mounts: []*MountPoint{
+			{"Archive", "POST", "/archive"},
+			{"Read", "GET", "/archive/{id}"},
+		},
 		Archive: NewArchiveHandler(e.Archive, mux, dec, enc),
 		Read:    NewReadHandler(e.Read, mux, dec, enc),
 	}
 }
+
+// Service returns the name of the service served.
+func (s *Server) Service() string { return "archiver" }
 
 // Mount configures the mux to serve the archiver endpoints.
 func Mount(mux goahttp.Muxer, h *Server) {

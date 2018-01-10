@@ -5,7 +5,7 @@
 // Command:
 // $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
 
-package fetcher
+package fetchersvc
 
 import (
 	"context"

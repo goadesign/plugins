@@ -12,7 +12,7 @@ import (
 	"time"
 
 	goahttp "goa.design/goa/http"
-	"goa.design/plugins/goakit/examples/client/archiver/gen/http/cli"
+	"goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/cli"
 )
 
 func main() {

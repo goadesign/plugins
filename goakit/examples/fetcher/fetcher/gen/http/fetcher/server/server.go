@@ -13,25 +13,43 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/http"
-	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // Server lists the fetcher service endpoint HTTP handlers.
 type Server struct {
-	Fetch http.Handler
+	Mounts []*MountPoint
+	Fetch  http.Handler
+}
+
+// MountPoint holds information about the mounted endpoints.
+type MountPoint struct {
+	// Method is the name of the service method served by the mounted HTTP handler.
+	Method string
+	// Verb is the HTTP method used to match requests to the mounted handler.
+	Verb string
+	// Pattern is the HTTP request path pattern used to match requests to the
+	// mounted handler.
+	Pattern string
 }
 
 // New instantiates HTTP handlers for all the fetcher service endpoints.
 func New(
-	e *fetcher.Endpoints,
+	e *fetchersvc.Endpoints,
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
 ) *Server {
 	return &Server{
+		Mounts: []*MountPoint{
+			{"Fetch", "GET", "/fetch/{*url}"},
+		},
 		Fetch: NewFetchHandler(e.Fetch, mux, dec, enc),
 	}
 }
+
+// Service returns the name of the service served.
+func (s *Server) Service() string { return "fetcher" }
 
 // Mount configures the mux to serve the fetcher endpoints.
 func Mount(mux goahttp.Muxer, h *Server) {

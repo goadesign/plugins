@@ -9,7 +9,7 @@ package client
 
 import (
 	goa "goa.design/goa"
-	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // FetchResponseBody is the type of the "fetcher" service "fetch" endpoint HTTP
@@ -49,8 +49,8 @@ type FetchInternalErrorResponseBody struct {
 
 // NewFetchFetchMediaOK builds a "fetcher" service "fetch" endpoint result from
 // a HTTP "OK" response.
-func NewFetchFetchMediaOK(body *FetchResponseBody) *fetcher.FetchMedia {
-	v := &fetcher.FetchMedia{
+func NewFetchFetchMediaOK(body *FetchResponseBody) *fetchersvc.FetchMedia {
+	v := &fetchersvc.FetchMedia{
 		Status:      *body.Status,
 		ArchiveHref: *body.ArchiveHref,
 	}
@@ -58,8 +58,8 @@ func NewFetchFetchMediaOK(body *FetchResponseBody) *fetcher.FetchMedia {
 }
 
 // NewFetchBadRequest builds a fetcher service fetch endpoint bad_request error.
-func NewFetchBadRequest(body *FetchBadRequestResponseBody) *fetcher.Error {
-	v := &fetcher.Error{
+func NewFetchBadRequest(body *FetchBadRequestResponseBody) *fetchersvc.Error {
+	v := &fetchersvc.Error{
 		ID:      *body.ID,
 		Status:  *body.Status,
 		Code:    *body.Code,
@@ -70,8 +70,8 @@ func NewFetchBadRequest(body *FetchBadRequestResponseBody) *fetcher.Error {
 
 // NewFetchInternalError builds a fetcher service fetch endpoint internal_error
 // error.
-func NewFetchInternalError(body *FetchInternalErrorResponseBody) *fetcher.Error {
-	v := &fetcher.Error{
+func NewFetchInternalError(body *FetchInternalErrorResponseBody) *fetchersvc.Error {
+	v := &fetchersvc.Error{
 		ID:      *body.ID,
 		Status:  *body.Status,
 		Code:    *body.Code,

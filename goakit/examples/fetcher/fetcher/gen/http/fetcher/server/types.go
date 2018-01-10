@@ -8,7 +8,7 @@
 package server
 
 import (
-	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // FetchResponseBody is the type of the "fetcher" service "fetch" endpoint HTTP
@@ -48,7 +48,7 @@ type FetchInternalErrorResponseBody struct {
 
 // NewFetchResponseBody builds the HTTP response body from the result of the
 // "fetch" endpoint of the "fetcher" service.
-func NewFetchResponseBody(res *fetcher.FetchMedia) *FetchResponseBody {
+func NewFetchResponseBody(res *fetchersvc.FetchMedia) *FetchResponseBody {
 	body := &FetchResponseBody{
 		Status:      res.Status,
 		ArchiveHref: res.ArchiveHref,
@@ -58,7 +58,7 @@ func NewFetchResponseBody(res *fetcher.FetchMedia) *FetchResponseBody {
 
 // NewFetchBadRequestResponseBody builds the HTTP response body from the result
 // of the "fetch" endpoint of the "fetcher" service.
-func NewFetchBadRequestResponseBody(res *fetcher.Error) *FetchBadRequestResponseBody {
+func NewFetchBadRequestResponseBody(res *fetchersvc.Error) *FetchBadRequestResponseBody {
 	body := &FetchBadRequestResponseBody{
 		ID:      res.ID,
 		Status:  res.Status,
@@ -70,7 +70,7 @@ func NewFetchBadRequestResponseBody(res *fetcher.Error) *FetchBadRequestResponse
 
 // NewFetchInternalErrorResponseBody builds the HTTP response body from the
 // result of the "fetch" endpoint of the "fetcher" service.
-func NewFetchInternalErrorResponseBody(res *fetcher.Error) *FetchInternalErrorResponseBody {
+func NewFetchInternalErrorResponseBody(res *fetchersvc.Error) *FetchInternalErrorResponseBody {
 	body := &FetchInternalErrorResponseBody{
 		ID:      res.ID,
 		Status:  res.Status,
@@ -81,8 +81,8 @@ func NewFetchInternalErrorResponseBody(res *fetcher.Error) *FetchInternalErrorRe
 }
 
 // NewFetchFetchPayload builds a fetcher service fetch endpoint payload.
-func NewFetchFetchPayload(url_ string) *fetcher.FetchPayload {
-	return &fetcher.FetchPayload{
+func NewFetchFetchPayload(url_ string) *fetchersvc.FetchPayload {
+	return &fetchersvc.FetchPayload{
 		URL: url_,
 	}
 }

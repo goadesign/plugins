@@ -26,11 +26,12 @@ func ExampleServerFiles(genpkg string, root *httpdesign.RootExpr) []*codegen.Fil
 func dummyServiceFile(genpkg string, svc *httpdesign.ServiceExpr) *codegen.File {
 	path := codegen.SnakeCase(svc.Name()) + ".go"
 	data := httpcodegen.HTTPServices.Get(svc.Name())
+	pkgName := httpcodegen.HTTPServices.Get(svc.Name()).Service.PkgName
 	sections := []*codegen.SectionTemplate{
 		codegen.Header("", codegen.KebabCase(design.Root.API.Name), []*codegen.ImportSpec{
 			{Path: "context"},
 			{Path: "github.com/go-kit/kit/log"},
-			{Path: genpkg + "/" + codegen.Goify(svc.Name(), false)},
+			{Path: filepath.Join(genpkg, svc.Name()), Name: pkgName},
 		}),
 		{Name: "goakit-dummy-service-struct", Source: dummyServiceStructT, Data: data},
 	}
@@ -70,11 +71,12 @@ func exampleMain(genpkg string, root *httpdesign.RootExpr) *codegen.File {
 	for _, svc := range root.HTTPServices {
 		pkgName := httpcodegen.HTTPServices.Get(svc.Name()).Service.PkgName
 		specs = append(specs, &codegen.ImportSpec{
-			Path: filepath.Join(genpkg, "http", pkgName, "kitserver"),
+			Path: filepath.Join(genpkg, "http", svc.Name(), "kitserver"),
 			Name: pkgName + "svr",
 		})
 		specs = append(specs, &codegen.ImportSpec{
-			Path: filepath.Join(genpkg, pkgName),
+			Path: filepath.Join(genpkg, svc.Name()),
+			Name: pkgName,
 		})
 	}
 	sections := []*codegen.SectionTemplate{
