@@ -308,6 +308,11 @@ func (s *FlowExpr) Finalize() {
 // hasTaggedField returns true if the given attribute is an object that has an
 // attribute with the given tag.
 func hasTaggedField(att *design.AttributeExpr, tag string) bool {
+	// note: this is called before Finalize and therefore there is no guarantee
+	// that the payload attribute has been set to Empty if nil.
+	if att == nil {
+		return false
+	}
 	obj := design.AsObject(att.Type)
 	if obj == nil {
 		return false
