@@ -1072,10 +1072,10 @@ func Parent(name string) {
 	dsl.Parent(name)
 }
 
-// Path defines the API or service base path, i.e. the common path prefix to all
+// Path defines an API or service base path, i.e. a common path prefix to all
 // the API or service methods. The path may define wildcards (see GET for a
 // description of the wildcard syntax). The corresponding parameters must be
-// described using Params.
+// described using Params. Multiple base paths may be defined for services.
 func Path(val string) {
 	dsl.Path(val)
 }
