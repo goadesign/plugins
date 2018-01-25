@@ -75,7 +75,24 @@ func PreflightPaths(svc string) []string {
 			if r.Method == "OPTIONS" {
 				continue
 			}
-			fp := r.FullPath()
+			fps := r.FullPaths()
+			for _, fp := range fps {
+				found := false
+				for _, p := range paths {
+					if fp == p {
+						found = true
+						break
+					}
+				}
+				if !found {
+					paths = append(paths, fp)
+				}
+			}
+		}
+	}
+	for _, fs := range s.FileServers {
+		fps := fs.RequestPaths
+		for _, fp := range fps {
 			found := false
 			for _, p := range paths {
 				if fp == p {
@@ -86,19 +103,6 @@ func PreflightPaths(svc string) []string {
 			if !found {
 				paths = append(paths, fp)
 			}
-		}
-	}
-	for _, fs := range s.FileServers {
-		fp := fs.RequestPath
-		found := false
-		for _, p := range paths {
-			if fp == p {
-				found = true
-				break
-			}
-		}
-		if !found {
-			paths = append(paths, fp)
 		}
 	}
 	return paths

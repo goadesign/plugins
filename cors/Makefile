@@ -16,7 +16,7 @@ gen:
 	goa gen goa.design/plugins/cors/examples/calc/design
 
 aliases:
-	@aliaser -src goa.design/goa/http/dsl -dest $(PLUGIN_DIR)/$(PLUGIN_NAME)/dsl > /dev/null
+	@aliaser -dsl -src goa.design/goa/http/dsl -dest $(PLUGIN_DIR)/$(PLUGIN_NAME)/dsl > /dev/null
 
 test-aliaser: aliases
 	@if [ "`git diff */aliases.go | tee /dev/stderr`" ]; then \

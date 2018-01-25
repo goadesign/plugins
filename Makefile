@@ -13,5 +13,5 @@ test-plugins:
 
 test-aliaser:
 	@for p in $(PLUGINS) ; do \
-		make -C $$p test-aliaser || exit 1; \
+		make -k -C $$p test-aliaser || exit 1; \
 	done

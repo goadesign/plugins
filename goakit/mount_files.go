@@ -3,6 +3,7 @@ package goakit
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"goa.design/goa/codegen"
 	httpcodegen "goa.design/goa/http/codegen"
@@ -38,11 +39,14 @@ func mountFile(svc *httpdesign.ServiceExpr) *codegen.File {
 			Data:   e,
 		})
 	}
+	fm := codegen.TemplateFuncs()
+	fm["join"] = strings.Join
 	for _, fs := range data.FileServers {
 		sections = append(sections, &codegen.SectionTemplate{
-			Name:   "goakit-mount-file-server",
-			Source: mountFileServerT,
-			Data:   fs,
+			Name:    "goakit-mount-file-server",
+			Source:  mountFileServerT,
+			Data:    fs,
+			FuncMap: fm,
 		})
 	}
 
@@ -65,14 +69,18 @@ func {{ .MountHandler }}(mux goahttp.Muxer, h http.Handler) {
 `
 
 // input: FileServerData
-const mountFileServerT = `{{ printf "%s configures the mux to serve GET request made to %q." .MountHandler .RequestPath | comment }}
+const mountFileServerT = `{{ printf "%s configures the mux to serve GET request made to %q." .MountHandler (join .RequestPaths ", ") | comment }}
 func {{ .MountHandler }}(mux goahttp.Muxer) {
 {{- if .IsDir }}
-	mux.Handle("GET", "{{ .RequestPath }}", http.FileServer(http.Dir({{ printf "%q" .FilePath }})))
+	{{- range .RequestPaths }}
+	mux.Handle("GET", "{{ . }}", http.FileServer(http.Dir({{ printf "%q" $.FilePath }})))
+	{{- end }}
 {{- else }}
-	mux.Handle("GET", "{{ .RequestPath }}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, {{ printf "%q" .FilePath }})
+	{{- range .RequestPaths }}
+	mux.Handle("GET", "{{ . }}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, {{ printf "%q" $.FilePath }})
 		}))
+	{{- end }}
 {{- end }}
 }
 `
