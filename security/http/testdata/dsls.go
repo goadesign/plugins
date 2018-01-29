@@ -78,7 +78,7 @@ var JWTDSL = func() {
 			})
 			HTTP(func() {
 				POST("/login")
-				Header("Authorization")
+				Header("token:Authorization")
 			})
 		})
 	})
