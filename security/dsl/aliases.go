@@ -874,6 +874,45 @@ func MapOf(k, v interface{}, fn ...func()) *design.Map {
 	return dsl.MapOf(k, v, fn...)
 }
 
+// MapParams describes the query string parameters in a HTTP request.
+//
+// MapParams must appear in a Method HTTP expression to map the query string
+// parameters with the Method's Payload.
+//
+// MapParams accepts one optional argument which specifes the Payload
+// attribute to which the query string parameters must be mapped. This Payload
+// attribute must be a map. If no argument is specified, the query string
+// parameters are mapped with the entire Payload (the Payload must be a map).
+//
+// Example:
+//
+//     var _ = Service("account", func() {
+//         Method("index", func() {
+//             Payload(MapOf(String, Int))
+//             HTTP(func() {
+//                 GET("/")
+//                 MapParams()
+//             })
+//         })
+//    })
+//
+//    var _ = Service("account", func() {
+//        Method("show", func() {
+//            Payload(func() {
+//                Attribute("p", MapOf(String, String))
+//                Attribute("id", String)
+//            })
+//            HTTP(func() {
+//                GET("/{id}")
+//                MapParams("p")
+//            })
+//        })
+//    })
+//
+func MapParams(args ...interface{}) {
+	dsl.MapParams(args...)
+}
+
 // MaxLength adds a "maxItems" validation to the attribute.
 // See http://json-schema.org/latest/json-schema-validation.html#anchor42.
 func MaxLength(val int) {
