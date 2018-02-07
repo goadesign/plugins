@@ -656,7 +656,10 @@ func Files(path, filename string, fns ...func()) {
 //
 // FormatRegexp: RE2 regular expression
 //
+// FormatJSON: JSON text
+//
 // FormatRFC1123: RFC1123 date time
+//
 func Format(f design.ValidationFormat) {
 	dsl.Format(f)
 }
@@ -1389,17 +1392,21 @@ func Required(names ...string) {
 //        Payload(CreatePayload)
 //        Result(CreateResult)
 //        Error("an_error")
-//        HTTP(func() {
-//            Response(StatusCreated) // Uses HTTP status code 201 Created and
-//                                    // CreateResult type to describe body
 //
+//        HTTP(func() {
 //            Response(func() {
 //                Description("Response used when item already exists")
 //                Code(StatusNoContent) // HTTP status code set using Code
 //                Body(Empty)           // Override method result type
 //            })
 //
+//            Response(StatusCreated, func () { // Uses HTTP status code 201 Created and
+//                Tag("outcome", "created")     // CreateResult type to describe body
+//            })
+//
 //            Response(StatusAccepted, func() {
+//                Tag("outcome", "accepted")    // Tag identifies result struct field and field
+//                                              // value used to identify how to encode response.
 //                Description("Response used for async creations")
 //                Body(func() {
 //                    Attribute("taskHref", String, "API href to async task")
