@@ -72,11 +72,15 @@ func exampleMain(genpkg string, root *httpdesign.RootExpr) *codegen.File {
 		pkgName := httpcodegen.HTTPServices.Get(svc.Name()).Service.PkgName
 		specs = append(specs, &codegen.ImportSpec{
 			Path: filepath.Join(genpkg, "http", svc.Name(), "kitserver"),
-			Name: pkgName + "svr",
+			Name: pkgName + "kitsvr",
 		})
 		specs = append(specs, &codegen.ImportSpec{
 			Path: filepath.Join(genpkg, svc.Name()),
 			Name: pkgName,
+		})
+		specs = append(specs, &codegen.ImportSpec{
+			Path: filepath.Join(genpkg, "http", codegen.SnakeCase(svc.Name()), "server"),
+			Name: pkgName + "svr",
 		})
 	}
 	sections := []*codegen.SectionTemplate{
@@ -195,6 +199,7 @@ const mainT = `func main() {
 		{{- range .Endpoints }}
 		{{ .ServicePkgName }}{{ .Method.VarName }}Handler *kithttp.Server
 		{{- end }}
+		{{ .Service.PkgName }}Server *{{.Service.PkgName}}svr.Server
 	{{- end }}
 	)
 	{
@@ -203,23 +208,28 @@ const mainT = `func main() {
 		{{ .ServicePkgName }}{{ .Method.VarName }}Handler = kithttp.NewServer(
 			endpoint.Endpoint({{ .ServicePkgName }}e.{{ .Method.VarName }}),
 			{{- if .Payload.Ref }}
-			{{ .ServicePkgName}}svr.{{ .RequestDecoder }}(mux, dec),
+			{{ .ServicePkgName}}kitsvr.{{ .RequestDecoder }}(mux, dec),
 			{{- else }}
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			{{- end }}
-			{{ .ServicePkgName}}svr.{{ .ResponseEncoder }}(enc),
+			{{ .ServicePkgName}}kitsvr.{{ .ResponseEncoder }}(enc),
 		)
 		{{- end }}
+		{{-  if .Endpoints }}
+		{{ .Service.PkgName }}Server = {{ .Service.PkgName }}svr.New({{ .Service.PkgName }}e, mux, dec, enc)
+		{{-  else }}
+		{{ .Service.PkgName }}Server = {{ .Service.PkgName }}svr.New(nil, mux, dec, enc)
+		{{-  end }}
 	{{- end }}
 	}
 
 	// Configure the mux.
 	{{- range .Services }}{{ $service := . }}
 		{{- range .Endpoints }}
-	{{ .ServicePkgName}}svr.{{ .MountHandler }}(mux, {{ .ServicePkgName }}{{ .Method.VarName }}Handler)
+	{{ .ServicePkgName}}kitsvr.{{ .MountHandler }}(mux, {{ .ServicePkgName }}{{ .Method.VarName }}Handler)
 		{{- end }}
 		{{- range .FileServers }}
-	{{ $service.Service.PkgName}}svr.{{ .MountHandler }}(mux)
+	{{ $service.Service.PkgName}}kitsvr.{{ .MountHandler }}(mux)
 		{{- end }}
 	{{- end }}
 
@@ -239,6 +249,15 @@ const mainT = `func main() {
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: *addr, Handler: mux}
 	go func() {
+		{{- range .Services }}
+		for _, m := range {{ .Service.PkgName }}Server.Mounts {
+			{{- if .FileServers }}
+			logger.Log("info", fmt.Sprintf("service %s file %s mounted on %s %s", {{ .Service.PkgName }}Server.Service(), m.Method, m.Verb, m.Pattern))
+			{{- else }}
+			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", {{ .Service.PkgName }}Server.Service(), m.Method, m.Verb, m.Pattern))
+			{{- end }}
+		}
+		{{- end }}
 		logger.Log("listening", *addr)
 		errc <- srv.ListenAndServe()
 	}()
