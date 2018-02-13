@@ -32,8 +32,8 @@ func main() {
 	// your log package of choice. The goa.design/middleware/logging/...
 	// packages define log adapters for common log packages.
 	var (
-		logger  *log.Logger
 		adapter logging.Logger
+		logger  *log.Logger
 	)
 	{
 		logger = log.New(os.Stderr, "[calc] ", log.Ltime)
@@ -42,10 +42,10 @@ func main() {
 
 	// Create the structs that implement the services.
 	var (
-		calcs calcsvc.Service
+		calcsvcSvc calcsvc.Service
 	)
 	{
-		calcs = calc.NewCalc(logger, "http", *adderAddr)
+		calcsvcSvc = calc.NewCalc(logger, "http", *adderAddr)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other
@@ -54,7 +54,7 @@ func main() {
 		calcsvcEndpoints *calcsvc.Endpoints
 	)
 	{
-		calcsvcEndpoints = calcsvc.NewSecureEndpoints(calcs)
+		calcsvcEndpoints = calcsvc.NewSecureEndpoints(calcsvcSvc, calc.BasicAuthFunc, calc.JWTAuthFunc)
 	}
 
 	// Provide the transport specific request decoder and response encoder.
@@ -124,7 +124,8 @@ func main() {
 	logger.Printf("exiting (%v)", <-errc)
 
 	// Shutdown gracefully with a 30s timeout.
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	srv.Shutdown(ctx)
 
 	logger.Println("exited")

@@ -31,8 +31,8 @@ func main() {
 	// your log package of choice. The goa.design/middleware/logging/...
 	// packages define log adapters for common log packages.
 	var (
-		logger  *log.Logger
 		adapter logging.Logger
+		logger  *log.Logger
 	)
 	{
 		logger = log.New(os.Stderr, "[multiauth] ", log.Ltime)
@@ -53,7 +53,7 @@ func main() {
 		securedserviceEndpoints *securedservice.Endpoints
 	)
 	{
-		securedserviceEndpoints = securedservice.NewSecureEndpoints(securedserviceSvc)
+		securedserviceEndpoints = securedservice.NewSecureEndpoints(securedserviceSvc, multiauth.AuthBasicAuthFn, multiauth.AuthJWTFn, multiauth.AuthAPIKeyFn, multiauth.AuthOAuth2Fn)
 	}
 
 	// Provide the transport specific request decoder and response encoder.
@@ -123,7 +123,8 @@ func main() {
 	logger.Printf("exiting (%v)", <-errc)
 
 	// Shutdown gracefully with a 30s timeout.
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	srv.Shutdown(ctx)
 
 	logger.Println("exited")

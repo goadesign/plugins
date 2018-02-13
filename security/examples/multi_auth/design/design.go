@@ -33,6 +33,14 @@ var BasicAuth = BasicAuthSecurity("basic", func() {
 	Description("Basic authentication used to authenticate security principal during signin")
 })
 
+// OAuth2Auth defines a security scheme that uses OAuth2 tokens.
+var OAuth2Auth = OAuth2Security("oauth2", func() {
+	AuthorizationCodeFlow("/authorization", "/token", "/refresh")
+	Description(`Secures endpoint by requiring a valid OAuth2 token retrieved via the signin endpoint. Supports scopes "api:read" and "api:write".`)
+	Scope("api:read", "Read-only access")
+	Scope("api:write", "Read and write access")
+})
+
 var _ = Service("secured_service", func() {
 	Description("The secured service exposes endpoints that require valid authorization credentials.")
 	Method("signin", func() {
@@ -129,7 +137,17 @@ var _ = Service("secured_service", func() {
 			Scope("api:read")  // Enforce presence of both "api:read"
 			Scope("api:write") // and "api:write" scopes in JWT claims.
 		})
+		Security(OAuth2Auth, BasicAuth, func() {
+			Scope("api:read")  // Enforce presence of both "api:read"
+			Scope("api:write") // and "api:write" scopes in OAuth2 claims.
+		})
 		Payload(func() {
+			Username("username", String, "Username used to perform signin", func() {
+				Example("user")
+			})
+			Password("password", String, "Username used to perform signin", func() {
+				Example("password")
+			})
 			APIKey("api_key", "key", String, func() {
 				Description("API key")
 				Example("abcdef12345")
@@ -138,6 +156,7 @@ var _ = Service("secured_service", func() {
 				Description("JWT used for authentication")
 				Example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ")
 			})
+			AccessToken("oauth_token", String)
 		})
 		Result(String, func() {
 			Example("JWT secured data")

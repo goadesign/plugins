@@ -120,22 +120,23 @@ type (
 // svc.
 func Requirements(svc, ep string) []*SecurityExpr {
 	var sexpr []*SecurityExpr
-	found := false
+	var found, noSecurity bool
 	for _, es := range Root.EndpointSecurity {
 		if es.Method.Service.Name == svc && es.Method.Name == ep {
 			// Handle special case of no security
 			for _, s := range es.Schemes {
 				if s.Kind == NoKind {
-					sexpr = nil
-					found = true
+					noSecurity = true
 					break
 				}
 			}
-			sexpr = append(sexpr, es.SecurityExpr)
-			found = true
+			if !noSecurity {
+				sexpr = append(sexpr, es.SecurityExpr)
+				found = true
+			}
 		}
 	}
-	if found {
+	if found || noSecurity {
 		return sexpr
 	}
 	for _, ss := range Root.ServiceSecurity {
@@ -159,20 +160,29 @@ func (s *SecurityExpr) EvalName() string {
 	return "Security" + suffix
 }
 
-// EvalName returns the generic definition name used in error messages.
-func (s *SchemeExpr) EvalName() string {
+// Type returns the type of the scheme.
+func (s *SchemeExpr) Type() string {
 	switch s.Kind {
 	case OAuth2Kind:
-		return "OAuth2Security"
+		return "OAuth2"
 	case BasicAuthKind:
-		return "BasicAuthSecurity"
+		return "BasicAuth"
 	case APIKeyKind:
-		return "APIKeySecurity"
+		return "APIKey"
 	case JWTKind:
-		return "JWTSecurity"
+		return "JWT"
 	default:
 		return "[unknown]"
 	}
+}
+
+// EvalName returns the generic definition name used in error messages.
+func (s *SchemeExpr) EvalName() string {
+	t := s.Type()
+	if t == "[unknown]" {
+		return t
+	}
+	return t + "Security"
 }
 
 // Validate ensures that TokenURL and AuthorizationURL are valid URLs.
@@ -302,6 +312,22 @@ func (s *FlowExpr) Finalize() {
 		ru.Scheme = scheme
 		ru.Host = host
 		s.RefreshURL = ru.String()
+	}
+}
+
+// Type returns the grant type of the OAuth2 grant.
+func (s *FlowExpr) Type() string {
+	switch s.Kind {
+	case AuthorizationCodeFlowKind:
+		return "authorization_code"
+	case ImplicitFlowKind:
+		return "implicit"
+	case PasswordFlowKind:
+		return "password"
+	case ClientCredentialsFlowKind:
+		return "client_credentials"
+	default:
+		return "[unknown]"
 	}
 }
 

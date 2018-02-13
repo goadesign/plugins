@@ -43,7 +43,9 @@ var BasicAuthDSL = func() {
 var OAuth2DSL = func() {
 	Service("OAuth2", func() {
 		Method("login", func() {
-			Security(OAuth2Auth)
+			Security(OAuth2Auth, func() {
+				Scope("api:write")
+			})
 			Payload(func() {
 				AccessToken("token", String)
 			})
@@ -72,7 +74,9 @@ var OAuth2InParamDSL = func() {
 var JWTDSL = func() {
 	Service("JWT", func() {
 		Method("login", func() {
-			Security(JWTAuth)
+			Security(JWTAuth, func() {
+				Scope("api:read")
+			})
 			Payload(func() {
 				Token("token", String)
 			})

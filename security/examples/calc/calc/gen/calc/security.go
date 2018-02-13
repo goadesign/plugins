@@ -16,49 +16,45 @@ import (
 
 // NewSecureEndpoints wraps the methods of a calc service with security scheme
 // aware endpoints.
-func NewSecureEndpoints(s Service) *Endpoints {
+func NewSecureEndpoints(s Service, authBasicAuthFn security.AuthorizeBasicAuthFunc, authJWTFn security.AuthorizeJWTFunc) *Endpoints {
 	return &Endpoints{
-		Login: SecureLogin(NewLoginEndpoint(s)),
-		Add:   SecureAdd(NewAddEndpoint(s)),
+		Login: SecureLogin(NewLoginEndpoint(s), authBasicAuthFn),
+		Add:   SecureAdd(NewAddEndpoint(s), authJWTFn),
 	}
 }
 
 // SecureLogin returns an endpoint function which initializes the context with
 // the security requirements for the method "login" of service "calc".
-func SecureLogin(ep goa.Endpoint) goa.Endpoint {
-	reqs := []*security.Requirement{
-		&security.Requirement{
-			Schemes: []*security.Scheme{
-				&security.Scheme{
-					Kind: security.SchemeKind(2),
-					Name: "basic",
-				},
-			},
-		},
-	}
+func SecureLogin(ep goa.Endpoint, authBasicAuthFn security.AuthorizeBasicAuthFunc) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		ctx = context.WithValue(ctx, security.ContextKey, reqs)
+		p := req.(*LoginPayload)
+		var err error
+		basicAuthSch := security.BasicAuthScheme{
+			Name: "basic",
+		}
+		ctx, err = authBasicAuthFn(ctx, p.User, p.Password, &basicAuthSch)
+		if err != nil {
+			return nil, err
+		}
 		return ep(ctx, req)
 	}
 }
 
 // SecureAdd returns an endpoint function which initializes the context with
 // the security requirements for the method "add" of service "calc".
-func SecureAdd(ep goa.Endpoint) goa.Endpoint {
-	reqs := []*security.Requirement{
-		&security.Requirement{
-			RequiredScopes: []string{"calc:add"},
-			Schemes: []*security.Scheme{
-				&security.Scheme{
-					Kind:   security.SchemeKind(4),
-					Name:   "jwt",
-					Scopes: []string{"calc:add"},
-				},
-			},
-		},
-	}
+func SecureAdd(ep goa.Endpoint, authJWTFn security.AuthorizeJWTFunc) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		ctx = context.WithValue(ctx, security.ContextKey, reqs)
+		p := req.(*AddPayload)
+		var err error
+		jwtSch := security.JWTScheme{
+			Name:           "jwt",
+			Scopes:         []string{"calc:add"},
+			RequiredScopes: []string{"calc:add"},
+		}
+		ctx, err = authJWTFn(ctx, p.Token, &jwtSch)
+		if err != nil {
+			return nil, err
+		}
 		return ep(ctx, req)
 	}
 }

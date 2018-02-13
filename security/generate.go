@@ -1,6 +1,7 @@
 package security
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -8,6 +9,7 @@ import (
 	"goa.design/goa/codegen/service"
 	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
+	seccodegen "goa.design/plugins/security/codegen"
 	"goa.design/plugins/security/design"
 
 	// Initializes the HTTP generator
@@ -24,6 +26,8 @@ type (
 		VarName string
 		// PkgName is the name of the service package.
 		PkgName string
+		// SecurityPkgName is the name of the security package.
+		SecurityPkgName string
 		// EndpointsVarName is the Go endpoints struct name.
 		EndpointsVarName string
 		// Methods list the endpoint constructors.
@@ -47,10 +51,23 @@ type (
 		ServiceName string
 		// MethodName is the name of the corresponding service method.
 		MethodName string
+		// Payload is the payload type from which to extract information.
+		Payload string
+		// PayloadRef is the reference to the payload.
+		PayloadRef string
 		// Requirements lists the security requirements that apply to
 		// the secured method.
 		Requirements []*design.SecurityExpr
+		// SecurityPkgName is the name of the security package.
+		SecurityPkgName string
+		// Schemes is the security schemes for the method.
+		Schemes []*seccodegen.SchemeData
 	}
+
+	// AuthorizeFuncs is the type for holding the authorization functions used by
+	// the service endpoints. It is a map with key as the scheme type and value
+	// as the authorize function type.
+	AuthorizeFuncs map[string]string
 )
 
 // Register the plugin Generator functions.
@@ -78,6 +95,52 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 	return files, nil
 }
 
+// Example modified the generated main function so that the secured endpoints
+// context gets initialized with the security requirements.
+func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
+	var (
+		data   *ServiceData
+		apiPkg string
+	)
+	for _, root := range roots {
+		switch r := root.(type) {
+		case *goadesign.RootExpr:
+			apiPkg = strings.ToLower(codegen.Goify(r.API.Name, false))
+			for _, s := range r.Services {
+				data = BuildSecureServiceData(s)
+			}
+		}
+	}
+	if data != nil {
+		svcSchemes := data.Schemes()
+		authFuncs := make([]string, 0, len(svcSchemes))
+		for _, s := range svcSchemes {
+			authFuncs = append(authFuncs, fmt.Sprintf("%s.Auth%sFn", apiPkg, s.Type()))
+		}
+		for _, f := range files {
+			for _, s := range f.Section("service-main") {
+				s.Source = strings.Replace(
+					s.Source,
+					"{{ .Service.PkgName }}Endpoints = {{ .Service.PkgName }}.NewEndpoints({{ .Service.PkgName }}Svc)",
+					fmt.Sprintf("{{ .Service.PkgName }}Endpoints = {{ .Service.PkgName }}.NewSecureEndpoints({{ .Service.PkgName }}Svc, %s)", strings.Join(authFuncs, ", ")),
+					1,
+				)
+			}
+			if s := f.Section("dummy-endpoint"); len(s) > 0 {
+				for _, h := range f.Section("source-header") {
+					codegen.AddImport(h, codegen.SimpleImport("goa.design/plugins/security"))
+				}
+				f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
+					Name:   "dummy-authorize-funcs",
+					Source: dummyAuthFuncsT,
+					Data:   data,
+				})
+			}
+		}
+	}
+	return files, nil
+}
+
 // SecureEndpointFile returns the file containing the secure endpoint
 // definitions.
 func SecureEndpointFile(genpkg string, svc *goadesign.ServiceExpr) *codegen.File {
@@ -91,19 +154,20 @@ func SecureEndpointFile(genpkg string, svc *goadesign.ServiceExpr) *codegen.File
 			{Path: "goa.design/goa"},
 			{Path: "goa.design/plugins/security"},
 		})
-	init := &codegen.SectionTemplate{
+	sections := []*codegen.SectionTemplate{header}
+	sections = append(sections, &codegen.SectionTemplate{
 		Name:    "secure-endpoint-init",
 		Source:  secureEndpointsInitT,
 		Data:    data,
 		FuncMap: codegen.TemplateFuncs(),
-	}
-	sections := []*codegen.SectionTemplate{header, init}
+	})
 	for _, m := range data.Methods {
 		if len(m.Requirements) == 0 {
 			continue
 		}
 		sections = append(sections, &codegen.SectionTemplate{
-			Source: secureEndpointContextT,
+			Name:   "secure-endpoint",
+			Source: secureEndpointT,
 			Data:   m,
 		})
 	}
@@ -116,22 +180,6 @@ func SecureEndpointFile(genpkg string, svc *goadesign.ServiceExpr) *codegen.File
 	}
 }
 
-// Example modified the generated main function so that the secured endpoints
-// context gets initialized with the security requirements.
-func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
-	for _, f := range files {
-		for _, s := range f.Section("service-main") {
-			s.Source = strings.Replace(
-				s.Source,
-				"{{ .Service.PkgName }}Endpoints = {{ .Service.PkgName }}.NewEndpoints({{ .Service.PkgName }}Svc)",
-				"{{ .Service.PkgName }}Endpoints = {{ .Service.PkgName }}.NewSecureEndpoints({{ .Service.PkgName }}Svc)",
-				1,
-			)
-		}
-	}
-	return files, nil
-}
-
 // BuildSecureServiceData builds the data needed to render the secured endpoints
 // struct constructor and the secure endpoint methods.
 func BuildSecureServiceData(svc *goadesign.ServiceExpr) *ServiceData {
@@ -139,15 +187,23 @@ func BuildSecureServiceData(svc *goadesign.ServiceExpr) *ServiceData {
 	data := &ServiceData{
 		Name:             svc.Name,
 		PkgName:          s.PkgName,
+		SecurityPkgName:  "security",
 		VarName:          service.ServiceInterfaceName,
 		EndpointsVarName: service.EndpointsStructName,
 	}
 	for _, m := range svc.Methods {
 		reqs := design.Requirements(svc.Name, m.Name)
-		varn := s.Method(m.Name).VarName
+		md := s.Method(m.Name)
+		varn := md.VarName
 		cn := "New" + varn
 		if len(reqs) > 0 {
 			cn = "Secure" + varn
+		}
+		var schemeData []*seccodegen.SchemeData
+		for _, req := range reqs {
+			for _, sch := range req.Schemes {
+				schemeData = append(schemeData, seccodegen.BuildSchemeData(sch, m))
+			}
 		}
 		data.Methods = append(data.Methods, &MethodData{
 			VarName:          cn,
@@ -155,67 +211,141 @@ func BuildSecureServiceData(svc *goadesign.ServiceExpr) *ServiceData {
 			FieldName:        varn,
 			ServiceName:      svc.Name,
 			MethodName:       m.Name,
+			Payload:          md.Payload,
+			PayloadRef:       md.PayloadRef,
 			Requirements:     reqs,
+			SecurityPkgName:  data.SecurityPkgName,
+			Schemes:          schemeData,
 		})
 	}
 	return data
 }
 
+// Schemes returns the unique security schemes used by all the endpoints
+// in the service.
+func (s *ServiceData) Schemes() []*design.SchemeExpr {
+	var schemes []*design.SchemeExpr
+	schemesFound := map[design.SchemeKind]bool{}
+	for _, m := range s.Methods {
+		for _, e := range m.Schemes {
+			if _, ok := schemesFound[e.Scheme.Kind]; ok {
+				continue
+			}
+			schemes = append(schemes, e.Scheme)
+			schemesFound[e.Scheme.Kind] = true
+		}
+	}
+	return schemes
+}
+
+// SchemeData returns the scheme data for the given scheme.
+func (m *MethodData) SchemeData(s *design.SchemeExpr) *seccodegen.SchemeData {
+	for _, e := range m.Schemes {
+		if e.Scheme.Kind == s.Kind {
+			return e
+		}
+	}
+	return nil
+}
+
 // input: securedServiceData
 const secureEndpointsInitT = `{{ printf "NewSecure%s wraps the methods of a %s service with security scheme aware endpoints." .EndpointsVarName .Name | comment }}
-	func NewSecure{{ .EndpointsVarName }}(s {{ .VarName }}) *{{ .EndpointsVarName }} {
+	func NewSecure{{ .EndpointsVarName }}(s {{ .VarName }}{{ range .Schemes }}, auth{{ .Type }}Fn {{ $.SecurityPkgName }}.Authorize{{ .Type }}Func{{ end }}) *{{ .EndpointsVarName }} {
 		return &{{ .EndpointsVarName }}{
 			{{- range .Methods }}
-			{{ .FieldName }}: {{ .VarName }}{{ if .Requirements }}({{ .NonSecureVarName }}{{ end }}(s){{ if .Requirements }}){{ end }},
+			{{ .FieldName }}: {{ if .Requirements }}{{ .VarName }}({{ end }}{{ .NonSecureVarName }}(s){{ if .Requirements }}{{ range .Schemes }}, auth{{ .Scheme.Type }}Fn{{ end }}){{ end }},
 			{{- end }}
 		}
 	}
-	`
+`
 
 // input: securedServiceMethodData
-const secureEndpointContextT = `{{ printf "%s returns an endpoint function which initializes the context with the security requirements for the method %q of service %q." .VarName .MethodName .ServiceName | comment }}
-	func {{ .VarName }}(ep goa.Endpoint) goa.Endpoint {
-		reqs := []*security.Requirement{
-			{{- range $req := .Requirements }}
-			&security.Requirement{
-				{{- if $req.Scopes }}
-				RequiredScopes: []string{ {{- range $req.Scopes }}{{ printf "%q" . }}, {{ end }} },
+const secureEndpointT = `{{ printf "%s returns an endpoint function which initializes the context with the security requirements for the method %q of service %q." .VarName .MethodName .ServiceName | comment }}
+func {{ .VarName }}(ep goa.Endpoint{{ range .Schemes }}, auth{{ .Scheme.Type }}Fn {{ $.SecurityPkgName }}.Authorize{{ .Scheme.Type }}Func{{ end }}) goa.Endpoint {
+	return func(ctx context.Context, req interface{}) (interface{}, error) {
+		p := req.({{ if .PayloadRef }}*{{ end }}{{ .Payload }})
+		var err error
+		{{- range $ridx, $r := .Requirements }}
+			{{- if ne $ridx 0 }}
+		if err != nil {
+			{{- end }}
+			{{- range $sidx, $s := .Schemes }}
+				{{- $scheme := $.SchemeData $s }}
+				{{- if ne $sidx 0 }}
+			if err == nil {
 				{{- end }}
-				Schemes: []*security.Scheme{
-					{{- range $scheme := .Schemes }}
-					&security.Scheme{
-						Kind: security.SchemeKind({{ $scheme.Kind }}),
-						Name: {{ printf "%q" $scheme.SchemeName }},
-						{{- if .Scopes }}
-						Scopes: []string{ {{- range $scheme.Scopes }}{{ printf "%q" .Name }}, {{ end }} },
-						{{- end }}
-						{{- if .Flows }}
-						Flows: []*security.OAuthFlow{
-							{{- range $flow := .Flows }}
-							&security.OAuthFlow{
-								Kind: security.FlowKind({{ $flow.Kind }}),
-								{{- if .AuthorizationURL }}
-								AuthorizationURL: {{ printf "%q" .AuthorizationURL }},
-								{{- end }}
-								{{- if .TokenURL }}
-								TokenURL: {{ printf "%q" .TokenURL }},
-								{{- end }}
-								{{- if .RefreshURL }}
-								RefreshURL: {{ printf "%q" .RefreshURL }},
-								{{- end }}
-							},
+				{{- if eq .Type "BasicAuth" }}
+				basicAuthSch := {{ $.SecurityPkgName }}.BasicAuthScheme{
+					Name: {{ printf "%q" .SchemeName }},
+				}
+				ctx, err = auth{{ .Type }}Fn(ctx, {{ if $scheme.UsernamePointer }}*{{ end }}p.{{ $scheme.UsernameField }}, {{ if $scheme.PasswordPointer }}*{{ end }}p.{{ $scheme.PasswordField }}, &basicAuthSch)
+
+				{{- else if eq .Type "APIKey" }}
+				apiKeySch := {{ $.SecurityPkgName }}.APIKeyScheme{
+					Name: {{ printf "%q" .SchemeName }},
+				}
+				ctx, err = auth{{ .Type }}Fn(ctx, {{ if $scheme.CredPointer }}*{{ end }}p.{{ $scheme.CredField }}, &apiKeySch)
+
+				{{- else if eq .Type "JWT" }}
+				jwtSch := {{ $.SecurityPkgName }}.JWTScheme{
+					Name: {{ printf "%q" .SchemeName }},
+					Scopes: []string{ {{- range .Scopes }}{{ printf "%q" .Name }}, {{ end }} },
+					RequiredScopes: []string{ {{- range $r.Scopes }}{{ printf "%q" . }}, {{ end }} },
+				}
+				ctx, err = auth{{ .Type }}Fn(ctx, {{ if $scheme.CredPointer }}*{{ end }}p.{{ $scheme.CredField }}, &jwtSch)
+
+				{{- else if eq .Type "OAuth2" }}
+				oauth2Sch := {{ $.SecurityPkgName }}.OAuth2Scheme{
+					Name: {{ printf "%q" .SchemeName }},
+					Scopes: []string{ {{- range .Scopes }}{{ printf "%q" .Name }}, {{ end }} },
+					RequiredScopes: []string{ {{- range $r.Scopes }}{{ printf "%q" . }}, {{ end }} },
+					{{- if .Flows }}
+					Flows: []*security.OAuthFlow{
+						{{- range .Flows }}
+						&security.OAuthFlow{
+							Kind: security.FlowKind({{ .Kind }}),
+							{{- if .AuthorizationURL }}
+							AuthorizationURL: {{ printf "%q" .AuthorizationURL }},
+							{{- end }}
+							{{- if .TokenURL }}
+							TokenURL: {{ printf "%q" .TokenURL }},
+							{{- end }}
+							{{- if .RefreshURL }}
+							RefreshURL: {{ printf "%q" .RefreshURL }},
 							{{- end }}
 						},
 						{{- end }}
 					},
 					{{- end }}
-				},
-			},
+				}
+				ctx, err = auth{{ .Type }}Fn(ctx, {{ if $scheme.CredPointer }}*{{ end }}p.{{ $scheme.CredField }}, &oauth2Sch)
+
+				{{- else }}
+				{{ printf "unsupported scheme type %q" .Type | comment }}
+
+				{{- end }}
+				{{- if ne $sidx 0 }}
+				}
+				{{- end }}
 			{{- end }}
+			{{- if ne $ridx 0 }}
 		}
-		return func(ctx context.Context, req interface{}) (interface{}, error) {
-			ctx = context.WithValue(ctx, security.ContextKey, reqs)
-			return ep(ctx, req)
+			{{- end }}
+		{{- end }}
+		if err != nil {
+			return nil, err
 		}
+		return ep(ctx, req)
 	}
-	`
+}
+`
+
+const dummyAuthFuncsT = `{{- range .Schemes }}
+
+{{ printf "Auth%sFn implements the authorization logic for %s scheme." .Type .Type | comment }}
+func Auth{{ .Type }}Fn(ctx context.Context, {{ if eq .Type "BasicAuth" }}user, pass{{ else if eq .Type "APIKey" }}key{{ else }}token{{ end }} string, s *{{ $.SecurityPkgName }}.{{ .Type }}Scheme) (context.Context, error) {
+	// Add authorization logic
+	return ctx, nil
+}
+{{ end }}
+`

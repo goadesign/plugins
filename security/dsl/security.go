@@ -109,10 +109,10 @@ func APIKeySecurity(name string, dsl ...func()) *design.SchemeExpr {
 }
 
 // OAuth2Security defines an OAuth2 security scheme. The DSL provided as second
-// argument defines the specific flow supported by the scheme, one of
-// ImplicitFlow, PasswordFlow, ClientCredentialsFlow or AuthorizationCodeFlow.
-// The DSL also defines the scopes that may be associated with the incoming
-// request tokens.
+// argument defines the specific flows supported by the scheme. The supported
+// flow types are ImplicitFlow, PasswordFlow, ClientCredentialsFlow, and
+// AuthorizationCodeFlow. The DSL also defines the scopes that may be
+// associated with the incoming request tokens.
 //
 // OAuth2Security is a top level DSL.
 //

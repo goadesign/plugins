@@ -38,7 +38,8 @@ necessary as the package is imported solely for its side-effects (initialization
 Concretely the generated transport code for secured endpoints extracts the
 information needed to perform authorization from the transport specific data
 (e.g. Authorization header) and initializes the corresponding payload fields
-with it.
+with it. The secured endpoints then invoke the authorization functions
+(which makes use of the payload fields) as per the security requirements.
 
 The plugin also modifies the generated OpenAPI specs to include security
 information.
@@ -99,41 +100,49 @@ is defined using `Token` to signal that it contains the JWT token.
 
 ## Implementation
 
-The generated server code initializes the context with a data structure that
-describes the security requirements that apply to the method. The code can take
-advantage of this description together with the data present in the payload to
-authorize the request, for example:
+The generated secure endpoint code accepts authorization functions as
+per the security schemes and requirements defined for the endpoint.
+Users can define their own custom authorization function matching the
+authorization function type defined in the security plugin. This custom
+function can then be passed into the secure endpoints constructor.
 
 ```go
-// SecuredJWTMethod implements a service method that is secured using JWT tokens.
-func SecuredJWTMethod(ctx context.Context, p *SecuredMethodPayload) error {
+// CustomJWTAuth is the user-defined authorization logic for JWT scheme.
+func CustomJWTAuth(ctx context.Context, token string, sch *security.JWTScheme) (context.Context, error) {
     // 1. Retrieve JWT token
-    jwt, err := parseJWT(p.Token) // parseJWT decodes the JWT token
+    jwt, err := parseJWT(token) // parseJWT decodes the JWT token
     if err != nil {
        // Use error data structure generated from the corresponding Error
        // design expression.
-       return &service.Unauthorized{Message: err.Error()}
+       return ctx, &service.Unauthorized{Message: err.Error()}
     }
 
-    // 2. Extract scopes from security requirements stored in context.
-    var reqs *security.Requirements
-    if rs := context.Value(ctx, security.ContextKey); rs != nil {
-        reqs := rs.([]*security.Requirements)
+    // 2. Validate JWT claims against required scopes.
+    var missing []string
+    for _, r := range sch.RequiredScopes {
+      var found bool
+      for _, s := range jwt.Scopes {
+        if s == r {
+          found = true
+          break
+        }
+      }
+      if !found {
+        missing = append(missing, r)
+      }
     }
 
-    // 3. Validate JWT claims against required scopes.
-    //    At least one requirement must be validated.
-    var err error
-    for _, req := range reqs {
-       if err = req.Validate(jwt.Scopes); err == nil {
-           return nil
-       }
+    if len(missing) == 0 {
+      return ctx, nil
     }
-    return err
+    return ctx, fmt.Errorf("missing sopes: %s", strings.Join(missing, ", "))
 }
+
+// In cmd/svc/main.go
+svcEndpoints := svc.NewSecureEndpoints(svcSvc, CustomJWTAuth)
 ```
 
-See the [security example](https://github.com/goadesign/plugins/tree/master/security/example)
+See the [security example] (https://github.com/goadesign/plugins/tree/master/security/examples/calc)
 for more implementation examples.
 
 ## Support for Multiple Schemes

@@ -228,12 +228,12 @@ func SecureDecodeSecureRequest(mux goahttp.Muxer, decoder func(*http.Request) go
 			return nil, err
 		}
 		payload := p.(*securedservice.SecurePayload)
-		h := r.Header.Get("Authorization")
-		if h == "" {
+		hJWT := r.Header.Get("Authorization")
+		if hJWT == "" {
 			return p, nil
 		}
-		token := strings.TrimPrefix(h, "Bearer ")
-		payload.Token = &token
+		tokenJWT := strings.TrimPrefix(hJWT, "Bearer ")
+		payload.Token = &tokenJWT
 		return payload, nil
 	}
 }
@@ -248,12 +248,12 @@ func SecureDecodeDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Reque
 			return nil, err
 		}
 		payload := p.(*securedservice.DoublySecurePayload)
-		h := r.Header.Get("Authorization")
-		if h == "" {
+		hJWT := r.Header.Get("Authorization")
+		if hJWT == "" {
 			return p, nil
 		}
-		token := strings.TrimPrefix(h, "Bearer ")
-		payload.Token = &token
+		tokenJWT := strings.TrimPrefix(hJWT, "Bearer ")
+		payload.Token = &tokenJWT
 		key := r.URL.Query().Get("k")
 		if key == "" {
 			return p, nil
@@ -274,17 +274,29 @@ func SecureDecodeAlsoDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.R
 			return nil, err
 		}
 		payload := p.(*securedservice.AlsoDoublySecurePayload)
-		h := r.Header.Get("Authorization")
-		if h == "" {
+		hJWT := r.Header.Get("Authorization")
+		if hJWT == "" {
 			return p, nil
 		}
-		token := strings.TrimPrefix(h, "Bearer ")
-		payload.Token = &token
+		tokenJWT := strings.TrimPrefix(hJWT, "Bearer ")
+		payload.Token = &tokenJWT
 		key := r.Header.Get("Authorization")
 		if key == "" {
 			return p, nil
 		}
 		payload.Key = &key
+		hOAuth2 := r.Header.Get("Authorization")
+		if hOAuth2 == "" {
+			return p, nil
+		}
+		tokenOAuth2 := strings.TrimPrefix(hOAuth2, "Bearer ")
+		payload.OauthToken = &tokenOAuth2
+		user, pass, ok := r.BasicAuth()
+		if !ok {
+			return p, nil
+		}
+		payload.Username = &user
+		payload.Password = &pass
 		return payload, nil
 	}
 }

@@ -3,7 +3,7 @@ package security
 import (
 	"testing"
 
-	"goa.design/goa/codegen"
+	codegen "goa.design/goa/codegen"
 	"goa.design/goa/design"
 	"goa.design/plugins/security/testdata"
 )
@@ -17,7 +17,7 @@ func TestSecureEndpointInit(t *testing.T) {
 		{"endpoint-without-requirement", testdata.EndpointWithoutRequirementDSL, testdata.EndpointInitWithoutRequirementCode},
 		{"endpoints-with-requirements", testdata.EndpointsWithRequirementsDSL, testdata.EndpointInitWithRequirementsCode},
 		{"endpoints-with-service-requirements", testdata.EndpointsWithServiceRequirementsDSL, testdata.EndpointInitWithServiceRequirementsCode},
-		{"endpoints-no-security", testdata.EndpointNoSecurityDSL, testdata.EndpointNoSecurityCode},
+		{"endpoints-no-security", testdata.EndpointNoSecurityDSL, testdata.EndpointInitNoSecurityCode},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
@@ -41,16 +41,15 @@ func TestSecureEndpointInit(t *testing.T) {
 	}
 }
 
-func TestSecureEndpointContext(t *testing.T) {
+func TestSecureEndpoint(t *testing.T) {
 	cases := []struct {
 		Name string
 		DSL  func()
 		Code string
 	}{
-		{"with-required-scopes", testdata.EndpointWithRequiredScopesDSL, testdata.EndpointContextWithRequiredScopesCode},
-		{"with-api-key-override", testdata.EndpointWithAPIKeyOverrideDSL, testdata.EndpointContextWithAPIKeyOverrideCode},
-		{"with-oauth2", testdata.EndpointWithOAuth2DSL, testdata.EndpointContextWithOAuth2Code},
-		{"with-no-security", testdata.EndpointNoSecurityDSL, testdata.EndpointContextNoSecurityCode},
+		{"with-required-scopes", testdata.EndpointWithRequiredScopesDSL, testdata.EndpointWithRequiredScopesCode},
+		{"with-api-key-override", testdata.EndpointWithAPIKeyOverrideDSL, testdata.EndpointWithAPIKeyOverrideCode},
+		{"with-oauth2", testdata.EndpointWithOAuth2DSL, testdata.EndpointWithOAuth2Code},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
@@ -63,9 +62,6 @@ func TestSecureEndpointContext(t *testing.T) {
 				t.Fatalf("got nil file, expected not nil")
 			}
 			sections := fs.SectionTemplates
-			if len(sections) < 2 {
-				t.Fatalf("got %d sections, expected at least 2", len(sections))
-			}
 			code := codegen.SectionCode(t, sections[2])
 			if code != c.Code {
 				t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c.Code))
