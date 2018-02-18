@@ -457,7 +457,7 @@ func Default(def interface{}) {
 	dsl.Default(def)
 }
 
-// Docs provides external documentation pointers for methods.
+// Docs provides external documentation URLs for methods.
 func Docs(fn func()) {
 	dsl.Docs(fn)
 }
