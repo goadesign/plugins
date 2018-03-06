@@ -9,6 +9,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -18,11 +19,14 @@ import (
 
 // BuildShowRequest instantiates a HTTP request object with method and path set
 // to call the "health" service "show" endpoint
-func (c *Client) BuildShowRequest(v interface{}) (*http.Request, error) {
+func (c *Client) BuildShowRequest(ctx context.Context, v interface{}) (*http.Request, error) {
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: ShowHealthPath()}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("health", "show", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
 	}
 
 	return req, nil

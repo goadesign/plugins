@@ -81,7 +81,7 @@ func NewLoginHandler(
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
 ) http.Handler {
 	var (
-		decodeRequest  = DecodeLoginRequest(mux, dec)
+		decodeRequest  = SecureDecodeLoginRequest(mux, dec)
 		encodeResponse = EncodeLoginResponse(enc)
 		encodeError    = EncodeLoginError(enc)
 	)
@@ -127,7 +127,7 @@ func NewAddHandler(
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
 ) http.Handler {
 	var (
-		decodeRequest  = DecodeAddRequest(mux, dec)
+		decodeRequest  = SecureDecodeAddRequest(mux, dec)
 		encodeResponse = EncodeAddResponse(enc)
 		encodeError    = goahttp.ErrorEncoder(enc)
 	)

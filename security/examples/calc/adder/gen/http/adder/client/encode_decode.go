@@ -9,6 +9,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,7 +21,7 @@ import (
 
 // BuildAddRequest instantiates a HTTP request object with method and path set
 // to call the "adder" service "add" endpoint
-func (c *Client) BuildAddRequest(v interface{}) (*http.Request, error) {
+func (c *Client) BuildAddRequest(ctx context.Context, v interface{}) (*http.Request, error) {
 	var (
 		a int
 		b int
@@ -37,6 +38,9 @@ func (c *Client) BuildAddRequest(v interface{}) (*http.Request, error) {
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("adder", "add", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
 	}
 
 	return req, nil
@@ -124,5 +128,19 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))
 		}
+	}
+}
+
+// SecureEncodeAddRequest returns an encoder for requests sent to the adder add
+// endpoint that is security scheme aware.
+func SecureEncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeAddRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*addersvc.AddPayload)
+		req.URL.Query().Set("key", payload.Key)
+		return nil
 	}
 }

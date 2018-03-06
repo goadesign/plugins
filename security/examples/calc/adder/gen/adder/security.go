@@ -25,11 +25,15 @@ func NewSecureEndpoints(s Service) *Endpoints {
 // SecureAdd returns an endpoint function which initializes the context with
 // the security requirements for the method "add" of service "adder".
 func SecureAdd(ep goa.Endpoint) goa.Endpoint {
-	reqs := make([]*security.Requirement, 1)
-	reqs[0].Schemes = make([]*security.Scheme, 1)
-	reqs[0].Schemes[0] = &security.Scheme{
-		Kind: security.SchemeKind(3),
-		Name: "api_key",
+	reqs := []*security.Requirement{
+		&security.Requirement{
+			Schemes: []*security.Scheme{
+				&security.Scheme{
+					Kind: security.SchemeKind(3),
+					Name: "api_key",
+				},
+			},
+		},
 	}
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		ctx = context.WithValue(ctx, security.ContextKey, reqs)

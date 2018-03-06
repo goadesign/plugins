@@ -15,9 +15,9 @@ import (
 	securedservice "goa.design/plugins/security/examples/multi_auth/gen/secured_service"
 )
 
-// BuildSigninSigninPayload builds the payload for the secured_service signin
+// BuildSigninPayload builds the payload for the secured_service signin
 // endpoint from CLI flags.
-func BuildSigninSigninPayload(securedServiceSigninBody string) (*securedservice.SigninPayload, error) {
+func BuildSigninPayload(securedServiceSigninBody string) (*securedservice.SigninPayload, error) {
 	var err error
 	var body SigninRequestBody
 	{
@@ -36,9 +36,9 @@ func BuildSigninSigninPayload(securedServiceSigninBody string) (*securedservice.
 	return v, nil
 }
 
-// BuildSecureSecurePayload builds the payload for the secured_service secure
+// BuildSecurePayload builds the payload for the secured_service secure
 // endpoint from CLI flags.
-func BuildSecureSecurePayload(securedServiceSecureBody string, securedServiceSecureFail string) (*securedservice.SecurePayload, error) {
+func BuildSecurePayload(securedServiceSecureBody string, securedServiceSecureFail string) (*securedservice.SecurePayload, error) {
 	var err error
 	var body SecureRequestBody
 	{
@@ -67,9 +67,9 @@ func BuildSecureSecurePayload(securedServiceSecureBody string, securedServiceSec
 	return v, nil
 }
 
-// BuildDoublySecureDoublySecurePayload builds the payload for the
-// secured_service doubly_secure endpoint from CLI flags.
-func BuildDoublySecureDoublySecurePayload(securedServiceDoublySecureBody string, securedServiceDoublySecureKey string) (*securedservice.DoublySecurePayload, error) {
+// BuildDoublySecurePayload builds the payload for the secured_service
+// doubly_secure endpoint from CLI flags.
+func BuildDoublySecurePayload(securedServiceDoublySecureBody string, securedServiceDoublySecureKey string) (*securedservice.DoublySecurePayload, error) {
 	var err error
 	var body DoublySecureRequestBody
 	{
@@ -94,9 +94,9 @@ func BuildDoublySecureDoublySecurePayload(securedServiceDoublySecureBody string,
 	return v, nil
 }
 
-// BuildAlsoDoublySecureAlsoDoublySecurePayload builds the payload for the
-// secured_service also_doubly_secure endpoint from CLI flags.
-func BuildAlsoDoublySecureAlsoDoublySecurePayload(securedServiceAlsoDoublySecureBody string, securedServiceAlsoDoublySecureKey string) (*securedservice.AlsoDoublySecurePayload, error) {
+// BuildAlsoDoublySecurePayload builds the payload for the secured_service
+// also_doubly_secure endpoint from CLI flags.
+func BuildAlsoDoublySecurePayload(securedServiceAlsoDoublySecureBody string, securedServiceAlsoDoublySecureKey string) (*securedservice.AlsoDoublySecurePayload, error) {
 	var err error
 	var body AlsoDoublySecureRequestBody
 	{

@@ -141,7 +141,7 @@ func ParseEndpoint(
 			switch epn {
 			case "fetch":
 				endpoint = c.Fetch()
-				data, err = fetchersvcc.BuildFetchFetchPayload(*fetcherFetchURLFlag)
+				data, err = fetchersvcc.BuildFetchPayload(*fetcherFetchURLFlag)
 			}
 		}
 	}

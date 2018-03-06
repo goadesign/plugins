@@ -16,9 +16,9 @@ import (
 	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 )
 
-// BuildArchiveArchivePayload builds the payload for the archiver archive
-// endpoint from CLI flags.
-func BuildArchiveArchivePayload(archiverArchiveBody string) (*archiversvc.ArchivePayload, error) {
+// BuildArchivePayload builds the payload for the archiver archive endpoint
+// from CLI flags.
+func BuildArchivePayload(archiverArchiveBody string) (*archiversvc.ArchivePayload, error) {
 	var err error
 	var body ArchiveRequestBody
 	{
@@ -43,9 +43,9 @@ func BuildArchiveArchivePayload(archiverArchiveBody string) (*archiversvc.Archiv
 	return v, nil
 }
 
-// BuildReadReadPayload builds the payload for the archiver read endpoint from
-// CLI flags.
-func BuildReadReadPayload(archiverReadID string) (*archiversvc.ReadPayload, error) {
+// BuildReadPayload builds the payload for the archiver read endpoint from CLI
+// flags.
+func BuildReadPayload(archiverReadID string) (*archiversvc.ReadPayload, error) {
 	var err error
 	var id int
 	{

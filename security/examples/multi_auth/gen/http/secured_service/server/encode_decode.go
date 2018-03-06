@@ -100,13 +100,15 @@ func DecodeSecureRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 		var (
 			fail *bool
 		)
-		failRaw := r.URL.Query().Get("fail")
-		if failRaw != "" {
-			v, err2 := strconv.ParseBool(failRaw)
-			if err2 != nil {
-				err = goa.MergeErrors(err, goa.InvalidFieldTypeError("fail", failRaw, "boolean"))
+		{
+			failRaw := r.URL.Query().Get("fail")
+			if failRaw != "" {
+				v, err2 := strconv.ParseBool(failRaw)
+				if err2 != nil {
+					err = goa.MergeErrors(err, goa.InvalidFieldTypeError("fail", failRaw, "boolean"))
+				}
+				fail = &v
 			}
-			fail = &v
 		}
 		if err != nil {
 			return nil, err

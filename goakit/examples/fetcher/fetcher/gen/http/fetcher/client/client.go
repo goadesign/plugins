@@ -49,14 +49,14 @@ func NewClient(
 	}
 }
 
-// Fetch returns a endpoint that makes HTTP requests to the fetcher service
+// Fetch returns an endpoint that makes HTTP requests to the fetcher service
 // fetch server.
 func (c *Client) Fetch() endpoint.Endpoint {
 	var (
 		decodeResponse = DecodeFetchResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildFetchRequest(v)
+		req, err := c.BuildFetchRequest(ctx, v)
 		if err != nil {
 			return nil, err
 		}

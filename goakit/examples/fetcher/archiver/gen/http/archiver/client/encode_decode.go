@@ -9,6 +9,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,11 +21,14 @@ import (
 
 // BuildArchiveRequest instantiates a HTTP request object with method and path
 // set to call the "archiver" service "archive" endpoint
-func (c *Client) BuildArchiveRequest(v interface{}) (*http.Request, error) {
+func (c *Client) BuildArchiveRequest(ctx context.Context, v interface{}) (*http.Request, error) {
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: ArchiveArchiverPath()}
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("archiver", "archive", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
 	}
 
 	return req, nil
@@ -88,7 +92,7 @@ func DecodeArchiveResponse(decoder func(*http.Response) goahttp.Decoder, restore
 
 // BuildReadRequest instantiates a HTTP request object with method and path set
 // to call the "archiver" service "read" endpoint
-func (c *Client) BuildReadRequest(v interface{}) (*http.Request, error) {
+func (c *Client) BuildReadRequest(ctx context.Context, v interface{}) (*http.Request, error) {
 	var (
 		id int
 	)
@@ -103,6 +107,9 @@ func (c *Client) BuildReadRequest(v interface{}) (*http.Request, error) {
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("archiver", "read", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
 	}
 
 	return req, nil

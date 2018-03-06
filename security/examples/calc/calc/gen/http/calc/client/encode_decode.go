@@ -9,6 +9,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,11 +21,14 @@ import (
 
 // BuildLoginRequest instantiates a HTTP request object with method and path
 // set to call the "calc" service "login" endpoint
-func (c *Client) BuildLoginRequest(v interface{}) (*http.Request, error) {
+func (c *Client) BuildLoginRequest(ctx context.Context, v interface{}) (*http.Request, error) {
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: LoginCalcPath()}
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("calc", "login", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
 	}
 
 	return req, nil
@@ -102,7 +106,7 @@ func DecodeLoginResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 
 // BuildAddRequest instantiates a HTTP request object with method and path set
 // to call the "calc" service "add" endpoint
-func (c *Client) BuildAddRequest(v interface{}) (*http.Request, error) {
+func (c *Client) BuildAddRequest(ctx context.Context, v interface{}) (*http.Request, error) {
 	var (
 		a int
 		b int
@@ -119,6 +123,9 @@ func (c *Client) BuildAddRequest(v interface{}) (*http.Request, error) {
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("calc", "add", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
 	}
 
 	return req, nil
@@ -172,5 +179,33 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))
 		}
+	}
+}
+
+// SecureEncodeLoginRequest returns an encoder for requests sent to the calc
+// login endpoint that is security scheme aware.
+func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeLoginRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*calcsvc.LoginPayload)
+		req.SetBasicAuth(payload.User, payload.Password)
+		return nil
+	}
+}
+
+// SecureEncodeAddRequest returns an encoder for requests sent to the calc add
+// endpoint that is security scheme aware.
+func SecureEncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeAddRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*calcsvc.AddPayload)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", payload.Token))
+		return nil
 	}
 }

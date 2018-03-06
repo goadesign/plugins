@@ -9,6 +9,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,7 +21,7 @@ import (
 
 // BuildFetchRequest instantiates a HTTP request object with method and path
 // set to call the "fetcher" service "fetch" endpoint
-func (c *Client) BuildFetchRequest(v interface{}) (*http.Request, error) {
+func (c *Client) BuildFetchRequest(ctx context.Context, v interface{}) (*http.Request, error) {
 	var (
 		url_ string
 	)
@@ -35,6 +36,9 @@ func (c *Client) BuildFetchRequest(v interface{}) (*http.Request, error) {
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("fetcher", "fetch", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
 	}
 
 	return req, nil

@@ -1004,6 +1004,27 @@ func Minimum(val interface{}) {
 	dsl.Minimum(val)
 }
 
+// MultipartRequest indicates that HTTP requests made to the method use
+// MIME multipart encoding as defined in RFC 2046.
+//
+// MultipartRequest must appear in a HTTP endpoint expression.
+//
+// goa generates a custom encoder that writes the payload for requests made to
+// HTTP endpoints that use MultipartRequest. The generated encoder accept a
+// user provided function that does the actual mapping of the payload to the
+// multipart content. The user provided function accepts a multipart writer
+// and a reference to the payload and is responsible for encoding the payload.
+// goa also generates a custom decoder that reads back the multipart content
+// into the payload struct. The generated decoder also accepts a user provided
+// function that takes a multipart reader and a reference to the payload struct
+// as parameter. The user provided decoder is responsible for decoding the
+// multipart content into the payload. The example command generates a default
+// implementation for the user decoder and encoder.
+//
+func MultipartRequest() {
+	dsl.MultipartRequest()
+}
+
 // Name sets the contact or license name.
 func Name(name string) {
 	dsl.Name(name)

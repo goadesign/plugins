@@ -49,14 +49,14 @@ func NewClient(
 	}
 }
 
-// Show returns a endpoint that makes HTTP requests to the health service show
+// Show returns an endpoint that makes HTTP requests to the health service show
 // server.
 func (c *Client) Show() endpoint.Endpoint {
 	var (
 		decodeResponse = DecodeShowResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildShowRequest(v)
+		req, err := c.BuildShowRequest(ctx, v)
 		if err != nil {
 			return nil, err
 		}

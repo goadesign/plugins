@@ -49,15 +49,15 @@ func NewClient(
 	}
 }
 
-// Add returns a endpoint that makes HTTP requests to the adder service add
+// Add returns an endpoint that makes HTTP requests to the adder service add
 // server.
 func (c *Client) Add() goa.Endpoint {
 	var (
-		encodeRequest  = EncodeAddRequest(c.encoder)
+		encodeRequest  = SecureEncodeAddRequest(c.encoder)
 		decodeResponse = DecodeAddResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildAddRequest(v)
+		req, err := c.BuildAddRequest(ctx, v)
 		if err != nil {
 			return nil, err
 		}

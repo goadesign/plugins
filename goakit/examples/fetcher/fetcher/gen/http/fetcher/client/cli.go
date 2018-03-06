@@ -11,9 +11,9 @@ import (
 	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
-// BuildFetchFetchPayload builds the payload for the fetcher fetch endpoint
-// from CLI flags.
-func BuildFetchFetchPayload(fetcherFetchURL string) (*fetchersvc.FetchPayload, error) {
+// BuildFetchPayload builds the payload for the fetcher fetch endpoint from CLI
+// flags.
+func BuildFetchPayload(fetcherFetchURL string) (*fetchersvc.FetchPayload, error) {
 	var url_ string
 	{
 		url_ = fetcherFetchURL

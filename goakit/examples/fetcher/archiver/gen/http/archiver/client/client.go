@@ -54,7 +54,7 @@ func NewClient(
 	}
 }
 
-// Archive returns a endpoint that makes HTTP requests to the archiver service
+// Archive returns an endpoint that makes HTTP requests to the archiver service
 // archive server.
 func (c *Client) Archive() endpoint.Endpoint {
 	var (
@@ -62,7 +62,7 @@ func (c *Client) Archive() endpoint.Endpoint {
 		decodeResponse = DecodeArchiveResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildArchiveRequest(v)
+		req, err := c.BuildArchiveRequest(ctx, v)
 		if err != nil {
 			return nil, err
 		}
@@ -80,14 +80,14 @@ func (c *Client) Archive() endpoint.Endpoint {
 	}
 }
 
-// Read returns a endpoint that makes HTTP requests to the archiver service
+// Read returns an endpoint that makes HTTP requests to the archiver service
 // read server.
 func (c *Client) Read() endpoint.Endpoint {
 	var (
 		decodeResponse = DecodeReadResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildReadRequest(v)
+		req, err := c.BuildReadRequest(ctx, v)
 		if err != nil {
 			return nil, err
 		}

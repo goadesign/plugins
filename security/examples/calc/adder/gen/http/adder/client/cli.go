@@ -14,9 +14,8 @@ import (
 	addersvc "goa.design/plugins/security/examples/calc/adder/gen/adder"
 )
 
-// BuildAddAddPayload builds the payload for the adder add endpoint from CLI
-// flags.
-func BuildAddAddPayload(adderAddA string, adderAddB string, adderAddKey string) (*addersvc.AddPayload, error) {
+// BuildAddPayload builds the payload for the adder add endpoint from CLI flags.
+func BuildAddPayload(adderAddA string, adderAddB string, adderAddKey string) (*addersvc.AddPayload, error) {
 	var err error
 	var a int
 	{
