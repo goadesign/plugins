@@ -77,7 +77,7 @@ func NewAddHandler(
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
 ) http.Handler {
 	var (
-		decodeRequest  = DecodeAddRequest(mux, dec)
+		decodeRequest  = SecureDecodeAddRequest(mux, dec)
 		encodeResponse = EncodeAddResponse(enc)
 		encodeError    = EncodeAddError(enc)
 	)

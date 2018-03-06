@@ -142,16 +142,16 @@ func ParseEndpoint(
 			switch epn {
 			case "signin":
 				endpoint = c.Signin()
-				data, err = securedservicec.BuildSigninSigninPayload(*securedServiceSigninBodyFlag)
+				data, err = securedservicec.BuildSigninPayload(*securedServiceSigninBodyFlag)
 			case "secure":
 				endpoint = c.Secure()
-				data, err = securedservicec.BuildSecureSecurePayload(*securedServiceSecureBodyFlag, *securedServiceSecureFailFlag)
+				data, err = securedservicec.BuildSecurePayload(*securedServiceSecureBodyFlag, *securedServiceSecureFailFlag)
 			case "doubly_secure":
 				endpoint = c.DoublySecure()
-				data, err = securedservicec.BuildDoublySecureDoublySecurePayload(*securedServiceDoublySecureBodyFlag, *securedServiceDoublySecureKeyFlag)
+				data, err = securedservicec.BuildDoublySecurePayload(*securedServiceDoublySecureBodyFlag, *securedServiceDoublySecureKeyFlag)
 			case "also_doubly_secure":
 				endpoint = c.AlsoDoublySecure()
-				data, err = securedservicec.BuildAlsoDoublySecureAlsoDoublySecurePayload(*securedServiceAlsoDoublySecureBodyFlag, *securedServiceAlsoDoublySecureKeyFlag)
+				data, err = securedservicec.BuildAlsoDoublySecurePayload(*securedServiceAlsoDoublySecureBodyFlag, *securedServiceAlsoDoublySecureKeyFlag)
 			}
 		}
 	}

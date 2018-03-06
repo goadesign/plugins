@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
@@ -132,5 +133,45 @@ func DecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Dec
 		}
 
 		return NewAddAddPayload(&body, a, b), nil
+	}
+}
+
+// SecureDecodeLoginRequest returns a decoder for requests sent to the calc
+// login endpoint that is security scheme aware.
+func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	rawDecoder := DecodeLoginRequest(mux, decoder)
+	return func(r *http.Request) (interface{}, error) {
+		p, err := rawDecoder(r)
+		if err != nil {
+			return nil, err
+		}
+		payload := p.(*calcsvc.LoginPayload)
+		user, pass, ok := r.BasicAuth()
+		if !ok {
+			return p, nil
+		}
+		payload.User = user
+		payload.Password = pass
+		return payload, nil
+	}
+}
+
+// SecureDecodeAddRequest returns a decoder for requests sent to the calc add
+// endpoint that is security scheme aware.
+func SecureDecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	rawDecoder := DecodeAddRequest(mux, decoder)
+	return func(r *http.Request) (interface{}, error) {
+		p, err := rawDecoder(r)
+		if err != nil {
+			return nil, err
+		}
+		payload := p.(*calcsvc.AddPayload)
+		h := r.Header.Get("Authorization")
+		if h == "" {
+			return p, nil
+		}
+		token := strings.TrimPrefix(h, "Bearer ")
+		payload.Token = token
+		return payload, nil
 	}
 }

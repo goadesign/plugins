@@ -116,7 +116,7 @@ func ParseEndpoint(
 			switch epn {
 			case "add":
 				endpoint = c.Add()
-				data, err = calcsvcc.BuildAddAddPayload(*calcAddAFlag, *calcAddBFlag)
+				data, err = calcsvcc.BuildAddPayload(*calcAddAFlag, *calcAddBFlag)
 			}
 		}
 	}
@@ -129,7 +129,7 @@ func ParseEndpoint(
 
 // calcUsage displays the usage of the calc command and its subcommands.
 func calcUsage() {
-	fmt.Fprintf(os.Stderr, `The calc service exposes public endpoints that require valid authorization credentials.
+	fmt.Fprintf(os.Stderr, `The calc service exposes public endpoints that defines CORS policy.
 Usage:
     %s [globalflags] calc COMMAND [flags]
 

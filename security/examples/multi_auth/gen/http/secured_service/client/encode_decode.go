@@ -9,6 +9,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -21,11 +22,14 @@ import (
 
 // BuildSigninRequest instantiates a HTTP request object with method and path
 // set to call the "secured_service" service "signin" endpoint
-func (c *Client) BuildSigninRequest(v interface{}) (*http.Request, error) {
+func (c *Client) BuildSigninRequest(ctx context.Context, v interface{}) (*http.Request, error) {
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: SigninSecuredServicePath()}
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("secured_service", "signin", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
 	}
 
 	return req, nil
@@ -105,11 +109,14 @@ func DecodeSigninResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 
 // BuildSecureRequest instantiates a HTTP request object with method and path
 // set to call the "secured_service" service "secure" endpoint
-func (c *Client) BuildSecureRequest(v interface{}) (*http.Request, error) {
+func (c *Client) BuildSecureRequest(ctx context.Context, v interface{}) (*http.Request, error) {
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: SecureSecuredServicePath()}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("secured_service", "secure", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
 	}
 
 	return req, nil
@@ -174,11 +181,14 @@ func DecodeSecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 
 // BuildDoublySecureRequest instantiates a HTTP request object with method and
 // path set to call the "secured_service" service "doubly_secure" endpoint
-func (c *Client) BuildDoublySecureRequest(v interface{}) (*http.Request, error) {
+func (c *Client) BuildDoublySecureRequest(ctx context.Context, v interface{}) (*http.Request, error) {
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: DoublySecureSecuredServicePath()}
 	req, err := http.NewRequest("PUT", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("secured_service", "doubly_secure", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
 	}
 
 	return req, nil
@@ -244,11 +254,14 @@ func DecodeDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder, re
 // BuildAlsoDoublySecureRequest instantiates a HTTP request object with method
 // and path set to call the "secured_service" service "also_doubly_secure"
 // endpoint
-func (c *Client) BuildAlsoDoublySecureRequest(v interface{}) (*http.Request, error) {
+func (c *Client) BuildAlsoDoublySecureRequest(ctx context.Context, v interface{}) (*http.Request, error) {
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: AlsoDoublySecureSecuredServicePath()}
 	req, err := http.NewRequest("POST", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("secured_service", "also_doubly_secure", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
 	}
 
 	return req, nil

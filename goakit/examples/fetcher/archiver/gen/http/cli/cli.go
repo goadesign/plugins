@@ -144,10 +144,10 @@ func ParseEndpoint(
 			switch epn {
 			case "archive":
 				endpoint = c.Archive()
-				data, err = archiversvcc.BuildArchiveArchivePayload(*archiverArchiveBodyFlag)
+				data, err = archiversvcc.BuildArchivePayload(*archiverArchiveBodyFlag)
 			case "read":
 				endpoint = c.Read()
-				data, err = archiversvcc.BuildReadReadPayload(*archiverReadIDFlag)
+				data, err = archiversvcc.BuildReadPayload(*archiverReadIDFlag)
 			}
 		case "health":
 			c := healthc.NewClient(scheme, host, doer, enc, dec, restore)

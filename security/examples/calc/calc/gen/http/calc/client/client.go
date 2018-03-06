@@ -53,15 +53,15 @@ func NewClient(
 	}
 }
 
-// Login returns a endpoint that makes HTTP requests to the calc service login
+// Login returns an endpoint that makes HTTP requests to the calc service login
 // server.
 func (c *Client) Login() goa.Endpoint {
 	var (
-		encodeRequest  = EncodeLoginRequest(c.encoder)
+		encodeRequest  = SecureEncodeLoginRequest(c.encoder)
 		decodeResponse = DecodeLoginResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildLoginRequest(v)
+		req, err := c.BuildLoginRequest(ctx, v)
 		if err != nil {
 			return nil, err
 		}
@@ -79,15 +79,15 @@ func (c *Client) Login() goa.Endpoint {
 	}
 }
 
-// Add returns a endpoint that makes HTTP requests to the calc service add
+// Add returns an endpoint that makes HTTP requests to the calc service add
 // server.
 func (c *Client) Add() goa.Endpoint {
 	var (
-		encodeRequest  = EncodeAddRequest(c.encoder)
+		encodeRequest  = SecureEncodeAddRequest(c.encoder)
 		decodeResponse = DecodeAddResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildAddRequest(v)
+		req, err := c.BuildAddRequest(ctx, v)
 		if err != nil {
 			return nil, err
 		}

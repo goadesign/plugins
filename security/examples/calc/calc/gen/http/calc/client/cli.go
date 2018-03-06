@@ -15,9 +15,9 @@ import (
 	calcsvc "goa.design/plugins/security/examples/calc/calc/gen/calc"
 )
 
-// BuildLoginLoginPayload builds the payload for the calc login endpoint from
-// CLI flags.
-func BuildLoginLoginPayload(calcLoginBody string) (*calcsvc.LoginPayload, error) {
+// BuildLoginPayload builds the payload for the calc login endpoint from CLI
+// flags.
+func BuildLoginPayload(calcLoginBody string) (*calcsvc.LoginPayload, error) {
 	var err error
 	var body LoginRequestBody
 	{
@@ -36,9 +36,8 @@ func BuildLoginLoginPayload(calcLoginBody string) (*calcsvc.LoginPayload, error)
 	return v, nil
 }
 
-// BuildAddAddPayload builds the payload for the calc add endpoint from CLI
-// flags.
-func BuildAddAddPayload(calcAddBody string, calcAddA string, calcAddB string) (*calcsvc.AddPayload, error) {
+// BuildAddPayload builds the payload for the calc add endpoint from CLI flags.
+func BuildAddPayload(calcAddBody string, calcAddA string, calcAddB string) (*calcsvc.AddPayload, error) {
 	var err error
 	var body AddRequestBody
 	{

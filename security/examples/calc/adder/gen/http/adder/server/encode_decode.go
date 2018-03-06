@@ -94,3 +94,22 @@ func EncodeAddError(encoder func(context.Context, http.ResponseWriter) goahttp.E
 		}
 	}
 }
+
+// SecureDecodeAddRequest returns a decoder for requests sent to the adder add
+// endpoint that is security scheme aware.
+func SecureDecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	rawDecoder := DecodeAddRequest(mux, decoder)
+	return func(r *http.Request) (interface{}, error) {
+		p, err := rawDecoder(r)
+		if err != nil {
+			return nil, err
+		}
+		payload := p.(*addersvc.AddPayload)
+		key := r.URL.Query().Get("key")
+		if key == "" {
+			return p, nil
+		}
+		payload.Key = key
+		return payload, nil
+	}
+}

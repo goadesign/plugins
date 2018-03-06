@@ -11,8 +11,7 @@ import (
 	"context"
 )
 
-// The calc service exposes public endpoints that require valid authorization
-// credentials.
+// The calc service exposes public endpoints that defines CORS policy.
 type Service interface {
 	// Add adds up the two integer parameters and returns the results.
 	Add(context.Context, *AddPayload) (int, error)

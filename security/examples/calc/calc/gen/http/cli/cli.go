@@ -127,10 +127,10 @@ func ParseEndpoint(
 			switch epn {
 			case "login":
 				endpoint = c.Login()
-				data, err = calcsvcc.BuildLoginLoginPayload(*calcLoginBodyFlag)
+				data, err = calcsvcc.BuildLoginPayload(*calcLoginBodyFlag)
 			case "add":
 				endpoint = c.Add()
-				data, err = calcsvcc.BuildAddAddPayload(*calcAddBodyFlag, *calcAddAFlag, *calcAddBFlag)
+				data, err = calcsvcc.BuildAddPayload(*calcAddBodyFlag, *calcAddAFlag, *calcAddBFlag)
 			}
 		}
 	}

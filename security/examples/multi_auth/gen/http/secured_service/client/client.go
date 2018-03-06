@@ -64,7 +64,7 @@ func NewClient(
 	}
 }
 
-// Signin returns a endpoint that makes HTTP requests to the secured_service
+// Signin returns an endpoint that makes HTTP requests to the secured_service
 // service signin server.
 func (c *Client) Signin() goa.Endpoint {
 	var (
@@ -72,7 +72,7 @@ func (c *Client) Signin() goa.Endpoint {
 		decodeResponse = DecodeSigninResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildSigninRequest(v)
+		req, err := c.BuildSigninRequest(ctx, v)
 		if err != nil {
 			return nil, err
 		}
@@ -90,7 +90,7 @@ func (c *Client) Signin() goa.Endpoint {
 	}
 }
 
-// Secure returns a endpoint that makes HTTP requests to the secured_service
+// Secure returns an endpoint that makes HTTP requests to the secured_service
 // service secure server.
 func (c *Client) Secure() goa.Endpoint {
 	var (
@@ -98,7 +98,7 @@ func (c *Client) Secure() goa.Endpoint {
 		decodeResponse = DecodeSecureResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildSecureRequest(v)
+		req, err := c.BuildSecureRequest(ctx, v)
 		if err != nil {
 			return nil, err
 		}
@@ -116,7 +116,7 @@ func (c *Client) Secure() goa.Endpoint {
 	}
 }
 
-// DoublySecure returns a endpoint that makes HTTP requests to the
+// DoublySecure returns an endpoint that makes HTTP requests to the
 // secured_service service doubly_secure server.
 func (c *Client) DoublySecure() goa.Endpoint {
 	var (
@@ -124,7 +124,7 @@ func (c *Client) DoublySecure() goa.Endpoint {
 		decodeResponse = DecodeDoublySecureResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildDoublySecureRequest(v)
+		req, err := c.BuildDoublySecureRequest(ctx, v)
 		if err != nil {
 			return nil, err
 		}
@@ -142,7 +142,7 @@ func (c *Client) DoublySecure() goa.Endpoint {
 	}
 }
 
-// AlsoDoublySecure returns a endpoint that makes HTTP requests to the
+// AlsoDoublySecure returns an endpoint that makes HTTP requests to the
 // secured_service service also_doubly_secure server.
 func (c *Client) AlsoDoublySecure() goa.Endpoint {
 	var (
@@ -150,7 +150,7 @@ func (c *Client) AlsoDoublySecure() goa.Endpoint {
 		decodeResponse = DecodeAlsoDoublySecureResponse(c.decoder, c.RestoreResponseBody)
 	)
 	return func(ctx context.Context, v interface{}) (interface{}, error) {
-		req, err := c.BuildAlsoDoublySecureRequest(v)
+		req, err := c.BuildAlsoDoublySecureRequest(ctx, v)
 		if err != nil {
 			return nil, err
 		}
