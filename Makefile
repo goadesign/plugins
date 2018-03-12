@@ -6,6 +6,11 @@ PLUGINS=$(shell find . -mindepth 1 -maxdepth 1 -not -path "*/\.*" -type d)
 
 all: test-plugins test-aliaser
 
+aliases:
+	@for p in $(PLUGINS) ; do \
+		make -C $$p aliases || exit 1; \
+	done
+
 test-plugins:
 	@for p in $(PLUGINS) ; do \
 		make -C $$p || exit 1; \
