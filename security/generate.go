@@ -9,6 +9,7 @@ import (
 	"goa.design/goa/codegen/service"
 	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
+	"goa.design/goa/http/codegen/openapi"
 	seccodegen "goa.design/plugins/security/codegen"
 	"goa.design/plugins/security/design"
 
@@ -90,6 +91,10 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 					files = append(files, f)
 				}
 			}
+		case *design.RootExpr:
+			for _, f := range files {
+				OpenAPIV2(r, f)
+			}
 		}
 	}
 	return files, nil
@@ -139,6 +144,81 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 		}
 	}
 	return files, nil
+}
+
+// OpenAPIV2 updates the openapi.json file with the security definitions.
+func OpenAPIV2(r *design.RootExpr, f *codegen.File) {
+	for _, s := range f.Section("openapi") {
+		spec := s.Data.(*openapi.V2)
+		spec.SecurityDefinitions = buildV2SecurityDefinitions(r.Schemes)
+		s.Data = spec
+	}
+}
+
+func buildV2SecurityDefinitions(schemes []*design.SchemeExpr) map[string]*openapi.SecurityDefinition {
+	sds := make(map[string]*openapi.SecurityDefinition)
+	for _, s := range schemes {
+		sd := openapi.SecurityDefinition{
+			Description: s.Description,
+			Extensions:  openapi.ExtensionsFromExpr(s.Metadata),
+		}
+		switch s.Kind {
+		case design.BasicAuthKind:
+			sd.Type = "basic"
+		case design.APIKeyKind:
+			sd.Type = "apiKey"
+			sd.In = s.In
+			if sd.In == "" {
+				sd.In = "header"
+			}
+			sd.Name = s.Name
+			if sd.Name == "" {
+				sd.Name = "key"
+			}
+		case design.JWTKind:
+			sd.Type = "apiKey"
+			sd.In = s.In
+			if sd.In == "" {
+				sd.In = "header"
+			}
+			sd.Name = s.Name
+			if sd.Name == "" {
+				sd.Name = "token"
+			}
+			// OpenAPI V2 spec does not support JWT scheme. Hence we add the scheme
+			// information to the description.
+			lines := []string{}
+			for _, scope := range s.Scopes {
+				lines = append(lines, fmt.Sprintf("  * `%s`: %s", scope.Name, scope.Description))
+			}
+			sd.Description += fmt.Sprintf("\n**Security Scopes**:\n%s", strings.Join(lines, "\n"))
+		case design.OAuth2Kind:
+			sd.Type = "oauth2"
+			if scopesLen := len(s.Scopes); scopesLen > 0 {
+				scopes := make(map[string]string, scopesLen)
+				for _, scope := range s.Scopes {
+					scopes[scope.Name] = scope.Description
+				}
+				sd.Scopes = scopes
+			}
+		}
+		if len(s.Flows) > 0 {
+			switch s.Flows[0].Kind {
+			case design.AuthorizationCodeFlowKind:
+				sd.Flow = "accessCode"
+			case design.ImplicitFlowKind:
+				sd.Flow = "implicit"
+			case design.PasswordFlowKind:
+				sd.Flow = "password"
+			case design.ClientCredentialsFlowKind:
+				sd.Flow = "application"
+			}
+			sd.AuthorizationURL = s.Flows[0].AuthorizationURL
+			sd.TokenURL = s.Flows[0].TokenURL
+		}
+		sds[s.SchemeName] = &sd
+	}
+	return sds
 }
 
 // SecureEndpointFile returns the file containing the secure endpoint
@@ -303,7 +383,7 @@ func {{ .VarName }}(ep goa.Endpoint{{ range .Schemes }}, auth{{ .Scheme.Type }}F
 					Flows: []*security.OAuthFlow{
 						{{- range .Flows }}
 						&security.OAuthFlow{
-							Kind: security.FlowKind({{ .Kind }}),
+							Type: "{{ .Type }}",
 							{{- if .AuthorizationURL }}
 							AuthorizationURL: {{ printf "%q" .AuthorizationURL }},
 							{{- end }}

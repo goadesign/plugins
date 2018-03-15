@@ -1,10 +1,18 @@
 package security
 
 import (
+	"bytes"
+	"encoding/json"
 	"testing"
+	"text/template"
+
+	"github.com/go-openapi/loads"
 
 	codegen "goa.design/goa/codegen"
-	"goa.design/goa/design"
+	goadesign "goa.design/goa/design"
+	httpcodegen "goa.design/goa/http/codegen"
+	httpdesign "goa.design/goa/http/design"
+	"goa.design/plugins/security/design"
 	"goa.design/plugins/security/testdata"
 )
 
@@ -22,10 +30,10 @@ func TestSecureEndpointInit(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			codegen.RunDSL(t, c.DSL)
-			if len(design.Root.Services) != 1 {
-				t.Fatalf("got %d services, expected 1", len(design.Root.Services))
+			if len(goadesign.Root.Services) != 1 {
+				t.Fatalf("got %d services, expected 1", len(goadesign.Root.Services))
 			}
-			fs := SecureEndpointFile("", design.Root.Services[0])
+			fs := SecureEndpointFile("", goadesign.Root.Services[0])
 			if fs == nil {
 				t.Fatalf("got nil file, expected not nil")
 			}
@@ -54,10 +62,10 @@ func TestSecureEndpoint(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			codegen.RunDSL(t, c.DSL)
-			if len(design.Root.Services) != 1 {
-				t.Fatalf("got %d services, expected 1", len(design.Root.Services))
+			if len(goadesign.Root.Services) != 1 {
+				t.Fatalf("got %d services, expected 1", len(goadesign.Root.Services))
 			}
-			fs := SecureEndpointFile("", design.Root.Services[0])
+			fs := SecureEndpointFile("", goadesign.Root.Services[0])
 			if fs == nil {
 				t.Fatalf("got nil file, expected not nil")
 			}
@@ -67,5 +75,60 @@ func TestSecureEndpoint(t *testing.T) {
 				t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c.Code))
 			}
 		})
+	}
+}
+
+func TestOpenAPIV2(t *testing.T) {
+	a := &goadesign.APIExpr{
+		Name:    "test",
+		Servers: []*goadesign.ServerExpr{{URL: "https://goa.design"}},
+	}
+	cases := []struct {
+		Name string
+		DSL  func()
+	}{
+		{"endpoint-without-requirement", testdata.EndpointWithoutRequirementDSL},
+		{"endpoints-with-requirements", testdata.EndpointsWithRequirementsDSL},
+		{"endpoints-with-service-requirements", testdata.EndpointsWithServiceRequirementsDSL},
+		{"endpoints-no-security", testdata.EndpointNoSecurityDSL},
+	}
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			codegen.RunDSL(t, c.DSL)
+			httpdesign.Root.Design.API = a
+			f, err := httpcodegen.OpenAPIFile(httpdesign.Root)
+			if err != nil {
+				t.Fatalf("error generating openapi file: %s", err)
+			}
+			OpenAPIV2(design.Root, f)
+			s := f.SectionTemplates
+			if len(s) != 1 {
+				t.Fatalf("%s: expected 1 section, got %d", c.Name, len(s))
+			}
+			if s[0].Source == "" {
+				t.Fatalf("%s: empty section template", c.Name)
+			}
+			if s[0].Data == nil {
+				t.Fatalf("%s: nil data", c.Name)
+			}
+			var buf bytes.Buffer
+			tmpl := template.Must(template.New("openapi").Funcs(s[0].FuncMap).Parse(s[0].Source))
+			err = tmpl.Execute(&buf, s[0].Data)
+			if err != nil {
+				t.Fatalf("%s: failed to render template: %s", c.Name, err)
+			}
+			validateSwagger(t, c.Name, buf.Bytes())
+		})
+	}
+}
+
+// validateSwagger asserts that the given bytes contain a valid Swagger spec.
+func validateSwagger(t *testing.T, title string, b []byte) {
+	doc, err := loads.Analyzed(json.RawMessage(b), "")
+	if err != nil {
+		t.Errorf("%s: invalid swagger: %s", title, err)
+	}
+	if doc == nil {
+		t.Errorf("%s: nil swagger", title)
 	}
 }

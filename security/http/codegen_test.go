@@ -1,11 +1,17 @@
 package http
 
 import (
+	"bytes"
+	"encoding/json"
 	"path/filepath"
 	"strings"
 	"testing"
+	"text/template"
+
+	"github.com/go-openapi/loads"
 
 	"goa.design/goa/codegen"
+	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
 	httpcodegen "goa.design/goa/http/codegen"
 	httpdesign "goa.design/goa/http/design"
@@ -109,5 +115,64 @@ func TestSecureEncoder(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestOpenAPIV2(t *testing.T) {
+	a := &goadesign.APIExpr{
+		Name:    "test",
+		Servers: []*goadesign.ServerExpr{{URL: "https://goa.design"}},
+	}
+	cases := []struct {
+		Name string
+		DSL  func()
+	}{
+		{"basic-auth", testdata.BasicAuthDSL},
+		{"oauth2", testdata.OAuth2DSL},
+		{"oauth2-in-param", testdata.OAuth2InParamDSL},
+		{"jwt", testdata.JWTDSL},
+		{"api-key", testdata.APIKeyDSL},
+		{"api-key-in-param", testdata.APIKeyInParamDSL},
+		{"multiple-and", testdata.MultipleAndDSL},
+		{"multiple-or", testdata.MultipleOrDSL},
+	}
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			RunHTTPDSL(t, c.DSL, testdata.TopLevelSchemes)
+			httpdesign.Root.Design.API = a
+			f, err := httpcodegen.OpenAPIFile(httpdesign.Root)
+			if err != nil {
+				t.Fatalf("error generating openapi file: %s", err)
+			}
+			OpenAPIV2(httpdesign.Root, f)
+			s := f.SectionTemplates
+			if len(s) != 1 {
+				t.Fatalf("%s: expected 1 section, got %d", c.Name, len(s))
+			}
+			if s[0].Source == "" {
+				t.Fatalf("%s: empty section template", c.Name)
+			}
+			if s[0].Data == nil {
+				t.Fatalf("%s: nil data", c.Name)
+			}
+			var buf bytes.Buffer
+			tmpl := template.Must(template.New("openapi").Funcs(s[0].FuncMap).Parse(s[0].Source))
+			err = tmpl.Execute(&buf, s[0].Data)
+			if err != nil {
+				t.Fatalf("%s: failed to render template: %s", c.Name, err)
+			}
+			validateSwagger(t, c.Name, buf.Bytes())
+		})
+	}
+}
+
+// validateSwagger asserts that the given bytes contain a valid Swagger spec.
+func validateSwagger(t *testing.T, title string, b []byte) {
+	doc, err := loads.Analyzed(json.RawMessage(b), "")
+	if err != nil {
+		t.Errorf("%s: invalid swagger: %s", title, err)
+	}
+	if doc == nil {
+		t.Errorf("%s: nil swagger", title)
 	}
 }

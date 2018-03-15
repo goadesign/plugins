@@ -1,11 +1,13 @@
 package http
 
 import (
+	"fmt"
 	"strings"
 
 	"goa.design/goa/codegen"
 	"goa.design/goa/eval"
 	httpcodegen "goa.design/goa/http/codegen"
+	"goa.design/goa/http/codegen/openapi"
 	httpdesign "goa.design/goa/http/design"
 	seccodegen "goa.design/plugins/security/codegen"
 	"goa.design/plugins/security/design"
@@ -63,6 +65,7 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 			for _, f := range files {
 				SecureRequestDecoders(r, f)
 				SecureRequestEncoders(r, f)
+				OpenAPIV2(r, f)
 			}
 		}
 	}
@@ -145,6 +148,84 @@ func SecureRequestEncoders(r *httpdesign.RootExpr, f *codegen.File) {
 			FuncMap: codegen.TemplateFuncs(),
 		})
 	}
+}
+
+// OpenAPIV2 adds the security requirements for the HTTP endpoints.
+func OpenAPIV2(r *httpdesign.RootExpr, f *codegen.File) {
+	for _, s := range f.Section("openapi") {
+		spec := s.Data.(*openapi.V2)
+		for _, svc := range r.HTTPServices {
+			for _, e := range svc.HTTPEndpoints {
+				reqs := design.Requirements(svc.Name(), e.Name())
+				for _, route := range e.Routes {
+					var (
+						p  *openapi.Path
+						op *openapi.Operation
+					)
+					for path, v := range spec.Paths {
+						for _, rPath := range route.FullPaths() {
+							if rPath == path {
+								p = v.(*openapi.Path)
+								break
+							}
+						}
+					}
+					if p == nil {
+						continue
+					}
+					switch route.Method {
+					case "GET":
+						op = p.Get
+					case "PUT":
+						op = p.Put
+					case "POST":
+						op = p.Post
+					case "DELETE":
+						op = p.Delete
+					case "OPTIONS":
+						op = p.Options
+					case "HEAD":
+						op = p.Head
+					case "PATCH":
+						op = p.Patch
+					}
+					applySecurity(op, reqs)
+				}
+			}
+		}
+		s.Data = spec
+	}
+}
+
+// applySecurity applies the security requirements to the openapi V2 operation.
+func applySecurity(op *openapi.Operation, reqs []*design.SecurityExpr) {
+	if len(reqs) == 0 {
+		return
+	}
+	requirements := make([]map[string][]string, len(reqs))
+	for i, req := range reqs {
+		requirement := make(map[string][]string)
+		for _, s := range req.Schemes {
+			requirement[s.SchemeName] = []string{}
+			switch s.Kind {
+			case design.OAuth2Kind:
+				for _, scope := range req.Scopes {
+					requirement[s.SchemeName] = append(requirement[s.SchemeName], scope)
+				}
+			case design.JWTKind:
+				lines := make([]string, 0, len(req.Scopes))
+				for _, scope := range req.Scopes {
+					lines = append(lines, fmt.Sprintf("  * `%s`", scope))
+				}
+				if op.Description != "" {
+					op.Description += "\n"
+				}
+				op.Description += fmt.Sprintf("\nRequired security scopes:\n%s", strings.Join(lines, "\n"))
+			}
+		}
+		requirements[i] = requirement
+	}
+	op.Security = requirements
 }
 
 // computeSchemes collects the security schemes for the given endpoint.
