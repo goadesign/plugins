@@ -178,11 +178,7 @@ func (s *SchemeExpr) Type() string {
 
 // EvalName returns the generic definition name used in error messages.
 func (s *SchemeExpr) EvalName() string {
-	t := s.Type()
-	if t == "[unknown]" {
-		return t
-	}
-	return t + "Security"
+	return s.Type() + "Security"
 }
 
 // Validate ensures that TokenURL and AuthorizationURL are valid URLs.
