@@ -12,6 +12,7 @@ import (
 	"net/http"
 
 	"github.com/go-kit/kit/endpoint"
+	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
 	health "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
 )
@@ -82,7 +83,9 @@ func NewShowHandler(
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.ContextKeyAcceptType, accept)
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx = context.WithValue(ctx, goa.MethodKey, "show")
+		ctx = context.WithValue(ctx, goa.ServiceKey, "health")
 		res, err := endpoint(ctx, nil)
 
 		if err != nil {
