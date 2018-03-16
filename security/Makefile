@@ -14,6 +14,10 @@ include $(GOPATH)/src/goa.design/plugins/plugins.mk
 gen:
 	@cd examples/multi_auth && \
 	goa gen goa.design/plugins/security/examples/multi_auth/design
+	@cd examples/calc/calc && \
+	goa gen goa.design/plugins/security/examples/calc/calc/design
+	@cd examples/calc/adder && \
+	goa gen goa.design/plugins/security/examples/calc/adder/design
 
 aliases:
 	@aliaser -dsl -src goa.design/goa/http/dsl -dest $(PLUGIN_DIR)/$(PLUGIN_NAME)/dsl > /dev/null

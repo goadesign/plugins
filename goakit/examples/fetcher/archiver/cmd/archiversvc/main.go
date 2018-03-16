@@ -16,8 +16,10 @@ import (
 	archiver "goa.design/plugins/goakit/examples/fetcher/archiver"
 	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 	health "goa.design/plugins/goakit/examples/fetcher/archiver/gen/health"
-	archiversvcsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitserver"
-	healthsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/kitserver"
+	archiversvckitsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitserver"
+	archiversvcsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"
+	healthkitsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/kitserver"
+	healthsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/server"
 )
 
 func main() {
@@ -78,30 +80,34 @@ func main() {
 	var (
 		archiversvcArchiveHandler *kithttp.Server
 		archiversvcReadHandler    *kithttp.Server
+		archiversvcServer         *archiversvcsvr.Server
 		healthShowHandler         *kithttp.Server
+		healthServer              *healthsvr.Server
 	)
 	{
 		archiversvcArchiveHandler = kithttp.NewServer(
 			endpoint.Endpoint(archiversvce.Archive),
-			archiversvcsvr.DecodeArchiveRequest(mux, dec),
-			archiversvcsvr.EncodeArchiveResponse(enc),
+			archiversvckitsvr.DecodeArchiveRequest(mux, dec),
+			archiversvckitsvr.EncodeArchiveResponse(enc),
 		)
 		archiversvcReadHandler = kithttp.NewServer(
 			endpoint.Endpoint(archiversvce.Read),
-			archiversvcsvr.DecodeReadRequest(mux, dec),
-			archiversvcsvr.EncodeReadResponse(enc),
+			archiversvckitsvr.DecodeReadRequest(mux, dec),
+			archiversvckitsvr.EncodeReadResponse(enc),
 		)
+		archiversvcServer = archiversvcsvr.New(archiversvce, mux, dec, enc)
 		healthShowHandler = kithttp.NewServer(
 			endpoint.Endpoint(healthe.Show),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
-			healthsvr.EncodeShowResponse(enc),
+			healthkitsvr.EncodeShowResponse(enc),
 		)
+		healthServer = healthsvr.New(healthe, mux, dec, enc)
 	}
 
 	// Configure the mux.
-	archiversvcsvr.MountArchiveHandler(mux, archiversvcArchiveHandler)
-	archiversvcsvr.MountReadHandler(mux, archiversvcReadHandler)
-	healthsvr.MountShowHandler(mux, healthShowHandler)
+	archiversvckitsvr.MountArchiveHandler(mux, archiversvcArchiveHandler)
+	archiversvckitsvr.MountReadHandler(mux, archiversvcReadHandler)
+	healthkitsvr.MountShowHandler(mux, healthShowHandler)
 
 	// Create channel used by both the signal handler and server goroutines
 	// to notify the main goroutine when to stop the server.
@@ -119,6 +125,12 @@ func main() {
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: *addr, Handler: mux}
 	go func() {
+		for _, m := range archiversvcServer.Mounts {
+			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", archiversvcServer.Service(), m.Method, m.Verb, m.Pattern))
+		}
+		for _, m := range healthServer.Mounts {
+			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", healthServer.Service(), m.Method, m.Verb, m.Pattern))
+		}
 		logger.Log("listening", *addr)
 		errc <- srv.ListenAndServe()
 	}()

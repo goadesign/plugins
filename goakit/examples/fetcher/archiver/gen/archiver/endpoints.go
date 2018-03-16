@@ -27,6 +27,12 @@ func NewEndpoints(s Service) *Endpoints {
 	}
 }
 
+// Use applies the given middleware to all the "archiver" service endpoints.
+func (e *Endpoints) Use(m func(endpoint.Endpoint) endpoint.Endpoint) {
+	e.Archive = m(e.Archive)
+	e.Read = m(e.Read)
+}
+
 // NewArchiveEndpoint returns an endpoint function that calls the method
 // "archive" of service "archiver".
 func NewArchiveEndpoint(s Service) endpoint.Endpoint {

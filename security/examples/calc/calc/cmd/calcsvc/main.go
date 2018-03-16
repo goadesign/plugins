@@ -11,8 +11,7 @@ import (
 	"time"
 
 	goahttp "goa.design/goa/http"
-	"goa.design/goa/http/middleware/debugging"
-	"goa.design/goa/http/middleware/logging"
+	"goa.design/goa/http/middleware"
 	calc "goa.design/plugins/security/examples/calc/calc"
 	calcsvc "goa.design/plugins/security/examples/calc/calc/gen/calc"
 	calcsvcsvr "goa.design/plugins/security/examples/calc/calc/gen/http/calc/server"
@@ -32,20 +31,20 @@ func main() {
 	// your log package of choice. The goa.design/middleware/logging/...
 	// packages define log adapters for common log packages.
 	var (
+		adapter middleware.Logger
 		logger  *log.Logger
-		adapter logging.Logger
 	)
 	{
 		logger = log.New(os.Stderr, "[calc] ", log.Ltime)
-		adapter = logging.NewLogger(logger)
+		adapter = middleware.NewLogger(logger)
 	}
 
 	// Create the structs that implement the services.
 	var (
-		calcs calcsvc.Service
+		calcsvcSvc calcsvc.Service
 	)
 	{
-		calcs = calc.NewCalc(logger, "http", *adderAddr)
+		calcsvcSvc = calc.NewCalc(logger, "http", *adderAddr)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other
@@ -54,7 +53,7 @@ func main() {
 		calcsvcEndpoints *calcsvc.Endpoints
 	)
 	{
-		calcsvcEndpoints = calcsvc.NewSecureEndpoints(calcs)
+		calcsvcEndpoints = calcsvc.NewSecureEndpoints(calcsvcSvc, calc.BasicAuthFunc, calc.JWTAuthFunc)
 	}
 
 	// Provide the transport specific request decoder and response encoder.
@@ -92,9 +91,9 @@ func main() {
 	var handler http.Handler = mux
 	{
 		if *dbg {
-			handler = debugging.New(mux, adapter)(handler)
+			handler = middleware.Debug(mux, adapter)(handler)
 		}
-		handler = logging.New(adapter)(handler)
+		handler = middleware.Log(adapter)(handler)
 	}
 
 	// Create channel used by both the signal handler and server goroutines
@@ -124,7 +123,8 @@ func main() {
 	logger.Printf("exiting (%v)", <-errc)
 
 	// Shutdown gracefully with a 30s timeout.
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	srv.Shutdown(ctx)
 
 	logger.Println("exited")

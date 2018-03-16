@@ -37,8 +37,13 @@ type DoublySecureRequestBody struct {
 // AlsoDoublySecureRequestBody is the type of the "secured_service" service
 // "also_doubly_secure" endpoint HTTP request body.
 type AlsoDoublySecureRequestBody struct {
+	// Username used to perform signin
+	Username *string `form:"username,omitempty" json:"username,omitempty" xml:"username,omitempty"`
+	// Username used to perform signin
+	Password *string `form:"password,omitempty" json:"password,omitempty" xml:"password,omitempty"`
 	// JWT used for authentication
-	Token *string `form:"token,omitempty" json:"token,omitempty" xml:"token,omitempty"`
+	Token      *string `form:"token,omitempty" json:"token,omitempty" xml:"token,omitempty"`
+	OauthToken *string `form:"oauth_token,omitempty" json:"oauth_token,omitempty" xml:"oauth_token,omitempty"`
 }
 
 // SigninUnauthorizedResponseBody is the type of the "secured_service" service
@@ -91,7 +96,10 @@ func NewDoublySecureDoublySecurePayload(body *DoublySecureRequestBody, key *stri
 // also_doubly_secure endpoint payload.
 func NewAlsoDoublySecureAlsoDoublySecurePayload(body *AlsoDoublySecureRequestBody, key *string) *securedservice.AlsoDoublySecurePayload {
 	v := &securedservice.AlsoDoublySecurePayload{
-		Token: body.Token,
+		Username:   body.Username,
+		Password:   body.Password,
+		Token:      body.Token,
+		OauthToken: body.OauthToken,
 	}
 	v.Key = key
 	return v

@@ -27,6 +27,12 @@ func NewEndpoints(s Service) *Endpoints {
 	}
 }
 
+// Use applies the given middleware to all the "calc" service endpoints.
+func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
+	e.Login = m(e.Login)
+	e.Add = m(e.Add)
+}
+
 // NewLoginEndpoint returns an endpoint function that calls the method "login"
 // of service "calc".
 func NewLoginEndpoint(s Service) goa.Endpoint {

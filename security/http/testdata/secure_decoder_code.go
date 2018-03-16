@@ -31,12 +31,12 @@ func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 			return nil, err
 		}
 		payload := p.(*oauth2.LoginPayload)
-		h := r.Header.Get("Authorization")
-		if h == "" {
+		hOAuth2 := r.Header.Get("Authorization")
+		if hOAuth2 == "" {
 			return p, nil
 		}
-		token := strings.TrimPrefix(h, "Bearer ")
-		payload.Token = &token
+		tokenOAuth2 := strings.TrimPrefix(hOAuth2, "Bearer ")
+		payload.Token = &tokenOAuth2
 		return payload, nil
 	}
 }
@@ -52,11 +52,11 @@ func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 			return nil, err
 		}
 		payload := p.(*oauth2inparam.LoginPayload)
-		token := r.URL.Query().Get("t")
-		if token == "" {
+		tokenOAuth2 := r.URL.Query().Get("t")
+		if tokenOAuth2 == "" {
 			return p, nil
 		}
-		payload.Token = &token
+		payload.Token = &tokenOAuth2
 		return payload, nil
 	}
 }
@@ -72,12 +72,12 @@ func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 			return nil, err
 		}
 		payload := p.(*jwt.LoginPayload)
-		h := r.Header.Get("Authorization")
-		if h == "" {
+		hJWT := r.Header.Get("Authorization")
+		if hJWT == "" {
 			return p, nil
 		}
-		token := strings.TrimPrefix(h, "Bearer ")
-		payload.Token = &token
+		tokenJWT := strings.TrimPrefix(hJWT, "Bearer ")
+		payload.Token = &tokenJWT
 		return payload, nil
 	}
 }

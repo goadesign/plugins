@@ -12,6 +12,7 @@ import (
 	"net/http"
 
 	"github.com/go-kit/kit/endpoint"
+	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
 	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 )
@@ -87,7 +88,9 @@ func NewArchiveHandler(
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.ContextKeyAcceptType, accept)
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx = context.WithValue(ctx, goa.MethodKey, "archive")
+		ctx = context.WithValue(ctx, goa.ServiceKey, "archiver")
 		payload, err := decodeRequest(r)
 		if err != nil {
 			encodeError(ctx, w, err)
@@ -133,7 +136,9 @@ func NewReadHandler(
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.ContextKeyAcceptType, accept)
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx = context.WithValue(ctx, goa.MethodKey, "read")
+		ctx = context.WithValue(ctx, goa.ServiceKey, "archiver")
 		payload, err := decodeRequest(r)
 		if err != nil {
 			encodeError(ctx, w, err)

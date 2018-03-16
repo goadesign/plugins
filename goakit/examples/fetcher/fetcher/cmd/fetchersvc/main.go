@@ -16,8 +16,10 @@ import (
 	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher"
 	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 	health "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
-	fetchersvcsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/kitserver"
-	healthsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/health/kitserver"
+	fetchersvckitsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/kitserver"
+	fetchersvcsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/server"
+	healthkitsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/health/kitserver"
+	healthsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/health/server"
 )
 
 func main() {
@@ -82,24 +84,28 @@ func main() {
 	// Wrap the endpoints with the transport specific layer.
 	var (
 		healthShowHandler      *kithttp.Server
+		healthServer           *healthsvr.Server
 		fetchersvcFetchHandler *kithttp.Server
+		fetchersvcServer       *fetchersvcsvr.Server
 	)
 	{
 		healthShowHandler = kithttp.NewServer(
 			endpoint.Endpoint(healthe.Show),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
-			healthsvr.EncodeShowResponse(enc),
+			healthkitsvr.EncodeShowResponse(enc),
 		)
+		healthServer = healthsvr.New(healthe, mux, dec, enc)
 		fetchersvcFetchHandler = kithttp.NewServer(
 			endpoint.Endpoint(fetchersvce.Fetch),
-			fetchersvcsvr.DecodeFetchRequest(mux, dec),
-			fetchersvcsvr.EncodeFetchResponse(enc),
+			fetchersvckitsvr.DecodeFetchRequest(mux, dec),
+			fetchersvckitsvr.EncodeFetchResponse(enc),
 		)
+		fetchersvcServer = fetchersvcsvr.New(fetchersvce, mux, dec, enc)
 	}
 
 	// Configure the mux.
-	healthsvr.MountShowHandler(mux, healthShowHandler)
-	fetchersvcsvr.MountFetchHandler(mux, fetchersvcFetchHandler)
+	healthkitsvr.MountShowHandler(mux, healthShowHandler)
+	fetchersvckitsvr.MountFetchHandler(mux, fetchersvcFetchHandler)
 
 	// Create channel used by both the signal handler and server goroutines
 	// to notify the main goroutine when to stop the server.
@@ -117,6 +123,12 @@ func main() {
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: *addr, Handler: mux}
 	go func() {
+		for _, m := range healthServer.Mounts {
+			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", healthServer.Service(), m.Method, m.Verb, m.Pattern))
+		}
+		for _, m := range fetchersvcServer.Mounts {
+			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", fetchersvcServer.Service(), m.Method, m.Verb, m.Pattern))
+		}
 		logger.Log("listening", *addr)
 		errc <- srv.ListenAndServe()
 	}()

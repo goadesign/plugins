@@ -25,6 +25,11 @@ func NewEndpoints(s Service) *Endpoints {
 	}
 }
 
+// Use applies the given middleware to all the "health" service endpoints.
+func (e *Endpoints) Use(m func(endpoint.Endpoint) endpoint.Endpoint) {
+	e.Show = m(e.Show)
+}
+
 // NewShowEndpoint returns an endpoint function that calls the method "show" of
 // service "health".
 func NewShowEndpoint(s Service) endpoint.Endpoint {

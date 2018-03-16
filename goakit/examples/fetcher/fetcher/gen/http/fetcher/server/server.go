@@ -12,6 +12,7 @@ import (
 	"net/http"
 
 	"github.com/go-kit/kit/endpoint"
+	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
 	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
@@ -83,7 +84,9 @@ func NewFetchHandler(
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.ContextKeyAcceptType, accept)
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx = context.WithValue(ctx, goa.MethodKey, "fetch")
+		ctx = context.WithValue(ctx, goa.ServiceKey, "fetcher")
 		payload, err := decodeRequest(r)
 		if err != nil {
 			encodeError(ctx, w, err)

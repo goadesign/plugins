@@ -55,10 +55,15 @@ type DoublySecurePayload struct {
 // AlsoDoublySecurePayload is the payload type of the secured_service service
 // also_doubly_secure method.
 type AlsoDoublySecurePayload struct {
+	// Username used to perform signin
+	Username *string
+	// Username used to perform signin
+	Password *string
 	// API key
 	Key *string
 	// JWT used for authentication
-	Token *string
+	Token      *string
+	OauthToken *string
 }
 
 type Unauthorized struct {

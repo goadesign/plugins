@@ -166,12 +166,12 @@ func SecureDecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goaht
 			return nil, err
 		}
 		payload := p.(*calcsvc.AddPayload)
-		h := r.Header.Get("Authorization")
-		if h == "" {
+		hJWT := r.Header.Get("Authorization")
+		if hJWT == "" {
 			return p, nil
 		}
-		token := strings.TrimPrefix(h, "Bearer ")
-		payload.Token = token
+		tokenJWT := strings.TrimPrefix(hJWT, "Bearer ")
+		payload.Token = tokenJWT
 		return payload, nil
 	}
 }

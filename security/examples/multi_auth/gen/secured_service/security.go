@@ -16,31 +16,29 @@ import (
 
 // NewSecureEndpoints wraps the methods of a secured_service service with
 // security scheme aware endpoints.
-func NewSecureEndpoints(s Service) *Endpoints {
+func NewSecureEndpoints(s Service, authBasicAuthFn security.AuthorizeBasicAuthFunc, authJWTFn security.AuthorizeJWTFunc, authAPIKeyFn security.AuthorizeAPIKeyFunc, authOAuth2Fn security.AuthorizeOAuth2Func) *Endpoints {
 	return &Endpoints{
-		Signin:           SecureSignin(NewSigninEndpoint(s)),
-		Secure:           SecureSecure(NewSecureEndpoint(s)),
-		DoublySecure:     SecureDoublySecure(NewDoublySecureEndpoint(s)),
-		AlsoDoublySecure: SecureAlsoDoublySecure(NewAlsoDoublySecureEndpoint(s)),
+		Signin:           SecureSignin(NewSigninEndpoint(s), authBasicAuthFn),
+		Secure:           SecureSecure(NewSecureEndpoint(s), authJWTFn),
+		DoublySecure:     SecureDoublySecure(NewDoublySecureEndpoint(s), authJWTFn, authAPIKeyFn),
+		AlsoDoublySecure: SecureAlsoDoublySecure(NewAlsoDoublySecureEndpoint(s), authJWTFn, authAPIKeyFn, authOAuth2Fn, authBasicAuthFn),
 	}
 }
 
 // SecureSignin returns an endpoint function which initializes the context with
 // the security requirements for the method "signin" of service
 // "secured_service".
-func SecureSignin(ep goa.Endpoint) goa.Endpoint {
-	reqs := []*security.Requirement{
-		&security.Requirement{
-			Schemes: []*security.Scheme{
-				&security.Scheme{
-					Kind: security.SchemeKind(2),
-					Name: "basic",
-				},
-			},
-		},
-	}
+func SecureSignin(ep goa.Endpoint, authBasicAuthFn security.AuthorizeBasicAuthFunc) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		ctx = context.WithValue(ctx, security.ContextKey, reqs)
+		p := req.(*SigninPayload)
+		var err error
+		basicAuthSch := security.BasicAuthScheme{
+			Name: "basic",
+		}
+		ctx, err = authBasicAuthFn(ctx, *p.Username, *p.Password, &basicAuthSch)
+		if err != nil {
+			return nil, err
+		}
 		return ep(ctx, req)
 	}
 }
@@ -48,21 +46,19 @@ func SecureSignin(ep goa.Endpoint) goa.Endpoint {
 // SecureSecure returns an endpoint function which initializes the context with
 // the security requirements for the method "secure" of service
 // "secured_service".
-func SecureSecure(ep goa.Endpoint) goa.Endpoint {
-	reqs := []*security.Requirement{
-		&security.Requirement{
-			RequiredScopes: []string{"api:read"},
-			Schemes: []*security.Scheme{
-				&security.Scheme{
-					Kind:   security.SchemeKind(4),
-					Name:   "jwt",
-					Scopes: []string{"api:read", "api:write"},
-				},
-			},
-		},
-	}
+func SecureSecure(ep goa.Endpoint, authJWTFn security.AuthorizeJWTFunc) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		ctx = context.WithValue(ctx, security.ContextKey, reqs)
+		p := req.(*SecurePayload)
+		var err error
+		jwtSch := security.JWTScheme{
+			Name:           "jwt",
+			Scopes:         []string{"api:read", "api:write"},
+			RequiredScopes: []string{"api:read"},
+		}
+		ctx, err = authJWTFn(ctx, *p.Token, &jwtSch)
+		if err != nil {
+			return nil, err
+		}
 		return ep(ctx, req)
 	}
 }
@@ -70,25 +66,25 @@ func SecureSecure(ep goa.Endpoint) goa.Endpoint {
 // SecureDoublySecure returns an endpoint function which initializes the
 // context with the security requirements for the method "doubly_secure" of
 // service "secured_service".
-func SecureDoublySecure(ep goa.Endpoint) goa.Endpoint {
-	reqs := []*security.Requirement{
-		&security.Requirement{
-			RequiredScopes: []string{"api:read", "api:write"},
-			Schemes: []*security.Scheme{
-				&security.Scheme{
-					Kind:   security.SchemeKind(4),
-					Name:   "jwt",
-					Scopes: []string{"api:read", "api:write"},
-				},
-				&security.Scheme{
-					Kind: security.SchemeKind(3),
-					Name: "api_key",
-				},
-			},
-		},
-	}
+func SecureDoublySecure(ep goa.Endpoint, authJWTFn security.AuthorizeJWTFunc, authAPIKeyFn security.AuthorizeAPIKeyFunc) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		ctx = context.WithValue(ctx, security.ContextKey, reqs)
+		p := req.(*DoublySecurePayload)
+		var err error
+		jwtSch := security.JWTScheme{
+			Name:           "jwt",
+			Scopes:         []string{"api:read", "api:write"},
+			RequiredScopes: []string{"api:read", "api:write"},
+		}
+		ctx, err = authJWTFn(ctx, *p.Token, &jwtSch)
+		if err == nil {
+			apiKeySch := security.APIKeyScheme{
+				Name: "api_key",
+			}
+			ctx, err = authAPIKeyFn(ctx, *p.Key, &apiKeySch)
+		}
+		if err != nil {
+			return nil, err
+		}
 		return ep(ctx, req)
 	}
 }
@@ -96,25 +92,47 @@ func SecureDoublySecure(ep goa.Endpoint) goa.Endpoint {
 // SecureAlsoDoublySecure returns an endpoint function which initializes the
 // context with the security requirements for the method "also_doubly_secure"
 // of service "secured_service".
-func SecureAlsoDoublySecure(ep goa.Endpoint) goa.Endpoint {
-	reqs := []*security.Requirement{
-		&security.Requirement{
-			RequiredScopes: []string{"api:read", "api:write"},
-			Schemes: []*security.Scheme{
-				&security.Scheme{
-					Kind:   security.SchemeKind(4),
-					Name:   "jwt",
-					Scopes: []string{"api:read", "api:write"},
-				},
-				&security.Scheme{
-					Kind: security.SchemeKind(3),
-					Name: "api_key",
-				},
-			},
-		},
-	}
+func SecureAlsoDoublySecure(ep goa.Endpoint, authJWTFn security.AuthorizeJWTFunc, authAPIKeyFn security.AuthorizeAPIKeyFunc, authOAuth2Fn security.AuthorizeOAuth2Func, authBasicAuthFn security.AuthorizeBasicAuthFunc) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		ctx = context.WithValue(ctx, security.ContextKey, reqs)
+		p := req.(*AlsoDoublySecurePayload)
+		var err error
+		jwtSch := security.JWTScheme{
+			Name:           "jwt",
+			Scopes:         []string{"api:read", "api:write"},
+			RequiredScopes: []string{"api:read", "api:write"},
+		}
+		ctx, err = authJWTFn(ctx, *p.Token, &jwtSch)
+		if err == nil {
+			apiKeySch := security.APIKeyScheme{
+				Name: "api_key",
+			}
+			ctx, err = authAPIKeyFn(ctx, *p.Key, &apiKeySch)
+		}
+		if err != nil {
+			oauth2Sch := security.OAuth2Scheme{
+				Name:           "oauth2",
+				Scopes:         []string{"api:read", "api:write"},
+				RequiredScopes: []string{"api:read", "api:write"},
+				Flows: []*security.OAuthFlow{
+					&security.OAuthFlow{
+						Type:             "authorization_code",
+						AuthorizationURL: "http://localhost:8080/authorization",
+						TokenURL:         "http://localhost:8080/token",
+						RefreshURL:       "http://localhost:8080/refresh",
+					},
+				},
+			}
+			ctx, err = authOAuth2Fn(ctx, *p.OauthToken, &oauth2Sch)
+			if err == nil {
+				basicAuthSch := security.BasicAuthScheme{
+					Name: "basic",
+				}
+				ctx, err = authBasicAuthFn(ctx, *p.Username, *p.Password, &basicAuthSch)
+			}
+		}
+		if err != nil {
+			return nil, err
+		}
 		return ep(ctx, req)
 	}
 }

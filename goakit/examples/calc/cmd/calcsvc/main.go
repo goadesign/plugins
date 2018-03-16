@@ -15,7 +15,8 @@ import (
 	goahttp "goa.design/goa/http"
 	calc "goa.design/plugins/goakit/examples/calc"
 	calcsvc "goa.design/plugins/goakit/examples/calc/gen/calc"
-	calcsvcsvr "goa.design/plugins/goakit/examples/calc/gen/http/calc/kitserver"
+	calcsvckitsvr "goa.design/plugins/goakit/examples/calc/gen/http/calc/kitserver"
+	calcsvcsvr "goa.design/plugins/goakit/examples/calc/gen/http/calc/server"
 )
 
 func main() {
@@ -71,17 +72,19 @@ func main() {
 	// Wrap the endpoints with the transport specific layer.
 	var (
 		calcsvcAddHandler *kithttp.Server
+		calcsvcServer     *calcsvcsvr.Server
 	)
 	{
 		calcsvcAddHandler = kithttp.NewServer(
 			endpoint.Endpoint(calcsvce.Add),
-			calcsvcsvr.DecodeAddRequest(mux, dec),
-			calcsvcsvr.EncodeAddResponse(enc),
+			calcsvckitsvr.DecodeAddRequest(mux, dec),
+			calcsvckitsvr.EncodeAddResponse(enc),
 		)
+		calcsvcServer = calcsvcsvr.New(calcsvce, mux, dec, enc)
 	}
 
 	// Configure the mux.
-	calcsvcsvr.MountAddHandler(mux, calcsvcAddHandler)
+	calcsvckitsvr.MountAddHandler(mux, calcsvcAddHandler)
 
 	// Create channel used by both the signal handler and server goroutines
 	// to notify the main goroutine when to stop the server.
@@ -99,6 +102,9 @@ func main() {
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: *addr, Handler: mux}
 	go func() {
+		for _, m := range calcsvcServer.Mounts {
+			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", calcsvcServer.Service(), m.Method, m.Verb, m.Pattern))
+		}
 		logger.Log("listening", *addr)
 		errc <- srv.ListenAndServe()
 	}()

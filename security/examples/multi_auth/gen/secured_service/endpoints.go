@@ -32,6 +32,15 @@ func NewEndpoints(s Service) *Endpoints {
 	}
 }
 
+// Use applies the given middleware to all the "secured_service" service
+// endpoints.
+func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
+	e.Signin = m(e.Signin)
+	e.Secure = m(e.Secure)
+	e.DoublySecure = m(e.DoublySecure)
+	e.AlsoDoublySecure = m(e.AlsoDoublySecure)
+}
+
 // NewSigninEndpoint returns an endpoint function that calls the method
 // "signin" of service "secured_service".
 func NewSigninEndpoint(s Service) goa.Endpoint {

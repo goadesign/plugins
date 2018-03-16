@@ -5,10 +5,11 @@ import (
 	"strings"
 
 	"goa.design/goa/codegen"
-	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
 	httpcodegen "goa.design/goa/http/codegen"
+	"goa.design/goa/http/codegen/openapi"
 	httpdesign "goa.design/goa/http/design"
+	seccodegen "goa.design/plugins/security/codegen"
 	"goa.design/plugins/security/design"
 )
 
@@ -28,7 +29,7 @@ type SecureDecoderData struct {
 	PayloadType string
 	// Schemes contains the security scheme data needed to render the auth
 	// code.
-	Schemes []*SchemeData
+	Schemes []*seccodegen.SchemeData
 }
 
 // SecureEncoderData contains the data necessary to render the security aware
@@ -47,30 +48,7 @@ type SecureEncoderData struct {
 	PayloadType string
 	// Schemes contains the security scheme data needed to render the auth
 	// code.
-	Schemes []*SchemeData
-}
-
-// SchemeData describes a single security scheme.
-type SchemeData struct {
-	// UsernameField is the name of the payload field that should be
-	// initialized with the basic auth username if any.
-	UsernameField string
-	// UsernamePointer is true if the username field is a pointer.
-	UsernamePointer bool
-	// PasswordField is the name of the payload field that should be
-	// initialized with the basic auth password if any.
-	PasswordField string
-	// PasswordPointer is true if the password field is a pointer.
-	PasswordPointer bool
-	// CredField contains the name of the payload field that should
-	// be initialized with the API key, the JWT token or the OAuth2
-	// access token.
-	CredField string
-	// CredPointer is true if the credential field is a pointer.
-	CredPointer bool
-	// Scheme is the security scheme. Only initialized for API key
-	// and JWT auth.
-	Scheme *design.SchemeExpr
+	Schemes []*seccodegen.SchemeData
 }
 
 // Register the plugin HTTP Generator function.
@@ -87,6 +65,7 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 			for _, f := range files {
 				SecureRequestDecoders(r, f)
 				SecureRequestEncoders(r, f)
+				OpenAPIV2(r, f)
 			}
 		}
 	}
@@ -108,7 +87,7 @@ func SecureRequestDecoders(r *httpdesign.RootExpr, f *codegen.File) {
 		codegen.AddImport(f.SectionTemplates[0],
 			&codegen.ImportSpec{Path: "goa.design/plugins/security"})
 	}
-	var schemes []*SchemeData
+	var schemes []*seccodegen.SchemeData
 	for _, s := range f.Section("request-decoder") {
 		data := s.Data.(*httpcodegen.EndpointData)
 		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
@@ -147,7 +126,7 @@ func SecureRequestEncoders(r *httpdesign.RootExpr, f *codegen.File) {
 		codegen.AddImport(f.SectionTemplates[0],
 			&codegen.ImportSpec{Path: "goa.design/plugins/security"})
 	}
-	var schemes []*SchemeData
+	var schemes []*seccodegen.SchemeData
 	for _, s := range f.Section("request-encoder") {
 		data := s.Data.(*httpcodegen.EndpointData)
 		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
@@ -171,78 +150,100 @@ func SecureRequestEncoders(r *httpdesign.RootExpr, f *codegen.File) {
 	}
 }
 
+// OpenAPIV2 adds the security requirements for the HTTP endpoints.
+func OpenAPIV2(r *httpdesign.RootExpr, f *codegen.File) {
+	for _, s := range f.Section("openapi") {
+		spec := s.Data.(*openapi.V2)
+		for _, svc := range r.HTTPServices {
+			for _, e := range svc.HTTPEndpoints {
+				reqs := design.Requirements(svc.Name(), e.Name())
+				for _, route := range e.Routes {
+					var (
+						p  *openapi.Path
+						op *openapi.Operation
+					)
+					for path, v := range spec.Paths {
+						for _, rPath := range route.FullPaths() {
+							if rPath == path {
+								p = v.(*openapi.Path)
+								break
+							}
+						}
+					}
+					if p == nil {
+						continue
+					}
+					switch route.Method {
+					case "GET":
+						op = p.Get
+					case "PUT":
+						op = p.Put
+					case "POST":
+						op = p.Post
+					case "DELETE":
+						op = p.Delete
+					case "OPTIONS":
+						op = p.Options
+					case "HEAD":
+						op = p.Head
+					case "PATCH":
+						op = p.Patch
+					}
+					applySecurity(op, reqs)
+				}
+			}
+		}
+		s.Data = spec
+	}
+}
+
+// applySecurity applies the security requirements to the openapi V2 operation.
+func applySecurity(op *openapi.Operation, reqs []*design.SecurityExpr) {
+	if len(reqs) == 0 {
+		return
+	}
+	requirements := make([]map[string][]string, len(reqs))
+	for i, req := range reqs {
+		requirement := make(map[string][]string)
+		for _, s := range req.Schemes {
+			requirement[s.SchemeName] = []string{}
+			switch s.Kind {
+			case design.OAuth2Kind:
+				for _, scope := range req.Scopes {
+					requirement[s.SchemeName] = append(requirement[s.SchemeName], scope)
+				}
+			case design.JWTKind:
+				lines := make([]string, 0, len(req.Scopes))
+				for _, scope := range req.Scopes {
+					lines = append(lines, fmt.Sprintf("  * `%s`", scope))
+				}
+				if op.Description != "" {
+					op.Description += "\n"
+				}
+				op.Description += fmt.Sprintf("\nRequired security scopes:\n%s", strings.Join(lines, "\n"))
+			}
+		}
+		requirements[i] = requirement
+	}
+	op.Security = requirements
+}
+
 // computeSchemes collects the security schemes for the given endpoint.
-func computeSchemes(e *httpdesign.EndpointExpr) []*SchemeData {
-	payload := e.MethodExpr.Payload
-	var schemes []*SchemeData
+func computeSchemes(e *httpdesign.EndpointExpr) []*seccodegen.SchemeData {
+	var schemes []*seccodegen.SchemeData
 	for _, req := range design.Requirements(e.Service.Name(), e.Name()) {
 		for _, s := range req.Schemes {
-			scheme := *s
-			switch scheme.Kind {
-			case design.BasicAuthKind:
-				if goadesign.IsObject(payload.Type) {
-					userAtt, user := findSecurityField(payload, "security:username")
-					passAtt, pass := findSecurityField(payload, "security:password")
-					schemes = append(schemes, &SchemeData{
-						UsernameField:   user,
-						UsernamePointer: payload.IsPrimitivePointer(userAtt, true),
-						PasswordField:   pass,
-						PasswordPointer: payload.IsPrimitivePointer(passAtt, true),
-						Scheme:          &scheme,
-					})
-				}
-
-			case design.APIKeyKind:
-				if goadesign.IsObject(payload.Type) {
-					keyAtt, key := findSecurityField(payload, "security:apikey:"+scheme.SchemeName)
-					if key == "" {
-						continue
-					}
+			if sd := seccodegen.BuildSchemeData(s, e.MethodExpr); sd != nil {
+				scheme := *s
+				if scheme.Kind == design.APIKeyKind || scheme.Kind == design.OAuth2Kind {
 					var name string
-					name, scheme.In = findKey(e, keyAtt)
+					name, scheme.In = findKey(e, sd.KeyAttr)
 					if name != "" {
 						scheme.Name = name
 					}
-					schemes = append(schemes, &SchemeData{
-						CredField:   key,
-						CredPointer: payload.IsPrimitivePointer(keyAtt, true),
-						Scheme:      &scheme,
-					})
 				}
-
-			case design.JWTKind:
-				if goadesign.IsObject(payload.Type) {
-					keyAtt, key := findSecurityField(payload, "security:token")
-					if key == "" {
-						continue
-					}
-					schemes = append(schemes, &SchemeData{
-						CredField:   key,
-						CredPointer: payload.IsPrimitivePointer(keyAtt, true),
-						Scheme:      &scheme,
-					})
-				}
-
-			case design.OAuth2Kind:
-				if goadesign.IsObject(payload.Type) {
-					keyAtt, key := findSecurityField(payload, "security:accesstoken")
-					if key == "" {
-						continue
-					}
-					var name string
-					name, scheme.In = findKey(e, keyAtt)
-					if name != "" {
-						scheme.Name = name
-					}
-					schemes = append(schemes, &SchemeData{
-						CredField:   key,
-						CredPointer: payload.IsPrimitivePointer(keyAtt, true),
-						Scheme:      &scheme,
-					})
-				}
-
-			default:
-				panic(fmt.Sprintf("unknown kind %#v", scheme.Kind)) // bug
+				sd.Scheme = &scheme
+				schemes = append(schemes, sd)
 			}
 		}
 	}
@@ -259,21 +260,6 @@ func findKey(e *httpdesign.EndpointExpr, keyAtt string) (string, string) {
 	} else {
 		return "", "header"
 	}
-}
-
-// findSecurityField returns the name and corresponding field name of child
-// attribute of p with the given tag if p is an object.
-func findSecurityField(a *goadesign.AttributeExpr, tag string) (string, string) {
-	obj := goadesign.AsObject(a.Type)
-	if obj == nil {
-		return "", ""
-	}
-	for _, at := range *obj {
-		if _, ok := at.Attribute.Metadata[tag]; ok {
-			return at.Name, codegen.Goify(at.Name, true)
-		}
-	}
-	return "", ""
 }
 
 // input: SecureDecoderData
@@ -313,18 +299,18 @@ func {{ .SecureRequestDecoder }}(mux goahttp.Muxer, decoder func(*http.Request) 
 
 	{{- else }}{{/* OAuth2 and JWT */}}
 		{{- if eq .Scheme.In "query" }}
-		token := r.URL.Query().Get({{ printf "%q" .Scheme.Name }})
-		if token == "" {
+		token{{ .Scheme.Type }} := r.URL.Query().Get({{ printf "%q" .Scheme.Name }})
+		if token{{ .Scheme.Type }} == "" {
 			return p, nil
 		}
-		payload.{{ .CredField }} = {{ if .CredPointer }}&{{ end }}token
+		payload.{{ .CredField }} = {{ if .CredPointer }}&{{ end }}token{{ .Scheme.Type }}
 		{{- else }}
-		h := r.Header.Get({{ printf "%q" .Scheme.Name }})
-		if h == "" {
+		h{{ .Scheme.Type }} := r.Header.Get({{ printf "%q" .Scheme.Name }})
+		if h{{ .Scheme.Type }} == "" {
 			return p, nil
 		}
-		token := strings.TrimPrefix(h, "Bearer ")
-		payload.{{ .CredField }} = {{ if .CredPointer }}&{{ end }}token
+		token{{ .Scheme.Type }} := strings.TrimPrefix(h{{ .Scheme.Type }}, "Bearer ")
+		payload.{{ .CredField }} = {{ if .CredPointer }}&{{ end }}token{{ .Scheme.Type }}
 		{{- end }}
 
 	{{- end }}
