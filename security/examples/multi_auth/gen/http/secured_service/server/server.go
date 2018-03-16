@@ -95,9 +95,9 @@ func NewSigninHandler(
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.ContextKeyAcceptType, accept)
-		ctx = context.WithValue(ctx, goa.ContextKeyMethod, "signin")
-		ctx = context.WithValue(ctx, goa.ContextKeyService, "secured_service")
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx = context.WithValue(ctx, goa.MethodKey, "signin")
+		ctx = context.WithValue(ctx, goa.ServiceKey, "secured_service")
 		payload, err := decodeRequest(r)
 		if err != nil {
 			encodeError(ctx, w, err)
@@ -143,9 +143,9 @@ func NewSecureHandler(
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.ContextKeyAcceptType, accept)
-		ctx = context.WithValue(ctx, goa.ContextKeyMethod, "secure")
-		ctx = context.WithValue(ctx, goa.ContextKeyService, "secured_service")
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx = context.WithValue(ctx, goa.MethodKey, "secure")
+		ctx = context.WithValue(ctx, goa.ServiceKey, "secured_service")
 		payload, err := decodeRequest(r)
 		if err != nil {
 			encodeError(ctx, w, err)
@@ -191,9 +191,9 @@ func NewDoublySecureHandler(
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.ContextKeyAcceptType, accept)
-		ctx = context.WithValue(ctx, goa.ContextKeyMethod, "doubly_secure")
-		ctx = context.WithValue(ctx, goa.ContextKeyService, "secured_service")
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx = context.WithValue(ctx, goa.MethodKey, "doubly_secure")
+		ctx = context.WithValue(ctx, goa.ServiceKey, "secured_service")
 		payload, err := decodeRequest(r)
 		if err != nil {
 			encodeError(ctx, w, err)
@@ -240,9 +240,9 @@ func NewAlsoDoublySecureHandler(
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.ContextKeyAcceptType, accept)
-		ctx = context.WithValue(ctx, goa.ContextKeyMethod, "also_doubly_secure")
-		ctx = context.WithValue(ctx, goa.ContextKeyService, "secured_service")
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx = context.WithValue(ctx, goa.MethodKey, "also_doubly_secure")
+		ctx = context.WithValue(ctx, goa.ServiceKey, "secured_service")
 		payload, err := decodeRequest(r)
 		if err != nil {
 			encodeError(ctx, w, err)

@@ -172,7 +172,7 @@ func (s *SchemeExpr) Type() string {
 	case JWTKind:
 		return "JWT"
 	default:
-		return "[unknown]"
+		panic(fmt.Sprintf("unknown scheme kind: %#v", s.Kind)) // bug
 	}
 }
 
@@ -327,7 +327,7 @@ func (s *FlowExpr) Type() string {
 	case ClientCredentialsFlowKind:
 		return "client_credentials"
 	default:
-		return "[unknown]"
+		panic(fmt.Sprintf("unknown flow kind: %#v", s.Kind)) // bug
 	}
 }
 

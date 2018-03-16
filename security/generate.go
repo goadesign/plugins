@@ -134,6 +134,7 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 			if s := f.Section("dummy-endpoint"); len(s) > 0 {
 				for _, h := range f.Section("source-header") {
 					codegen.AddImport(h, codegen.SimpleImport("goa.design/plugins/security"))
+					codegen.AddImport(h, codegen.SimpleImport("fmt"))
 				}
 				f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
 					Name:   "dummy-authorize-funcs",
@@ -425,6 +426,22 @@ const dummyAuthFuncsT = `{{- range .Schemes }}
 {{ printf "Auth%sFn implements the authorization logic for %s scheme." .Type .Type | comment }}
 func Auth{{ .Type }}Fn(ctx context.Context, {{ if eq .Type "BasicAuth" }}user, pass{{ else if eq .Type "APIKey" }}key{{ else }}token{{ end }} string, s *{{ $.SecurityPkgName }}.{{ .Type }}Scheme) (context.Context, error) {
 	// Add authorization logic
+	{{- if eq .Type "BasicAuth" }}
+	if user == "" {
+		return ctx, fmt.Errorf("invalid username")
+	}
+	if pass == "" {
+		return ctx, fmt.Errorf("invalid password")
+	}
+	{{- else if eq .Type "APIKey" }}
+	if key == "" {
+		return ctx, fmt.Errorf("invalid key")
+	}
+	{{- else }}
+	if token == "" {
+		return ctx, fmt.Errorf("invalid token")
+	}
+	{{- end }}
 	return ctx, nil
 }
 {{ end }}
