@@ -146,7 +146,7 @@ func ServerCORS(f *codegen.File) {
 	}
 	for _, s := range f.Section("server-init") {
 		s.Source = strings.Replace(s.Source,
-			"e.{{ .Method.VarName }}, mux, {{ if .MultipartRequestDecoder }}{{ .MultipartRequestDecoder.InitName }}({{ .MultipartRequestDecoder.VarName }}){{ else }}dec{{ end }}, enc",
+			"e.{{ .Method.VarName }}, mux, {{ if .MultipartRequestDecoder }}{{ .MultipartRequestDecoder.InitName }}(mux, {{ .MultipartRequestDecoder.VarName }}){{ else }}dec{{ end }}, enc",
 			`{{ if ne .Method.VarName "CORS" }}e.{{ .Method.VarName }}, mux, {{ if .MultipartRequestDecoder }}{{ .MultipartRequestDecoder.InitName }}({{ .MultipartRequestDecoder.VarName }}){{ else }}dec{{ end }}, enc{{ end }}`,
 			-1)
 	}
