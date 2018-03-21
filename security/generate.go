@@ -9,6 +9,7 @@ import (
 	"goa.design/goa/codegen/service"
 	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
+	httpcodegen "goa.design/goa/http/codegen"
 	"goa.design/goa/http/codegen/openapi"
 	seccodegen "goa.design/plugins/security/codegen"
 	"goa.design/plugins/security/design"
@@ -21,18 +22,19 @@ type (
 	// ServiceData contains the data necessary to render the secure endpoints
 	// constructor.
 	ServiceData struct {
-		// Name is the name of the service.
-		Name string
+		*httpcodegen.ServiceData
 		// VarName is the Go name of the service interface.
 		VarName string
-		// PkgName is the name of the service package.
-		PkgName string
+		// APIPkg is the name of the API package.
+		APIPkg string
 		// SecurityPkgName is the name of the security package.
 		SecurityPkgName string
 		// EndpointsVarName is the Go endpoints struct name.
 		EndpointsVarName string
 		// Methods list the endpoint constructors.
 		Methods []*MethodData
+		// Schemes is the unique security schemes for the service.
+		Schemes []*design.SchemeExpr
 	}
 
 	// MethodData contains the data necessry to render
@@ -104,7 +106,7 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 // context gets initialized with the security requirements.
 func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	var (
-		data   *ServiceData
+		data   []*ServiceData
 		apiPkg string
 	)
 	for _, root := range roots {
@@ -112,34 +114,41 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 		case *goadesign.RootExpr:
 			apiPkg = strings.ToLower(codegen.Goify(r.API.Name, false))
 			for _, s := range r.Services {
-				data = BuildSecureServiceData(s)
+				sd := BuildSecureServiceData(s)
+				sd.APIPkg = apiPkg
+				data = append(data, sd)
 			}
 		}
 	}
-	if data != nil {
-		svcSchemes := data.Schemes()
-		authFuncs := make([]string, 0, len(svcSchemes))
-		for _, s := range svcSchemes {
-			authFuncs = append(authFuncs, fmt.Sprintf("%s.Auth%sFn", apiPkg, s.Type()))
+	for _, f := range files {
+		for _, s := range f.Section("service-main") {
+			s.Source = strings.Replace(
+				s.Source,
+				"{{ .Service.PkgName }}Endpoints = {{ .Service.PkgName }}.NewEndpoints({{ .Service.PkgName }}Svc)",
+				"{{ .Service.PkgName }}Endpoints = {{ .Service.PkgName }}.NewSecureEndpoints({{ .Service.PkgName }}Svc{{ range .Schemes }}, {{ $.APIPkg }}.Auth{{ .Type }}Fn{{ end }})",
+				1,
+			)
+			sData := s.Data.(map[string]interface{})
+			sData["Services"] = data
 		}
-		for _, f := range files {
-			for _, s := range f.Section("service-main") {
-				s.Source = strings.Replace(
-					s.Source,
-					"{{ .Service.PkgName }}Endpoints = {{ .Service.PkgName }}.NewEndpoints({{ .Service.PkgName }}Svc)",
-					fmt.Sprintf("{{ .Service.PkgName }}Endpoints = {{ .Service.PkgName }}.NewSecureEndpoints({{ .Service.PkgName }}Svc, %s)", strings.Join(authFuncs, ", ")),
-					1,
-				)
+		if s := f.Section("dummy-endpoint"); len(s) > 0 {
+			for _, h := range f.Section("source-header") {
+				codegen.AddImport(h, codegen.SimpleImport("goa.design/plugins/security"))
+				codegen.AddImport(h, codegen.SimpleImport("fmt"))
 			}
-			if s := f.Section("dummy-endpoint"); len(s) > 0 {
-				for _, h := range f.Section("source-header") {
-					codegen.AddImport(h, codegen.SimpleImport("goa.design/plugins/security"))
-					codegen.AddImport(h, codegen.SimpleImport("fmt"))
+			var svcData *ServiceData
+			epData := s[0].Data.(*httpcodegen.EndpointData)
+			for _, d := range data {
+				if d.Service.Name == epData.ServiceName {
+					svcData = d
+					break
 				}
+			}
+			if svcData != nil {
 				f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
 					Name:   "dummy-authorize-funcs",
 					Source: dummyAuthFuncsT,
-					Data:   data,
+					Data:   svcData,
 				})
 			}
 		}
@@ -229,7 +238,7 @@ func SecureEndpointFile(genpkg string, svc *goadesign.ServiceExpr) *codegen.File
 	path := filepath.Join(codegen.Gendir, codegen.SnakeCase(svc.Name), "security.go")
 	header := codegen.Header(
 		svc.Name+" service security",
-		data.PkgName,
+		data.Service.PkgName,
 		[]*codegen.ImportSpec{
 			{Path: "context"},
 			{Path: "goa.design/goa"},
@@ -264,17 +273,17 @@ func SecureEndpointFile(genpkg string, svc *goadesign.ServiceExpr) *codegen.File
 // BuildSecureServiceData builds the data needed to render the secured endpoints
 // struct constructor and the secure endpoint methods.
 func BuildSecureServiceData(svc *goadesign.ServiceExpr) *ServiceData {
-	s := service.Services.Get(svc.Name)
 	data := &ServiceData{
-		Name:             svc.Name,
-		PkgName:          s.PkgName,
+		ServiceData:      httpcodegen.HTTPServices.Get(svc.Name),
 		SecurityPkgName:  "security",
 		VarName:          service.ServiceInterfaceName,
 		EndpointsVarName: service.EndpointsStructName,
 	}
+	var svcSchemes []*design.SchemeExpr
+	svcSchemesFound := map[design.SchemeKind]bool{}
 	for _, m := range svc.Methods {
 		reqs := design.Requirements(svc.Name, m.Name)
-		md := s.Method(m.Name)
+		md := data.ServiceData.Endpoint(m.Name).Method
 		varn := md.VarName
 		cn := "New" + varn
 		if len(reqs) > 0 {
@@ -284,6 +293,11 @@ func BuildSecureServiceData(svc *goadesign.ServiceExpr) *ServiceData {
 		for _, req := range reqs {
 			for _, sch := range req.Schemes {
 				schemeData = append(schemeData, seccodegen.BuildSchemeData(sch, m))
+				if _, ok := svcSchemesFound[sch.Kind]; ok {
+					continue
+				}
+				svcSchemesFound[sch.Kind] = true
+				svcSchemes = append(svcSchemes, sch)
 			}
 		}
 		data.Methods = append(data.Methods, &MethodData{
@@ -299,24 +313,8 @@ func BuildSecureServiceData(svc *goadesign.ServiceExpr) *ServiceData {
 			Schemes:          schemeData,
 		})
 	}
+	data.Schemes = svcSchemes
 	return data
-}
-
-// Schemes returns the unique security schemes used by all the endpoints
-// in the service.
-func (s *ServiceData) Schemes() []*design.SchemeExpr {
-	var schemes []*design.SchemeExpr
-	schemesFound := map[design.SchemeKind]bool{}
-	for _, m := range s.Methods {
-		for _, e := range m.Schemes {
-			if _, ok := schemesFound[e.Scheme.Kind]; ok {
-				continue
-			}
-			schemes = append(schemes, e.Scheme)
-			schemesFound[e.Scheme.Kind] = true
-		}
-	}
-	return schemes
 }
 
 // SchemeData returns the scheme data for the given scheme.
@@ -330,7 +328,7 @@ func (m *MethodData) SchemeData(s *design.SchemeExpr) *seccodegen.SchemeData {
 }
 
 // input: securedServiceData
-const secureEndpointsInitT = `{{ printf "NewSecure%s wraps the methods of a %s service with security scheme aware endpoints." .EndpointsVarName .Name | comment }}
+const secureEndpointsInitT = `{{ printf "NewSecure%s wraps the methods of a %s service with security scheme aware endpoints." .EndpointsVarName .Service.Name | comment }}
 	func NewSecure{{ .EndpointsVarName }}(s {{ .VarName }}{{ range .Schemes }}, auth{{ .Type }}Fn {{ $.SecurityPkgName }}.Authorize{{ .Type }}Func{{ end }}) *{{ .EndpointsVarName }} {
 		return &{{ .EndpointsVarName }}{
 			{{- range .Methods }}

@@ -3,6 +3,8 @@ package security
 import (
 	"bytes"
 	"encoding/json"
+	"path/filepath"
+	"strings"
 	"testing"
 	"text/template"
 
@@ -10,6 +12,7 @@ import (
 
 	codegen "goa.design/goa/codegen"
 	goadesign "goa.design/goa/design"
+	"goa.design/goa/eval"
 	httpcodegen "goa.design/goa/http/codegen"
 	httpdesign "goa.design/goa/http/design"
 	"goa.design/plugins/security/design"
@@ -29,7 +32,7 @@ func TestSecureEndpointInit(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			codegen.RunDSL(t, c.DSL)
+			httpcodegen.RunHTTPDSL(t, c.DSL)
 			if len(goadesign.Root.Services) != 1 {
 				t.Fatalf("got %d services, expected 1", len(goadesign.Root.Services))
 			}
@@ -61,7 +64,7 @@ func TestSecureEndpoint(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			codegen.RunDSL(t, c.DSL)
+			httpcodegen.RunHTTPDSL(t, c.DSL)
 			if len(goadesign.Root.Services) != 1 {
 				t.Fatalf("got %d services, expected 1", len(goadesign.Root.Services))
 			}
@@ -118,6 +121,46 @@ func TestOpenAPIV2(t *testing.T) {
 				t.Fatalf("%s: failed to render template: %s", c.Name, err)
 			}
 			validateSwagger(t, c.Name, buf.Bytes())
+		})
+	}
+}
+
+func TestExample(t *testing.T) {
+	cases := []struct {
+		Name     string
+		DSL      func()
+		Snippets []string
+	}{
+		{"single-service", testdata.SingleServiceDSL, []string{
+			"singleservice.NewSecureEndpoints(singleserviceSvc, testapi.AuthAPIKeyFn)"}},
+		{"multiple-services", testdata.MultipleServicesDSL, []string{
+			"servicewithapikeyauth.NewSecureEndpoints(servicewithapikeyauthSvc, testapi.AuthAPIKeyFn)",
+			"servicewithjwtandbasicauth.NewSecureEndpoints(servicewithjwtandbasicauthSvc, testapi.AuthBasicAuthFn, testapi.AuthJWTFn)",
+			"servicewithnosecurity.NewSecureEndpoints(servicewithnosecuritySvc)"}},
+	}
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			httpcodegen.RunHTTPDSL(t, c.DSL)
+			if len(goadesign.Root.Services) == 0 {
+				t.Fatalf("expected at least 1 service")
+			}
+			fs := httpcodegen.ExampleServerFiles("", httpdesign.Root)
+			Example("", []eval.Root{goadesign.Root}, fs)
+			for _, f := range fs {
+				if filepath.Base(f.Path) != "main.go" {
+					continue
+				}
+				sections := f.Section("service-main")
+				if len(sections) < 1 {
+					t.Fatalf("service-main: expected at least 1")
+				}
+				code := codegen.SectionCode(t, sections[0])
+				for _, s := range c.Snippets {
+					if !strings.Contains(code, s) {
+						t.Errorf("invalid code, code:\n%s\ndoes not contain expected snippet:\n%s", code, s)
+					}
+				}
+			}
 		})
 	}
 }
