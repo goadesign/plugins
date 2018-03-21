@@ -164,12 +164,11 @@ var MultipleServicesDSL = func() {
 			})
 		})
 	})
-	Service("ServiceWithJWTAndBasicAuth", func() {
-		Security(BasicAuth, JWTAuth)
+	Service("ServiceWithJWTAndAPIKey", func() {
+		Security(APIKeyAuth, JWTAuth)
 		Method("Method", func() {
 			Payload(func() {
-				Username("user", String)
-				Password("pass", String)
+				APIKey("api_key", "key", String)
 				Token("token", String)
 			})
 			HTTP(func() {

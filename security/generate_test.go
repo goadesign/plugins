@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"path/filepath"
-	"strings"
 	"testing"
 	"text/template"
 
@@ -32,7 +31,7 @@ func TestSecureEndpointInit(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			httpcodegen.RunHTTPDSL(t, c.DSL)
+			codegen.RunDSL(t, c.DSL)
 			if len(goadesign.Root.Services) != 1 {
 				t.Fatalf("got %d services, expected 1", len(goadesign.Root.Services))
 			}
@@ -64,7 +63,7 @@ func TestSecureEndpoint(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			httpcodegen.RunHTTPDSL(t, c.DSL)
+			codegen.RunDSL(t, c.DSL)
 			if len(goadesign.Root.Services) != 1 {
 				t.Fatalf("got %d services, expected 1", len(goadesign.Root.Services))
 			}
@@ -127,16 +126,12 @@ func TestOpenAPIV2(t *testing.T) {
 
 func TestExample(t *testing.T) {
 	cases := []struct {
-		Name     string
-		DSL      func()
-		Snippets []string
+		Name string
+		DSL  func()
+		Code string
 	}{
-		{"single-service", testdata.SingleServiceDSL, []string{
-			"singleservice.NewSecureEndpoints(singleserviceSvc, testapi.AuthAPIKeyFn)"}},
-		{"multiple-services", testdata.MultipleServicesDSL, []string{
-			"servicewithapikeyauth.NewSecureEndpoints(servicewithapikeyauthSvc, testapi.AuthAPIKeyFn)",
-			"servicewithjwtandbasicauth.NewSecureEndpoints(servicewithjwtandbasicauthSvc, testapi.AuthBasicAuthFn, testapi.AuthJWTFn)",
-			"servicewithnosecurity.NewSecureEndpoints(servicewithnosecuritySvc)"}},
+		{"single-service", testdata.SingleServiceDSL, testdata.SingleServiceAuthFuncsCode},
+		{"multiple-services", testdata.MultipleServicesDSL, testdata.MultipleServicesAuthFuncsCode},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
@@ -147,18 +142,16 @@ func TestExample(t *testing.T) {
 			fs := httpcodegen.ExampleServerFiles("", httpdesign.Root)
 			Example("", []eval.Root{goadesign.Root}, fs)
 			for _, f := range fs {
-				if filepath.Base(f.Path) != "main.go" {
+				if filepath.Base(f.Path) == "main.go" {
 					continue
 				}
-				sections := f.Section("service-main")
+				sections := f.Section("dummy-authorize-funcs")
 				if len(sections) < 1 {
 					t.Fatalf("service-main: expected at least 1")
 				}
 				code := codegen.SectionCode(t, sections[0])
-				for _, s := range c.Snippets {
-					if !strings.Contains(code, s) {
-						t.Errorf("invalid code, code:\n%s\ndoes not contain expected snippet:\n%s", code, s)
-					}
+				if code != c.Code {
+					t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c.Code))
 				}
 			}
 		})

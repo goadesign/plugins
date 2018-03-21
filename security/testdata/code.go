@@ -106,3 +106,32 @@ func SecureSecureWithOAuth2(ep goa.Endpoint, authOAuth2Fn security.AuthorizeOAut
 	}
 }
 `
+
+var SingleServiceAuthFuncsCode = `// AuthAPIKeyFn implements the authorization logic for APIKey scheme.
+func AuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
+	// Add authorization logic
+	if key == "" {
+		return ctx, fmt.Errorf("invalid key")
+	}
+	return ctx, nil
+}
+`
+
+var MultipleServicesAuthFuncsCode = `// AuthAPIKeyFn implements the authorization logic for APIKey scheme.
+func AuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
+	// Add authorization logic
+	if key == "" {
+		return ctx, fmt.Errorf("invalid key")
+	}
+	return ctx, nil
+}
+
+// AuthJWTFn implements the authorization logic for JWT scheme.
+func AuthJWTFn(ctx context.Context, token string, s *security.JWTScheme) (context.Context, error) {
+	// Add authorization logic
+	if token == "" {
+		return ctx, fmt.Errorf("invalid token")
+	}
+	return ctx, nil
+}
+`

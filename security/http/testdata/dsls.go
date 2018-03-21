@@ -152,3 +152,54 @@ var MultipleOrDSL = func() {
 		})
 	})
 }
+
+var SingleServiceDSL = func() {
+	Service("SingleService", func() {
+		Method("Method", func() {
+			Security(APIKeyAuth)
+			Payload(func() {
+				APIKey("api_key", "key", String)
+			})
+			HTTP(func() {
+				GET("/")
+			})
+		})
+	})
+}
+
+var MultipleServicesDSL = func() {
+	Service("ServiceWithAPIKeyAuth", func() {
+		Method("Method", func() {
+			Security(APIKeyAuth)
+			Payload(func() {
+				APIKey("api_key", "key", String)
+			})
+			HTTP(func() {
+				GET("/")
+			})
+		})
+	})
+	Service("ServiceWithJWTAndBasicAuth", func() {
+		Security(BasicAuth, JWTAuth)
+		Method("Method", func() {
+			Payload(func() {
+				Username("user", String)
+				Password("pass", String)
+				Token("token", String)
+			})
+			HTTP(func() {
+				GET("/")
+			})
+		})
+	})
+	Service("ServiceWithNoSecurity", func() {
+		Method("Method", func() {
+			Payload(func() {
+				Attribute("a", String)
+			})
+			HTTP(func() {
+				GET("/{a}")
+			})
+		})
+	})
+}
