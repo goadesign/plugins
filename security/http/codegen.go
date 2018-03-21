@@ -115,8 +115,14 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 		for _, s := range f.Section("service-main") {
 			s.Source = strings.Replace(
 				s.Source,
+				"{{- range .Services }}",
+				"{{- range $svc := .Services }}",
+				-1,
+			)
+			s.Source = strings.Replace(
+				s.Source,
 				"{{ .Service.PkgName }}Endpoints = {{ .Service.PkgName }}.NewEndpoints({{ .Service.PkgName }}Svc)",
-				"{{ .Service.PkgName }}Endpoints = {{ .Service.PkgName }}.NewSecureEndpoints({{ .Service.PkgName }}Svc{{ range .Schemes }}, {{ $.APIPkg }}.Auth{{ .Type }}Fn{{ end }})",
+				"{{ .Service.PkgName }}Endpoints = {{ .Service.PkgName }}.NewSecureEndpoints({{ .Service.PkgName }}Svc{{ range .Schemes }}, {{ $.APIPkg }}.{{ $svc.Service.VarName }}Auth{{ .Type }}Fn{{ end }})",
 				1,
 			)
 			sData := s.Data.(map[string]interface{})

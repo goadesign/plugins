@@ -107,30 +107,43 @@ func SecureSecureWithOAuth2(ep goa.Endpoint, authOAuth2Fn security.AuthorizeOAut
 }
 `
 
-var SingleServiceAuthFuncsCode = `// AuthAPIKeyFn implements the authorization logic for APIKey scheme.
-func AuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
+var SingleServiceAuthFuncsCode = `// SingleServiceAuthAPIKeyFn implements the authorization logic for APIKey
+// scheme.
+func SingleServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
 	if key == "" {
-		return ctx, fmt.Errorf("invalid key")
+		return ctx, &singleservice.Unauthorized{"invalid key"}
 	}
 	return ctx, nil
 }
 `
 
-var MultipleServicesAuthFuncsCode = `// AuthAPIKeyFn implements the authorization logic for APIKey scheme.
-func AuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
+var MultipleServicesAuthFuncsCode = `// ServiceWithAPIKeyAuthAuthAPIKeyFn implements the authorization logic for
+// APIKey scheme.
+func ServiceWithAPIKeyAuthAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
 	if key == "" {
-		return ctx, fmt.Errorf("invalid key")
+		return ctx, &servicewithapikeyauth.Unauthorized{"invalid key"}
 	}
 	return ctx, nil
 }
 
-// AuthJWTFn implements the authorization logic for JWT scheme.
-func AuthJWTFn(ctx context.Context, token string, s *security.JWTScheme) (context.Context, error) {
+// ServiceWithJWTAndAPIKeyAuthAPIKeyFn implements the authorization logic for
+// APIKey scheme.
+func ServiceWithJWTAndAPIKeyAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
+	// Add authorization logic
+	if key == "" {
+		return ctx, &servicewithjwtandapikey.Unauthorized{"invalid key"}
+	}
+	return ctx, nil
+}
+
+// ServiceWithJWTAndAPIKeyAuthJWTFn implements the authorization logic for JWT
+// scheme.
+func ServiceWithJWTAndAPIKeyAuthJWTFn(ctx context.Context, token string, s *security.JWTScheme) (context.Context, error) {
 	// Add authorization logic
 	if token == "" {
-		return ctx, fmt.Errorf("invalid token")
+		return ctx, &servicewithjwtandapikey.Unauthorized{"invalid token"}
 	}
 	return ctx, nil
 }

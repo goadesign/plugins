@@ -22,6 +22,10 @@ type (
 	AuthFuncsData struct {
 		// Schemes is the unique security schemes defined in the API.
 		Schemes []*design.SchemeExpr
+		// ServiceName is the name of the service.
+		ServiceName string
+		// ServicePkg is the service package name.
+		ServicePkg string
 		// Security is the security package name.
 		SecurityPkg string
 	}
@@ -59,36 +63,29 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 // Example modified the generated main function so that the secured endpoints
 // context gets initialized with the security requirements.
 func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
-	var schemeMap = make(map[design.SchemeKind]*design.SchemeExpr)
+	var data []*AuthFuncsData
 	for _, root := range roots {
 		switch r := root.(type) {
 		case *goadesign.RootExpr:
 			for _, s := range r.Services {
 				sd := seccodegen.BuildSecureServiceData(s, "")
-				for _, sch := range sd.Schemes {
-					schemeMap[sch.Kind] = sch
-				}
+				data = append(data, &AuthFuncsData{
+					Schemes:     sd.Schemes,
+					SecurityPkg: "security",
+					ServicePkg:  sd.PkgName,
+					ServiceName: codegen.Goify(sd.Name, true)})
 			}
 		}
-	}
-	schemes := make([]*design.SchemeExpr, 0, len(schemeMap))
-	for _, s := range schemeMap {
-		schemes = append(schemes, s)
-	}
-	authFuncs := &AuthFuncsData{
-		Schemes:     schemes,
-		SecurityPkg: "security",
 	}
 	for _, f := range files {
 		if s := f.Section("dummy-endpoint"); len(s) > 0 {
 			for _, h := range f.Section("source-header") {
 				codegen.AddImport(h, codegen.SimpleImport("goa.design/plugins/security"))
-				codegen.AddImport(h, codegen.SimpleImport("fmt"))
 			}
 			f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
 				Name:   "dummy-authorize-funcs",
 				Source: dummyAuthFuncsT,
-				Data:   authFuncs,
+				Data:   data,
 			})
 		}
 	}
@@ -302,28 +299,30 @@ func {{ .VarName }}(ep goa.Endpoint{{ range .Schemes }}, auth{{ .Scheme.Type }}F
 `
 
 // data: AuthFuncsData
-const dummyAuthFuncsT = `{{- range .Schemes }}
+const dummyAuthFuncsT = `{{ range $sd := . }}
+{{- range .Schemes }}
 
-{{ printf "Auth%sFn implements the authorization logic for %s scheme." .Type .Type | comment }}
-func Auth{{ .Type }}Fn(ctx context.Context, {{ if eq .Type "BasicAuth" }}user, pass{{ else if eq .Type "APIKey" }}key{{ else }}token{{ end }} string, s *{{ $.SecurityPkg }}.{{ .Type }}Scheme) (context.Context, error) {
+{{ printf "%sAuth%sFn implements the authorization logic for %s scheme." $sd.ServiceName .Type .Type | comment }}
+func {{ $sd.ServiceName }}Auth{{ .Type }}Fn(ctx context.Context, {{ if eq .Type "BasicAuth" }}user, pass{{ else if eq .Type "APIKey" }}key{{ else }}token{{ end }} string, s *{{ $sd.SecurityPkg }}.{{ .Type }}Scheme) (context.Context, error) {
 	// Add authorization logic
 	{{- if eq .Type "BasicAuth" }}
 	if user == "" {
-		return ctx, fmt.Errorf("invalid username")
+		return ctx, &{{ $sd.ServicePkg }}.Unauthorized{"invalid username"}
 	}
 	if pass == "" {
-		return ctx, fmt.Errorf("invalid password")
+		return ctx, &{{ $sd.ServicePkg }}.Unauthorized{"invalid password"}
 	}
 	{{- else if eq .Type "APIKey" }}
 	if key == "" {
-		return ctx, fmt.Errorf("invalid key")
+		return ctx, &{{ $sd.ServicePkg }}.Unauthorized{"invalid key"}
 	}
 	{{- else }}
 	if token == "" {
-		return ctx, fmt.Errorf("invalid token")
+		return ctx, &{{ $sd.ServicePkg }}.Unauthorized{"invalid token"}
 	}
 	{{- end }}
 	return ctx, nil
 }
-{{ end }}
+{{- end }}
+{{- end }}
 `

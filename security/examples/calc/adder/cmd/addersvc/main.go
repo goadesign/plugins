@@ -52,7 +52,7 @@ func main() {
 		addersvcEndpoints *addersvc.Endpoints
 	)
 	{
-		addersvcEndpoints = addersvc.NewSecureEndpoints(addersvcSvc, adder.AuthAPIKeyFn)
+		addersvcEndpoints = addersvc.NewSecureEndpoints(addersvcSvc, adder.AdderAuthAPIKeyFn)
 	}
 
 	// Provide the transport specific request decoder and response encoder.
