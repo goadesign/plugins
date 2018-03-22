@@ -10,18 +10,18 @@ import (
 
 // adder service example implementation.
 // The example methods log the requests and return zero values.
-type addersvcSvc struct {
+type adderSvc struct {
 	logger *log.Logger
 }
 
 // NewAdder returns the adder service implementation.
 func NewAdder(logger *log.Logger) addersvc.Service {
-	return &addersvcSvc{logger}
+	return &adderSvc{logger}
 }
 
 // This action returns the sum of two integers and is secured with the API key
 // scheme
-func (s *addersvcSvc) Add(ctx context.Context, p *addersvc.AddPayload) (int, error) {
+func (s *adderSvc) Add(ctx context.Context, p *addersvc.AddPayload) (int, error) {
 	return p.A + p.B, nil
 }
 

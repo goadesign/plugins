@@ -40,10 +40,10 @@ func main() {
 
 	// Create the structs that implement the services.
 	var (
-		addersvcSvc addersvc.Service
+		adderSvc addersvc.Service
 	)
 	{
-		addersvcSvc = adder.NewAdder(logger)
+		adderSvc = adder.NewAdder(logger)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other
@@ -52,7 +52,7 @@ func main() {
 		addersvcEndpoints *addersvc.Endpoints
 	)
 	{
-		addersvcEndpoints = addersvc.NewSecureEndpoints(addersvcSvc, adder.AdderAuthAPIKeyFn)
+		addersvcEndpoints = addersvc.NewSecureEndpoints(adderSvc, adder.AdderAuthAPIKeyFn)
 	}
 
 	// Provide the transport specific request decoder and response encoder.
