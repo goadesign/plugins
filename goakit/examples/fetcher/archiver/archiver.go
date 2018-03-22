@@ -39,7 +39,7 @@ func (s *archiversvcsvc) Read(ctx context.Context, p *archiversvc.ReadPayload) (
 	if doc == nil {
 		return nil, &archiversvc.Error{
 			ID:      strconv.Itoa(int(time.Now().Unix())),
-			Code:    "bad_request",
+			Name:    "bad_request",
 			Message: fmt.Sprintf("could not find document with ID %q", p.ID),
 		}
 	}

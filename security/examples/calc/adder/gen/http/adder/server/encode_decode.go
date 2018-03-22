@@ -71,27 +71,24 @@ func DecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Dec
 
 // EncodeAddError returns an encoder for errors returned by the add adder
 // endpoint.
-func EncodeAddError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) {
+func EncodeAddError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
 	encodeError := goahttp.ErrorEncoder(encoder)
-	return func(ctx context.Context, w http.ResponseWriter, v error) {
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
 		switch res := v.(type) {
 		case *addersvc.InvalidScopes:
 			enc := encoder(ctx, w)
 			body := NewAddInvalidScopesResponseBody(res)
 			w.WriteHeader(http.StatusForbidden)
-			if err := enc.Encode(body); err != nil {
-				encodeError(ctx, w, err)
-			}
+			return enc.Encode(body)
 		case *addersvc.Unauthorized:
 			enc := encoder(ctx, w)
 			body := NewAddUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)
-			if err := enc.Encode(body); err != nil {
-				encodeError(ctx, w, err)
-			}
+			return enc.Encode(body)
 		default:
-			encodeError(ctx, w, v)
+			return encodeError(ctx, w, v)
 		}
+		return nil
 	}
 }
 

@@ -46,27 +46,33 @@ type ReadResponseBody struct {
 // ReadNotFoundResponseBody is the type of the "archiver" service "read"
 // endpoint HTTP response body for the "not_found" error.
 type ReadNotFoundResponseBody struct {
-	// a unique identifier for this particular occurrence of the problem.
+	// Name is the name of this class of errors.
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+	// ID is a unique identifier for this particular occurrence of the problem.
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	// the HTTP status code applicable to this problem.
-	Status *int `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
-	// an application-specific error code, expressed as a string value.
-	Code *string `form:"code,omitempty" json:"code,omitempty" xml:"code,omitempty"`
-	// a human-readable explanation specific to this occurrence of the problem.
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
 	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
 }
 
 // ReadBadRequestResponseBody is the type of the "archiver" service "read"
 // endpoint HTTP response body for the "bad_request" error.
 type ReadBadRequestResponseBody struct {
-	// a unique identifier for this particular occurrence of the problem.
+	// Name is the name of this class of errors.
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+	// ID is a unique identifier for this particular occurrence of the problem.
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	// the HTTP status code applicable to this problem.
-	Status *int `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
-	// an application-specific error code, expressed as a string value.
-	Code *string `form:"code,omitempty" json:"code,omitempty" xml:"code,omitempty"`
-	// a human-readable explanation specific to this occurrence of the problem.
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
 	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
 }
 
 // NewArchiveRequestBody builds the HTTP request body from the payload of the
@@ -104,10 +110,11 @@ func NewReadArchiveMediaOK(body *ReadResponseBody) *archiversvc.ArchiveMedia {
 // NewReadNotFound builds a archiver service read endpoint not_found error.
 func NewReadNotFound(body *ReadNotFoundResponseBody) *archiversvc.Error {
 	v := &archiversvc.Error{
-		ID:      *body.ID,
-		Status:  *body.Status,
-		Code:    *body.Code,
-		Message: *body.Message,
+		Name:      *body.Name,
+		ID:        *body.ID,
+		Message:   *body.Message,
+		Temporary: body.Temporary,
+		Timeout:   body.Timeout,
 	}
 	return v
 }
@@ -115,10 +122,11 @@ func NewReadNotFound(body *ReadNotFoundResponseBody) *archiversvc.Error {
 // NewReadBadRequest builds a archiver service read endpoint bad_request error.
 func NewReadBadRequest(body *ReadBadRequestResponseBody) *archiversvc.Error {
 	v := &archiversvc.Error{
-		ID:      *body.ID,
-		Status:  *body.Status,
-		Code:    *body.Code,
-		Message: *body.Message,
+		Name:      *body.Name,
+		ID:        *body.ID,
+		Message:   *body.Message,
+		Temporary: body.Temporary,
+		Timeout:   body.Timeout,
 	}
 	return v
 }
@@ -169,14 +177,11 @@ func (body *ReadResponseBody) Validate() (err error) {
 
 // Validate runs the validations defined on ReadNotFoundResponseBody
 func (body *ReadNotFoundResponseBody) Validate() (err error) {
+	if body.Name == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
+	}
 	if body.ID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
-	}
-	if body.Code == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("code", "body"))
-	}
-	if body.Status == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
 	}
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
@@ -186,14 +191,11 @@ func (body *ReadNotFoundResponseBody) Validate() (err error) {
 
 // Validate runs the validations defined on ReadBadRequestResponseBody
 func (body *ReadBadRequestResponseBody) Validate() (err error) {
+	if body.Name == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
+	}
 	if body.ID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
-	}
-	if body.Code == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("code", "body"))
-	}
-	if body.Status == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
 	}
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))

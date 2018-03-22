@@ -57,20 +57,19 @@ func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.D
 
 // EncodeLoginError returns an encoder for errors returned by the login calc
 // endpoint.
-func EncodeLoginError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) {
+func EncodeLoginError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
 	encodeError := goahttp.ErrorEncoder(encoder)
-	return func(ctx context.Context, w http.ResponseWriter, v error) {
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
 		switch res := v.(type) {
 		case *calcsvc.Unauthorized:
 			enc := encoder(ctx, w)
 			body := NewLoginUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)
-			if err := enc.Encode(body); err != nil {
-				encodeError(ctx, w, err)
-			}
+			return enc.Encode(body)
 		default:
-			encodeError(ctx, w, v)
+			return encodeError(ctx, w, v)
 		}
+		return nil
 	}
 }
 

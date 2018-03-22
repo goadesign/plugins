@@ -23,27 +23,33 @@ type FetchResponseBody struct {
 // FetchBadRequestResponseBody is the type of the "fetcher" service "fetch"
 // endpoint HTTP response body for the "bad_request" error.
 type FetchBadRequestResponseBody struct {
-	// a unique identifier for this particular occurrence of the problem.
+	// Name is the name of this class of errors.
+	Name string `form:"name" json:"name" xml:"name"`
+	// ID is a unique identifier for this particular occurrence of the problem.
 	ID string `form:"id" json:"id" xml:"id"`
-	// the HTTP status code applicable to this problem.
-	Status int `form:"status" json:"status" xml:"status"`
-	// an application-specific error code, expressed as a string value.
-	Code string `form:"code" json:"code" xml:"code"`
-	// a human-readable explanation specific to this occurrence of the problem.
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
 	Message string `form:"message" json:"message" xml:"message"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
 }
 
 // FetchInternalErrorResponseBody is the type of the "fetcher" service "fetch"
 // endpoint HTTP response body for the "internal_error" error.
 type FetchInternalErrorResponseBody struct {
-	// a unique identifier for this particular occurrence of the problem.
+	// Name is the name of this class of errors.
+	Name string `form:"name" json:"name" xml:"name"`
+	// ID is a unique identifier for this particular occurrence of the problem.
 	ID string `form:"id" json:"id" xml:"id"`
-	// the HTTP status code applicable to this problem.
-	Status int `form:"status" json:"status" xml:"status"`
-	// an application-specific error code, expressed as a string value.
-	Code string `form:"code" json:"code" xml:"code"`
-	// a human-readable explanation specific to this occurrence of the problem.
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
 	Message string `form:"message" json:"message" xml:"message"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
 }
 
 // NewFetchResponseBody builds the HTTP response body from the result of the
@@ -60,10 +66,11 @@ func NewFetchResponseBody(res *fetchersvc.FetchMedia) *FetchResponseBody {
 // of the "fetch" endpoint of the "fetcher" service.
 func NewFetchBadRequestResponseBody(res *fetchersvc.Error) *FetchBadRequestResponseBody {
 	body := &FetchBadRequestResponseBody{
-		ID:      res.ID,
-		Status:  res.Status,
-		Code:    res.Code,
-		Message: res.Message,
+		Name:      res.Name,
+		ID:        res.ID,
+		Message:   res.Message,
+		Temporary: res.Temporary,
+		Timeout:   res.Timeout,
 	}
 	return body
 }
@@ -72,10 +79,11 @@ func NewFetchBadRequestResponseBody(res *fetchersvc.Error) *FetchBadRequestRespo
 // result of the "fetch" endpoint of the "fetcher" service.
 func NewFetchInternalErrorResponseBody(res *fetchersvc.Error) *FetchInternalErrorResponseBody {
 	body := &FetchInternalErrorResponseBody{
-		ID:      res.ID,
-		Status:  res.Status,
-		Code:    res.Code,
-		Message: res.Message,
+		Name:      res.Name,
+		ID:        res.ID,
+		Message:   res.Message,
+		Temporary: res.Temporary,
+		Timeout:   res.Timeout,
 	}
 	return body
 }

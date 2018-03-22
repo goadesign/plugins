@@ -23,7 +23,7 @@ import (
 //    command (subcommand1|subcommand2|...)
 //
 func UsageCommands() string {
-	return `secured_service (signin|secure|doubly_secure|also_doubly_secure)
+	return `secured-service (signin|secure|doubly-secure|also-doubly-secure)
 `
 }
 
@@ -46,7 +46,7 @@ func ParseEndpoint(
 	restore bool,
 ) (goa.Endpoint, interface{}, error) {
 	var (
-		securedServiceFlags = flag.NewFlagSet("secured_service", flag.ContinueOnError)
+		securedServiceFlags = flag.NewFlagSet("secured-service", flag.ContinueOnError)
 
 		securedServiceSigninFlags    = flag.NewFlagSet("signin", flag.ExitOnError)
 		securedServiceSigninBodyFlag = securedServiceSigninFlags.String("body", "REQUIRED", "")
@@ -55,11 +55,11 @@ func ParseEndpoint(
 		securedServiceSecureBodyFlag = securedServiceSecureFlags.String("body", "REQUIRED", "")
 		securedServiceSecureFailFlag = securedServiceSecureFlags.String("fail", "", "")
 
-		securedServiceDoublySecureFlags    = flag.NewFlagSet("doubly_secure", flag.ExitOnError)
+		securedServiceDoublySecureFlags    = flag.NewFlagSet("doubly-secure", flag.ExitOnError)
 		securedServiceDoublySecureBodyFlag = securedServiceDoublySecureFlags.String("body", "REQUIRED", "")
 		securedServiceDoublySecureKeyFlag  = securedServiceDoublySecureFlags.String("key", "", "")
 
-		securedServiceAlsoDoublySecureFlags    = flag.NewFlagSet("also_doubly_secure", flag.ExitOnError)
+		securedServiceAlsoDoublySecureFlags    = flag.NewFlagSet("also-doubly-secure", flag.ExitOnError)
 		securedServiceAlsoDoublySecureBodyFlag = securedServiceAlsoDoublySecureFlags.String("body", "REQUIRED", "")
 		securedServiceAlsoDoublySecureKeyFlag  = securedServiceAlsoDoublySecureFlags.String("key", "", "")
 	)
@@ -84,7 +84,7 @@ func ParseEndpoint(
 	{
 		svcn = os.Args[1+flag.NFlag()]
 		switch svcn {
-		case "secured_service":
+		case "secured-service":
 			svcf = securedServiceFlags
 		default:
 			return nil, nil, fmt.Errorf("unknown service %q", svcn)
@@ -101,7 +101,7 @@ func ParseEndpoint(
 	{
 		epn = os.Args[2+flag.NFlag()+svcf.NFlag()]
 		switch svcn {
-		case "secured_service":
+		case "secured-service":
 			switch epn {
 			case "signin":
 				epf = securedServiceSigninFlags
@@ -109,10 +109,10 @@ func ParseEndpoint(
 			case "secure":
 				epf = securedServiceSecureFlags
 
-			case "doubly_secure":
+			case "doubly-secure":
 				epf = securedServiceDoublySecureFlags
 
-			case "also_doubly_secure":
+			case "also-doubly-secure":
 				epf = securedServiceAlsoDoublySecureFlags
 
 			}
@@ -137,7 +137,7 @@ func ParseEndpoint(
 	)
 	{
 		switch svcn {
-		case "secured_service":
+		case "secured-service":
 			c := securedservicec.NewClient(scheme, host, doer, enc, dec, restore)
 			switch epn {
 			case "signin":
@@ -146,10 +146,10 @@ func ParseEndpoint(
 			case "secure":
 				endpoint = c.Secure()
 				data, err = securedservicec.BuildSecurePayload(*securedServiceSecureBodyFlag, *securedServiceSecureFailFlag)
-			case "doubly_secure":
+			case "doubly-secure":
 				endpoint = c.DoublySecure()
 				data, err = securedservicec.BuildDoublySecurePayload(*securedServiceDoublySecureBodyFlag, *securedServiceDoublySecureKeyFlag)
-			case "also_doubly_secure":
+			case "also-doubly-secure":
 				endpoint = c.AlsoDoublySecure()
 				data, err = securedservicec.BuildAlsoDoublySecurePayload(*securedServiceAlsoDoublySecureBodyFlag, *securedServiceAlsoDoublySecureKeyFlag)
 			}
@@ -162,25 +162,25 @@ func ParseEndpoint(
 	return endpoint, data, nil
 }
 
-// secured_serviceUsage displays the usage of the secured_service command and
+// secured-serviceUsage displays the usage of the secured-service command and
 // its subcommands.
 func securedServiceUsage() {
 	fmt.Fprintf(os.Stderr, `The secured service exposes endpoints that require valid authorization credentials.
 Usage:
-    %s [globalflags] secured_service COMMAND [flags]
+    %s [globalflags] secured-service COMMAND [flags]
 
 COMMAND:
     signin: Creates a valid JWT
     secure: This action is secured with the jwt scheme
-    doubly_secure: This action is secured with the jwt scheme and also requires an API key query string.
-    also_doubly_secure: This action is secured with the jwt scheme and also requires an API key header.
+    doubly-secure: This action is secured with the jwt scheme and also requires an API key query string.
+    also-doubly-secure: This action is secured with the jwt scheme and also requires an API key header.
 
 Additional help:
-    %s secured_service COMMAND --help
+    %s secured-service COMMAND --help
 `, os.Args[0], os.Args[0])
 }
 func securedServiceSigninUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] secured_service signin -body JSON
+	fmt.Fprintf(os.Stderr, `%s [flags] secured-service signin -body JSON
 
 Creates a valid JWT
     -body JSON: 
@@ -194,7 +194,7 @@ Example:
 }
 
 func securedServiceSecureUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] secured_service secure -body JSON -fail BOOL
+	fmt.Fprintf(os.Stderr, `%s [flags] secured-service secure -body JSON -fail BOOL
 
 This action is secured with the jwt scheme
     -body JSON: 
@@ -208,7 +208,7 @@ Example:
 }
 
 func securedServiceDoublySecureUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] secured_service doubly_secure -body JSON -key STRING
+	fmt.Fprintf(os.Stderr, `%s [flags] secured-service doubly-secure -body JSON -key STRING
 
 This action is secured with the jwt scheme and also requires an API key query string.
     -body JSON: 
@@ -222,7 +222,7 @@ Example:
 }
 
 func securedServiceAlsoDoublySecureUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] secured_service also_doubly_secure -body JSON -key STRING
+	fmt.Fprintf(os.Stderr, `%s [flags] secured-service also-doubly-secure -body JSON -key STRING
 
 This action is secured with the jwt scheme and also requires an API key header.
     -body JSON: 

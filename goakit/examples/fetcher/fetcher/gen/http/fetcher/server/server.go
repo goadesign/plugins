@@ -40,17 +40,23 @@ func New(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
 			{"Fetch", "GET", "/fetch/{*url}"},
 		},
-		Fetch: NewFetchHandler(e.Fetch, mux, dec, enc),
+		Fetch: NewFetchHandler(e.Fetch, mux, dec, enc, eh),
 	}
 }
 
 // Service returns the name of the service served.
 func (s *Server) Service() string { return "fetcher" }
+
+// Use wraps the server handlers with the given middleware.
+func (s *Server) Use(m func(http.Handler) http.Handler) {
+	s.Fetch = m(s.Fetch)
+}
 
 // Mount configures the mux to serve the fetcher endpoints.
 func Mount(mux goahttp.Muxer, h *Server) {
@@ -76,6 +82,7 @@ func NewFetchHandler(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) http.Handler {
 	var (
 		decodeRequest  = DecodeFetchRequest(mux, dec)
@@ -83,24 +90,25 @@ func NewFetchHandler(
 		encodeError    = EncodeFetchError(enc)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
 		ctx = context.WithValue(ctx, goa.MethodKey, "fetch")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "fetcher")
 		payload, err := decodeRequest(r)
 		if err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 			return
 		}
 
 		res, err := endpoint(ctx, payload)
 
 		if err != nil {
-			encodeError(ctx, w, err)
-			return
+			if err := encodeError(ctx, w, err); err != nil {
+				eh(ctx, w, err)
+				return
+			}
 		}
 		if err := encodeResponse(ctx, w, res); err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 		}
 	})
 }

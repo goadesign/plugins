@@ -52,20 +52,19 @@ func DecodeSigninRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 
 // EncodeSigninError returns an encoder for errors returned by the signin
 // secured_service endpoint.
-func EncodeSigninError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) {
+func EncodeSigninError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
 	encodeError := goahttp.ErrorEncoder(encoder)
-	return func(ctx context.Context, w http.ResponseWriter, v error) {
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
 		switch res := v.(type) {
 		case *securedservice.Unauthorized:
 			enc := encoder(ctx, w)
 			body := NewSigninUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)
-			if err := enc.Encode(body); err != nil {
-				encodeError(ctx, w, err)
-			}
+			return enc.Encode(body)
 		default:
-			encodeError(ctx, w, v)
+			return encodeError(ctx, w, v)
 		}
+		return nil
 	}
 }
 

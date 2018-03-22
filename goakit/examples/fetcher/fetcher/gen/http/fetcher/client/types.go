@@ -24,27 +24,33 @@ type FetchResponseBody struct {
 // FetchBadRequestResponseBody is the type of the "fetcher" service "fetch"
 // endpoint HTTP response body for the "bad_request" error.
 type FetchBadRequestResponseBody struct {
-	// a unique identifier for this particular occurrence of the problem.
+	// Name is the name of this class of errors.
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+	// ID is a unique identifier for this particular occurrence of the problem.
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	// the HTTP status code applicable to this problem.
-	Status *int `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
-	// an application-specific error code, expressed as a string value.
-	Code *string `form:"code,omitempty" json:"code,omitempty" xml:"code,omitempty"`
-	// a human-readable explanation specific to this occurrence of the problem.
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
 	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
 }
 
 // FetchInternalErrorResponseBody is the type of the "fetcher" service "fetch"
 // endpoint HTTP response body for the "internal_error" error.
 type FetchInternalErrorResponseBody struct {
-	// a unique identifier for this particular occurrence of the problem.
+	// Name is the name of this class of errors.
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+	// ID is a unique identifier for this particular occurrence of the problem.
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	// the HTTP status code applicable to this problem.
-	Status *int `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
-	// an application-specific error code, expressed as a string value.
-	Code *string `form:"code,omitempty" json:"code,omitempty" xml:"code,omitempty"`
-	// a human-readable explanation specific to this occurrence of the problem.
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
 	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
 }
 
 // NewFetchFetchMediaOK builds a "fetcher" service "fetch" endpoint result from
@@ -60,10 +66,11 @@ func NewFetchFetchMediaOK(body *FetchResponseBody) *fetchersvc.FetchMedia {
 // NewFetchBadRequest builds a fetcher service fetch endpoint bad_request error.
 func NewFetchBadRequest(body *FetchBadRequestResponseBody) *fetchersvc.Error {
 	v := &fetchersvc.Error{
-		ID:      *body.ID,
-		Status:  *body.Status,
-		Code:    *body.Code,
-		Message: *body.Message,
+		Name:      *body.Name,
+		ID:        *body.ID,
+		Message:   *body.Message,
+		Temporary: body.Temporary,
+		Timeout:   body.Timeout,
 	}
 	return v
 }
@@ -72,10 +79,11 @@ func NewFetchBadRequest(body *FetchBadRequestResponseBody) *fetchersvc.Error {
 // error.
 func NewFetchInternalError(body *FetchInternalErrorResponseBody) *fetchersvc.Error {
 	v := &fetchersvc.Error{
-		ID:      *body.ID,
-		Status:  *body.Status,
-		Code:    *body.Code,
-		Message: *body.Message,
+		Name:      *body.Name,
+		ID:        *body.ID,
+		Message:   *body.Message,
+		Temporary: body.Temporary,
+		Timeout:   body.Timeout,
 	}
 	return v
 }
@@ -101,14 +109,11 @@ func (body *FetchResponseBody) Validate() (err error) {
 
 // Validate runs the validations defined on FetchBadRequestResponseBody
 func (body *FetchBadRequestResponseBody) Validate() (err error) {
+	if body.Name == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
+	}
 	if body.ID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
-	}
-	if body.Code == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("code", "body"))
-	}
-	if body.Status == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
 	}
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
@@ -118,14 +123,11 @@ func (body *FetchBadRequestResponseBody) Validate() (err error) {
 
 // Validate runs the validations defined on FetchInternalErrorResponseBody
 func (body *FetchInternalErrorResponseBody) Validate() (err error) {
+	if body.Name == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
+	}
 	if body.ID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
-	}
-	if body.Code == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("code", "body"))
-	}
-	if body.Status == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
 	}
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))

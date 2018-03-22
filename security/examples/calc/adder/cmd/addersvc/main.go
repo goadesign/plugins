@@ -79,7 +79,7 @@ func main() {
 		addersvcServer *addersvcsvr.Server
 	)
 	{
-		addersvcServer = addersvcsvr.New(addersvcEndpoints, mux, dec, enc)
+		addersvcServer = addersvcsvr.New(addersvcEndpoints, mux, dec, enc, ErrorHandler(logger))
 	}
 
 	// Configure the mux.
@@ -127,4 +127,15 @@ func main() {
 	srv.Shutdown(ctx)
 
 	logger.Println("exited")
+}
+
+// ErrorHandler returns a function that writes and logs the given error.
+// The function also writes and logs the error unique ID so that it's possible
+// to correlate.
+func ErrorHandler(logger *log.Logger) func(context.Context, http.ResponseWriter, error) {
+	return func(ctx context.Context, w http.ResponseWriter, err error) {
+		id := ctx.Value(middleware.RequestIDKey).(string)
+		w.Write([]byte("[" + id + "] encoding: " + err.Error()))
+		logger.Printf("[%s] ERROR: %s", id, err.Error())
+	}
 }

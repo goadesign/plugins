@@ -46,27 +46,33 @@ type ReadResponseBody struct {
 // ReadNotFoundResponseBody is the type of the "archiver" service "read"
 // endpoint HTTP response body for the "not_found" error.
 type ReadNotFoundResponseBody struct {
-	// a unique identifier for this particular occurrence of the problem.
+	// Name is the name of this class of errors.
+	Name string `form:"name" json:"name" xml:"name"`
+	// ID is a unique identifier for this particular occurrence of the problem.
 	ID string `form:"id" json:"id" xml:"id"`
-	// the HTTP status code applicable to this problem.
-	Status int `form:"status" json:"status" xml:"status"`
-	// an application-specific error code, expressed as a string value.
-	Code string `form:"code" json:"code" xml:"code"`
-	// a human-readable explanation specific to this occurrence of the problem.
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
 	Message string `form:"message" json:"message" xml:"message"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
 }
 
 // ReadBadRequestResponseBody is the type of the "archiver" service "read"
 // endpoint HTTP response body for the "bad_request" error.
 type ReadBadRequestResponseBody struct {
-	// a unique identifier for this particular occurrence of the problem.
+	// Name is the name of this class of errors.
+	Name string `form:"name" json:"name" xml:"name"`
+	// ID is a unique identifier for this particular occurrence of the problem.
 	ID string `form:"id" json:"id" xml:"id"`
-	// the HTTP status code applicable to this problem.
-	Status int `form:"status" json:"status" xml:"status"`
-	// an application-specific error code, expressed as a string value.
-	Code string `form:"code" json:"code" xml:"code"`
-	// a human-readable explanation specific to this occurrence of the problem.
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
 	Message string `form:"message" json:"message" xml:"message"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
 }
 
 // NewArchiveResponseBody builds the HTTP response body from the result of the
@@ -95,10 +101,11 @@ func NewReadResponseBody(res *archiversvc.ArchiveMedia) *ReadResponseBody {
 // the "read" endpoint of the "archiver" service.
 func NewReadNotFoundResponseBody(res *archiversvc.Error) *ReadNotFoundResponseBody {
 	body := &ReadNotFoundResponseBody{
-		ID:      res.ID,
-		Status:  res.Status,
-		Code:    res.Code,
-		Message: res.Message,
+		Name:      res.Name,
+		ID:        res.ID,
+		Message:   res.Message,
+		Temporary: res.Temporary,
+		Timeout:   res.Timeout,
 	}
 	return body
 }
@@ -107,10 +114,11 @@ func NewReadNotFoundResponseBody(res *archiversvc.Error) *ReadNotFoundResponseBo
 // of the "read" endpoint of the "archiver" service.
 func NewReadBadRequestResponseBody(res *archiversvc.Error) *ReadBadRequestResponseBody {
 	body := &ReadBadRequestResponseBody{
-		ID:      res.ID,
-		Status:  res.Status,
-		Code:    res.Code,
-		Message: res.Message,
+		Name:      res.Name,
+		ID:        res.ID,
+		Message:   res.Message,
+		Temporary: res.Temporary,
+		Timeout:   res.Timeout,
 	}
 	return body
 }

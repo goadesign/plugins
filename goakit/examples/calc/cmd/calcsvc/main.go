@@ -13,6 +13,7 @@ import (
 	"github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
+	"goa.design/goa/http/middleware"
 	calc "goa.design/plugins/goakit/examples/calc"
 	calcsvc "goa.design/plugins/goakit/examples/calc/gen/calc"
 	calcsvckitsvr "goa.design/plugins/goakit/examples/calc/gen/http/calc/kitserver"
@@ -80,7 +81,7 @@ func main() {
 			calcsvckitsvr.DecodeAddRequest(mux, dec),
 			calcsvckitsvr.EncodeAddResponse(enc),
 		)
-		calcsvcServer = calcsvcsvr.New(calcsvce, mux, dec, enc)
+		calcsvcServer = calcsvcsvr.New(calcsvce, mux, dec, enc, ErrorHandler(logger))
 	}
 
 	// Configure the mux.
@@ -113,8 +114,20 @@ func main() {
 	logger.Log("exiting", <-errc)
 
 	// Shutdown gracefully with a 30s timeout.
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	srv.Shutdown(ctx)
 
 	logger.Log("server", "exited")
+}
+
+// ErrorHandler returns a function that writes and logs the given error.
+// The function also writes and logs the error unique ID so that it's possible
+// to correlate.
+func ErrorHandler(logger log.Logger) func(context.Context, http.ResponseWriter, error) {
+	return func(ctx context.Context, w http.ResponseWriter, err error) {
+		id := ctx.Value(middleware.RequestIDKey).(string)
+		w.Write([]byte("[" + id + "] encoding: " + err.Error()))
+		logger.Log("error", fmt.Sprintf("[%s] ERROR: %s", id, err.Error()))
+	}
 }

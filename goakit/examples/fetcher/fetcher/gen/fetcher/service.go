@@ -20,6 +20,16 @@ type Service interface {
 	Fetch(context.Context, *FetchPayload) (*FetchMedia, error)
 }
 
+// ServiceName is the name of the service as defined in the design. This is the
+// same value that is set in the endpoint request contexts under the ServiceKey
+// key.
+const ServiceName = "fetcher"
+
+// MethodNames lists the service method names as defined in the design. These
+// are the same values that are set in the endpoint request contexts under the
+// MethodKey key.
+var MethodNames = [1]string{"fetch"}
+
 // FetchPayload is the payload type of the fetcher service fetch method.
 type FetchPayload struct {
 	// URL to be fetched
@@ -36,14 +46,17 @@ type FetchMedia struct {
 
 // Error response result type
 type Error struct {
-	// a unique identifier for this particular occurrence of the problem.
+	// Name is the name of this class of errors.
+	Name string
+	// ID is a unique identifier for this particular occurrence of the problem.
 	ID string
-	// the HTTP status code applicable to this problem.
-	Status int
-	// an application-specific error code, expressed as a string value.
-	Code string
-	// a human-readable explanation specific to this occurrence of the problem.
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
 	Message string
+	// Is the error temporary?
+	Temporary *bool
+	// Is the error a timeout?
+	Timeout *bool
 }
 
 // Error returns "error".
@@ -51,22 +64,20 @@ func (e *Error) Error() string {
 	return "error"
 }
 
-// NewBadRequest initilializes a Error struct reference from a goa.Error
-func NewBadRequest(err goa.Error) *Error {
+// MakeBadRequest builds a Error from an error.
+func MakeBadRequest(err error) *Error {
 	return &Error{
-		ID:      err.ID(),
-		Status:  int(err.Status()),
-		Code:    "bad_request",
-		Message: err.Message(),
+		Name:    "bad_request",
+		ID:      goa.NewErrorID(),
+		Message: err.Error(),
 	}
 }
 
-// NewInternalError initilializes a Error struct reference from a goa.Error
-func NewInternalError(err goa.Error) *Error {
+// MakeInternalError builds a Error from an error.
+func MakeInternalError(err error) *Error {
 	return &Error{
-		ID:      err.ID(),
-		Status:  int(err.Status()),
-		Code:    "internal_error",
-		Message: err.Message(),
+		Name:    "internal_error",
+		ID:      goa.NewErrorID(),
+		Message: err.Error(),
 	}
 }
