@@ -3,6 +3,7 @@ package security
 import (
 	"bytes"
 	"encoding/json"
+	"path/filepath"
 	"testing"
 	"text/template"
 
@@ -10,6 +11,7 @@ import (
 
 	codegen "goa.design/goa/codegen"
 	goadesign "goa.design/goa/design"
+	"goa.design/goa/eval"
 	httpcodegen "goa.design/goa/http/codegen"
 	httpdesign "goa.design/goa/http/design"
 	"goa.design/plugins/security/design"
@@ -118,6 +120,40 @@ func TestOpenAPIV2(t *testing.T) {
 				t.Fatalf("%s: failed to render template: %s", c.Name, err)
 			}
 			validateSwagger(t, c.Name, buf.Bytes())
+		})
+	}
+}
+
+func TestExample(t *testing.T) {
+	cases := []struct {
+		Name string
+		DSL  func()
+		Code string
+	}{
+		{"single-service", testdata.SingleServiceDSL, testdata.SingleServiceAuthFuncsCode},
+		{"multiple-services", testdata.MultipleServicesDSL, testdata.MultipleServicesAuthFuncsCode},
+	}
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			httpcodegen.RunHTTPDSL(t, c.DSL)
+			if len(goadesign.Root.Services) == 0 {
+				t.Fatalf("expected at least 1 service")
+			}
+			fs := httpcodegen.ExampleServerFiles("", httpdesign.Root)
+			Example("", []eval.Root{goadesign.Root}, fs)
+			for _, f := range fs {
+				if filepath.Base(f.Path) == "main.go" {
+					continue
+				}
+				sections := f.Section("dummy-authorize-funcs")
+				if len(sections) < 1 {
+					t.Fatalf("service-main: expected at least 1")
+				}
+				code := codegen.SectionCode(t, sections[0])
+				if code != c.Code {
+					t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c.Code))
+				}
+			}
 		})
 	}
 }

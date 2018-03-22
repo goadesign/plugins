@@ -52,7 +52,7 @@ func main() {
 		securedserviceEndpoints *securedservice.Endpoints
 	)
 	{
-		securedserviceEndpoints = securedservice.NewSecureEndpoints(securedserviceSvc, multiauth.AuthBasicAuthFn, multiauth.AuthJWTFn, multiauth.AuthAPIKeyFn, multiauth.AuthOAuth2Fn)
+		securedserviceEndpoints = securedservice.NewSecureEndpoints(securedserviceSvc, multiauth.SecuredServiceAuthBasicAuthFn, multiauth.SecuredServiceAuthJWTFn, multiauth.SecuredServiceAuthAPIKeyFn, multiauth.SecuredServiceAuthOAuth2Fn)
 	}
 
 	// Provide the transport specific request decoder and response encoder.

@@ -166,6 +166,46 @@ func TestOpenAPIV2(t *testing.T) {
 	}
 }
 
+func TestExample(t *testing.T) {
+	cases := []struct {
+		Name     string
+		DSL      func()
+		Snippets []string
+	}{
+		{"single-service", testdata.SingleServiceDSL, []string{
+			"singleservice.NewSecureEndpoints(singleserviceSvc, testapi.SingleServiceAuthAPIKeyFn)"}},
+		{"multiple-services", testdata.MultipleServicesDSL, []string{
+			"servicewithapikeyauth.NewSecureEndpoints(servicewithapikeyauthSvc, testapi.ServiceWithAPIKeyAuthAuthAPIKeyFn)",
+			"servicewithjwtandbasicauth.NewSecureEndpoints(servicewithjwtandbasicauthSvc, testapi.ServiceWithJWTAndBasicAuthAuthBasicAuthFn, testapi.ServiceWithJWTAndBasicAuthAuthJWTFn)",
+			"servicewithnosecurity.NewSecureEndpoints(servicewithnosecuritySvc)"}},
+	}
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			httpcodegen.RunHTTPDSL(t, c.DSL)
+			if len(goadesign.Root.Services) == 0 {
+				t.Fatalf("expected at least 1 service")
+			}
+			fs := httpcodegen.ExampleServerFiles("", httpdesign.Root)
+			Example("", []eval.Root{goadesign.Root, httpdesign.Root}, fs)
+			for _, f := range fs {
+				if filepath.Base(f.Path) != "main.go" {
+					continue
+				}
+				sections := f.Section("service-main")
+				if len(sections) < 1 {
+					t.Fatalf("service-main: expected at least 1")
+				}
+				code := codegen.SectionCode(t, sections[0])
+				for _, s := range c.Snippets {
+					if !strings.Contains(code, s) {
+						t.Errorf("invalid code, code:\n%s\ndoes not contain expected snippet:\n%s", code, s)
+					}
+				}
+			}
+		})
+	}
+}
+
 // validateSwagger asserts that the given bytes contain a valid Swagger spec.
 func validateSwagger(t *testing.T, title string, b []byte) {
 	doc, err := loads.Analyzed(json.RawMessage(b), "")

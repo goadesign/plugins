@@ -2,7 +2,6 @@ package adder
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"goa.design/plugins/security"
@@ -26,11 +25,11 @@ func (s *addersvcSvc) Add(ctx context.Context, p *addersvc.AddPayload) (int, err
 	return p.A + p.B, nil
 }
 
-// AuthAPIKeyFn implements the authorization logic for APIKey scheme.
-func AuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
+// AdderAuthAPIKeyFn implements the authorization logic for APIKey scheme.
+func AdderAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
 	if key == "" {
-		return ctx, fmt.Errorf("invalid key")
+		return ctx, &addersvc.Unauthorized{"invalid key"}
 	}
 	return ctx, nil
 }
