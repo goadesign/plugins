@@ -86,6 +86,7 @@ func main() {
 		healthServer              *healthsvr.Server
 	)
 	{
+		eh := ErrorHandler(logger)
 		archiversvcArchiveHandler = kithttp.NewServer(
 			endpoint.Endpoint(archiversvce.Archive),
 			archiversvckitsvr.DecodeArchiveRequest(mux, dec),
@@ -96,13 +97,13 @@ func main() {
 			archiversvckitsvr.DecodeReadRequest(mux, dec),
 			archiversvckitsvr.EncodeReadResponse(enc),
 		)
-		archiversvcServer = archiversvcsvr.New(archiversvce, mux, dec, enc, ErrorHandler(logger))
+		archiversvcServer = archiversvcsvr.New(archiversvce, mux, dec, enc, eh)
 		healthShowHandler = kithttp.NewServer(
 			endpoint.Endpoint(healthe.Show),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			healthkitsvr.EncodeShowResponse(enc),
 		)
-		healthServer = healthsvr.New(healthe, mux, dec, enc, ErrorHandler(logger))
+		healthServer = healthsvr.New(healthe, mux, dec, enc, eh)
 	}
 
 	// Configure the mux.
@@ -127,10 +128,10 @@ func main() {
 	srv := &http.Server{Addr: *addr, Handler: mux}
 	go func() {
 		for _, m := range archiversvcServer.Mounts {
-			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", archiversvcServer.Service(), m.Method, m.Verb, m.Pattern))
+			logger.Log("info", fmt.Sprintf("method %s mounted on %s %s", m.Method, m.Verb, m.Pattern))
 		}
 		for _, m := range healthServer.Mounts {
-			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", healthServer.Service(), m.Method, m.Verb, m.Pattern))
+			logger.Log("info", fmt.Sprintf("method %s mounted on %s %s", m.Method, m.Verb, m.Pattern))
 		}
 		logger.Log("listening", *addr)
 		errc <- srv.ListenAndServe()

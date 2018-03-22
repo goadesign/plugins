@@ -205,6 +205,7 @@ const mainT = `func main() {
 	)
 	{
 	{{- range .Services }}
+		eh := ErrorHandler(logger)
 		{{- range .Endpoints }}
 		{{ .ServicePkgName }}{{ .Method.VarName }}Handler = kithttp.NewServer(
 			endpoint.Endpoint({{ .ServicePkgName }}e.{{ .Method.VarName }}),
@@ -217,9 +218,9 @@ const mainT = `func main() {
 		)
 		{{- end }}
 		{{-  if .Endpoints }}
-		{{ .Service.PkgName }}Server = {{ .Service.PkgName }}svr.New({{ .Service.PkgName }}e, mux, dec, enc, ErrorHandler(logger))
+		{{ .Service.PkgName }}Server = {{ .Service.PkgName }}svr.New({{ .Service.PkgName }}e, mux, dec, enc, eh)
 		{{-  else }}
-		{{ .Service.PkgName }}Server = {{ .Service.PkgName }}svr.New(nil, mux, dec, enc, ErrorHandler(logger))
+		{{ .Service.PkgName }}Server = {{ .Service.PkgName }}svr.New(nil, mux, dec, enc, eh)
 		{{-  end }}
 	{{- end }}
 	}

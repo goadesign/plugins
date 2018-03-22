@@ -79,7 +79,8 @@ func main() {
 		securedserviceServer *securedservicesvr.Server
 	)
 	{
-		securedserviceServer = securedservicesvr.New(securedserviceEndpoints, mux, dec, enc, ErrorHandler(logger))
+		eh := ErrorHandler(logger)
+		securedserviceServer = securedservicesvr.New(securedserviceEndpoints, mux, dec, enc, eh)
 	}
 
 	// Configure the mux.
@@ -112,9 +113,9 @@ func main() {
 	srv := &http.Server{Addr: *addr, Handler: handler}
 	go func() {
 		for _, m := range securedserviceServer.Mounts {
-			logger.Printf("[multiauth] service %q method %q mounted on %s %s", securedserviceServer.Service(), m.Method, m.Verb, m.Pattern)
+			logger.Printf("method %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 		}
-		logger.Printf("[multiauth] listening on %s", *addr)
+		logger.Printf("listening on %s", *addr)
 		errc <- srv.ListenAndServe()
 	}()
 

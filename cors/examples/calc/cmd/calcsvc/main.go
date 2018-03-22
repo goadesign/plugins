@@ -79,7 +79,8 @@ func main() {
 		calcsvcServer *calcsvcsvr.Server
 	)
 	{
-		calcsvcServer = calcsvcsvr.New(calcsvcEndpoints, mux, dec, enc, ErrorHandler(logger))
+		eh := ErrorHandler(logger)
+		calcsvcServer = calcsvcsvr.New(calcsvcEndpoints, mux, dec, enc, eh)
 	}
 
 	// Configure the mux.

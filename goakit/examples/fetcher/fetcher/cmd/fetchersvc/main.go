@@ -90,18 +90,19 @@ func main() {
 		fetchersvcServer       *fetchersvcsvr.Server
 	)
 	{
+		eh := ErrorHandler(logger)
 		healthShowHandler = kithttp.NewServer(
 			endpoint.Endpoint(healthe.Show),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			healthkitsvr.EncodeShowResponse(enc),
 		)
-		healthServer = healthsvr.New(healthe, mux, dec, enc, ErrorHandler(logger))
+		healthServer = healthsvr.New(healthe, mux, dec, enc, eh)
 		fetchersvcFetchHandler = kithttp.NewServer(
 			endpoint.Endpoint(fetchersvce.Fetch),
 			fetchersvckitsvr.DecodeFetchRequest(mux, dec),
 			fetchersvckitsvr.EncodeFetchResponse(enc),
 		)
-		fetchersvcServer = fetchersvcsvr.New(fetchersvce, mux, dec, enc, ErrorHandler(logger))
+		fetchersvcServer = fetchersvcsvr.New(fetchersvce, mux, dec, enc, eh)
 	}
 
 	// Configure the mux.
@@ -125,10 +126,10 @@ func main() {
 	srv := &http.Server{Addr: *addr, Handler: mux}
 	go func() {
 		for _, m := range healthServer.Mounts {
-			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", healthServer.Service(), m.Method, m.Verb, m.Pattern))
+			logger.Log("info", fmt.Sprintf("method %s mounted on %s %s", m.Method, m.Verb, m.Pattern))
 		}
 		for _, m := range fetchersvcServer.Mounts {
-			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", fetchersvcServer.Service(), m.Method, m.Verb, m.Pattern))
+			logger.Log("info", fmt.Sprintf("method %s mounted on %s %s", m.Method, m.Verb, m.Pattern))
 		}
 		logger.Log("listening", *addr)
 		errc <- srv.ListenAndServe()

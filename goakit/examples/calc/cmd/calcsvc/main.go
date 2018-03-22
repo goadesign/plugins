@@ -76,12 +76,13 @@ func main() {
 		calcsvcServer     *calcsvcsvr.Server
 	)
 	{
+		eh := ErrorHandler(logger)
 		calcsvcAddHandler = kithttp.NewServer(
 			endpoint.Endpoint(calcsvce.Add),
 			calcsvckitsvr.DecodeAddRequest(mux, dec),
 			calcsvckitsvr.EncodeAddResponse(enc),
 		)
-		calcsvcServer = calcsvcsvr.New(calcsvce, mux, dec, enc, ErrorHandler(logger))
+		calcsvcServer = calcsvcsvr.New(calcsvce, mux, dec, enc, eh)
 	}
 
 	// Configure the mux.
@@ -104,7 +105,7 @@ func main() {
 	srv := &http.Server{Addr: *addr, Handler: mux}
 	go func() {
 		for _, m := range calcsvcServer.Mounts {
-			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", calcsvcServer.Service(), m.Method, m.Verb, m.Pattern))
+			logger.Log("info", fmt.Sprintf("method %s mounted on %s %s", m.Method, m.Verb, m.Pattern))
 		}
 		logger.Log("listening", *addr)
 		errc <- srv.ListenAndServe()
