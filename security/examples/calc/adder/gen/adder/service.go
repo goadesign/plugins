@@ -38,20 +38,16 @@ type AddPayload struct {
 	B int
 }
 
-type Unauthorized struct {
-	Value string
-}
+type Unauthorized string
 
-type InvalidScopes struct {
-	Value string
-}
+type InvalidScopes string
 
 // Error returns "unauthorized".
-func (e *Unauthorized) Error() string {
+func (e Unauthorized) Error() string {
 	return "unauthorized"
 }
 
 // Error returns "invalid-scopes".
-func (e *InvalidScopes) Error() string {
+func (e InvalidScopes) Error() string {
 	return "invalid-scopes"
 }

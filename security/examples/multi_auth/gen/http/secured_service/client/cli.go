@@ -44,7 +44,7 @@ func BuildSecurePayload(securedServiceSecureBody string, securedServiceSecureFai
 	{
 		err = json.Unmarshal([]byte(securedServiceSecureBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"token\": \"Minus possimus.\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"token\": \"Dignissimos reiciendis itaque enim quibusdam.\"\n   }'")
 		}
 	}
 	var fail *bool
@@ -102,7 +102,7 @@ func BuildAlsoDoublySecurePayload(securedServiceAlsoDoublySecureBody string, sec
 	{
 		err = json.Unmarshal([]byte(securedServiceAlsoDoublySecureBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"oauth_token\": \"Quae deleniti molestiae.\",\n      \"password\": \"password\",\n      \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ\",\n      \"username\": \"user\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"oauth_token\": \"Possimus ab asperiores quae deleniti molestiae et.\",\n      \"password\": \"password\",\n      \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ\",\n      \"username\": \"user\"\n   }'")
 		}
 	}
 	var key *string

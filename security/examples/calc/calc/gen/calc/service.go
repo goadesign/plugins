@@ -47,12 +47,10 @@ type AddPayload struct {
 	Token string
 }
 
-type Unauthorized struct {
-	// Credentials are invalid
-	Value string
-}
+// Credentials are invalid
+type Unauthorized string
 
 // Error returns "unauthorized".
-func (e *Unauthorized) Error() string {
+func (e Unauthorized) Error() string {
 	return "unauthorized"
 }

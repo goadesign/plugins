@@ -75,14 +75,14 @@ func EncodeAddError(encoder func(context.Context, http.ResponseWriter) goahttp.E
 	encodeError := goahttp.ErrorEncoder(encoder)
 	return func(ctx context.Context, w http.ResponseWriter, v error) error {
 		switch res := v.(type) {
-		case *addersvc.InvalidScopes:
+		case addersvc.InvalidScopes:
 			enc := encoder(ctx, w)
-			body := NewAddInvalidScopesResponseBody(res)
+			body := NewInvalidScopes(res)
 			w.WriteHeader(http.StatusForbidden)
 			return enc.Encode(body)
-		case *addersvc.Unauthorized:
+		case addersvc.Unauthorized:
 			enc := encoder(ctx, w)
-			body := NewAddUnauthorizedResponseBody(res)
+			body := NewUnauthorized(res)
 			w.WriteHeader(http.StatusUnauthorized)
 			return enc.Encode(body)
 		default:

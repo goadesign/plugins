@@ -46,19 +46,14 @@ type AlsoDoublySecureRequestBody struct {
 	OauthToken *string `form:"oauth_token,omitempty" json:"oauth_token,omitempty" xml:"oauth_token,omitempty"`
 }
 
-// SigninUnauthorizedResponseBody is the type of the "secured_service" service
-// "signin" endpoint HTTP response body for the "unauthorized" error.
-type SigninUnauthorizedResponseBody struct {
-	// Credentials are invalid
-	Value string `form:"value" json:"value" xml:"value"`
-}
+// Unauthorized is the type of the "secured_service" service "signin" endpoint
+// HTTP response body for the "unauthorized" error.
+type Unauthorized string
 
-// NewSigninUnauthorizedResponseBody builds the HTTP response body from the
-// result of the "signin" endpoint of the "secured_service" service.
-func NewSigninUnauthorizedResponseBody(res *securedservice.Unauthorized) *SigninUnauthorizedResponseBody {
-	body := &SigninUnauthorizedResponseBody{
-		Value: res.Value,
-	}
+// NewUnauthorized builds the HTTP response body from the result of the
+// "signin" endpoint of the "secured_service" service.
+func NewUnauthorized(res securedservice.Unauthorized) Unauthorized {
+	body := Unauthorized(res)
 	return body
 }
 

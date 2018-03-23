@@ -202,7 +202,7 @@ This action is secured with the jwt scheme
 
 Example:
     `+os.Args[0]+` secured_service secure --body '{
-      "token": "Minus possimus."
+      "token": "Dignissimos reiciendis itaque enim quibusdam."
    }' --fail true
 `, os.Args[0])
 }
@@ -230,7 +230,7 @@ This action is secured with the jwt scheme and also requires an API key header.
 
 Example:
     `+os.Args[0]+` secured_service also-doubly-secure --body '{
-      "oauth_token": "Quae deleniti molestiae.",
+      "oauth_token": "Possimus ab asperiores quae deleniti molestiae et.",
       "password": "password",
       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ",
       "username": "user"

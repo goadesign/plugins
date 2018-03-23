@@ -8,7 +8,6 @@
 package client
 
 import (
-	goa "goa.design/goa"
 	securedservice "goa.design/plugins/security/examples/multi_auth/gen/secured_service"
 )
 
@@ -47,12 +46,9 @@ type AlsoDoublySecureRequestBody struct {
 	OauthToken *string `form:"oauth_token,omitempty" json:"oauth_token,omitempty" xml:"oauth_token,omitempty"`
 }
 
-// SigninUnauthorizedResponseBody is the type of the "secured_service" service
-// "signin" endpoint HTTP response body for the "unauthorized" error.
-type SigninUnauthorizedResponseBody struct {
-	// Credentials are invalid
-	Value *string `form:"value,omitempty" json:"value,omitempty" xml:"value,omitempty"`
-}
+// Unauthorized is the type of the "secured_service" service "signin" endpoint
+// HTTP response body for the "unauthorized" error.
+type Unauthorized string
 
 // NewSigninRequestBody builds the HTTP request body from the payload of the
 // "signin" endpoint of the "secured_service" service.
@@ -96,17 +92,7 @@ func NewAlsoDoublySecureRequestBody(p *securedservice.AlsoDoublySecurePayload) *
 
 // NewSigninUnauthorized builds a secured_service service signin endpoint
 // unauthorized error.
-func NewSigninUnauthorized(body *SigninUnauthorizedResponseBody) *securedservice.Unauthorized {
-	v := &securedservice.Unauthorized{
-		Value: *body.Value,
-	}
+func NewSigninUnauthorized(body Unauthorized) securedservice.Unauthorized {
+	v := securedservice.Unauthorized(body)
 	return v
-}
-
-// Validate runs the validations defined on SigninUnauthorizedResponseBody
-func (body *SigninUnauthorizedResponseBody) Validate() (err error) {
-	if body.Value == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("value", "body"))
-	}
-	return
 }

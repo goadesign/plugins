@@ -33,7 +33,7 @@ func NewClient(signin, secure, doublySecure, alsoDoublySecure goa.Endpoint) *Cli
 
 // Signin calls the "signin" endpoint of the "secured_service" service.
 // Signin can return the following error types:
-//	- *Unauthorized
+//	- Unauthorized
 //	- error: generic transport error.
 func (c *Client) Signin(ctx context.Context, p *SigninPayload) (res string, err error) {
 	var ires interface{}
@@ -57,7 +57,7 @@ func (c *Client) Secure(ctx context.Context, p *SecurePayload) (res string, err 
 // DoublySecure calls the "doubly_secure" endpoint of the "secured_service"
 // service.
 // DoublySecure can return the following error types:
-//	- *Unauthorized
+//	- Unauthorized
 //	- error: generic transport error.
 func (c *Client) DoublySecure(ctx context.Context, p *DoublySecurePayload) (res string, err error) {
 	var ires interface{}
@@ -71,7 +71,7 @@ func (c *Client) DoublySecure(ctx context.Context, p *DoublySecurePayload) (res 
 // AlsoDoublySecure calls the "also_doubly_secure" endpoint of the
 // "secured_service" service.
 // AlsoDoublySecure can return the following error types:
-//	- *Unauthorized
+//	- Unauthorized
 //	- error: generic transport error.
 func (c *Client) AlsoDoublySecure(ctx context.Context, p *AlsoDoublySecurePayload) (res string, err error) {
 	var ires interface{}

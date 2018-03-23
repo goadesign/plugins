@@ -56,9 +56,9 @@ func EncodeSigninError(encoder func(context.Context, http.ResponseWriter) goahtt
 	encodeError := goahttp.ErrorEncoder(encoder)
 	return func(ctx context.Context, w http.ResponseWriter, v error) error {
 		switch res := v.(type) {
-		case *securedservice.Unauthorized:
+		case securedservice.Unauthorized:
 			enc := encoder(ctx, w)
-			body := NewSigninUnauthorizedResponseBody(res)
+			body := NewUnauthorized(res)
 			w.WriteHeader(http.StatusUnauthorized)
 			return enc.Encode(body)
 		default:

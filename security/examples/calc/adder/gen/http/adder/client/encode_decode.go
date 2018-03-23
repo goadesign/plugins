@@ -10,7 +10,6 @@ package client
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -65,8 +64,8 @@ func EncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Re
 // endpoint. restoreBody controls whether the response body should be restored
 // after having been read.
 // DecodeAddResponse may return the following error types:
-//	- *addersvc.InvalidScopes: http.StatusForbidden
-//	- *addersvc.Unauthorized: http.StatusUnauthorized
+//	- addersvc.InvalidScopes: http.StatusForbidden
+//	- addersvc.Unauthorized: http.StatusUnauthorized
 //	- error: generic transport error.
 func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
@@ -96,34 +95,26 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 			return body, nil
 		case http.StatusForbidden:
 			var (
-				body AddInvalidScopesResponseBody
+				body InvalidScopes
 				err  error
 			)
 			err = decoder(resp).Decode(&body)
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("adder", "add", err)
 			}
-			err = body.Validate()
-			if err != nil {
-				return nil, fmt.Errorf("invalid response: %s", err)
-			}
 
-			return nil, NewAddInvalidScopes(&body)
+			return nil, NewAddInvalidScopes(body)
 		case http.StatusUnauthorized:
 			var (
-				body AddUnauthorizedResponseBody
+				body Unauthorized
 				err  error
 			)
 			err = decoder(resp).Decode(&body)
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("adder", "add", err)
 			}
-			err = body.Validate()
-			if err != nil {
-				return nil, fmt.Errorf("invalid response: %s", err)
-			}
 
-			return nil, NewAddUnauthorized(&body)
+			return nil, NewAddUnauthorized(body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))
