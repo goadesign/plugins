@@ -58,7 +58,7 @@ func EncodeSigninError(encoder func(context.Context, http.ResponseWriter) goahtt
 		switch res := v.(type) {
 		case securedservice.Unauthorized:
 			enc := encoder(ctx, w)
-			body := NewUnauthorized(res)
+			body := NewSigninUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)
 			return enc.Encode(body)
 		default:
@@ -117,6 +117,24 @@ func DecodeSecureRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 	}
 }
 
+// EncodeSecureError returns an encoder for errors returned by the secure
+// secured_service endpoint.
+func EncodeSecureError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := goahttp.ErrorEncoder(encoder)
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
+		switch res := v.(type) {
+		case securedservice.Unauthorized:
+			enc := encoder(ctx, w)
+			body := NewSecureUnauthorizedResponseBody(res)
+			w.WriteHeader(http.StatusUnauthorized)
+			return enc.Encode(body)
+		default:
+			return encodeError(ctx, w, v)
+		}
+		return nil
+	}
+}
+
 // EncodeDoublySecureResponse returns an encoder for responses returned by the
 // secured_service doubly_secure endpoint.
 func EncodeDoublySecureResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
@@ -157,6 +175,24 @@ func DecodeDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Request) go
 	}
 }
 
+// EncodeDoublySecureError returns an encoder for errors returned by the
+// doubly_secure secured_service endpoint.
+func EncodeDoublySecureError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := goahttp.ErrorEncoder(encoder)
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
+		switch res := v.(type) {
+		case securedservice.Unauthorized:
+			enc := encoder(ctx, w)
+			body := NewDoublySecureUnauthorizedResponseBody(res)
+			w.WriteHeader(http.StatusUnauthorized)
+			return enc.Encode(body)
+		default:
+			return encodeError(ctx, w, v)
+		}
+		return nil
+	}
+}
+
 // EncodeAlsoDoublySecureResponse returns an encoder for responses returned by
 // the secured_service also_doubly_secure endpoint.
 func EncodeAlsoDoublySecureResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
@@ -194,6 +230,24 @@ func DecodeAlsoDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Request
 		}
 
 		return NewAlsoDoublySecureAlsoDoublySecurePayload(&body, key), nil
+	}
+}
+
+// EncodeAlsoDoublySecureError returns an encoder for errors returned by the
+// also_doubly_secure secured_service endpoint.
+func EncodeAlsoDoublySecureError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := goahttp.ErrorEncoder(encoder)
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
+		switch res := v.(type) {
+		case securedservice.Unauthorized:
+			enc := encoder(ctx, w)
+			body := NewAlsoDoublySecureUnauthorizedResponseBody(res)
+			w.WriteHeader(http.StatusUnauthorized)
+			return enc.Encode(body)
+		default:
+			return encodeError(ctx, w, v)
+		}
+		return nil
 	}
 }
 

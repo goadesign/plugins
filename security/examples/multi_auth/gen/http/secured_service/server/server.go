@@ -151,7 +151,7 @@ func NewSecureHandler(
 	var (
 		decodeRequest  = SecureDecodeSecureRequest(mux, dec)
 		encodeResponse = EncodeSecureResponse(enc)
-		encodeError    = goahttp.ErrorEncoder(enc)
+		encodeError    = EncodeSecureError(enc)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
@@ -201,7 +201,7 @@ func NewDoublySecureHandler(
 	var (
 		decodeRequest  = SecureDecodeDoublySecureRequest(mux, dec)
 		encodeResponse = EncodeDoublySecureResponse(enc)
-		encodeError    = goahttp.ErrorEncoder(enc)
+		encodeError    = EncodeDoublySecureError(enc)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
@@ -252,7 +252,7 @@ func NewAlsoDoublySecureHandler(
 	var (
 		decodeRequest  = SecureDecodeAlsoDoublySecureRequest(mux, dec)
 		encodeResponse = EncodeAlsoDoublySecureResponse(enc)
-		encodeError    = goahttp.ErrorEncoder(enc)
+		encodeError    = EncodeAlsoDoublySecureError(enc)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))

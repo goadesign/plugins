@@ -87,7 +87,7 @@ func DecodeSigninResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 			return nil, nil
 		case http.StatusUnauthorized:
 			var (
-				body Unauthorized
+				body SigninUnauthorizedResponseBody
 				err  error
 			)
 			err = decoder(resp).Decode(&body)
@@ -142,6 +142,9 @@ func EncodeSecureRequest(encoder func(*http.Request) goahttp.Encoder) func(*http
 // DecodeSecureResponse returns a decoder for responses returned by the
 // secured_service secure endpoint. restoreBody controls whether the response
 // body should be restored after having been read.
+// DecodeSecureResponse may return the following error types:
+//	- securedservice.Unauthorized: http.StatusUnauthorized
+//	- error: generic transport error.
 func DecodeSecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {
@@ -168,6 +171,17 @@ func DecodeSecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 			}
 
 			return body, nil
+		case http.StatusUnauthorized:
+			var (
+				body SecureUnauthorizedResponseBody
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("secured_service", "secure", err)
+			}
+
+			return nil, NewSecureUnauthorized(body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))
@@ -214,6 +228,9 @@ func EncodeDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) func
 // DecodeDoublySecureResponse returns a decoder for responses returned by the
 // secured_service doubly_secure endpoint. restoreBody controls whether the
 // response body should be restored after having been read.
+// DecodeDoublySecureResponse may return the following error types:
+//	- securedservice.Unauthorized: http.StatusUnauthorized
+//	- error: generic transport error.
 func DecodeDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {
@@ -240,6 +257,17 @@ func DecodeDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder, re
 			}
 
 			return body, nil
+		case http.StatusUnauthorized:
+			var (
+				body DoublySecureUnauthorizedResponseBody
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("secured_service", "doubly_secure", err)
+			}
+
+			return nil, NewDoublySecureUnauthorized(body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))
@@ -285,6 +313,9 @@ func EncodeAlsoDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) 
 // DecodeAlsoDoublySecureResponse returns a decoder for responses returned by
 // the secured_service also_doubly_secure endpoint. restoreBody controls
 // whether the response body should be restored after having been read.
+// DecodeAlsoDoublySecureResponse may return the following error types:
+//	- securedservice.Unauthorized: http.StatusUnauthorized
+//	- error: generic transport error.
 func DecodeAlsoDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {
@@ -311,6 +342,17 @@ func DecodeAlsoDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder
 			}
 
 			return body, nil
+		case http.StatusUnauthorized:
+			var (
+				body AlsoDoublySecureUnauthorizedResponseBody
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("secured_service", "also_doubly_secure", err)
+			}
+
+			return nil, NewAlsoDoublySecureUnauthorized(body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))
