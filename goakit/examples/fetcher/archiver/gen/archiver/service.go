@@ -21,6 +21,16 @@ type Service interface {
 	Read(context.Context, *ReadPayload) (*ArchiveMedia, error)
 }
 
+// ServiceName is the name of the service as defined in the design. This is the
+// same value that is set in the endpoint request contexts under the ServiceKey
+// key.
+const ServiceName = "archiver"
+
+// MethodNames lists the service method names as defined in the design. These
+// are the same values that are set in the endpoint request contexts under the
+// MethodKey key.
+var MethodNames = [2]string{"archive", "read"}
+
 // ArchivePayload is the payload type of the archiver service archive method.
 type ArchivePayload struct {
 	// HTTP status
@@ -47,14 +57,17 @@ type ReadPayload struct {
 
 // Error response result type
 type Error struct {
-	// a unique identifier for this particular occurrence of the problem.
+	// Name is the name of this class of errors.
+	Name string
+	// ID is a unique identifier for this particular occurrence of the problem.
 	ID string
-	// the HTTP status code applicable to this problem.
-	Status int
-	// an application-specific error code, expressed as a string value.
-	Code string
-	// a human-readable explanation specific to this occurrence of the problem.
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
 	Message string
+	// Is the error temporary?
+	Temporary *bool
+	// Is the error a timeout?
+	Timeout *bool
 }
 
 // Error returns "error".
@@ -62,22 +75,20 @@ func (e *Error) Error() string {
 	return "error"
 }
 
-// NewNotFound initilializes a Error struct reference from a goa.Error
-func NewNotFound(err goa.Error) *Error {
+// MakeNotFound builds a Error from an error.
+func MakeNotFound(err error) *Error {
 	return &Error{
-		ID:      err.ID(),
-		Status:  int(err.Status()),
-		Code:    "not_found",
-		Message: err.Message(),
+		Name:    "not_found",
+		ID:      goa.NewErrorID(),
+		Message: err.Error(),
 	}
 }
 
-// NewBadRequest initilializes a Error struct reference from a goa.Error
-func NewBadRequest(err goa.Error) *Error {
+// MakeBadRequest builds a Error from an error.
+func MakeBadRequest(err error) *Error {
 	return &Error{
-		ID:      err.ID(),
-		Status:  int(err.Status()),
-		Code:    "bad_request",
-		Message: err.Message(),
+		Name:    "bad_request",
+		ID:      goa.NewErrorID(),
+		Message: err.Error(),
 	}
 }

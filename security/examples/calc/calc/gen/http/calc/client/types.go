@@ -8,7 +8,6 @@
 package client
 
 import (
-	goa "goa.design/goa"
 	calcsvc "goa.design/plugins/security/examples/calc/calc/gen/calc"
 )
 
@@ -26,12 +25,9 @@ type AddRequestBody struct {
 	Token string `form:"token" json:"token" xml:"token"`
 }
 
-// LoginUnauthorizedResponseBody is the type of the "calc" service "login"
-// endpoint HTTP response body for the "unauthorized" error.
-type LoginUnauthorizedResponseBody struct {
-	// Credentials are invalid
-	Value *string `form:"value,omitempty" json:"value,omitempty" xml:"value,omitempty"`
-}
+// Unauthorized is the type of the "calc" service "login" endpoint HTTP
+// response body for the "unauthorized" error.
+type Unauthorized string
 
 // NewLoginRequestBody builds the HTTP request body from the payload of the
 // "login" endpoint of the "calc" service.
@@ -53,17 +49,7 @@ func NewAddRequestBody(p *calcsvc.AddPayload) *AddRequestBody {
 }
 
 // NewLoginUnauthorized builds a calc service login endpoint unauthorized error.
-func NewLoginUnauthorized(body *LoginUnauthorizedResponseBody) *calcsvc.Unauthorized {
-	v := &calcsvc.Unauthorized{
-		Value: *body.Value,
-	}
+func NewLoginUnauthorized(body Unauthorized) calcsvc.Unauthorized {
+	v := calcsvc.Unauthorized(body)
 	return v
-}
-
-// Validate runs the validations defined on LoginUnauthorizedResponseBody
-func (body *LoginUnauthorizedResponseBody) Validate() (err error) {
-	if body.Value == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("value", "body"))
-	}
-	return
 }

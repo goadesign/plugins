@@ -54,10 +54,10 @@ func (s *securedserviceSvc) AlsoDoublySecure(ctx context.Context, p *securedserv
 func SecuredServiceAuthBasicAuthFn(ctx context.Context, user, pass string, s *security.BasicAuthScheme) (context.Context, error) {
 	// Add authorization logic
 	if user == "" {
-		return ctx, &securedservice.Unauthorized{"invalid username"}
+		return ctx, securedservice.Unauthorized("invalid username")
 	}
 	if pass == "" {
-		return ctx, &securedservice.Unauthorized{"invalid password"}
+		return ctx, securedservice.Unauthorized("invalid password")
 	}
 	return ctx, nil
 }
@@ -66,7 +66,7 @@ func SecuredServiceAuthBasicAuthFn(ctx context.Context, user, pass string, s *se
 func SecuredServiceAuthJWTFn(ctx context.Context, token string, s *security.JWTScheme) (context.Context, error) {
 	// Add authorization logic
 	if token == "" {
-		return ctx, &securedservice.Unauthorized{"invalid token"}
+		return ctx, securedservice.Unauthorized("invalid token")
 	}
 	return ctx, nil
 }
@@ -76,7 +76,7 @@ func SecuredServiceAuthJWTFn(ctx context.Context, token string, s *security.JWTS
 func SecuredServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
 	if key == "" {
-		return ctx, &securedservice.Unauthorized{"invalid key"}
+		return ctx, securedservice.Unauthorized("invalid key")
 	}
 	return ctx, nil
 }
@@ -86,7 +86,7 @@ func SecuredServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.API
 func SecuredServiceAuthOAuth2Fn(ctx context.Context, token string, s *security.OAuth2Scheme) (context.Context, error) {
 	// Add authorization logic
 	if token == "" {
-		return ctx, &securedservice.Unauthorized{"invalid token"}
+		return ctx, securedservice.Unauthorized("invalid token")
 	}
 	return ctx, nil
 }

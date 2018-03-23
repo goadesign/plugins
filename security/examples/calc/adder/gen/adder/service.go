@@ -18,6 +18,16 @@ type Service interface {
 	Add(context.Context, *AddPayload) (int, error)
 }
 
+// ServiceName is the name of the service as defined in the design. This is the
+// same value that is set in the endpoint request contexts under the ServiceKey
+// key.
+const ServiceName = "adder"
+
+// MethodNames lists the service method names as defined in the design. These
+// are the same values that are set in the endpoint request contexts under the
+// MethodKey key.
+var MethodNames = [1]string{"add"}
+
 // AddPayload is the payload type of the adder service add method.
 type AddPayload struct {
 	// API key
@@ -28,20 +38,16 @@ type AddPayload struct {
 	B int
 }
 
-type Unauthorized struct {
-	Value string
-}
+type Unauthorized string
 
-type InvalidScopes struct {
-	Value string
-}
+type InvalidScopes string
 
 // Error returns "unauthorized".
-func (e *Unauthorized) Error() string {
+func (e Unauthorized) Error() string {
 	return "unauthorized"
 }
 
 // Error returns "invalid-scopes".
-func (e *InvalidScopes) Error() string {
+func (e InvalidScopes) Error() string {
 	return "invalid-scopes"
 }

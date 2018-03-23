@@ -29,7 +29,7 @@ func NewClient(login, add goa.Endpoint) *Client {
 
 // Login calls the "login" endpoint of the "calc" service.
 // Login can return the following error types:
-//	- *Unauthorized
+//	- Unauthorized
 //	- error: generic transport error.
 func (c *Client) Login(ctx context.Context, p *LoginPayload) (res string, err error) {
 	var ires interface{}

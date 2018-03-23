@@ -40,19 +40,26 @@ func New(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
 			{"Login", "POST", "/login"},
 			{"Add", "GET", "/add/{a}/{b}"},
 		},
-		Login: NewLoginHandler(e.Login, mux, dec, enc),
-		Add:   NewAddHandler(e.Add, mux, dec, enc),
+		Login: NewLoginHandler(e.Login, mux, dec, enc, eh),
+		Add:   NewAddHandler(e.Add, mux, dec, enc, eh),
 	}
 }
 
 // Service returns the name of the service served.
 func (s *Server) Service() string { return "calc" }
+
+// Use wraps the server handlers with the given middleware.
+func (s *Server) Use(m func(http.Handler) http.Handler) {
+	s.Login = m(s.Login)
+	s.Add = m(s.Add)
+}
 
 // Mount configures the mux to serve the calc endpoints.
 func Mount(mux goahttp.Muxer, h *Server) {
@@ -79,6 +86,7 @@ func NewLoginHandler(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) http.Handler {
 	var (
 		decodeRequest  = SecureDecodeLoginRequest(mux, dec)
@@ -86,24 +94,25 @@ func NewLoginHandler(
 		encodeError    = EncodeLoginError(enc)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
 		ctx = context.WithValue(ctx, goa.MethodKey, "login")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "calc")
 		payload, err := decodeRequest(r)
 		if err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 			return
 		}
 
 		res, err := endpoint(ctx, payload)
 
 		if err != nil {
-			encodeError(ctx, w, err)
-			return
+			if err := encodeError(ctx, w, err); err != nil {
+				eh(ctx, w, err)
+				return
+			}
 		}
 		if err := encodeResponse(ctx, w, res); err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 		}
 	})
 }
@@ -127,6 +136,7 @@ func NewAddHandler(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) http.Handler {
 	var (
 		decodeRequest  = SecureDecodeAddRequest(mux, dec)
@@ -134,24 +144,25 @@ func NewAddHandler(
 		encodeError    = goahttp.ErrorEncoder(enc)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
 		ctx = context.WithValue(ctx, goa.MethodKey, "add")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "calc")
 		payload, err := decodeRequest(r)
 		if err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 			return
 		}
 
 		res, err := endpoint(ctx, payload)
 
 		if err != nil {
-			encodeError(ctx, w, err)
-			return
+			if err := encodeError(ctx, w, err); err != nil {
+				eh(ctx, w, err)
+				return
+			}
 		}
 		if err := encodeResponse(ctx, w, res); err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 		}
 	})
 }

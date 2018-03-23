@@ -97,29 +97,26 @@ func DecodeReadRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.De
 
 // EncodeReadError returns an encoder for errors returned by the read archiver
 // endpoint.
-func EncodeReadError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) {
+func EncodeReadError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
 	encodeError := goahttp.ErrorEncoder(encoder)
-	return func(ctx context.Context, w http.ResponseWriter, v error) {
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
 		switch res := v.(type) {
 		case *archiversvc.Error:
-			if res.Code == "not_found" {
+			if res.Name == "not_found" {
 				enc := encoder(ctx, w)
 				body := NewReadNotFoundResponseBody(res)
 				w.WriteHeader(http.StatusNotFound)
-				if err := enc.Encode(body); err != nil {
-					encodeError(ctx, w, err)
-				}
+				return enc.Encode(body)
 			}
-			if res.Code == "bad_request" {
+			if res.Name == "bad_request" {
 				enc := encoder(ctx, w)
 				body := NewReadBadRequestResponseBody(res)
 				w.WriteHeader(http.StatusBadRequest)
-				if err := enc.Encode(body); err != nil {
-					encodeError(ctx, w, err)
-				}
+				return enc.Encode(body)
 			}
 		default:
-			encodeError(ctx, w, v)
+			return encodeError(ctx, w, v)
 		}
+		return nil
 	}
 }

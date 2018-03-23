@@ -26,6 +26,16 @@ type Service interface {
 	AlsoDoublySecure(context.Context, *AlsoDoublySecurePayload) (string, error)
 }
 
+// ServiceName is the name of the service as defined in the design. This is the
+// same value that is set in the endpoint request contexts under the ServiceKey
+// key.
+const ServiceName = "secured_service"
+
+// MethodNames lists the service method names as defined in the design. These
+// are the same values that are set in the endpoint request contexts under the
+// MethodKey key.
+var MethodNames = [4]string{"signin", "secure", "doubly_secure", "also_doubly_secure"}
+
 // Credentials used to authenticate to retrieve JWT token
 type SigninPayload struct {
 	// Username used to perform signin
@@ -66,12 +76,10 @@ type AlsoDoublySecurePayload struct {
 	OauthToken *string
 }
 
-type Unauthorized struct {
-	// Credentials are invalid
-	Value string
-}
+// Credentials are invalid
+type Unauthorized string
 
 // Error returns "unauthorized".
-func (e *Unauthorized) Error() string {
+func (e Unauthorized) Error() string {
 	return "unauthorized"
 }

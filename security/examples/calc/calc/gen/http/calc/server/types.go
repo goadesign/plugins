@@ -26,19 +26,14 @@ type AddRequestBody struct {
 	Token *string `form:"token,omitempty" json:"token,omitempty" xml:"token,omitempty"`
 }
 
-// LoginUnauthorizedResponseBody is the type of the "calc" service "login"
-// endpoint HTTP response body for the "unauthorized" error.
-type LoginUnauthorizedResponseBody struct {
-	// Credentials are invalid
-	Value string `form:"value" json:"value" xml:"value"`
-}
+// Unauthorized is the type of the "calc" service "login" endpoint HTTP
+// response body for the "unauthorized" error.
+type Unauthorized string
 
-// NewLoginUnauthorizedResponseBody builds the HTTP response body from the
-// result of the "login" endpoint of the "calc" service.
-func NewLoginUnauthorizedResponseBody(res *calcsvc.Unauthorized) *LoginUnauthorizedResponseBody {
-	body := &LoginUnauthorizedResponseBody{
-		Value: res.Value,
-	}
+// NewUnauthorized builds the HTTP response body from the result of the "login"
+// endpoint of the "calc" service.
+func NewUnauthorized(res calcsvc.Unauthorized) Unauthorized {
+	body := Unauthorized(res)
 	return body
 }
 

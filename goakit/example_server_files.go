@@ -67,6 +67,7 @@ func exampleMain(genpkg string, root *httpdesign.RootExpr) *codegen.File {
 		{Path: "goa.design/goa", Name: "goa"},
 		{Path: "goa.design/goa/http", Name: "goahttp"},
 		{Path: rootPath, Name: codegen.KebabCase(root.Design.API.Name)},
+		{Path: "goa.design/goa/http/middleware"},
 	}
 	for _, svc := range root.HTTPServices {
 		pkgName := httpcodegen.HTTPServices.Get(svc.Name()).Service.PkgName
@@ -204,6 +205,7 @@ const mainT = `func main() {
 	)
 	{
 	{{- range .Services }}
+		eh := ErrorHandler(logger)
 		{{- range .Endpoints }}
 		{{ .ServicePkgName }}{{ .Method.VarName }}Handler = kithttp.NewServer(
 			endpoint.Endpoint({{ .ServicePkgName }}e.{{ .Method.VarName }}),
@@ -216,9 +218,9 @@ const mainT = `func main() {
 		)
 		{{- end }}
 		{{-  if .Endpoints }}
-		{{ .Service.PkgName }}Server = {{ .Service.PkgName }}svr.New({{ .Service.PkgName }}e, mux, dec, enc)
+		{{ .Service.PkgName }}Server = {{ .Service.PkgName }}svr.New({{ .Service.PkgName }}e, mux, dec, enc, eh)
 		{{-  else }}
-		{{ .Service.PkgName }}Server = {{ .Service.PkgName }}svr.New(nil, mux, dec, enc)
+		{{ .Service.PkgName }}Server = {{ .Service.PkgName }}svr.New(nil, mux, dec, enc, eh)
 		{{-  end }}
 	{{- end }}
 	}
@@ -266,9 +268,21 @@ const mainT = `func main() {
 	logger.Log("exiting", <-errc)
 
 	// Shutdown gracefully with a 30s timeout.
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	srv.Shutdown(ctx)
 
 	logger.Log("server", "exited")
+}
+
+// ErrorHandler returns a function that writes and logs the given error.
+// The function also writes and logs the error unique ID so that it's possible
+// to correlate.
+func ErrorHandler(logger log.Logger) func(context.Context, http.ResponseWriter, error) {
+	return func(ctx context.Context, w http.ResponseWriter, err error) {
+		id := ctx.Value(middleware.RequestIDKey).(string)
+		w.Write([]byte("[" + id + "] encoding: " + err.Error()))
+		logger.Log("error", fmt.Sprintf("[%s] ERROR: %s", id, err.Error()))
+	}
 }
 `

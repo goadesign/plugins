@@ -13,6 +13,7 @@ import (
 	"github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
+	"goa.design/goa/http/middleware"
 	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher"
 	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 	health "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
@@ -89,18 +90,19 @@ func main() {
 		fetchersvcServer       *fetchersvcsvr.Server
 	)
 	{
+		eh := ErrorHandler(logger)
 		healthShowHandler = kithttp.NewServer(
 			endpoint.Endpoint(healthe.Show),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			healthkitsvr.EncodeShowResponse(enc),
 		)
-		healthServer = healthsvr.New(healthe, mux, dec, enc)
+		healthServer = healthsvr.New(healthe, mux, dec, enc, eh)
 		fetchersvcFetchHandler = kithttp.NewServer(
 			endpoint.Endpoint(fetchersvce.Fetch),
 			fetchersvckitsvr.DecodeFetchRequest(mux, dec),
 			fetchersvckitsvr.EncodeFetchResponse(enc),
 		)
-		fetchersvcServer = fetchersvcsvr.New(fetchersvce, mux, dec, enc)
+		fetchersvcServer = fetchersvcsvr.New(fetchersvce, mux, dec, enc, eh)
 	}
 
 	// Configure the mux.
@@ -124,10 +126,10 @@ func main() {
 	srv := &http.Server{Addr: *addr, Handler: mux}
 	go func() {
 		for _, m := range healthServer.Mounts {
-			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", healthServer.Service(), m.Method, m.Verb, m.Pattern))
+			logger.Log("info", fmt.Sprintf("method %s mounted on %s %s", m.Method, m.Verb, m.Pattern))
 		}
 		for _, m := range fetchersvcServer.Mounts {
-			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", fetchersvcServer.Service(), m.Method, m.Verb, m.Pattern))
+			logger.Log("info", fmt.Sprintf("method %s mounted on %s %s", m.Method, m.Verb, m.Pattern))
 		}
 		logger.Log("listening", *addr)
 		errc <- srv.ListenAndServe()
@@ -137,8 +139,20 @@ func main() {
 	logger.Log("exiting", <-errc)
 
 	// Shutdown gracefully with a 30s timeout.
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	srv.Shutdown(ctx)
 
 	logger.Log("server", "exited")
+}
+
+// ErrorHandler returns a function that writes and logs the given error.
+// The function also writes and logs the error unique ID so that it's possible
+// to correlate.
+func ErrorHandler(logger log.Logger) func(context.Context, http.ResponseWriter, error) {
+	return func(ctx context.Context, w http.ResponseWriter, err error) {
+		id := ctx.Value(middleware.RequestIDKey).(string)
+		w.Write([]byte("[" + id + "] encoding: " + err.Error()))
+		logger.Log("info", fmt.Sprintf("[%s] ERROR: %s", id, err.Error()))
+	}
 }

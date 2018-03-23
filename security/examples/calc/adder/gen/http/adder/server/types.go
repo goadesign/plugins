@@ -11,33 +11,25 @@ import (
 	addersvc "goa.design/plugins/security/examples/calc/adder/gen/adder"
 )
 
-// AddInvalidScopesResponseBody is the type of the "adder" service "add"
-// endpoint HTTP response body for the "invalid-scopes" error.
-type AddInvalidScopesResponseBody struct {
-	Value string `form:"value" json:"value" xml:"value"`
-}
+// InvalidScopes is the type of the "adder" service "add" endpoint HTTP
+// response body for the "invalid-scopes" error.
+type InvalidScopes string
 
-// AddUnauthorizedResponseBody is the type of the "adder" service "add"
-// endpoint HTTP response body for the "unauthorized" error.
-type AddUnauthorizedResponseBody struct {
-	Value string `form:"value" json:"value" xml:"value"`
-}
+// Unauthorized is the type of the "adder" service "add" endpoint HTTP response
+// body for the "unauthorized" error.
+type Unauthorized string
 
-// NewAddInvalidScopesResponseBody builds the HTTP response body from the
-// result of the "add" endpoint of the "adder" service.
-func NewAddInvalidScopesResponseBody(res *addersvc.InvalidScopes) *AddInvalidScopesResponseBody {
-	body := &AddInvalidScopesResponseBody{
-		Value: res.Value,
-	}
+// NewInvalidScopes builds the HTTP response body from the result of the "add"
+// endpoint of the "adder" service.
+func NewInvalidScopes(res addersvc.InvalidScopes) InvalidScopes {
+	body := InvalidScopes(res)
 	return body
 }
 
-// NewAddUnauthorizedResponseBody builds the HTTP response body from the result
-// of the "add" endpoint of the "adder" service.
-func NewAddUnauthorizedResponseBody(res *addersvc.Unauthorized) *AddUnauthorizedResponseBody {
-	body := &AddUnauthorizedResponseBody{
-		Value: res.Value,
-	}
+// NewUnauthorized builds the HTTP response body from the result of the "add"
+// endpoint of the "adder" service.
+func NewUnauthorized(res addersvc.Unauthorized) Unauthorized {
+	body := Unauthorized(res)
 	return body
 }
 

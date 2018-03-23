@@ -12,15 +12,15 @@ import (
 var (
 	// ErrUnauthorized is the error returned by Login when the request credentials
 	// are invalid.
-	ErrUnauthorized error = &calcsvc.Unauthorized{"invalid username and password combination"}
+	ErrUnauthorized error = calcsvc.Unauthorized("invalid username and password combination")
 
 	// ErrInvalidToken is the error returned by Login when the request credentials
 	// are invalid.
-	ErrInvalidToken error = &adder.Unauthorized{"invalid token"}
+	ErrInvalidToken error = adder.Unauthorized("invalid token")
 
 	// ErrInvalidScopes is the error returned by Login when the scopes provided in
 	// the JWT token claims are invalid.
-	ErrInvalidScopes error = &adder.InvalidScopes{"invalid scopes, requires 'calc:add'"}
+	ErrInvalidScopes error = adder.InvalidScopes("invalid scopes, requires 'calc:add'")
 
 	// Key is the key used in JWT authentication
 	Key = []byte("secret")

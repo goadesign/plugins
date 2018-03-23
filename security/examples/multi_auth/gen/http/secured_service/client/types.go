@@ -8,7 +8,6 @@
 package client
 
 import (
-	goa "goa.design/goa"
 	securedservice "goa.design/plugins/security/examples/multi_auth/gen/secured_service"
 )
 
@@ -49,10 +48,21 @@ type AlsoDoublySecureRequestBody struct {
 
 // SigninUnauthorizedResponseBody is the type of the "secured_service" service
 // "signin" endpoint HTTP response body for the "unauthorized" error.
-type SigninUnauthorizedResponseBody struct {
-	// Credentials are invalid
-	Value *string `form:"value,omitempty" json:"value,omitempty" xml:"value,omitempty"`
-}
+type SigninUnauthorizedResponseBody string
+
+// SecureUnauthorizedResponseBody is the type of the "secured_service" service
+// "secure" endpoint HTTP response body for the "unauthorized" error.
+type SecureUnauthorizedResponseBody string
+
+// DoublySecureUnauthorizedResponseBody is the type of the "secured_service"
+// service "doubly_secure" endpoint HTTP response body for the "unauthorized"
+// error.
+type DoublySecureUnauthorizedResponseBody string
+
+// AlsoDoublySecureUnauthorizedResponseBody is the type of the
+// "secured_service" service "also_doubly_secure" endpoint HTTP response body
+// for the "unauthorized" error.
+type AlsoDoublySecureUnauthorizedResponseBody string
 
 // NewSigninRequestBody builds the HTTP request body from the payload of the
 // "signin" endpoint of the "secured_service" service.
@@ -96,17 +106,28 @@ func NewAlsoDoublySecureRequestBody(p *securedservice.AlsoDoublySecurePayload) *
 
 // NewSigninUnauthorized builds a secured_service service signin endpoint
 // unauthorized error.
-func NewSigninUnauthorized(body *SigninUnauthorizedResponseBody) *securedservice.Unauthorized {
-	v := &securedservice.Unauthorized{
-		Value: *body.Value,
-	}
+func NewSigninUnauthorized(body SigninUnauthorizedResponseBody) securedservice.Unauthorized {
+	v := securedservice.Unauthorized(body)
 	return v
 }
 
-// Validate runs the validations defined on SigninUnauthorizedResponseBody
-func (body *SigninUnauthorizedResponseBody) Validate() (err error) {
-	if body.Value == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("value", "body"))
-	}
-	return
+// NewSecureUnauthorized builds a secured_service service secure endpoint
+// unauthorized error.
+func NewSecureUnauthorized(body SecureUnauthorizedResponseBody) securedservice.Unauthorized {
+	v := securedservice.Unauthorized(body)
+	return v
+}
+
+// NewDoublySecureUnauthorized builds a secured_service service doubly_secure
+// endpoint unauthorized error.
+func NewDoublySecureUnauthorized(body DoublySecureUnauthorizedResponseBody) securedservice.Unauthorized {
+	v := securedservice.Unauthorized(body)
+	return v
+}
+
+// NewAlsoDoublySecureUnauthorized builds a secured_service service
+// also_doubly_secure endpoint unauthorized error.
+func NewAlsoDoublySecureUnauthorized(body AlsoDoublySecureUnauthorizedResponseBody) securedservice.Unauthorized {
+	v := securedservice.Unauthorized(body)
+	return v
 }

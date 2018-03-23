@@ -21,6 +21,16 @@ type Service interface {
 	Add(context.Context, *AddPayload) (int, error)
 }
 
+// ServiceName is the name of the service as defined in the design. This is the
+// same value that is set in the endpoint request contexts under the ServiceKey
+// key.
+const ServiceName = "calc"
+
+// MethodNames lists the service method names as defined in the design. These
+// are the same values that are set in the endpoint request contexts under the
+// MethodKey key.
+var MethodNames = [2]string{"login", "add"}
+
 // Credentials used to authenticate to retrieve JWT token
 type LoginPayload struct {
 	User     string
@@ -37,12 +47,10 @@ type AddPayload struct {
 	Token string
 }
 
-type Unauthorized struct {
-	// Credentials are invalid
-	Value string
-}
+// Credentials are invalid
+type Unauthorized string
 
 // Error returns "unauthorized".
-func (e *Unauthorized) Error() string {
+func (e Unauthorized) Error() string {
 	return "unauthorized"
 }

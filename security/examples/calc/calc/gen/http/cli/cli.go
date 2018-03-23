@@ -179,7 +179,7 @@ Add adds up the two integer parameters and returns the results. This endpoint is
 
 Example:
     `+os.Args[0]+` calc add --body '{
-      "token": "Tenetur qui consequatur tenetur magni."
+      "token": "Ullam eius odio minima ipsam voluptatem mollitia."
    }' --a 1 --b 2
 `, os.Args[0])
 }

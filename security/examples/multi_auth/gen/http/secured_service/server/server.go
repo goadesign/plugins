@@ -42,6 +42,7 @@ func New(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
@@ -50,15 +51,23 @@ func New(
 			{"DoublySecure", "PUT", "/secure"},
 			{"AlsoDoublySecure", "POST", "/secure"},
 		},
-		Signin:           NewSigninHandler(e.Signin, mux, dec, enc),
-		Secure:           NewSecureHandler(e.Secure, mux, dec, enc),
-		DoublySecure:     NewDoublySecureHandler(e.DoublySecure, mux, dec, enc),
-		AlsoDoublySecure: NewAlsoDoublySecureHandler(e.AlsoDoublySecure, mux, dec, enc),
+		Signin:           NewSigninHandler(e.Signin, mux, dec, enc, eh),
+		Secure:           NewSecureHandler(e.Secure, mux, dec, enc, eh),
+		DoublySecure:     NewDoublySecureHandler(e.DoublySecure, mux, dec, enc, eh),
+		AlsoDoublySecure: NewAlsoDoublySecureHandler(e.AlsoDoublySecure, mux, dec, enc, eh),
 	}
 }
 
 // Service returns the name of the service served.
 func (s *Server) Service() string { return "secured_service" }
+
+// Use wraps the server handlers with the given middleware.
+func (s *Server) Use(m func(http.Handler) http.Handler) {
+	s.Signin = m(s.Signin)
+	s.Secure = m(s.Secure)
+	s.DoublySecure = m(s.DoublySecure)
+	s.AlsoDoublySecure = m(s.AlsoDoublySecure)
+}
 
 // Mount configures the mux to serve the secured_service endpoints.
 func Mount(mux goahttp.Muxer, h *Server) {
@@ -87,6 +96,7 @@ func NewSigninHandler(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) http.Handler {
 	var (
 		decodeRequest  = SecureDecodeSigninRequest(mux, dec)
@@ -94,24 +104,25 @@ func NewSigninHandler(
 		encodeError    = EncodeSigninError(enc)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
 		ctx = context.WithValue(ctx, goa.MethodKey, "signin")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "secured_service")
 		payload, err := decodeRequest(r)
 		if err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 			return
 		}
 
 		res, err := endpoint(ctx, payload)
 
 		if err != nil {
-			encodeError(ctx, w, err)
-			return
+			if err := encodeError(ctx, w, err); err != nil {
+				eh(ctx, w, err)
+				return
+			}
 		}
 		if err := encodeResponse(ctx, w, res); err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 		}
 	})
 }
@@ -135,31 +146,33 @@ func NewSecureHandler(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) http.Handler {
 	var (
 		decodeRequest  = SecureDecodeSecureRequest(mux, dec)
 		encodeResponse = EncodeSecureResponse(enc)
-		encodeError    = goahttp.ErrorEncoder(enc)
+		encodeError    = EncodeSecureError(enc)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
 		ctx = context.WithValue(ctx, goa.MethodKey, "secure")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "secured_service")
 		payload, err := decodeRequest(r)
 		if err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 			return
 		}
 
 		res, err := endpoint(ctx, payload)
 
 		if err != nil {
-			encodeError(ctx, w, err)
-			return
+			if err := encodeError(ctx, w, err); err != nil {
+				eh(ctx, w, err)
+				return
+			}
 		}
 		if err := encodeResponse(ctx, w, res); err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 		}
 	})
 }
@@ -183,31 +196,33 @@ func NewDoublySecureHandler(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) http.Handler {
 	var (
 		decodeRequest  = SecureDecodeDoublySecureRequest(mux, dec)
 		encodeResponse = EncodeDoublySecureResponse(enc)
-		encodeError    = goahttp.ErrorEncoder(enc)
+		encodeError    = EncodeDoublySecureError(enc)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
 		ctx = context.WithValue(ctx, goa.MethodKey, "doubly_secure")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "secured_service")
 		payload, err := decodeRequest(r)
 		if err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 			return
 		}
 
 		res, err := endpoint(ctx, payload)
 
 		if err != nil {
-			encodeError(ctx, w, err)
-			return
+			if err := encodeError(ctx, w, err); err != nil {
+				eh(ctx, w, err)
+				return
+			}
 		}
 		if err := encodeResponse(ctx, w, res); err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 		}
 	})
 }
@@ -232,31 +247,33 @@ func NewAlsoDoublySecureHandler(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) http.Handler {
 	var (
 		decodeRequest  = SecureDecodeAlsoDoublySecureRequest(mux, dec)
 		encodeResponse = EncodeAlsoDoublySecureResponse(enc)
-		encodeError    = goahttp.ErrorEncoder(enc)
+		encodeError    = EncodeAlsoDoublySecureError(enc)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		accept := r.Header.Get("Accept")
-		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, accept)
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
 		ctx = context.WithValue(ctx, goa.MethodKey, "also_doubly_secure")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "secured_service")
 		payload, err := decodeRequest(r)
 		if err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 			return
 		}
 
 		res, err := endpoint(ctx, payload)
 
 		if err != nil {
-			encodeError(ctx, w, err)
-			return
+			if err := encodeError(ctx, w, err); err != nil {
+				eh(ctx, w, err)
+				return
+			}
 		}
 		if err := encodeResponse(ctx, w, res); err != nil {
-			encodeError(ctx, w, err)
+			eh(ctx, w, err)
 		}
 	})
 }

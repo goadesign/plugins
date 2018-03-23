@@ -62,7 +62,7 @@ func (s *fetchersvcsvc) Fetch(ctx context.Context, p *fetchersvc.FetchPayload) (
 	if err != nil {
 		return nil, &fetchersvc.Error{
 			ID:      strconv.Itoa(now),
-			Code:    "bad_request",
+			Name:    "bad_request",
 			Message: fmt.Sprintf("failed to decode response: %s", err),
 		}
 	}
@@ -72,7 +72,7 @@ func (s *fetchersvcsvc) Fetch(ctx context.Context, p *fetchersvc.FetchPayload) (
 	if err != nil {
 		return nil, &fetchersvc.Error{
 			ID:      strconv.Itoa(now),
-			Code:    "bad_request",
+			Name:    "bad_request",
 			Message: fmt.Sprintf("failed to decode response: %s", err),
 		}
 	}

@@ -43,7 +43,7 @@ func BuildAddPayload(calcAddBody string, calcAddA string, calcAddB string) (*cal
 	{
 		err = json.Unmarshal([]byte(calcAddBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"token\": \"Tenetur qui consequatur tenetur magni.\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"token\": \"Ullam eius odio minima ipsam voluptatem mollitia.\"\n   }'")
 		}
 	}
 	var a int

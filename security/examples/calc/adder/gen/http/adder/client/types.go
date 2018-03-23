@@ -8,50 +8,25 @@
 package client
 
 import (
-	goa "goa.design/goa"
 	addersvc "goa.design/plugins/security/examples/calc/adder/gen/adder"
 )
 
-// AddInvalidScopesResponseBody is the type of the "adder" service "add"
-// endpoint HTTP response body for the "invalid-scopes" error.
-type AddInvalidScopesResponseBody struct {
-	Value *string `form:"value,omitempty" json:"value,omitempty" xml:"value,omitempty"`
-}
+// InvalidScopes is the type of the "adder" service "add" endpoint HTTP
+// response body for the "invalid-scopes" error.
+type InvalidScopes string
 
-// AddUnauthorizedResponseBody is the type of the "adder" service "add"
-// endpoint HTTP response body for the "unauthorized" error.
-type AddUnauthorizedResponseBody struct {
-	Value *string `form:"value,omitempty" json:"value,omitempty" xml:"value,omitempty"`
-}
+// Unauthorized is the type of the "adder" service "add" endpoint HTTP response
+// body for the "unauthorized" error.
+type Unauthorized string
 
 // NewAddInvalidScopes builds a adder service add endpoint invalid-scopes error.
-func NewAddInvalidScopes(body *AddInvalidScopesResponseBody) *addersvc.InvalidScopes {
-	v := &addersvc.InvalidScopes{
-		Value: *body.Value,
-	}
+func NewAddInvalidScopes(body InvalidScopes) addersvc.InvalidScopes {
+	v := addersvc.InvalidScopes(body)
 	return v
 }
 
 // NewAddUnauthorized builds a adder service add endpoint unauthorized error.
-func NewAddUnauthorized(body *AddUnauthorizedResponseBody) *addersvc.Unauthorized {
-	v := &addersvc.Unauthorized{
-		Value: *body.Value,
-	}
+func NewAddUnauthorized(body Unauthorized) addersvc.Unauthorized {
+	v := addersvc.Unauthorized(body)
 	return v
-}
-
-// Validate runs the validations defined on AddInvalidScopesResponseBody
-func (body *AddInvalidScopesResponseBody) Validate() (err error) {
-	if body.Value == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("value", "body"))
-	}
-	return
-}
-
-// Validate runs the validations defined on AddUnauthorizedResponseBody
-func (body *AddUnauthorizedResponseBody) Validate() (err error) {
-	if body.Value == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("value", "body"))
-	}
-	return
 }

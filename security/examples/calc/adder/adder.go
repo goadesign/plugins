@@ -29,7 +29,7 @@ func (s *addersvcSvc) Add(ctx context.Context, p *addersvc.AddPayload) (int, err
 func AdderAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
 	if key == "" {
-		return ctx, &addersvc.Unauthorized{"invalid key"}
+		return ctx, addersvc.Unauthorized("invalid key")
 	}
 	return ctx, nil
 }

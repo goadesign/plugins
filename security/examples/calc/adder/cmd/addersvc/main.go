@@ -79,7 +79,8 @@ func main() {
 		addersvcServer *addersvcsvr.Server
 	)
 	{
-		addersvcServer = addersvcsvr.New(addersvcEndpoints, mux, dec, enc)
+		eh := ErrorHandler(logger)
+		addersvcServer = addersvcsvr.New(addersvcEndpoints, mux, dec, enc, eh)
 	}
 
 	// Configure the mux.
@@ -112,9 +113,9 @@ func main() {
 	srv := &http.Server{Addr: *addr, Handler: handler}
 	go func() {
 		for _, m := range addersvcServer.Mounts {
-			logger.Printf("[adder] service %q method %q mounted on %s %s", addersvcServer.Service(), m.Method, m.Verb, m.Pattern)
+			logger.Printf("method %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 		}
-		logger.Printf("[adder] listening on %s", *addr)
+		logger.Printf("listening on %s", *addr)
 		errc <- srv.ListenAndServe()
 	}()
 
@@ -127,4 +128,15 @@ func main() {
 	srv.Shutdown(ctx)
 
 	logger.Println("exited")
+}
+
+// ErrorHandler returns a function that writes and logs the given error.
+// The function also writes and logs the error unique ID so that it's possible
+// to correlate.
+func ErrorHandler(logger *log.Logger) func(context.Context, http.ResponseWriter, error) {
+	return func(ctx context.Context, w http.ResponseWriter, err error) {
+		id := ctx.Value(middleware.RequestIDKey).(string)
+		w.Write([]byte("[" + id + "] encoding: " + err.Error()))
+		logger.Printf("[%s] ERROR: %s", id, err.Error())
+	}
 }

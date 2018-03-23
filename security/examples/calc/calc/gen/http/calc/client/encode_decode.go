@@ -54,7 +54,7 @@ func EncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.
 // login endpoint. restoreBody controls whether the response body should be
 // restored after having been read.
 // DecodeLoginResponse may return the following error types:
-//	- *calcsvc.Unauthorized: http.StatusUnauthorized
+//	- calcsvc.Unauthorized: http.StatusUnauthorized
 //	- error: generic transport error.
 func DecodeLoginResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
@@ -84,19 +84,15 @@ func DecodeLoginResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 			return body, nil
 		case http.StatusUnauthorized:
 			var (
-				body LoginUnauthorizedResponseBody
+				body Unauthorized
 				err  error
 			)
 			err = decoder(resp).Decode(&body)
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("calc", "login", err)
 			}
-			err = body.Validate()
-			if err != nil {
-				return nil, fmt.Errorf("invalid response: %s", err)
-			}
 
-			return nil, NewLoginUnauthorized(&body)
+			return nil, NewLoginUnauthorized(body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))

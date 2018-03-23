@@ -231,13 +231,14 @@ func New(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
 			{"SimpleOriginMethod", "GET", "/"},
 			{"CORS", "OPTIONS", "/"},
 		},
-		SimpleOriginMethod: NewSimpleOriginMethodHandler(e.SimpleOriginMethod, mux, dec, enc),
+		SimpleOriginMethod: NewSimpleOriginMethodHandler(e.SimpleOriginMethod, mux, dec, enc, eh),
 		CORS:               NewCORSHandler(),
 	}
 }
@@ -249,13 +250,14 @@ func New(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
 			{"RegexpOriginMethod", "GET", "/"},
 			{"CORS", "OPTIONS", "/"},
 		},
-		RegexpOriginMethod: NewRegexpOriginMethodHandler(e.RegexpOriginMethod, mux, dec, enc),
+		RegexpOriginMethod: NewRegexpOriginMethodHandler(e.RegexpOriginMethod, mux, dec, enc, eh),
 		CORS:               NewCORSHandler(),
 	}
 }
@@ -267,13 +269,14 @@ func New(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
 			{"MultiOriginMethod", "GET", "/"},
 			{"CORS", "OPTIONS", "/"},
 		},
-		MultiOriginMethod: NewMultiOriginMethodHandler(e.MultiOriginMethod, mux, dec, enc),
+		MultiOriginMethod: NewMultiOriginMethodHandler(e.MultiOriginMethod, mux, dec, enc, eh),
 		CORS:              NewCORSHandler(),
 	}
 }
@@ -286,6 +289,7 @@ func New(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
@@ -304,6 +308,7 @@ func New(
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
@@ -313,9 +318,9 @@ func New(
 			{"CORS", "OPTIONS", "/{:id}"},
 			{"CORS", "OPTIONS", "/"},
 		},
-		OriginMultiEndpointGet:     NewOriginMultiEndpointGetHandler(e.OriginMultiEndpointGet, mux, dec, enc),
-		OriginMultiEndpointPost:    NewOriginMultiEndpointPostHandler(e.OriginMultiEndpointPost, mux, dec, enc),
-		OriginMultiEndpointOptions: NewOriginMultiEndpointOptionsHandler(e.OriginMultiEndpointOptions, mux, dec, enc),
+		OriginMultiEndpointGet:     NewOriginMultiEndpointGetHandler(e.OriginMultiEndpointGet, mux, dec, enc, eh),
+		OriginMultiEndpointPost:    NewOriginMultiEndpointPostHandler(e.OriginMultiEndpointPost, mux, dec, enc, eh),
+		OriginMultiEndpointOptions: NewOriginMultiEndpointOptionsHandler(e.OriginMultiEndpointOptions, mux, dec, enc, eh),
 		CORS: NewCORSHandler(),
 	}
 }
