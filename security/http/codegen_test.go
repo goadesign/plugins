@@ -140,28 +140,30 @@ func TestOpenAPIV2(t *testing.T) {
 		t.Run(c.Name, func(t *testing.T) {
 			RunHTTPDSL(t, c.DSL, testdata.TopLevelSchemes)
 			httpdesign.Root.Design.API = a
-			f, err := httpcodegen.OpenAPIFile(httpdesign.Root)
+			f, err := httpcodegen.OpenAPIFiles(httpdesign.Root)
 			if err != nil {
 				t.Fatalf("error generating openapi file: %s", err)
 			}
-			OpenAPIV2(httpdesign.Root, f)
-			s := f.SectionTemplates
-			if len(s) != 1 {
-				t.Fatalf("%s: expected 1 section, got %d", c.Name, len(s))
+			for i := 0; i < len(f); i++ {
+				OpenAPIV2(httpdesign.Root, f[i])
+				s := f[i].SectionTemplates
+				if len(s) != 1 {
+					t.Fatalf("%s: expected 1 section, got %d", c.Name, len(s))
+				}
+				if s[0].Source == "" {
+					t.Fatalf("%s: empty section template", c.Name)
+				}
+				if s[0].Data == nil {
+					t.Fatalf("%s: nil data", c.Name)
+				}
+				var buf bytes.Buffer
+				tmpl := template.Must(template.New("openapi").Funcs(s[0].FuncMap).Parse(s[0].Source))
+				err = tmpl.Execute(&buf, s[0].Data)
+				if err != nil {
+					t.Fatalf("%s: failed to render template: %s", c.Name, err)
+				}
+				validateSwagger(t, c.Name, buf.Bytes())
 			}
-			if s[0].Source == "" {
-				t.Fatalf("%s: empty section template", c.Name)
-			}
-			if s[0].Data == nil {
-				t.Fatalf("%s: nil data", c.Name)
-			}
-			var buf bytes.Buffer
-			tmpl := template.Must(template.New("openapi").Funcs(s[0].FuncMap).Parse(s[0].Source))
-			err = tmpl.Execute(&buf, s[0].Data)
-			if err != nil {
-				t.Fatalf("%s: failed to render template: %s", c.Name, err)
-			}
-			validateSwagger(t, c.Name, buf.Bytes())
 		})
 	}
 }
