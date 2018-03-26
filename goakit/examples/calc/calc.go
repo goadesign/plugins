@@ -9,17 +9,17 @@ import (
 
 // calc service example implementation.
 // The example methods log the requests and return zero values.
-type calcsvcsvc struct {
+type calcSvc struct {
 	logger log.Logger
 }
 
 // NewCalc returns the calc service implementation.
 func NewCalc(logger log.Logger) calcsvc.Service {
-	return &calcsvcsvc{logger}
+	return &calcSvc{logger}
 }
 
 // Add adds up the two integer parameters and returns the results.
-func (s *calcsvcsvc) Add(ctx context.Context, p *calcsvc.AddPayload) (int, error) {
+func (s *calcSvc) Add(ctx context.Context, p *calcsvc.AddPayload) (int, error) {
 	var res int
 	s.logger.Log("msg", "calc.add")
 	return res, nil
