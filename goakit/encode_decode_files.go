@@ -135,10 +135,10 @@ const responseEncoderT = `{{ printf "%s returns a go-kit EncodeResponseFunc suit
 
 // input: EndpointData
 const errorEncoderT = `{{ printf "%s returns a go-kit EncodeResponseFunc suitable for encoding errors returned by the %s %s endpoint." .ErrorEncoder .ServiceName .Method.Name | comment }}
- func {{ .ErrorEncoder }}(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.EncodeResponseFunc {
+ func {{ .ErrorEncoder }}(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.ErrorEncoder {
  	enc := server.{{ .ErrorEncoder }}(encoder)
-	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		enc(ctx, w, v.(error))
+	return func(ctx context.Context, err error, w http.ResponseWriter) error {
+		enc(ctx, w, err)
 		return nil
 	}
 }

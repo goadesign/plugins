@@ -3,13 +3,9 @@ go:
 - 1.10.x
 env:
   matrix:
-    # Add a PLUGIN for each plugin
-    - PLUGIN=security
 install:
 - export PATH=${PATH}:${HOME}/gopath/bin
 script:
 - export PATH=${PATH}:${HOME}/bin
 - cd ../../.. && mkdir goa.design && cp -r github.com/goadesign/plugins goa.design/plugins && cd goa.design/plugins
-- pushd $PLUGIN
-- make && make test-aliaser
-- popd
+- make
