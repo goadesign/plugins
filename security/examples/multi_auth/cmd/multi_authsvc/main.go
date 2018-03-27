@@ -40,19 +40,19 @@ func main() {
 
 	// Create the structs that implement the services.
 	var (
-		securedserviceSvc securedservice.Service
+		securedServiceSvc securedservice.Service
 	)
 	{
-		securedserviceSvc = multiauth.NewSecuredService(logger)
+		securedServiceSvc = multiauth.NewSecuredService(logger)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other
 	// services potentially running in different processes.
 	var (
-		securedserviceEndpoints *securedservice.Endpoints
+		securedServiceEndpoints *securedservice.Endpoints
 	)
 	{
-		securedserviceEndpoints = securedservice.NewSecureEndpoints(securedserviceSvc, multiauth.SecuredServiceAuthBasicAuthFn, multiauth.SecuredServiceAuthJWTFn, multiauth.SecuredServiceAuthAPIKeyFn, multiauth.SecuredServiceAuthOAuth2Fn)
+		securedServiceEndpoints = securedservice.NewSecureEndpoints(securedServiceSvc, multiauth.SecuredServiceAuthBasicAuthFn, multiauth.SecuredServiceAuthJWTFn, multiauth.SecuredServiceAuthAPIKeyFn, multiauth.SecuredServiceAuthOAuth2Fn)
 	}
 
 	// Provide the transport specific request decoder and response encoder.
@@ -76,15 +76,15 @@ func main() {
 	// the service input and output data structures to HTTP requests and
 	// responses.
 	var (
-		securedserviceServer *securedservicesvr.Server
+		securedServiceServer *securedservicesvr.Server
 	)
 	{
 		eh := ErrorHandler(logger)
-		securedserviceServer = securedservicesvr.New(securedserviceEndpoints, mux, dec, enc, eh)
+		securedServiceServer = securedservicesvr.New(securedServiceEndpoints, mux, dec, enc, eh)
 	}
 
 	// Configure the mux.
-	securedservicesvr.Mount(mux, securedserviceServer)
+	securedservicesvr.Mount(mux, securedServiceServer)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
 	// here apply to all the service endpoints.
@@ -94,6 +94,7 @@ func main() {
 			handler = middleware.Debug(mux, os.Stdout)(handler)
 		}
 		handler = middleware.Log(adapter)(handler)
+		handler = middleware.RequestID()(handler)
 	}
 
 	// Create channel used by both the signal handler and server goroutines
@@ -112,7 +113,7 @@ func main() {
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: *addr, Handler: handler}
 	go func() {
-		for _, m := range securedserviceServer.Mounts {
+		for _, m := range securedServiceServer.Mounts {
 			logger.Printf("method %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 		}
 		logger.Printf("listening on %s", *addr)

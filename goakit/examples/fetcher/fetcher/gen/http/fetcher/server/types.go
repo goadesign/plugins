@@ -31,9 +31,9 @@ type FetchBadRequestResponseBody struct {
 	// problem.
 	Message string `form:"message" json:"message" xml:"message"`
 	// Is the error temporary?
-	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	Temporary bool `form:"temporary" json:"temporary" xml:"temporary"`
 	// Is the error a timeout?
-	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+	Timeout bool `form:"timeout" json:"timeout" xml:"timeout"`
 }
 
 // FetchInternalErrorResponseBody is the type of the "fetcher" service "fetch"
@@ -47,9 +47,9 @@ type FetchInternalErrorResponseBody struct {
 	// problem.
 	Message string `form:"message" json:"message" xml:"message"`
 	// Is the error temporary?
-	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	Temporary bool `form:"temporary" json:"temporary" xml:"temporary"`
 	// Is the error a timeout?
-	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+	Timeout bool `form:"timeout" json:"timeout" xml:"timeout"`
 }
 
 // NewFetchResponseBody builds the HTTP response body from the result of the

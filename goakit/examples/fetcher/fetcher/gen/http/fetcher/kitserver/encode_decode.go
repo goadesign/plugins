@@ -34,10 +34,9 @@ func DecodeFetchRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.D
 
 // EncodeFetchError returns a go-kit EncodeResponseFunc suitable for encoding
 // errors returned by the fetcher fetch endpoint.
-func EncodeFetchError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.EncodeResponseFunc {
+func EncodeFetchError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.ErrorEncoder {
 	enc := server.EncodeFetchError(encoder)
-	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		enc(ctx, w, v.(error))
-		return nil
+	return func(ctx context.Context, err error, w http.ResponseWriter) {
+		enc(ctx, w, err)
 	}
 }

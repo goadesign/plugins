@@ -84,7 +84,7 @@ func DecodeLoginResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 			return body, nil
 		case http.StatusUnauthorized:
 			var (
-				body Unauthorized
+				body LoginUnauthorizedResponseBody
 				err  error
 			)
 			err = decoder(resp).Decode(&body)

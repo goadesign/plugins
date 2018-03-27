@@ -40,19 +40,19 @@ func main() {
 
 	// Create the structs that implement the services.
 	var (
-		calcsvcs calcsvc.Service
+		calcSvc calcsvc.Service
 	)
 	{
-		calcsvcs = calc.NewCalc(logger)
+		calcSvc = calc.NewCalc(logger)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other
 	// services potentially running in different processes.
 	var (
-		calcsvce *calcsvc.Endpoints
+		calcEndpoints *calcsvc.Endpoints
 	)
 	{
-		calcsvce = calcsvc.NewEndpoints(calcsvcs)
+		calcEndpoints = calcsvc.NewEndpoints(calcSvc)
 	}
 
 	// Provide the transport specific request decoder and response encoder.
@@ -72,21 +72,21 @@ func main() {
 
 	// Wrap the endpoints with the transport specific layer.
 	var (
-		calcsvcAddHandler *kithttp.Server
-		calcsvcServer     *calcsvcsvr.Server
+		calcAddHandler *kithttp.Server
+		calcServer     *calcsvcsvr.Server
 	)
 	{
 		eh := ErrorHandler(logger)
-		calcsvcAddHandler = kithttp.NewServer(
-			endpoint.Endpoint(calcsvce.Add),
+		calcAddHandler = kithttp.NewServer(
+			endpoint.Endpoint(calcEndpoints.Add),
 			calcsvckitsvr.DecodeAddRequest(mux, dec),
 			calcsvckitsvr.EncodeAddResponse(enc),
 		)
-		calcsvcServer = calcsvcsvr.New(calcsvce, mux, dec, enc, eh)
+		calcServer = calcsvcsvr.New(calcEndpoints, mux, dec, enc, eh)
 	}
 
 	// Configure the mux.
-	calcsvckitsvr.MountAddHandler(mux, calcsvcAddHandler)
+	calcsvckitsvr.MountAddHandler(mux, calcAddHandler)
 
 	// Create channel used by both the signal handler and server goroutines
 	// to notify the main goroutine when to stop the server.
@@ -104,8 +104,8 @@ func main() {
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: *addr, Handler: mux}
 	go func() {
-		for _, m := range calcsvcServer.Mounts {
-			logger.Log("info", fmt.Sprintf("method %s mounted on %s %s", m.Method, m.Verb, m.Pattern))
+		for _, m := range calcServer.Mounts {
+			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", calcServer.Service(), m.Method, m.Verb, m.Pattern))
 		}
 		logger.Log("listening", *addr)
 		errc <- srv.ListenAndServe()

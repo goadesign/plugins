@@ -63,7 +63,7 @@ func EncodeLoginError(encoder func(context.Context, http.ResponseWriter) goahttp
 		switch res := v.(type) {
 		case calcsvc.Unauthorized:
 			enc := encoder(ctx, w)
-			body := NewUnauthorized(res)
+			body := NewLoginUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)
 			return enc.Encode(body)
 		default:
