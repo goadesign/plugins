@@ -61,9 +61,8 @@ var WithErrorMethodGoakitErrorEncoderCode = `// EncodeWithErrorMethodError retur
 // encoding errors returned by the WithErrorService WithErrorMethod endpoint.
 func EncodeWithErrorMethodError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.ErrorEncoder {
 	enc := server.EncodeWithErrorMethodError(encoder)
-	return func(ctx context.Context, err error, w http.ResponseWriter) error {
+	return func(ctx context.Context, err error, w http.ResponseWriter) {
 		enc(ctx, w, err)
-		return nil
 	}
 }
 `
@@ -72,9 +71,8 @@ var Endpoint1GoakitErrorEncoderCode = `// EncodeEndpoint1Error returns a go-kit 
 // encoding errors returned by the MultiEndpointService Endpoint1 endpoint.
 func EncodeEndpoint1Error(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.ErrorEncoder {
 	enc := server.EncodeEndpoint1Error(encoder)
-	return func(ctx context.Context, err error, w http.ResponseWriter) error {
+	return func(ctx context.Context, err error, w http.ResponseWriter) {
 		enc(ctx, w, err)
-		return nil
 	}
 }
 `
@@ -83,9 +81,8 @@ var Endpoint2GoakitErrorEncoderCode = `// EncodeEndpoint2Error returns a go-kit 
 // encoding errors returned by the MultiEndpointService Endpoint2 endpoint.
 func EncodeEndpoint2Error(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.ErrorEncoder {
 	enc := server.EncodeEndpoint2Error(encoder)
-	return func(ctx context.Context, err error, w http.ResponseWriter) error {
+	return func(ctx context.Context, err error, w http.ResponseWriter) {
 		enc(ctx, w, err)
-		return nil
 	}
 }
 `
