@@ -50,10 +50,9 @@ func DecodeReadRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.De
 
 // EncodeReadError returns a go-kit EncodeResponseFunc suitable for encoding
 // errors returned by the archiver read endpoint.
-func EncodeReadError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.EncodeResponseFunc {
+func EncodeReadError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.ErrorEncoder {
 	enc := server.EncodeReadError(encoder)
-	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		enc(ctx, w, v.(error))
-		return nil
+	return func(ctx context.Context, err error, w http.ResponseWriter) {
+		enc(ctx, w, err)
 	}
 }

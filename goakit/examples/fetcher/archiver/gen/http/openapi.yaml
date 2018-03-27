@@ -1,0 +1,965 @@
+swagger: "2.0"
+info:
+  title: The goakit example downstream service
+  description: Archiver is a service that manages the content of HTTP responses
+  termsofservice: ""
+  contact: null
+  license: null
+  version: ""
+  extensions: {}
+host: localhost:8080
+basepath: ""
+schemes: []
+consumes: []
+produces: []
+paths:
+  /archive:
+    ref: ""
+    get: null
+    put: null
+    post:
+      tags:
+      - archiver
+      summary: archive archiver
+      description: Archive HTTP response
+      externaldocs: null
+      operationid: archiver#archive
+      consumes: []
+      produces: []
+      parameters:
+      - name: ArchiveRequestBody
+        in: body
+        description: ""
+        required: true
+        schema:
+          schema: ""
+          id: ""
+          title: ""
+          type: ""
+          items: null
+          properties: {}
+          definitions: {}
+          description: ""
+          defaultvalue: null
+          example: null
+          media: null
+          readonly: false
+          pathstart: ""
+          links: []
+          ref: '#/definitions/ArchiveRequestBody'
+          enum: []
+          format: ""
+          pattern: ""
+          minimum: null
+          maximum: null
+          minlength: null
+          maxlength: null
+          required: []
+          additionalproperties: false
+          anyof: []
+        type: ""
+        format: ""
+        allowemptyvalue: false
+        items: null
+        collectionformat: ""
+        default: null
+        maximum: null
+        exclusivemaximum: false
+        minimum: null
+        exclusiveminimum: false
+        maxlength: null
+        minlength: null
+        pattern: ""
+        maxitems: null
+        minitems: null
+        uniqueitems: false
+        enum: []
+        multipleof: 0
+        extensions: {}
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: ""
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: '#/definitions/ArchiveResponseBody'
+            enum: []
+            format: ""
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
+      schemes:
+      - http
+      deprecated: false
+      security: []
+      extensions: {}
+    delete: null
+    options: null
+    head: null
+    patch: null
+    parameters: []
+    extensions: {}
+  /archive/{id}:
+    ref: ""
+    get:
+      tags:
+      - archiver
+      summary: read archiver
+      description: Read HTTP response from archive
+      externaldocs: null
+      operationid: archiver#read
+      consumes: []
+      produces: []
+      parameters:
+      - name: id
+        in: path
+        description: ID of archive
+        required: true
+        schema: null
+        type: integer
+        format: ""
+        allowemptyvalue: false
+        items: null
+        collectionformat: ""
+        default: null
+        maximum: null
+        exclusivemaximum: false
+        minimum: 0
+        exclusiveminimum: false
+        maxlength: null
+        minlength: null
+        pattern: ""
+        maxitems: null
+        minitems: null
+        uniqueitems: false
+        enum: []
+        multipleof: 0
+        extensions: {}
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: ""
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: '#/definitions/ReadResponseBody'
+            enum: []
+            format: ""
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
+        "400":
+          description: Bad Request response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: ""
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: '#/definitions/ReadBadRequestResponseBody'
+            enum: []
+            format: ""
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
+        "404":
+          description: Not Found response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: ""
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: '#/definitions/ReadNotFoundResponseBody'
+            enum: []
+            format: ""
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
+      schemes:
+      - http
+      deprecated: false
+      security: []
+      extensions: {}
+    put: null
+    post: null
+    delete: null
+    options: null
+    head: null
+    patch: null
+    parameters: []
+    extensions: {}
+  /health:
+    ref: ""
+    get:
+      tags:
+      - health
+      summary: show health
+      description: Health check endpoint
+      externaldocs: null
+      operationid: health#show
+      consumes: []
+      produces: []
+      parameters: []
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: string
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: ""
+            enum: []
+            format: ""
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
+      schemes:
+      - http
+      deprecated: false
+      security: []
+      extensions: {}
+    put: null
+    post: null
+    delete: null
+    options: null
+    head: null
+    patch: null
+    parameters: []
+    extensions: {}
+definitions:
+  ArchiveRequestBody:
+    schema: ""
+    id: ""
+    title: ArchiveRequestBody
+    type: object
+    items: null
+    properties:
+      body:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: HTTP response body content
+        defaultvalue: null
+        example: Alias ipsa eum laborum ut quod.
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      status:
+        schema: ""
+        id: ""
+        title: ""
+        type: integer
+        items: null
+        properties: {}
+        definitions: {}
+        description: HTTP status
+        defaultvalue: null
+        example: 200
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: 0
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+    definitions: {}
+    description: ""
+    defaultvalue: null
+    example:
+      body: Numquam qui qui eligendi doloribus.
+      status: 200
+    media: null
+    readonly: false
+    pathstart: ""
+    links: []
+    ref: ""
+    enum: []
+    format: ""
+    pattern: ""
+    minimum: null
+    maximum: null
+    minlength: null
+    maxlength: null
+    required:
+    - status
+    - body
+    additionalproperties: false
+    anyof: []
+  ArchiveResponseBody:
+    schema: ""
+    id: ""
+    title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
+    type: object
+    items: null
+    properties:
+      body:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: HTTP response body content
+        defaultvalue: null
+        example: Officia omnis sint delectus beatae est.
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      href:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: The archive resouce href
+        defaultvalue: null
+        example: /archive1/
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ^/archive/[0-9]+$
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      status:
+        schema: ""
+        id: ""
+        title: ""
+        type: integer
+        items: null
+        properties: {}
+        definitions: {}
+        description: HTTP status
+        defaultvalue: null
+        example: 200
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: 0
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+    definitions: {}
+    description: ArchiveResponseBody result type (default view)
+    defaultvalue: null
+    example:
+      body: Harum autem mollitia optio.
+      href: /archive1/
+      status: 200
+    media: null
+    readonly: false
+    pathstart: ""
+    links: []
+    ref: ""
+    enum: []
+    format: ""
+    pattern: ""
+    minimum: null
+    maximum: null
+    minlength: null
+    maxlength: null
+    required:
+    - href
+    - status
+    - body
+    additionalproperties: false
+    anyof: []
+  ReadBadRequestResponseBody:
+    schema: ""
+    id: ""
+    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+    type: object
+    items: null
+    properties:
+      id:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: ID is a unique identifier for this particular occurrence of the
+          problem.
+        defaultvalue: null
+        example: 123abc
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      message:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Message is a human-readable explanation specific to this occurrence
+          of the problem.
+        defaultvalue: null
+        example: parameter 'p' must be an integer
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      name:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Name is the name of this class of errors.
+        defaultvalue: null
+        example: bad_request
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      temporary:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error temporary?
+        defaultvalue: null
+        example: false
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      timeout:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error a timeout?
+        defaultvalue: null
+        example: true
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+    definitions: {}
+    description: ReadBadRequestResponseBody result type (default view)
+    defaultvalue: null
+    example:
+      id: 123abc
+      message: parameter 'p' must be an integer
+      name: bad_request
+      temporary: false
+      timeout: true
+    media: null
+    readonly: false
+    pathstart: ""
+    links: []
+    ref: ""
+    enum: []
+    format: ""
+    pattern: ""
+    minimum: null
+    maximum: null
+    minlength: null
+    maxlength: null
+    required:
+    - name
+    - id
+    - message
+    - temporary
+    - timeout
+    additionalproperties: false
+    anyof: []
+  ReadNotFoundResponseBody:
+    schema: ""
+    id: ""
+    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+    type: object
+    items: null
+    properties:
+      id:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: ID is a unique identifier for this particular occurrence of the
+          problem.
+        defaultvalue: null
+        example: 123abc
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      message:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Message is a human-readable explanation specific to this occurrence
+          of the problem.
+        defaultvalue: null
+        example: parameter 'p' must be an integer
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      name:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Name is the name of this class of errors.
+        defaultvalue: null
+        example: bad_request
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      temporary:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error temporary?
+        defaultvalue: null
+        example: false
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      timeout:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error a timeout?
+        defaultvalue: null
+        example: true
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+    definitions: {}
+    description: ReadNotFoundResponseBody result type (default view)
+    defaultvalue: null
+    example:
+      id: 123abc
+      message: parameter 'p' must be an integer
+      name: bad_request
+      temporary: false
+      timeout: true
+    media: null
+    readonly: false
+    pathstart: ""
+    links: []
+    ref: ""
+    enum: []
+    format: ""
+    pattern: ""
+    minimum: null
+    maximum: null
+    minlength: null
+    maxlength: null
+    required:
+    - name
+    - id
+    - message
+    - temporary
+    - timeout
+    additionalproperties: false
+    anyof: []
+  ReadResponseBody:
+    schema: ""
+    id: ""
+    title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
+    type: object
+    items: null
+    properties:
+      body:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: HTTP response body content
+        defaultvalue: null
+        example: Placeat aspernatur ullam qui numquam quis numquam.
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      href:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: The archive resouce href
+        defaultvalue: null
+        example: /archive1/
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ^/archive/[0-9]+$
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      status:
+        schema: ""
+        id: ""
+        title: ""
+        type: integer
+        items: null
+        properties: {}
+        definitions: {}
+        description: HTTP status
+        defaultvalue: null
+        example: 200
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: 0
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+    definitions: {}
+    description: ReadResponseBody result type (default view)
+    defaultvalue: null
+    example:
+      body: Quia cum qui numquam soluta iusto.
+      href: /archive1/
+      status: 200
+    media: null
+    readonly: false
+    pathstart: ""
+    links: []
+    ref: ""
+    enum: []
+    format: ""
+    pattern: ""
+    minimum: null
+    maximum: null
+    minlength: null
+    maxlength: null
+    required:
+    - href
+    - status
+    - body
+    additionalproperties: false
+    anyof: []
+parameters: {}
+responses: {}
+securitydefinitions: {}
+tags: []
+externaldocs: null

@@ -95,7 +95,7 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 			return body, nil
 		case http.StatusForbidden:
 			var (
-				body InvalidScopes
+				body AddInvalidScopesResponseBody
 				err  error
 			)
 			err = decoder(resp).Decode(&body)
@@ -106,7 +106,7 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 			return nil, NewAddInvalidScopes(body)
 		case http.StatusUnauthorized:
 			var (
-				body Unauthorized
+				body AddUnauthorizedResponseBody
 				err  error
 			)
 			err = decoder(resp).Decode(&body)

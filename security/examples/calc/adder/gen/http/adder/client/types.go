@@ -11,22 +11,22 @@ import (
 	addersvc "goa.design/plugins/security/examples/calc/adder/gen/adder"
 )
 
-// InvalidScopes is the type of the "adder" service "add" endpoint HTTP
-// response body for the "invalid-scopes" error.
-type InvalidScopes string
+// AddInvalidScopesResponseBody is the type of the "adder" service "add"
+// endpoint HTTP response body for the "invalid-scopes" error.
+type AddInvalidScopesResponseBody string
 
-// Unauthorized is the type of the "adder" service "add" endpoint HTTP response
-// body for the "unauthorized" error.
-type Unauthorized string
+// AddUnauthorizedResponseBody is the type of the "adder" service "add"
+// endpoint HTTP response body for the "unauthorized" error.
+type AddUnauthorizedResponseBody string
 
 // NewAddInvalidScopes builds a adder service add endpoint invalid-scopes error.
-func NewAddInvalidScopes(body InvalidScopes) addersvc.InvalidScopes {
+func NewAddInvalidScopes(body AddInvalidScopesResponseBody) addersvc.InvalidScopes {
 	v := addersvc.InvalidScopes(body)
 	return v
 }
 
 // NewAddUnauthorized builds a adder service add endpoint unauthorized error.
-func NewAddUnauthorized(body Unauthorized) addersvc.Unauthorized {
+func NewAddUnauthorized(body AddUnauthorizedResponseBody) addersvc.Unauthorized {
 	v := addersvc.Unauthorized(body)
 	return v
 }

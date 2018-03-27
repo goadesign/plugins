@@ -1,0 +1,278 @@
+swagger: "2.0"
+info:
+  title: Security Example Calc Adder service API
+  description: This API demonstrates the use of the goa security plugin
+  termsofservice: ""
+  contact: null
+  license: null
+  version: ""
+  extensions: {}
+host: localhost:8080
+basepath: ""
+schemes: []
+consumes: []
+produces: []
+paths:
+  /add/{a}/{b}:
+    ref: ""
+    get:
+      tags:
+      - adder
+      summary: add adder
+      description: This action returns the sum of two integers and is secured with
+        the API key scheme
+      externaldocs: null
+      operationid: adder#add
+      consumes: []
+      produces: []
+      parameters:
+      - name: key
+        in: query
+        description: API key
+        required: true
+        schema: null
+        type: string
+        format: ""
+        allowemptyvalue: false
+        items: null
+        collectionformat: ""
+        default: null
+        maximum: null
+        exclusivemaximum: false
+        minimum: null
+        exclusiveminimum: false
+        maxlength: null
+        minlength: null
+        pattern: ""
+        maxitems: null
+        minitems: null
+        uniqueitems: false
+        enum: []
+        multipleof: 0
+        extensions: {}
+      - name: a
+        in: path
+        description: Left operand
+        required: true
+        schema: null
+        type: integer
+        format: ""
+        allowemptyvalue: false
+        items: null
+        collectionformat: ""
+        default: null
+        maximum: null
+        exclusivemaximum: false
+        minimum: null
+        exclusiveminimum: false
+        maxlength: null
+        minlength: null
+        pattern: ""
+        maxitems: null
+        minitems: null
+        uniqueitems: false
+        enum: []
+        multipleof: 0
+        extensions: {}
+      - name: b
+        in: path
+        description: Right operand
+        required: true
+        schema: null
+        type: integer
+        format: ""
+        allowemptyvalue: false
+        items: null
+        collectionformat: ""
+        default: null
+        maximum: null
+        exclusivemaximum: false
+        minimum: null
+        exclusiveminimum: false
+        maxlength: null
+        minlength: null
+        pattern: ""
+        maxitems: null
+        minitems: null
+        uniqueitems: false
+        enum: []
+        multipleof: 0
+        extensions: {}
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: integer
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: ""
+            enum: []
+            format: int64
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
+        "401":
+          description: Unauthorized response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: ""
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: '#/definitions/AddUnauthorizedResponseBody'
+            enum: []
+            format: ""
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
+        "403":
+          description: Forbidden response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: ""
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: '#/definitions/AddInvalidScopesResponseBody'
+            enum: []
+            format: ""
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
+      schemes:
+      - http
+      deprecated: false
+      security:
+      - api_key: []
+      extensions: {}
+    put: null
+    post: null
+    delete: null
+    options: null
+    head: null
+    patch: null
+    parameters: []
+    extensions: {}
+definitions:
+  AddInvalidScopesResponseBody:
+    schema: ""
+    id: ""
+    title: AddInvalidScopesResponseBody
+    type: string
+    items: null
+    properties: {}
+    definitions: {}
+    description: ""
+    defaultvalue: null
+    example: Qui dolorem et adipisci.
+    media: null
+    readonly: false
+    pathstart: ""
+    links: []
+    ref: ""
+    enum: []
+    format: ""
+    pattern: ""
+    minimum: null
+    maximum: null
+    minlength: null
+    maxlength: null
+    required: []
+    additionalproperties: false
+    anyof: []
+  AddUnauthorizedResponseBody:
+    schema: ""
+    id: ""
+    title: AddUnauthorizedResponseBody
+    type: string
+    items: null
+    properties: {}
+    definitions: {}
+    description: ""
+    defaultvalue: null
+    example: Soluta possimus quod.
+    media: null
+    readonly: false
+    pathstart: ""
+    links: []
+    ref: ""
+    enum: []
+    format: ""
+    pattern: ""
+    minimum: null
+    maximum: null
+    minlength: null
+    maxlength: null
+    required: []
+    additionalproperties: false
+    anyof: []
+parameters: {}
+responses: {}
+securitydefinitions:
+  api_key:
+    type: apiKey
+    description: Secures endpoint by requiring an API key.
+    name: key
+    in: header
+    flow: ""
+    authorizationurl: ""
+    tokenurl: ""
+    scopes: {}
+    extensions: {}
+tags: []
+externaldocs:
+  description: Security plugin README
+  url: https://github.com/goadesign/plugins/tree/master/security/README.md

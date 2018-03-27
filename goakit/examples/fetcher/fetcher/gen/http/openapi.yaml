@@ -1,0 +1,641 @@
+swagger: "2.0"
+info:
+  title: The goakit example upstream service
+  description: Fetcher is a service that makes GET requests to arbitrary URLs and
+    stores the results in the downstream 'archiver' service.
+  termsofservice: ""
+  contact: null
+  license: null
+  version: ""
+  extensions: {}
+host: localhost:8081
+basepath: ""
+schemes: []
+consumes: []
+produces: []
+paths:
+  /fetch/{*url}:
+    ref: ""
+    get:
+      tags:
+      - fetcher
+      summary: fetch fetcher
+      description: Fetch makes a GET request to the given URL and stores the results
+        in the archiver service which must be running or the request fails
+      externaldocs: null
+      operationid: fetcher#fetch
+      consumes: []
+      produces: []
+      parameters:
+      - name: url
+        in: path
+        description: URL to be fetched
+        required: true
+        schema: null
+        type: string
+        format: uri
+        allowemptyvalue: false
+        items: null
+        collectionformat: ""
+        default: null
+        maximum: null
+        exclusivemaximum: false
+        minimum: null
+        exclusiveminimum: false
+        maxlength: null
+        minlength: null
+        pattern: ""
+        maxitems: null
+        minitems: null
+        uniqueitems: false
+        enum: []
+        multipleof: 0
+        extensions: {}
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: ""
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: '#/definitions/FetchResponseBody'
+            enum: []
+            format: ""
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
+        "400":
+          description: Bad Request response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: ""
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: '#/definitions/FetchBadRequestResponseBody'
+            enum: []
+            format: ""
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
+        "500":
+          description: Internal Server Error response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: ""
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: '#/definitions/FetchInternalErrorResponseBody'
+            enum: []
+            format: ""
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
+      schemes:
+      - http
+      deprecated: false
+      security: []
+      extensions: {}
+    put: null
+    post: null
+    delete: null
+    options: null
+    head: null
+    patch: null
+    parameters: []
+    extensions: {}
+  /health:
+    ref: ""
+    get:
+      tags:
+      - health
+      summary: show health
+      description: Health check endpoint
+      externaldocs: null
+      operationid: health#show
+      consumes: []
+      produces: []
+      parameters: []
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: string
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: ""
+            enum: []
+            format: ""
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
+      schemes:
+      - http
+      deprecated: false
+      security: []
+      extensions: {}
+    put: null
+    post: null
+    delete: null
+    options: null
+    head: null
+    patch: null
+    parameters: []
+    extensions: {}
+definitions:
+  FetchBadRequestResponseBody:
+    schema: ""
+    id: ""
+    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+    type: object
+    items: null
+    properties:
+      id:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: ID is a unique identifier for this particular occurrence of the
+          problem.
+        defaultvalue: null
+        example: 123abc
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      message:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Message is a human-readable explanation specific to this occurrence
+          of the problem.
+        defaultvalue: null
+        example: parameter 'p' must be an integer
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      name:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Name is the name of this class of errors.
+        defaultvalue: null
+        example: bad_request
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      temporary:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error temporary?
+        defaultvalue: null
+        example: false
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      timeout:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error a timeout?
+        defaultvalue: null
+        example: true
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+    definitions: {}
+    description: FetchBadRequestResponseBody result type (default view)
+    defaultvalue: null
+    example:
+      id: 123abc
+      message: parameter 'p' must be an integer
+      name: bad_request
+      temporary: false
+      timeout: true
+    media: null
+    readonly: false
+    pathstart: ""
+    links: []
+    ref: ""
+    enum: []
+    format: ""
+    pattern: ""
+    minimum: null
+    maximum: null
+    minlength: null
+    maxlength: null
+    required:
+    - name
+    - id
+    - message
+    - temporary
+    - timeout
+    additionalproperties: false
+    anyof: []
+  FetchInternalErrorResponseBody:
+    schema: ""
+    id: ""
+    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+    type: object
+    items: null
+    properties:
+      id:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: ID is a unique identifier for this particular occurrence of the
+          problem.
+        defaultvalue: null
+        example: 123abc
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      message:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Message is a human-readable explanation specific to this occurrence
+          of the problem.
+        defaultvalue: null
+        example: parameter 'p' must be an integer
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      name:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Name is the name of this class of errors.
+        defaultvalue: null
+        example: bad_request
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      temporary:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error temporary?
+        defaultvalue: null
+        example: false
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      timeout:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error a timeout?
+        defaultvalue: null
+        example: true
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+    definitions: {}
+    description: FetchInternalErrorResponseBody result type (default view)
+    defaultvalue: null
+    example:
+      id: 123abc
+      message: parameter 'p' must be an integer
+      name: bad_request
+      temporary: true
+      timeout: true
+    media: null
+    readonly: false
+    pathstart: ""
+    links: []
+    ref: ""
+    enum: []
+    format: ""
+    pattern: ""
+    minimum: null
+    maximum: null
+    minlength: null
+    maxlength: null
+    required:
+    - name
+    - id
+    - message
+    - temporary
+    - timeout
+    additionalproperties: false
+    anyof: []
+  FetchResponseBody:
+    schema: ""
+    id: ""
+    title: 'Mediatype identifier: application/vnd.goa.fetch; view=default'
+    type: object
+    items: null
+    properties:
+      archive_href:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: The href to the corresponding archive in the archiver service
+        defaultvalue: null
+        example: /archive/1
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ^/archive/[0-9]+$
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      status:
+        schema: ""
+        id: ""
+        title: ""
+        type: integer
+        items: null
+        properties: {}
+        definitions: {}
+        description: HTTP status code returned by fetched service
+        defaultvalue: null
+        example: 200
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: 0
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+    definitions: {}
+    description: FetchResponseBody result type (default view)
+    defaultvalue: null
+    example:
+      archive_href: /archive/1
+      status: 200
+    media: null
+    readonly: false
+    pathstart: ""
+    links: []
+    ref: ""
+    enum: []
+    format: ""
+    pattern: ""
+    minimum: null
+    maximum: null
+    minlength: null
+    maxlength: null
+    required:
+    - status
+    - archive_href
+    additionalproperties: false
+    anyof: []
+parameters: {}
+responses: {}
+securitydefinitions: {}
+tags: []
+externaldocs: null

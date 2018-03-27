@@ -69,8 +69,8 @@ func NewFetchBadRequest(body *FetchBadRequestResponseBody) *fetchersvc.Error {
 		Name:      *body.Name,
 		ID:        *body.ID,
 		Message:   *body.Message,
-		Temporary: body.Temporary,
-		Timeout:   body.Timeout,
+		Temporary: *body.Temporary,
+		Timeout:   *body.Timeout,
 	}
 	return v
 }
@@ -82,8 +82,8 @@ func NewFetchInternalError(body *FetchInternalErrorResponseBody) *fetchersvc.Err
 		Name:      *body.Name,
 		ID:        *body.ID,
 		Message:   *body.Message,
-		Temporary: body.Temporary,
-		Timeout:   body.Timeout,
+		Temporary: *body.Temporary,
+		Timeout:   *body.Timeout,
 	}
 	return v
 }
@@ -118,6 +118,12 @@ func (body *FetchBadRequestResponseBody) Validate() (err error) {
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
 	}
+	if body.Temporary == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("temporary", "body"))
+	}
+	if body.Timeout == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("timeout", "body"))
+	}
 	return
 }
 
@@ -131,6 +137,12 @@ func (body *FetchInternalErrorResponseBody) Validate() (err error) {
 	}
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
+	}
+	if body.Temporary == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("temporary", "body"))
+	}
+	if body.Timeout == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("timeout", "body"))
 	}
 	return
 }

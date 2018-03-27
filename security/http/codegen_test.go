@@ -175,11 +175,11 @@ func TestExample(t *testing.T) {
 		Snippets []string
 	}{
 		{"single-service", testdata.SingleServiceDSL, []string{
-			"singleservice.NewSecureEndpoints(singleserviceSvc, testapi.SingleServiceAuthAPIKeyFn)"}},
+			"singleservice.NewSecureEndpoints(singleServiceSvc, testapi.SingleServiceAuthAPIKeyFn)"}},
 		{"multiple-services", testdata.MultipleServicesDSL, []string{
-			"servicewithapikeyauth.NewSecureEndpoints(servicewithapikeyauthSvc, testapi.ServiceWithAPIKeyAuthAuthAPIKeyFn)",
-			"servicewithjwtandbasicauth.NewSecureEndpoints(servicewithjwtandbasicauthSvc, testapi.ServiceWithJWTAndBasicAuthAuthBasicAuthFn, testapi.ServiceWithJWTAndBasicAuthAuthJWTFn)",
-			"servicewithnosecurity.NewSecureEndpoints(servicewithnosecuritySvc)"}},
+			"servicewithapikeyauth.NewSecureEndpoints(serviceWithAPIKeyAuthSvc, testapi.ServiceWithAPIKeyAuthAuthAPIKeyFn)",
+			"servicewithjwtandbasicauth.NewSecureEndpoints(serviceWithJWTAndBasicAuthSvc, testapi.ServiceWithJWTAndBasicAuthAuthBasicAuthFn, testapi.ServiceWithJWTAndBasicAuthAuthJWTFn)",
+			"servicewithnosecurity.NewSecureEndpoints(serviceWithNoSecuritySvc)"}},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
