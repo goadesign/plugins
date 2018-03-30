@@ -9,6 +9,8 @@ package securedservice
 
 import (
 	"context"
+
+	"goa.design/goa"
 )
 
 // The secured service exposes endpoints that require valid authorization
@@ -87,4 +89,13 @@ func (e Unauthorized) Error() string {
 // ErrorName returns "unauthorized".
 func (e Unauthorized) ErrorName() string {
 	return "unauthorized"
+}
+
+// MakeUnauthorized builds a goa.ServiceError from an error.
+func MakeUnauthorized(err error) *goa.ServiceError {
+	return &goa.ServiceError{
+		Name:    "unauthorized",
+		ID:      goa.NewErrorID(),
+		Message: err.Error(),
+	}
 }

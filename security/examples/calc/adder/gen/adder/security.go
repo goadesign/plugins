@@ -16,7 +16,7 @@ import (
 
 // NewSecureEndpoints wraps the methods of a adder service with security scheme
 // aware endpoints.
-func NewSecureEndpoints(s Service, authAPIKeyFn security.AuthorizeAPIKeyFunc) *Endpoints {
+func NewSecureEndpoints(s Service, authAPIKeyFn security.AuthAPIKeyFunc) *Endpoints {
 	return &Endpoints{
 		Add: SecureAdd(NewAddEndpoint(s), authAPIKeyFn),
 	}
@@ -24,14 +24,13 @@ func NewSecureEndpoints(s Service, authAPIKeyFn security.AuthorizeAPIKeyFunc) *E
 
 // SecureAdd returns an endpoint function which initializes the context with
 // the security requirements for the method "add" of service "adder".
-func SecureAdd(ep goa.Endpoint, authAPIKeyFn security.AuthorizeAPIKeyFunc) goa.Endpoint {
+func SecureAdd(ep goa.Endpoint, authAPIKeyFn security.AuthAPIKeyFunc) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*AddPayload)
 		var err error
-		apiKeySch := security.APIKeyScheme{
+		ctx, err = authAPIKeyFn(ctx, p.Key, &security.APIKeyScheme{
 			Name: "api_key",
-		}
-		ctx, err = authAPIKeyFn(ctx, p.Key, &apiKeySch)
+		})
 		if err != nil {
 			return nil, err
 		}

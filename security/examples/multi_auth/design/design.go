@@ -65,6 +65,7 @@ var _ = Service("secured_service", func() {
 			})
 			Required("username", "password")
 		})
+		Error("unauthorized")
 
 		HTTP(func() {
 			POST("/signin")
@@ -89,6 +90,7 @@ var _ = Service("secured_service", func() {
 		Result(String, func() {
 			Example("JWT secured data")
 		})
+		Error("unauthorized")
 		HTTP(func() {
 			GET("/secure")
 			Param("fail")

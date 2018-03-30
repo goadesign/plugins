@@ -215,7 +215,7 @@ func buildV2SecurityDefinitions(schemes []*design.SchemeExpr) map[string]*openap
 
 // input: securedServiceData
 const secureEndpointsInitT = `{{ printf "NewSecure%s wraps the methods of a %s service with security scheme aware endpoints." .EndpointsVarName .Name | comment }}
-	func NewSecure{{ .EndpointsVarName }}(s {{ .VarName }}{{ range .Schemes }}, auth{{ .Type }}Fn {{ $.SecurityPkgName }}.Authorize{{ .Type }}Func{{ end }}) *{{ .EndpointsVarName }} {
+	func NewSecure{{ .EndpointsVarName }}(s {{ .VarName }}{{ range .Schemes }}, auth{{ .Type }}Fn {{ $.SecurityPkgName }}.Auth{{ .Type }}Func{{ end }}) *{{ .EndpointsVarName }} {
 		return &{{ .EndpointsVarName }}{
 			{{- range .Methods }}
 			{{ .MethodData.VarName }}: {{ if .Requirements }}{{ .VarName }}({{ end }}{{ .NonSecureVarName }}(s){{ if .Requirements }}{{ range .Schemes }}, auth{{ .Scheme.Type }}Fn{{ end }}){{ end }},
@@ -226,7 +226,7 @@ const secureEndpointsInitT = `{{ printf "NewSecure%s wraps the methods of a %s s
 
 // input: securedServiceMethodData
 const secureEndpointT = `{{ printf "%s returns an endpoint function which initializes the context with the security requirements for the method %q of service %q." .VarName .Name .ServiceName | comment }}
-func {{ .VarName }}(ep goa.Endpoint{{ range .Schemes }}, auth{{ .Scheme.Type }}Fn {{ $.SecurityPkgName }}.Authorize{{ .Scheme.Type }}Func{{ end }}) goa.Endpoint {
+func {{ .VarName }}(ep goa.Endpoint{{ range .Schemes }}, auth{{ .Scheme.Type }}Fn {{ $.SecurityPkgName }}.Auth{{ .Scheme.Type }}Func{{ end }}) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.({{ if .PayloadRef }}*{{ end }}{{ .Payload }})
 		var err error
@@ -240,27 +240,24 @@ func {{ .VarName }}(ep goa.Endpoint{{ range .Schemes }}, auth{{ .Scheme.Type }}F
 			if err == nil {
 				{{- end }}
 				{{- if eq .Type "BasicAuth" }}
-				basicAuthSch := {{ $.SecurityPkgName }}.BasicAuthScheme{
+				ctx, err = auth{{ .Type }}Fn(ctx, {{ if $scheme.UsernamePointer }}*{{ end }}p.{{ $scheme.UsernameField }}, {{ if $scheme.PasswordPointer }}*{{ end }}p.{{ $scheme.PasswordField }}, &{{ $.SecurityPkgName }}.BasicAuthScheme{
 					Name: {{ printf "%q" .SchemeName }},
-				}
-				ctx, err = auth{{ .Type }}Fn(ctx, {{ if $scheme.UsernamePointer }}*{{ end }}p.{{ $scheme.UsernameField }}, {{ if $scheme.PasswordPointer }}*{{ end }}p.{{ $scheme.PasswordField }}, &basicAuthSch)
+				})
 
 				{{- else if eq .Type "APIKey" }}
-				apiKeySch := {{ $.SecurityPkgName }}.APIKeyScheme{
+				ctx, err = auth{{ .Type }}Fn(ctx, {{ if $scheme.CredPointer }}*{{ end }}p.{{ $scheme.CredField }}, &{{ $.SecurityPkgName }}.APIKeyScheme{
 					Name: {{ printf "%q" .SchemeName }},
-				}
-				ctx, err = auth{{ .Type }}Fn(ctx, {{ if $scheme.CredPointer }}*{{ end }}p.{{ $scheme.CredField }}, &apiKeySch)
+				})
 
 				{{- else if eq .Type "JWT" }}
-				jwtSch := {{ $.SecurityPkgName }}.JWTScheme{
+				ctx, err = auth{{ .Type }}Fn(ctx, {{ if $scheme.CredPointer }}*{{ end }}p.{{ $scheme.CredField }}, &{{ $.SecurityPkgName }}.JWTScheme{
 					Name: {{ printf "%q" .SchemeName }},
 					Scopes: []string{ {{- range .Scopes }}{{ printf "%q" .Name }}, {{ end }} },
 					RequiredScopes: []string{ {{- range $r.Scopes }}{{ printf "%q" . }}, {{ end }} },
-				}
-				ctx, err = auth{{ .Type }}Fn(ctx, {{ if $scheme.CredPointer }}*{{ end }}p.{{ $scheme.CredField }}, &jwtSch)
+				})
 
 				{{- else if eq .Type "OAuth2" }}
-				oauth2Sch := {{ $.SecurityPkgName }}.OAuth2Scheme{
+				ctx, err = auth{{ .Type }}Fn(ctx, {{ if $scheme.CredPointer }}*{{ end }}p.{{ $scheme.CredField }}, &{{ $.SecurityPkgName }}.OAuth2Scheme{
 					Name: {{ printf "%q" .SchemeName }},
 					Scopes: []string{ {{- range .Scopes }}{{ printf "%q" .Name }}, {{ end }} },
 					RequiredScopes: []string{ {{- range $r.Scopes }}{{ printf "%q" . }}, {{ end }} },
@@ -282,8 +279,7 @@ func {{ .VarName }}(ep goa.Endpoint{{ range .Schemes }}, auth{{ .Scheme.Type }}F
 						{{- end }}
 					},
 					{{- end }}
-				}
-				ctx, err = auth{{ .Type }}Fn(ctx, {{ if $scheme.CredPointer }}*{{ end }}p.{{ $scheme.CredField }}, &oauth2Sch)
+				})
 
 				{{- else }}
 				{{ printf "unsupported scheme type %q" .Type | comment }}
@@ -309,7 +305,7 @@ func {{ .VarName }}(ep goa.Endpoint{{ range .Schemes }}, auth{{ .Scheme.Type }}F
 const dummyAuthFuncsT = `{{ range $sd := . }}
 {{- range .Schemes }}
 
-{{ printf "%sAuth%sFn implements the authorization logic for %s scheme." $sd.ServiceName .Type .Type | comment }}
+{{ printf "%sAuth%sFn implements the authorization logic for %s scheme." $sd.ServiceVarName .Type .Type | comment }}
 func {{ $sd.ServiceVarName }}Auth{{ .Type }}Fn(ctx context.Context, {{ if eq .Type "BasicAuth" }}user, pass{{ else if eq .Type "APIKey" }}key{{ else }}token{{ end }} string, s *{{ $sd.SecurityPkg }}.{{ .Type }}Scheme) (context.Context, error) {
 	// Add authorization logic
 	return ctx, fmt.Errorf("not implemented")
