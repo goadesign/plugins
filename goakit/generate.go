@@ -9,10 +9,12 @@ import (
 	httpdesign "goa.design/goa/http/design"
 )
 
+const pluginName = "goakit"
+
 // Register the plugin Generator functions.
 func init() {
-	codegen.RegisterPlugin("gen", Generate)
-	codegen.RegisterPlugin("example", Example)
+	codegen.RegisterPluginLast(pluginName, "gen", Generate)
+	codegen.RegisterPluginLast(pluginName, "example", Example)
 }
 
 // Generate modifies all the previously generated files by replacing all
