@@ -64,8 +64,8 @@ type (
 
 // Register the plugin HTTP Generator function.
 func init() {
-	codegen.RegisterPlugin("gen", Generate)
-	codegen.RegisterPlugin("example", Example)
+	codegen.RegisterPlugin("gen", design.Root, Generate)
+	codegen.RegisterPlugin("example", design.Root, Example)
 }
 
 // Generate produces HTTP decoders and encoders that initialize the

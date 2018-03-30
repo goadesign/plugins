@@ -7,12 +7,13 @@ import (
 	"goa.design/goa/codegen"
 	"goa.design/goa/eval"
 	httpdesign "goa.design/goa/http/design"
+	"goa.design/plugins/goakit/design"
 )
 
 // Register the plugin Generator functions.
 func init() {
-	codegen.RegisterPlugin("gen", Generate)
-	codegen.RegisterPlugin("example", Example)
+	codegen.RegisterPlugin("gen", design.Root, Generate)
+	codegen.RegisterPlugin("example", design.Root, Example)
 }
 
 // Generate modifies all the previously generated files by replacing all

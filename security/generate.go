@@ -33,8 +33,8 @@ type (
 
 // Register the plugin Generator functions.
 func init() {
-	codegen.RegisterPlugin("gen", Generate)
-	codegen.RegisterPlugin("example", Example)
+	codegen.RegisterPlugin("gen", design.Root, Generate)
+	codegen.RegisterPlugin("example", design.Root, Example)
 }
 
 // Generate produces server code that enforce the security requirements defined
