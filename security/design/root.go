@@ -8,6 +8,9 @@ import (
 // Root is the design root expression.
 var Root = new(RootExpr)
 
+// PluginName is the name of the security plugin
+const PluginName = "security"
+
 type (
 	// RootExpr keeps track of the security schemes defined in the design
 	RootExpr struct {
