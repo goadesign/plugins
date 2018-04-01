@@ -118,7 +118,7 @@ func SingleServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.APIK
 }
 `
 
-var MultipleServicesAuthFuncsCode = `// ServiceWithAPIKeyAuthAuthAPIKeyFn implements the authorization logic for
+var MultipleServicesAuth1FuncsCode = `// ServiceWithAPIKeyAuthAuthAPIKeyFn implements the authorization logic for
 // APIKey scheme.
 func ServiceWithAPIKeyAuthAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
@@ -127,8 +127,9 @@ func ServiceWithAPIKeyAuthAuthAPIKeyFn(ctx context.Context, key string, s *secur
 	}
 	return ctx, nil
 }
+`
 
-// ServiceWithJWTAndAPIKeyAuthAPIKeyFn implements the authorization logic for
+var MultipleServicesAuth2FuncsCode = `// ServiceWithJWTAndAPIKeyAuthAPIKeyFn implements the authorization logic for
 // APIKey scheme.
 func ServiceWithJWTAndAPIKeyAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic

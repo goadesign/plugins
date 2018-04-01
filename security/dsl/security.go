@@ -644,6 +644,9 @@ func securitySchemeRedefined(name string) bool {
 // useDSL modifies the Attribute function to use the given function as DSL,
 // merging it with any pre-exsiting DSL.
 func useDSL(args []interface{}, d func()) []interface{} {
+	if len(args) == 0 {
+		return []interface{}{d}
+	}
 	ds, ok := args[len(args)-1].(func())
 	if ok {
 		newdsl := func() { ds(); d() }

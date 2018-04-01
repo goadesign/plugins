@@ -8,6 +8,7 @@ import (
 	"goa.design/goa/codegen"
 	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
+	httpcodegen "goa.design/goa/http/codegen"
 	"goa.design/goa/http/codegen/openapi"
 	seccodegen "goa.design/plugins/security/codegen"
 	"goa.design/plugins/security/design"
@@ -24,6 +25,8 @@ type (
 		Schemes []*design.SchemeExpr
 		// ServiceName is the name of the service.
 		ServiceName string
+		// ServiceVarName is the generated name of the service.
+		ServiceVarName string
 		// ServicePkg is the service package name.
 		ServicePkg string
 		// Security is the security package name.
@@ -70,22 +73,33 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 			for _, s := range r.Services {
 				sd := seccodegen.BuildSecureServiceData(s, "")
 				data = append(data, &AuthFuncsData{
-					Schemes:     sd.Schemes,
-					SecurityPkg: "security",
-					ServicePkg:  sd.PkgName,
-					ServiceName: codegen.Goify(sd.Name, true)})
+					Schemes:        sd.Schemes,
+					SecurityPkg:    "security",
+					ServicePkg:     sd.PkgName,
+					ServiceVarName: codegen.Goify(sd.Name, true),
+					ServiceName:    sd.Name})
 			}
 		}
 	}
 	for _, f := range files {
 		if s := f.Section("dummy-endpoint"); len(s) > 0 {
+			ep := s[0].Data.(*httpcodegen.EndpointData)
+			var epd []*AuthFuncsData
+			for _, d := range data {
+				if d.ServiceName == ep.ServiceName {
+					epd = append(epd, d)
+				}
+			}
+			if len(epd) == 0 {
+				continue
+			}
 			for _, h := range f.Section("source-header") {
 				codegen.AddImport(h, codegen.SimpleImport("goa.design/plugins/security"))
 			}
 			f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
 				Name:   "dummy-authorize-funcs",
 				Source: dummyAuthFuncsT,
-				Data:   data,
+				Data:   epd,
 			})
 		}
 	}
@@ -303,7 +317,7 @@ const dummyAuthFuncsT = `{{ range $sd := . }}
 {{- range .Schemes }}
 
 {{ printf "%sAuth%sFn implements the authorization logic for %s scheme." $sd.ServiceName .Type .Type | comment }}
-func {{ $sd.ServiceName }}Auth{{ .Type }}Fn(ctx context.Context, {{ if eq .Type "BasicAuth" }}user, pass{{ else if eq .Type "APIKey" }}key{{ else }}token{{ end }} string, s *{{ $sd.SecurityPkg }}.{{ .Type }}Scheme) (context.Context, error) {
+func {{ $sd.ServiceVarName }}Auth{{ .Type }}Fn(ctx context.Context, {{ if eq .Type "BasicAuth" }}user, pass{{ else if eq .Type "APIKey" }}key{{ else }}token{{ end }} string, s *{{ $sd.SecurityPkg }}.{{ .Type }}Scheme) (context.Context, error) {
 	// Add authorization logic
 	{{- if eq .Type "BasicAuth" }}
 	if user == "" {
