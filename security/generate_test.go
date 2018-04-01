@@ -130,10 +130,10 @@ func TestExample(t *testing.T) {
 	cases := []struct {
 		Name string
 		DSL  func()
-		Code string
+		Code []string
 	}{
-		{"single-service", testdata.SingleServiceDSL, testdata.SingleServiceAuthFuncsCode},
-		{"multiple-services", testdata.MultipleServicesDSL, testdata.MultipleServicesAuthFuncsCode},
+		{"single-service", testdata.SingleServiceDSL, []string{testdata.SingleServiceAuthFuncsCode}},
+		{"multiple-services", testdata.MultipleServicesDSL, []string{testdata.MultipleServicesAuth1FuncsCode, testdata.MultipleServicesAuth2FuncsCode, ""}},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
@@ -143,7 +143,7 @@ func TestExample(t *testing.T) {
 			}
 			fs := httpcodegen.ExampleServerFiles("", httpdesign.Root)
 			Example("", []eval.Root{goadesign.Root}, fs)
-			for _, f := range fs {
+			for i, f := range fs {
 				if filepath.Base(f.Path) == "main.go" {
 					continue
 				}
@@ -151,9 +151,11 @@ func TestExample(t *testing.T) {
 				if len(sections) < 1 {
 					t.Fatalf("service-main: expected at least 1")
 				}
-				code := codegen.SectionCode(t, sections[0])
-				if code != c.Code {
-					t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c.Code))
+				for _, s := range sections {
+					code := codegen.SectionCode(t, s)
+					if code != c.Code[i] {
+						t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c.Code[i]))
+					}
 				}
 			}
 		})
