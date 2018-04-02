@@ -18,13 +18,6 @@ type LoginRequestBody struct {
 	Password string `form:"password" json:"password" xml:"password"`
 }
 
-// AddRequestBody is the type of the "calc" service "add" endpoint HTTP request
-// body.
-type AddRequestBody struct {
-	// JWT used for authentication
-	Token string `form:"token" json:"token" xml:"token"`
-}
-
 // LoginUnauthorizedResponseBody is the type of the "calc" service "login"
 // endpoint HTTP response body for the "unauthorized" error.
 type LoginUnauthorizedResponseBody string
@@ -35,15 +28,6 @@ func NewLoginRequestBody(p *calcsvc.LoginPayload) *LoginRequestBody {
 	body := &LoginRequestBody{
 		User:     p.User,
 		Password: p.Password,
-	}
-	return body
-}
-
-// NewAddRequestBody builds the HTTP request body from the payload of the "add"
-// endpoint of the "calc" service.
-func NewAddRequestBody(p *calcsvc.AddPayload) *AddRequestBody {
-	body := &AddRequestBody{
-		Token: p.Token,
 	}
 	return body
 }

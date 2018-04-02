@@ -19,13 +19,6 @@ type LoginRequestBody struct {
 	Password *string `form:"password,omitempty" json:"password,omitempty" xml:"password,omitempty"`
 }
 
-// AddRequestBody is the type of the "calc" service "add" endpoint HTTP request
-// body.
-type AddRequestBody struct {
-	// JWT used for authentication
-	Token *string `form:"token,omitempty" json:"token,omitempty" xml:"token,omitempty"`
-}
-
 // LoginUnauthorizedResponseBody is the type of the "calc" service "login"
 // endpoint HTTP response body for the "unauthorized" error.
 type LoginUnauthorizedResponseBody string
@@ -47,13 +40,12 @@ func NewLoginLoginPayload(body *LoginRequestBody) *calcsvc.LoginPayload {
 }
 
 // NewAddAddPayload builds a calc service add endpoint payload.
-func NewAddAddPayload(body *AddRequestBody, a int, b int) *calcsvc.AddPayload {
-	v := &calcsvc.AddPayload{
-		Token: *body.Token,
+func NewAddAddPayload(a int, b int, token string) *calcsvc.AddPayload {
+	return &calcsvc.AddPayload{
+		A:     a,
+		B:     b,
+		Token: token,
 	}
-	v.A = a
-	v.B = b
-	return v
 }
 
 // Validate runs the validations defined on LoginRequestBody
@@ -63,14 +55,6 @@ func (body *LoginRequestBody) Validate() (err error) {
 	}
 	if body.Password == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("password", "body"))
-	}
-	return
-}
-
-// Validate runs the validations defined on AddRequestBody
-func (body *AddRequestBody) Validate() (err error) {
-	if body.Token == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("token", "body"))
 	}
 	return
 }

@@ -56,55 +56,6 @@ paths:
         enum: []
         multipleof: 0
         extensions: {}
-      - name: SecureRequestBody
-        in: body
-        description: ""
-        required: true
-        schema:
-          schema: ""
-          id: ""
-          title: ""
-          type: ""
-          items: null
-          properties: {}
-          definitions: {}
-          description: ""
-          defaultvalue: null
-          example: null
-          media: null
-          readonly: false
-          pathstart: ""
-          links: []
-          ref: '#/definitions/SecureRequestBody'
-          enum: []
-          format: ""
-          pattern: ""
-          minimum: null
-          maximum: null
-          minlength: null
-          maxlength: null
-          required: []
-          additionalproperties: false
-          anyof: []
-        type: ""
-        format: ""
-        allowemptyvalue: false
-        items: null
-        collectionformat: ""
-        default: null
-        maximum: null
-        exclusivemaximum: false
-        minimum: null
-        exclusiveminimum: false
-        maxlength: null
-        minlength: null
-        pattern: ""
-        maxitems: null
-        minitems: null
-        uniqueitems: false
-        enum: []
-        multipleof: 0
-        extensions: {}
       responses:
         "200":
           description: OK response.
@@ -199,55 +150,6 @@ paths:
         required: false
         schema: null
         type: string
-        format: ""
-        allowemptyvalue: false
-        items: null
-        collectionformat: ""
-        default: null
-        maximum: null
-        exclusivemaximum: false
-        minimum: null
-        exclusiveminimum: false
-        maxlength: null
-        minlength: null
-        pattern: ""
-        maxitems: null
-        minitems: null
-        uniqueitems: false
-        enum: []
-        multipleof: 0
-        extensions: {}
-      - name: DoublySecureRequestBody
-        in: body
-        description: ""
-        required: true
-        schema:
-          schema: ""
-          id: ""
-          title: ""
-          type: ""
-          items: null
-          properties: {}
-          definitions: {}
-          description: ""
-          defaultvalue: null
-          example: null
-          media: null
-          readonly: false
-          pathstart: ""
-          links: []
-          ref: '#/definitions/DoublySecureRequestBody'
-          enum: []
-          format: ""
-          pattern: ""
-          minimum: null
-          maximum: null
-          minlength: null
-          maxlength: null
-          required: []
-          additionalproperties: false
-          anyof: []
-        type: ""
         format: ""
         allowemptyvalue: false
         items: null
@@ -624,32 +526,6 @@ definitions:
     type: object
     items: null
     properties:
-      oauth_token:
-        schema: ""
-        id: ""
-        title: ""
-        type: string
-        items: null
-        properties: {}
-        definitions: {}
-        description: ""
-        defaultvalue: null
-        example: Qui debitis facilis ut ut.
-        media: null
-        readonly: false
-        pathstart: ""
-        links: []
-        ref: ""
-        enum: []
-        format: ""
-        pattern: ""
-        minimum: null
-        maximum: null
-        minlength: null
-        maxlength: null
-        required: []
-        additionalproperties: false
-        anyof: []
       password:
         schema: ""
         id: ""
@@ -661,32 +537,6 @@ definitions:
         description: Username used to perform signin
         defaultvalue: null
         example: password
-        media: null
-        readonly: false
-        pathstart: ""
-        links: []
-        ref: ""
-        enum: []
-        format: ""
-        pattern: ""
-        minimum: null
-        maximum: null
-        minlength: null
-        maxlength: null
-        required: []
-        additionalproperties: false
-        anyof: []
-      token:
-        schema: ""
-        id: ""
-        title: ""
-        type: string
-        items: null
-        properties: {}
-        definitions: {}
-        description: JWT used for authentication
-        defaultvalue: null
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
         media: null
         readonly: false
         pathstart: ""
@@ -732,9 +582,7 @@ definitions:
     description: ""
     defaultvalue: null
     example:
-      oauth_token: Assumenda laudantium ut consequatur ut.
       password: password
-      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
       username: user
     media: null
     readonly: false
@@ -777,59 +625,6 @@ definitions:
     required: []
     additionalproperties: false
     anyof: []
-  DoublySecureRequestBody:
-    schema: ""
-    id: ""
-    title: DoublySecureRequestBody
-    type: object
-    items: null
-    properties:
-      token:
-        schema: ""
-        id: ""
-        title: ""
-        type: string
-        items: null
-        properties: {}
-        definitions: {}
-        description: JWT used for authentication
-        defaultvalue: null
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
-        media: null
-        readonly: false
-        pathstart: ""
-        links: []
-        ref: ""
-        enum: []
-        format: ""
-        pattern: ""
-        minimum: null
-        maximum: null
-        minlength: null
-        maxlength: null
-        required: []
-        additionalproperties: false
-        anyof: []
-    definitions: {}
-    description: ""
-    defaultvalue: null
-    example:
-      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
-    media: null
-    readonly: false
-    pathstart: ""
-    links: []
-    ref: ""
-    enum: []
-    format: ""
-    pattern: ""
-    minimum: null
-    maximum: null
-    minlength: null
-    maxlength: null
-    required: []
-    additionalproperties: false
-    anyof: []
   DoublySecureUnauthorizedResponseBody:
     schema: ""
     id: ""
@@ -856,59 +651,6 @@ definitions:
     required: []
     additionalproperties: false
     anyof: []
-  SecureRequestBody:
-    schema: ""
-    id: ""
-    title: SecureRequestBody
-    type: object
-    items: null
-    properties:
-      token:
-        schema: ""
-        id: ""
-        title: ""
-        type: string
-        items: null
-        properties: {}
-        definitions: {}
-        description: JWT used for authentication
-        defaultvalue: null
-        example: Odit sapiente provident.
-        media: null
-        readonly: false
-        pathstart: ""
-        links: []
-        ref: ""
-        enum: []
-        format: ""
-        pattern: ""
-        minimum: null
-        maximum: null
-        minlength: null
-        maxlength: null
-        required: []
-        additionalproperties: false
-        anyof: []
-    definitions: {}
-    description: ""
-    defaultvalue: null
-    example:
-      token: Porro sit autem nostrum.
-    media: null
-    readonly: false
-    pathstart: ""
-    links: []
-    ref: ""
-    enum: []
-    format: ""
-    pattern: ""
-    minimum: null
-    maximum: null
-    minlength: null
-    maxlength: null
-    required: []
-    additionalproperties: false
-    anyof: []
   SecureUnauthorizedResponseBody:
     schema: ""
     id: ""
@@ -919,7 +661,7 @@ definitions:
     definitions: {}
     description: Credentials are invalid
     defaultvalue: null
-    example: Maxime ipsam esse et.
+    example: Porro sit autem nostrum.
     media: null
     readonly: false
     pathstart: ""
@@ -1025,7 +767,7 @@ definitions:
     definitions: {}
     description: Credentials are invalid
     defaultvalue: null
-    example: Voluptates a non itaque accusamus enim.
+    example: Doloremque odit sapiente provident.
     media: null
     readonly: false
     pathstart: ""
@@ -1047,7 +789,7 @@ securitydefinitions:
   api_key:
     type: apiKey
     description: Secures endpoint by requiring an API key.
-    name: key
+    name: Authorization
     in: header
     flow: ""
     authorizationurl: ""

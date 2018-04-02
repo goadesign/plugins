@@ -48,7 +48,7 @@ type (
 		// requirement.
 		Schemes []*SchemeExpr
 		// Scopes list the required scopes if any.
-		Scopes []string `json:"scopes,omitempty"`
+		Scopes []string
 	}
 
 	// ServiceSecurityExpr defines a security requirement that applies to
@@ -64,7 +64,7 @@ type (
 	// an endpoint.
 	EndpointSecurityExpr struct {
 		*SecurityExpr
-		// Endpoint is the endpoint that the security requirements
+		// Method is the method that the security requirements
 		// applies to.
 		Method *design.MethodExpr
 	}
@@ -116,41 +116,6 @@ type (
 	}
 )
 
-// Requirements returns the security requirements for the endpoint ep of service
-// svc.
-func Requirements(svc, ep string) []*SecurityExpr {
-	var sexpr []*SecurityExpr
-	var found, noSecurity bool
-	for _, es := range Root.EndpointSecurity {
-		if es.Method.Service.Name == svc && es.Method.Name == ep {
-			// Handle special case of no security
-			for _, s := range es.Schemes {
-				if s.Kind == NoKind {
-					noSecurity = true
-					break
-				}
-			}
-			if !noSecurity {
-				sexpr = append(sexpr, es.SecurityExpr)
-				found = true
-			}
-		}
-	}
-	if found || noSecurity {
-		return sexpr
-	}
-	for _, ss := range Root.ServiceSecurity {
-		if ss.Service.Name == svc {
-			sexpr = append(sexpr, ss.SecurityExpr)
-			found = true
-		}
-	}
-	if found {
-		return sexpr
-	}
-	return Root.APISecurity
-}
-
 // EvalName returns the generic definition name used in error messages.
 func (s *SecurityExpr) EvalName() string {
 	var suffix string
@@ -158,6 +123,89 @@ func (s *SecurityExpr) EvalName() string {
 		suffix = "scheme " + s.Schemes[0].SchemeName
 	}
 	return "Security" + suffix
+}
+
+// EvalName returns the generic definition name used in error messages.
+func (s *EndpointSecurityExpr) EvalName() string {
+	return "security for endpoint " + s.Method.Name
+}
+
+// Validate validates the security schemes.
+func (s *EndpointSecurityExpr) Validate() error {
+	verr := new(eval.ValidationErrors)
+	for _, sch := range s.Schemes {
+		switch sch.Kind {
+		case BasicAuthKind:
+			if !hasTaggedField(s.Method.Payload, "security:username") {
+				verr.Add(s, "payload of method %q of service %q does not define a username attribute, use Username to define one.", s.Method.Name, s.Method.Service.Name)
+			}
+			if !hasTaggedField(s.Method.Payload, "security:password") {
+				verr.Add(s, "payload of method %q of service %q does not define a password attribute, use Password to define one.", s.Method.Name, s.Method.Service.Name)
+			}
+		case APIKeyKind:
+			if !hasTaggedField(s.Method.Payload, "security:apikey:"+sch.SchemeName) {
+				verr.Add(s, "payload of method %q of service %q does not define an API key attribute, use APIKey to define one.", s.Method.Name, s.Method.Service.Name)
+			}
+		case JWTKind:
+			if !hasTaggedField(s.Method.Payload, "security:token") {
+				verr.Add(s, "payload of method %q of service %q does not define a JWT attribute, use Token to define one.", s.Method.Name, s.Method.Service.Name)
+			}
+		case OAuth2Kind:
+			if !hasTaggedField(s.Method.Payload, "security:accesstoken") {
+				verr.Add(s, "payload of method %q of service %q does not define a OAuth2 access token attribute, use AccessToken to define one.", s.Method.Name, s.Method.Service.Name)
+			}
+		default:
+			panic(fmt.Sprintf("unknown kind %#v", sch.Kind)) // bug
+		}
+		if err := sch.Validate(); err != nil {
+			verr.Merge(err)
+		}
+	}
+	return verr
+}
+
+// Finalize ensures the scheme expressions is set with the location and
+// parameter/header name.
+func (s *EndpointSecurityExpr) Finalize() {
+	if svc := httpdesign.Root.Service(s.Method.Service.Name); svc != nil {
+		ep := svc.Endpoint(s.Method.Name)
+		for _, sch := range s.Schemes {
+			sch.Finalize()
+			var field string
+			switch sch.Kind {
+			case BasicAuthKind:
+				continue
+			case APIKeyKind:
+				field = securityField(s.Method.Payload, "security:apikey:"+sch.SchemeName)
+			case JWTKind:
+				field = securityField(s.Method.Payload, "security:token")
+			case OAuth2Kind:
+				field = securityField(s.Method.Payload, "security:accesstoken")
+			}
+			sch.Name, sch.In = findKey(ep, field)
+			if sch.Name == "" {
+				sch.Name = "Authorization"
+				// Remove security field from body since by default it is found in headers
+				ep.Body = removeAttribute(ep.Body, field)
+				// Set the default authorization header
+				addAttribute(field, s.Method.Payload, ep.Headers(), "Authorization")
+			}
+		}
+	}
+}
+
+// DupScheme creates a copy of the given scheme expression.
+func DupScheme(sch *SchemeExpr) *SchemeExpr {
+	dup := SchemeExpr{
+		Kind:        sch.Kind,
+		SchemeName:  sch.SchemeName,
+		Description: sch.Description,
+		In:          sch.In,
+		Scopes:      sch.Scopes,
+		Flows:       sch.Flows,
+		Metadata:    sch.Metadata,
+	}
+	return &dup
 }
 
 // Type returns the type of the scheme.
@@ -181,53 +229,10 @@ func (s *SchemeExpr) EvalName() string {
 	return s.Type() + "Security"
 }
 
-// Validate ensures that TokenURL and AuthorizationURL are valid URLs.
-func (s *SchemeExpr) Validate() error {
+// Validate ensures that the method payload contains attributes required
+// by the scheme.
+func (s *SchemeExpr) Validate() *eval.ValidationErrors {
 	verr := new(eval.ValidationErrors)
-	payloads := make(map[string]*design.AttributeExpr)
-	for _, svc := range design.Root.Services {
-		for _, m := range svc.Methods {
-			found := false
-			for _, req := range Requirements(svc.Name, m.Name) {
-				for _, scheme := range req.Schemes {
-					if scheme == s {
-						loc := fmt.Sprintf("method %q of service %q", m.Name, svc.Name)
-						payloads[loc] = m.Payload
-						found = true
-						break
-					}
-				}
-				if found {
-					break
-				}
-			}
-		}
-	}
-	for loc, payload := range payloads {
-		switch s.Kind {
-		case BasicAuthKind:
-			if !hasTaggedField(payload, "security:username") {
-				verr.Add(s, "payload of %s does not define a username attribute, use Username to define one.", loc)
-			}
-			if !hasTaggedField(payload, "security:password") {
-				verr.Add(s, "payload of %s does not define a password attribute, use Password to define one.", loc)
-			}
-		case APIKeyKind:
-			if !hasTaggedField(payload, "security:apikey:"+s.SchemeName) {
-				verr.Add(s, "payload of %s does not define an API key attribute, use APIKey to define one.", loc)
-			}
-		case JWTKind:
-			if !hasTaggedField(payload, "security:token") {
-				verr.Add(s, "payload of %s does not define a JWT attribute, use Token to define one.", loc)
-			}
-		case OAuth2Kind:
-			if !hasTaggedField(payload, "security:accesstoken") {
-				verr.Add(s, "payload of %s does not define a OAuth2 access token attribute, use AccessToken to define one.", loc)
-			}
-		default:
-			panic(fmt.Sprintf("unknown kind %#v", s.Kind)) // bug
-		}
-	}
 	for _, f := range s.Flows {
 		if err := f.Validate(); err != nil {
 			verr.Merge(err)
@@ -240,11 +245,6 @@ func (s *SchemeExpr) Validate() error {
 func (s *SchemeExpr) Finalize() {
 	for _, f := range s.Flows {
 		f.Finalize()
-	}
-	if s.Kind == OAuth2Kind || s.Kind == JWTKind {
-		if s.Name == "" {
-			s.Name = "Authorization"
-		}
 	}
 }
 
@@ -335,14 +335,71 @@ func hasTaggedField(att *design.AttributeExpr, tag string) bool {
 	if att == nil {
 		return false
 	}
+	return securityField(att, tag) != ""
+}
+
+// securityField returns the security attribute name with the given tag.
+func securityField(att *design.AttributeExpr, tag string) string {
 	obj := design.AsObject(att.Type)
 	if obj == nil {
-		return false
+		return ""
 	}
 	for _, at := range *obj {
 		if _, ok := at.Attribute.Metadata[tag]; ok {
-			return true
+			return at.Name
 		}
 	}
-	return false
+	return ""
+}
+
+// findKey finds the given key in the endpoint expression and returns the
+// transport element name and the position (header or query).
+func findKey(e *httpdesign.EndpointExpr, keyAtt string) (string, string) {
+	if n, exists := e.AllParams().FindKey(keyAtt); exists {
+		return n, "query"
+	} else if n, exists := e.MappedHeaders().FindKey(keyAtt); exists {
+		return n, "header"
+	} else {
+		return "", "header"
+	}
+}
+
+func removeAttribute(attr *design.AttributeExpr, name string) *design.AttributeExpr {
+	obj := design.AsObject(attr.Type)
+	if obj == nil {
+		return attr
+	}
+	obj.Delete(name)
+	if len(*obj) == 0 {
+		return &design.AttributeExpr{Type: design.Empty}
+	}
+	if attr.Validation != nil {
+		attr.Validation.RemoveRequired(name)
+	}
+	for _, ex := range attr.UserExamples {
+		if m, ok := ex.Value.(map[string]interface{}); ok {
+			delete(m, name)
+		}
+	}
+	return attr
+}
+
+func addAttribute(name string, src *design.AttributeExpr, tgt *design.AttributeExpr, suffix string) {
+	sObj := design.AsObject(src.Type)
+	tObj := design.AsObject(tgt.Type)
+	if sObj == nil || tObj == nil {
+		return
+	}
+	attName := name
+	if suffix != "" {
+		attName = attName + ":" + suffix
+	}
+	attr := src.Type.(*design.Object).Attribute(name)
+	tObj.Set(attName, attr)
+	if src.IsRequired(name) {
+		if tgt.Validation == nil {
+			tgt.Validation = &design.ValidationExpr{}
+		}
+		tgt.Validation.AddRequired(name)
+	}
 }

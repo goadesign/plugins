@@ -139,7 +139,7 @@ func SecureRequestDecoders(r *httpdesign.RootExpr, f *codegen.File) {
 		needsImport = true
 		data := s.Data.(*httpcodegen.EndpointData)
 		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
-		if len(design.Requirements(e.Service.Name(), e.Name())) > 0 {
+		if len(design.Requirements(e.MethodExpr)) > 0 {
 			s.Source = strings.Replace(s.Source, "{{ .RequestDecoder }}", "Secure{{ .RequestDecoder }}", -1)
 		}
 	}
@@ -178,7 +178,7 @@ func SecureRequestEncoders(r *httpdesign.RootExpr, f *codegen.File) {
 		needsImport = true
 		data := s.Data.(*httpcodegen.EndpointData)
 		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
-		if len(design.Requirements(e.Service.Name(), e.Name())) > 0 {
+		if len(design.Requirements(e.MethodExpr)) > 0 {
 			s.Source = strings.Replace(s.Source, "{{ .RequestEncoder }}", "Secure{{ .RequestEncoder }}", -1)
 		}
 	}
@@ -216,7 +216,7 @@ func OpenAPIV2(r *httpdesign.RootExpr, f *codegen.File) {
 		spec := s.Data.(*openapi.V2)
 		for _, svc := range r.HTTPServices {
 			for _, e := range svc.HTTPEndpoints {
-				reqs := design.Requirements(svc.Name(), e.Name())
+				reqs := design.Requirements(e.MethodExpr)
 				for _, route := range e.Routes {
 					var (
 						p  *openapi.Path
@@ -258,7 +258,7 @@ func OpenAPIV2(r *httpdesign.RootExpr, f *codegen.File) {
 }
 
 // applySecurity applies the security requirements to the openapi V2 operation.
-func applySecurity(op *openapi.Operation, reqs []*design.SecurityExpr) {
+func applySecurity(op *openapi.Operation, reqs []*design.EndpointSecurityExpr) {
 	if len(reqs) == 0 {
 		return
 	}
@@ -291,35 +291,14 @@ func applySecurity(op *openapi.Operation, reqs []*design.SecurityExpr) {
 // computeSchemes collects the security schemes for the given endpoint.
 func computeSchemes(e *httpdesign.EndpointExpr) []*seccodegen.SchemeData {
 	var schemes []*seccodegen.SchemeData
-	for _, req := range design.Requirements(e.Service.Name(), e.Name()) {
+	for _, req := range design.Requirements(e.MethodExpr) {
 		for _, s := range req.Schemes {
 			if sd := seccodegen.BuildSchemeData(s, e.MethodExpr); sd != nil {
-				scheme := *s
-				if scheme.Kind == design.APIKeyKind || scheme.Kind == design.OAuth2Kind {
-					var name string
-					name, scheme.In = findKey(e, sd.KeyAttr)
-					if name != "" {
-						scheme.Name = name
-					}
-				}
-				sd.Scheme = &scheme
 				schemes = append(schemes, sd)
 			}
 		}
 	}
 	return schemes
-}
-
-// findKey finds the given key in the endpoint expression and returns the
-// transport element name and the position (header or query).
-func findKey(e *httpdesign.EndpointExpr, keyAtt string) (string, string) {
-	if n, exists := e.AllParams().FindKey(keyAtt); exists {
-		return n, "query"
-	} else if n, exists := e.MappedHeaders().FindKey(keyAtt); exists {
-		return n, "header"
-	} else {
-		return "", "header"
-	}
 }
 
 // input: SecureDecoderData

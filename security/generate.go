@@ -167,29 +167,17 @@ func buildV2SecurityDefinitions(schemes []*design.SchemeExpr) map[string]*openap
 		case design.APIKeyKind:
 			sd.Type = "apiKey"
 			sd.In = s.In
-			if sd.In == "" {
-				sd.In = "header"
-			}
 			sd.Name = s.Name
-			if sd.Name == "" {
-				sd.Name = "key"
-			}
 		case design.JWTKind:
 			sd.Type = "apiKey"
-			sd.In = s.In
-			if sd.In == "" {
-				sd.In = "header"
-			}
-			sd.Name = s.Name
-			if sd.Name == "" {
-				sd.Name = "token"
-			}
 			// OpenAPI V2 spec does not support JWT scheme. Hence we add the scheme
 			// information to the description.
 			lines := []string{}
 			for _, scope := range s.Scopes {
 				lines = append(lines, fmt.Sprintf("  * `%s`: %s", scope.Name, scope.Description))
 			}
+			sd.In = s.In
+			sd.Name = s.Name
 			sd.Description += fmt.Sprintf("\n**Security Scopes**:\n%s", strings.Join(lines, "\n"))
 		case design.OAuth2Kind:
 			sd.Type = "oauth2"

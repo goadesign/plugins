@@ -275,7 +275,7 @@ func Security(args ...interface{}) {
 			case string:
 				for _, s := range design.Root.Schemes {
 					if s.SchemeName == val {
-						schemes[i] = s
+						schemes[i] = design.DupScheme(s)
 						break
 					}
 				}

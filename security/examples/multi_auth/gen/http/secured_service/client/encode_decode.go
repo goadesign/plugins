@@ -126,15 +126,14 @@ func EncodeSecureRequest(encoder func(*http.Request) goahttp.Encoder) func(*http
 		if !ok {
 			return goahttp.ErrInvalidType("secured_service", "secure", "*securedservice.SecurePayload", v)
 		}
+		if p.Token != nil {
+			req.Header.Set("Authorization", *p.Token)
+		}
 		values := req.URL.Query()
 		if p.Fail != nil {
 			values.Add("fail", fmt.Sprintf("%v", *p.Fail))
 		}
 		req.URL.RawQuery = values.Encode()
-		body := NewSecureRequestBody(p)
-		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("secured_service", "secure", err)
-		}
 		return nil
 	}
 }
@@ -212,15 +211,14 @@ func EncodeDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) func
 		if !ok {
 			return goahttp.ErrInvalidType("secured_service", "doubly_secure", "*securedservice.DoublySecurePayload", v)
 		}
+		if p.Token != nil {
+			req.Header.Set("Authorization", *p.Token)
+		}
 		values := req.URL.Query()
 		if p.Key != nil {
 			values.Add("k", *p.Key)
 		}
 		req.URL.RawQuery = values.Encode()
-		body := NewDoublySecureRequestBody(p)
-		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("secured_service", "doubly_secure", err)
-		}
 		return nil
 	}
 }
@@ -301,6 +299,12 @@ func EncodeAlsoDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) 
 		}
 		if p.Key != nil {
 			req.Header.Set("Authorization", *p.Key)
+		}
+		if p.Token != nil {
+			req.Header.Set("Authorization", *p.Token)
+		}
+		if p.OauthToken != nil {
+			req.Header.Set("Authorization", *p.OauthToken)
 		}
 		body := NewAlsoDoublySecureRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
@@ -398,7 +402,7 @@ func SecureEncodeDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder
 		}
 		payload := v.(*securedservice.DoublySecurePayload)
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
-		req.URL.Query().Set("k", *payload.Key)
+		req.Header.Set("Authorization", *payload.Key)
 		return nil
 	}
 }

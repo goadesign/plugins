@@ -38,15 +38,8 @@ func BuildSigninPayload(securedServiceSigninBody string) (*securedservice.Signin
 
 // BuildSecurePayload builds the payload for the secured_service secure
 // endpoint from CLI flags.
-func BuildSecurePayload(securedServiceSecureBody string, securedServiceSecureFail string) (*securedservice.SecurePayload, error) {
+func BuildSecurePayload(securedServiceSecureFail string, securedServiceSecureToken string) (*securedservice.SecurePayload, error) {
 	var err error
-	var body SecureRequestBody
-	{
-		err = json.Unmarshal([]byte(securedServiceSecureBody), &body)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"token\": \"Minus possimus.\"\n   }'")
-		}
-	}
 	var fail *bool
 	{
 		if securedServiceSecureFail != "" {
@@ -57,52 +50,53 @@ func BuildSecurePayload(securedServiceSecureBody string, securedServiceSecureFai
 			}
 		}
 	}
+	var token *string
+	{
+		if securedServiceSecureToken != "" {
+			token = &securedServiceSecureToken
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
-	v := &securedservice.SecurePayload{
-		Token: body.Token,
+	payload := &securedservice.SecurePayload{
+		Fail:  fail,
+		Token: token,
 	}
-	v.Fail = fail
-	return v, nil
+	return payload, nil
 }
 
 // BuildDoublySecurePayload builds the payload for the secured_service
 // doubly_secure endpoint from CLI flags.
-func BuildDoublySecurePayload(securedServiceDoublySecureBody string, securedServiceDoublySecureKey string) (*securedservice.DoublySecurePayload, error) {
-	var err error
-	var body DoublySecureRequestBody
-	{
-		err = json.Unmarshal([]byte(securedServiceDoublySecureBody), &body)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ\"\n   }'")
-		}
-	}
+func BuildDoublySecurePayload(securedServiceDoublySecureKey string, securedServiceDoublySecureToken string) (*securedservice.DoublySecurePayload, error) {
 	var key *string
 	{
 		if securedServiceDoublySecureKey != "" {
 			key = &securedServiceDoublySecureKey
 		}
 	}
-	if err != nil {
-		return nil, err
+	var token *string
+	{
+		if securedServiceDoublySecureToken != "" {
+			token = &securedServiceDoublySecureToken
+		}
 	}
-	v := &securedservice.DoublySecurePayload{
-		Token: body.Token,
+	payload := &securedservice.DoublySecurePayload{
+		Key:   key,
+		Token: token,
 	}
-	v.Key = key
-	return v, nil
+	return payload, nil
 }
 
 // BuildAlsoDoublySecurePayload builds the payload for the secured_service
 // also_doubly_secure endpoint from CLI flags.
-func BuildAlsoDoublySecurePayload(securedServiceAlsoDoublySecureBody string, securedServiceAlsoDoublySecureKey string) (*securedservice.AlsoDoublySecurePayload, error) {
+func BuildAlsoDoublySecurePayload(securedServiceAlsoDoublySecureBody string, securedServiceAlsoDoublySecureKey string, securedServiceAlsoDoublySecureToken string, securedServiceAlsoDoublySecureOauthToken string) (*securedservice.AlsoDoublySecurePayload, error) {
 	var err error
 	var body AlsoDoublySecureRequestBody
 	{
 		err = json.Unmarshal([]byte(securedServiceAlsoDoublySecureBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"oauth_token\": \"Et neque.\",\n      \"password\": \"password\",\n      \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ\",\n      \"username\": \"user\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"password\": \"password\",\n      \"username\": \"user\"\n   }'")
 		}
 	}
 	var key *string
@@ -111,15 +105,27 @@ func BuildAlsoDoublySecurePayload(securedServiceAlsoDoublySecureBody string, sec
 			key = &securedServiceAlsoDoublySecureKey
 		}
 	}
+	var token *string
+	{
+		if securedServiceAlsoDoublySecureToken != "" {
+			token = &securedServiceAlsoDoublySecureToken
+		}
+	}
+	var oauthToken *string
+	{
+		if securedServiceAlsoDoublySecureOauthToken != "" {
+			oauthToken = &securedServiceAlsoDoublySecureOauthToken
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
 	v := &securedservice.AlsoDoublySecurePayload{
-		Username:   body.Username,
-		Password:   body.Password,
-		Token:      body.Token,
-		OauthToken: body.OauthToken,
+		Username: body.Username,
+		Password: body.Password,
 	}
 	v.Key = key
+	v.Token = token
+	v.OauthToken = oauthToken
 	return v, nil
 }

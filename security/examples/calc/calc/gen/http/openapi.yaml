@@ -80,55 +80,6 @@ paths:
         enum: []
         multipleof: 0
         extensions: {}
-      - name: AddRequestBody
-        in: body
-        description: ""
-        required: true
-        schema:
-          schema: ""
-          id: ""
-          title: ""
-          type: ""
-          items: null
-          properties: {}
-          definitions: {}
-          description: ""
-          defaultvalue: null
-          example: null
-          media: null
-          readonly: false
-          pathstart: ""
-          links: []
-          ref: '#/definitions/AddRequestBody'
-          enum: []
-          format: ""
-          pattern: ""
-          minimum: null
-          maximum: null
-          minlength: null
-          maxlength: null
-          required: []
-          additionalproperties: false
-          anyof: []
-        type: ""
-        format: ""
-        allowemptyvalue: false
-        items: null
-        collectionformat: ""
-        default: null
-        maximum: null
-        exclusivemaximum: false
-        minimum: null
-        exclusiveminimum: false
-        maxlength: null
-        minlength: null
-        pattern: ""
-        maxitems: null
-        minitems: null
-        uniqueitems: false
-        enum: []
-        multipleof: 0
-        extensions: {}
       responses:
         "200":
           description: OK response.
@@ -345,60 +296,6 @@ paths:
     parameters: []
     extensions: {}
 definitions:
-  AddRequestBody:
-    schema: ""
-    id: ""
-    title: AddRequestBody
-    type: object
-    items: null
-    properties:
-      token:
-        schema: ""
-        id: ""
-        title: ""
-        type: string
-        items: null
-        properties: {}
-        definitions: {}
-        description: JWT used for authentication
-        defaultvalue: null
-        example: Quis quis aliquid architecto facere rem alias.
-        media: null
-        readonly: false
-        pathstart: ""
-        links: []
-        ref: ""
-        enum: []
-        format: ""
-        pattern: ""
-        minimum: null
-        maximum: null
-        minlength: null
-        maxlength: null
-        required: []
-        additionalproperties: false
-        anyof: []
-    definitions: {}
-    description: ""
-    defaultvalue: null
-    example:
-      token: Quibusdam non et sint ut.
-    media: null
-    readonly: false
-    pathstart: ""
-    links: []
-    ref: ""
-    enum: []
-    format: ""
-    pattern: ""
-    minimum: null
-    maximum: null
-    minlength: null
-    maxlength: null
-    required:
-    - token
-    additionalproperties: false
-    anyof: []
   LoginRequestBody:
     schema: ""
     id: ""

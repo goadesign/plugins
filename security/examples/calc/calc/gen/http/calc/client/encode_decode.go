@@ -134,10 +134,7 @@ func EncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Re
 		if !ok {
 			return goahttp.ErrInvalidType("calc", "add", "*calcsvc.AddPayload", v)
 		}
-		body := NewAddRequestBody(p)
-		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("calc", "add", err)
-		}
+		req.Header.Set("Authorization", p.Token)
 		return nil
 	}
 }

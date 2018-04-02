@@ -43,7 +43,7 @@ type (
 		ServiceName string
 		// Requirements lists the security requirements that apply to
 		// the secured method.
-		Requirements []*design.SecurityExpr
+		Requirements []*design.EndpointSecurityExpr
 		// SecurityPkgName is the name of the security package.
 		SecurityPkgName string
 		// Schemes is the security schemes for the method.
@@ -98,7 +98,7 @@ func BuildSecureServiceData(svc *goadesign.ServiceExpr, apiPkg string) *ServiceD
 	var svcSchemes []*design.SchemeExpr
 	svcSchemesFound := map[design.SchemeKind]bool{}
 	for _, m := range svc.Methods {
-		reqs := design.Requirements(svc.Name, m.Name)
+		reqs := design.Requirements(m)
 		md := data.Method(m.Name)
 		varn := md.VarName
 		cn := "New" + varn
