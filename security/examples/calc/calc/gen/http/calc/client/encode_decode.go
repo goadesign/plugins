@@ -198,7 +198,7 @@ func SecureEncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*h
 			return err
 		}
 		payload := v.(*calcsvc.AddPayload)
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", payload.Token))
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", payload.Token))
 		return nil
 	}
 }

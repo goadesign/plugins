@@ -194,6 +194,8 @@ func SecureRequestEncoders(r *httpdesign.RootExpr, f *codegen.File) {
 		if len(schemes) == 0 {
 			continue
 		}
+		funcs := codegen.TemplateFuncs()
+		funcs["querySchemes"] = querySchemes
 		f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
 			Name:   "secure-request-encoder",
 			Source: authEncoderT,
@@ -205,7 +207,7 @@ func SecureRequestEncoders(r *httpdesign.RootExpr, f *codegen.File) {
 				ServiceName:          data.ServiceName,
 				MethodName:           data.Method.Name,
 			},
-			FuncMap: codegen.TemplateFuncs(),
+			FuncMap: funcs,
 		})
 	}
 }
@@ -301,6 +303,15 @@ func computeSchemes(e *httpdesign.EndpointExpr) []*seccodegen.SchemeData {
 	return schemes
 }
 
+func querySchemes(schemes []*seccodegen.SchemeData) bool {
+	for _, s := range schemes {
+		if s.Scheme.In == "query" {
+			return true
+		}
+	}
+	return false
+}
+
 // input: SecureDecoderData
 const authDecoderT = `{{ printf "%s returns a decoder for requests sent to the %s %s endpoint that is security scheme aware." .SecureRequestDecoder .ServiceName .MethodName | comment }}
 func {{ .SecureRequestDecoder }}(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
@@ -369,6 +380,9 @@ func {{ .SecureRequestEncoder }}(encoder func(*http.Request) goahttp.Encoder) fu
 			return err
 		}
 		payload := v.({{ .PayloadType }})
+		{{- if querySchemes .Schemes }}
+		values := req.URL.Query()
+		{{- end }}
 {{- range .Schemes }}
 
 	{{- if eq .Scheme.Kind 2 }}{{/* BasicAuth */}}
@@ -376,21 +390,24 @@ func {{ .SecureRequestEncoder }}(encoder func(*http.Request) goahttp.Encoder) fu
 
 	{{- else if eq .Scheme.Kind 3 }}{{/* APIKey */}}
 		{{- if eq .Scheme.In "query" }}
-		req.URL.Query().Set({{ printf "%q" .Scheme.Name }}, {{ if .CredPointer }}*{{ end }}payload.{{ .CredField }})
+		values.Add({{ printf "%q" .Scheme.Name }}, {{ if .CredPointer }}*{{ end }}payload.{{ .CredField }})
 		{{- else }}
-		req.Header.Set({{ printf "%q" .Scheme.Name }}, {{ if .CredPointer }}*{{ end }}payload.{{ .CredField }})
+		req.Header.Add({{ printf "%q" .Scheme.Name }}, {{ if .CredPointer }}*{{ end }}payload.{{ .CredField }})
 		{{- end }}
 
 	{{- else }}{{/* OAuth2 and JWT */}}
 		{{- if eq .Scheme.In "query" }}
-		req.URL.Query().Set({{ printf "%q" .Scheme.Name }}, {{ if .CredPointer }}*{{ end }}payload.{{ .CredField }})
+		values.Add({{ printf "%q" .Scheme.Name }}, {{ if .CredPointer }}*{{ end }}payload.{{ .CredField }})
 		{{- else }}
-		req.Header.Set({{ printf "%q" .Scheme.Name }}, fmt.Sprintf("Bearer %s", {{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}))
+		req.Header.Add({{ printf "%q" .Scheme.Name }}, fmt.Sprintf("Bearer %s", {{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}))
 		{{- end }}
 
 	{{- end }}
 
 {{- end }}
+		{{- if querySchemes .Schemes }}
+		req.URL.RawQuery = values.Encode()
+		{{- end }}
 		return nil
 	}
 }

@@ -24,7 +24,7 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 			return err
 		}
 		payload := v.(*oauth2.LoginPayload)
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
 		return nil
 	}
 }
@@ -39,7 +39,9 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 			return err
 		}
 		payload := v.(*oauth2inparam.LoginPayload)
-		req.URL.Query().Set("t", *payload.Token)
+		values := req.URL.Query()
+		values.Add("t", *payload.Token)
+		req.URL.RawQuery = values.Encode()
 		return nil
 	}
 }
@@ -54,7 +56,7 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 			return err
 		}
 		payload := v.(*jwt.LoginPayload)
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
 		return nil
 	}
 }
@@ -69,7 +71,7 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 			return err
 		}
 		payload := v.(*apikey.LoginPayload)
-		req.Header.Set("Authorization", *payload.Key)
+		req.Header.Add("Authorization", *payload.Key)
 		return nil
 	}
 }
@@ -84,7 +86,9 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 			return err
 		}
 		payload := v.(*apikeyinparam.LoginPayload)
-		req.URL.Query().Set("key", *payload.Key)
+		values := req.URL.Query()
+		values.Add("key", *payload.Key)
+		req.URL.RawQuery = values.Encode()
 		return nil
 	}
 }
@@ -99,8 +103,10 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 			return err
 		}
 		payload := v.(*multipleand.LoginPayload)
+		values := req.URL.Query()
 		req.SetBasicAuth(*payload.User, *payload.Password)
-		req.URL.Query().Set("k", *payload.Key)
+		values.Add("k", *payload.Key)
+		req.URL.RawQuery = values.Encode()
 		return nil
 	}
 }
@@ -115,8 +121,10 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 			return err
 		}
 		payload := v.(*multipleor.LoginPayload)
+		values := req.URL.Query()
 		req.SetBasicAuth(*payload.User, *payload.Password)
-		req.URL.Query().Set("k", *payload.Key)
+		values.Add("k", *payload.Key)
+		req.URL.RawQuery = values.Encode()
 		return nil
 	}
 }

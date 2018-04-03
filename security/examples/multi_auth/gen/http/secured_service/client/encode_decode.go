@@ -387,7 +387,7 @@ func SecureEncodeSecureRequest(encoder func(*http.Request) goahttp.Encoder) func
 			return err
 		}
 		payload := v.(*securedservice.SecurePayload)
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
 		return nil
 	}
 }
@@ -401,8 +401,8 @@ func SecureEncodeDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder
 			return err
 		}
 		payload := v.(*securedservice.DoublySecurePayload)
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
-		req.Header.Set("Authorization", *payload.Key)
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
+		req.Header.Add("Authorization", *payload.Key)
 		return nil
 	}
 }
@@ -417,9 +417,9 @@ func SecureEncodeAlsoDoublySecureRequest(encoder func(*http.Request) goahttp.Enc
 			return err
 		}
 		payload := v.(*securedservice.AlsoDoublySecurePayload)
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
-		req.Header.Set("Authorization", *payload.Key)
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *payload.OauthToken))
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
+		req.Header.Add("Authorization", *payload.Key)
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *payload.OauthToken))
 		req.SetBasicAuth(*payload.Username, *payload.Password)
 		return nil
 	}

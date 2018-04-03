@@ -131,7 +131,9 @@ func SecureEncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*h
 			return err
 		}
 		payload := v.(*addersvc.AddPayload)
-		req.URL.Query().Set("key", payload.Key)
+		values := req.URL.Query()
+		values.Add("key", payload.Key)
+		req.URL.RawQuery = values.Encode()
 		return nil
 	}
 }
