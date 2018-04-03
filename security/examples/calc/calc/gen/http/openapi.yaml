@@ -24,9 +24,6 @@ paths:
 
         Required security scopes:
           * `calc:add`
-
-        Required security scopes:
-          * `calc:add`
       externaldocs: null
       operationid: calc#add
       consumes: []

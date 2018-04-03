@@ -24,9 +24,6 @@ paths:
 
         Required security scopes:
           * `api:read`
-
-        Required security scopes:
-          * `api:read`
       externaldocs: null
       operationid: secured_service#secure
       consumes: []
@@ -131,10 +128,6 @@ paths:
       summary: doubly_secure secured_service
       description: |-
         This action is secured with the jwt scheme and also requires an API key query string.
-
-        Required security scopes:
-          * `api:read`
-          * `api:write`
 
         Required security scopes:
           * `api:read`
@@ -244,10 +237,6 @@ paths:
       summary: also_doubly_secure secured_service
       description: |-
         This action is secured with the jwt scheme and also requires an API key header.
-
-        Required security scopes:
-          * `api:read`
-          * `api:write`
 
         Required security scopes:
           * `api:read`

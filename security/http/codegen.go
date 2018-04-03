@@ -277,7 +277,9 @@ func OpenAPIV2(r *httpdesign.RootExpr, f *codegen.File) {
 					case "PATCH":
 						op = p.Patch
 					}
-					applySecurity(op, reqs)
+					if op.Security == nil {
+						applySecurity(op, reqs)
+					}
 				}
 			}
 		}
