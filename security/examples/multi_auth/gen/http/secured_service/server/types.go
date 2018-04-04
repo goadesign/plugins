@@ -11,24 +11,6 @@ import (
 	securedservice "goa.design/plugins/security/examples/multi_auth/gen/secured_service"
 )
 
-// SigninRequestBody is the type of the "secured_service" service "signin"
-// endpoint HTTP request body.
-type SigninRequestBody struct {
-	// Username used to perform signin
-	Username *string `form:"username,omitempty" json:"username,omitempty" xml:"username,omitempty"`
-	// Username used to perform signin
-	Password *string `form:"password,omitempty" json:"password,omitempty" xml:"password,omitempty"`
-}
-
-// AlsoDoublySecureRequestBody is the type of the "secured_service" service
-// "also_doubly_secure" endpoint HTTP request body.
-type AlsoDoublySecureRequestBody struct {
-	// Username used to perform signin
-	Username *string `form:"username,omitempty" json:"username,omitempty" xml:"username,omitempty"`
-	// Username used to perform signin
-	Password *string `form:"password,omitempty" json:"password,omitempty" xml:"password,omitempty"`
-}
-
 // SigninUnauthorizedResponseBody is the type of the "secured_service" service
 // "signin" endpoint HTTP response body for the "unauthorized" error.
 type SigninUnauthorizedResponseBody string
@@ -78,12 +60,11 @@ func NewAlsoDoublySecureUnauthorizedResponseBody(res securedservice.Unauthorized
 
 // NewSigninSigninPayload builds a secured_service service signin endpoint
 // payload.
-func NewSigninSigninPayload(body *SigninRequestBody) *securedservice.SigninPayload {
-	v := &securedservice.SigninPayload{
-		Username: body.Username,
-		Password: body.Password,
+func NewSigninSigninPayload(username *string, password *string) *securedservice.SigninPayload {
+	return &securedservice.SigninPayload{
+		Username: username,
+		Password: password,
 	}
-	return v
 }
 
 // NewSecureSecurePayload builds a secured_service service secure endpoint
@@ -106,13 +87,12 @@ func NewDoublySecureDoublySecurePayload(key *string, token *string) *securedserv
 
 // NewAlsoDoublySecureAlsoDoublySecurePayload builds a secured_service service
 // also_doubly_secure endpoint payload.
-func NewAlsoDoublySecureAlsoDoublySecurePayload(body *AlsoDoublySecureRequestBody, key *string, token *string, oauthToken *string) *securedservice.AlsoDoublySecurePayload {
-	v := &securedservice.AlsoDoublySecurePayload{
-		Username: body.Username,
-		Password: body.Password,
+func NewAlsoDoublySecureAlsoDoublySecurePayload(key *string, token *string, oauthToken *string, username *string, password *string) *securedservice.AlsoDoublySecurePayload {
+	return &securedservice.AlsoDoublySecurePayload{
+		Key:        key,
+		Token:      token,
+		OauthToken: oauthToken,
+		Username:   username,
+		Password:   password,
 	}
-	v.Key = key
-	v.Token = token
-	v.OauthToken = oauthToken
-	return v
 }

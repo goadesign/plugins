@@ -129,3 +129,35 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 	}
 }
 `
+
+var SameSchemeMethod1EncoderCode = `// SecureEncodeMethod1Request returns an encoder for requests sent to the
+// SameSchemeMultipleEndpoints method1 endpoint that is security scheme aware.
+func SecureEncodeMethod1Request(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeMethod1Request(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*sameschememultipleendpoints.Method1Payload)
+		values := req.URL.Query()
+		values.Add("k", *payload.Key)
+		req.URL.RawQuery = values.Encode()
+		return nil
+	}
+}
+`
+
+var SameSchemeMethod2EncoderCode = `// SecureEncodeMethod2Request returns an encoder for requests sent to the
+// SameSchemeMultipleEndpoints method2 endpoint that is security scheme aware.
+func SecureEncodeMethod2Request(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeMethod2Request(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*sameschememultipleendpoints.Method2Payload)
+		req.Header.Add("Authorization", *payload.Key)
+		return nil
+	}
+}
+`

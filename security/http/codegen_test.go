@@ -23,15 +23,18 @@ func TestSecureDecoder(t *testing.T) {
 		Name string
 		DSL  func()
 		Code string
+		Sec  int
 	}{
-		{"basic-auth", testdata.BasicAuthDSL, testdata.BasicAuthSecureDecoderCode},
-		{"oauth2", testdata.OAuth2DSL, testdata.OAuth2SecureDecoderCode},
-		{"oauth2-in-param", testdata.OAuth2InParamDSL, testdata.OAuth2InParamSecureDecoderCode},
-		{"jwt", testdata.JWTDSL, testdata.JWTSecureDecoderCode},
-		{"api-key", testdata.APIKeyDSL, testdata.APIKeySecureDecoderCode},
-		{"api-key-in-param", testdata.APIKeyInParamDSL, testdata.APIKeyInParamSecureDecoderCode},
-		{"multiple-and", testdata.MultipleAndDSL, testdata.MultipleAndSecureDecoderCode},
-		{"multiple-or", testdata.MultipleOrDSL, testdata.MultipleOrSecureDecoderCode},
+		{"basic-auth", testdata.BasicAuthDSL, testdata.BasicAuthSecureDecoderCode, 0},
+		{"oauth2", testdata.OAuth2DSL, testdata.OAuth2SecureDecoderCode, 0},
+		{"oauth2-in-param", testdata.OAuth2InParamDSL, testdata.OAuth2InParamSecureDecoderCode, 0},
+		{"jwt", testdata.JWTDSL, testdata.JWTSecureDecoderCode, 0},
+		{"api-key", testdata.APIKeyDSL, testdata.APIKeySecureDecoderCode, 0},
+		{"api-key-in-param", testdata.APIKeyInParamDSL, testdata.APIKeyInParamSecureDecoderCode, 0},
+		{"multiple-and", testdata.MultipleAndDSL, testdata.MultipleAndSecureDecoderCode, 0},
+		{"multiple-or", testdata.MultipleOrDSL, testdata.MultipleOrSecureDecoderCode, 0},
+		{"same-scheme-multiple-endpoints-1", testdata.SameSchemeMultipleEndpoints, testdata.SameSchemeMethod1DecoderCode, 0},
+		{"same-scheme-multiple-endpoints-2", testdata.SameSchemeMultipleEndpoints, testdata.SameSchemeMethod2DecoderCode, 1},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
@@ -48,7 +51,7 @@ func TestSecureDecoder(t *testing.T) {
 					if len(sections) < 1 {
 						t.Fatalf("got %d sections, expected at least 1", len(sections))
 					}
-					code := codegen.SectionCode(t, sections[0])
+					code := codegen.SectionCode(t, sections[c.Sec])
 					if code != c.Code {
 						t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c.Code))
 					}
@@ -73,15 +76,18 @@ func TestSecureEncoder(t *testing.T) {
 		Name string
 		DSL  func()
 		Code string
+		Sec  int
 	}{
-		{"basic-auth", testdata.BasicAuthDSL, testdata.BasicAuthSecureEncoderCode},
-		{"oauth2", testdata.OAuth2DSL, testdata.OAuth2SecureEncoderCode},
-		{"oauth2-in-param", testdata.OAuth2InParamDSL, testdata.OAuth2InParamSecureEncoderCode},
-		{"jwt", testdata.JWTDSL, testdata.JWTSecureEncoderCode},
-		{"api-key", testdata.APIKeyDSL, testdata.APIKeySecureEncoderCode},
-		{"api-key-in-param", testdata.APIKeyInParamDSL, testdata.APIKeyInParamSecureEncoderCode},
-		{"multiple-and", testdata.MultipleAndDSL, testdata.MultipleAndSecureEncoderCode},
-		{"multiple-or", testdata.MultipleOrDSL, testdata.MultipleOrSecureEncoderCode},
+		{"basic-auth", testdata.BasicAuthDSL, testdata.BasicAuthSecureEncoderCode, 0},
+		{"oauth2", testdata.OAuth2DSL, testdata.OAuth2SecureEncoderCode, 0},
+		{"oauth2-in-param", testdata.OAuth2InParamDSL, testdata.OAuth2InParamSecureEncoderCode, 0},
+		{"jwt", testdata.JWTDSL, testdata.JWTSecureEncoderCode, 0},
+		{"api-key", testdata.APIKeyDSL, testdata.APIKeySecureEncoderCode, 0},
+		{"api-key-in-param", testdata.APIKeyInParamDSL, testdata.APIKeyInParamSecureEncoderCode, 0},
+		{"multiple-and", testdata.MultipleAndDSL, testdata.MultipleAndSecureEncoderCode, 0},
+		{"multiple-or", testdata.MultipleOrDSL, testdata.MultipleOrSecureEncoderCode, 0},
+		{"same-scheme-multiple-endpoints-1", testdata.SameSchemeMultipleEndpoints, testdata.SameSchemeMethod1EncoderCode, 0},
+		{"same-scheme-multiple-endpoints-2", testdata.SameSchemeMultipleEndpoints, testdata.SameSchemeMethod2EncoderCode, 1},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
@@ -98,7 +104,7 @@ func TestSecureEncoder(t *testing.T) {
 					if len(sections) < 1 {
 						t.Fatalf("got %d sections, expected at least 1", len(sections))
 					}
-					code := codegen.SectionCode(t, sections[0])
+					code := codegen.SectionCode(t, sections[c.Sec])
 					if code != c.Code {
 						t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c.Code))
 					}

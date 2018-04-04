@@ -170,56 +170,7 @@ paths:
       operationid: calc#login
       consumes: []
       produces: []
-      parameters:
-      - name: LoginRequestBody
-        in: body
-        description: ""
-        required: true
-        schema:
-          schema: ""
-          id: ""
-          title: ""
-          type: ""
-          items: null
-          properties: {}
-          definitions: {}
-          description: ""
-          defaultvalue: null
-          example: null
-          media: null
-          readonly: false
-          pathstart: ""
-          links: []
-          ref: '#/definitions/LoginRequestBody'
-          enum: []
-          format: ""
-          pattern: ""
-          minimum: null
-          maximum: null
-          minlength: null
-          maxlength: null
-          required: []
-          additionalproperties: false
-          anyof: []
-        type: ""
-        format: ""
-        allowemptyvalue: false
-        items: null
-        collectionformat: ""
-        default: null
-        maximum: null
-        exclusivemaximum: false
-        minimum: null
-        exclusiveminimum: false
-        maxlength: null
-        minlength: null
-        pattern: ""
-        maxitems: null
-        minitems: null
-        uniqueitems: false
-        enum: []
-        multipleof: 0
-        extensions: {}
+      parameters: []
       responses:
         "200":
           description: OK response.
@@ -296,88 +247,6 @@ paths:
     parameters: []
     extensions: {}
 definitions:
-  LoginRequestBody:
-    schema: ""
-    id: ""
-    title: LoginRequestBody
-    type: object
-    items: null
-    properties:
-      password:
-        schema: ""
-        id: ""
-        title: ""
-        type: string
-        items: null
-        properties: {}
-        definitions: {}
-        description: ""
-        defaultvalue: null
-        example: password
-        media: null
-        readonly: false
-        pathstart: ""
-        links: []
-        ref: ""
-        enum: []
-        format: ""
-        pattern: ""
-        minimum: null
-        maximum: null
-        minlength: null
-        maxlength: null
-        required: []
-        additionalproperties: false
-        anyof: []
-      user:
-        schema: ""
-        id: ""
-        title: ""
-        type: string
-        items: null
-        properties: {}
-        definitions: {}
-        description: ""
-        defaultvalue: null
-        example: username
-        media: null
-        readonly: false
-        pathstart: ""
-        links: []
-        ref: ""
-        enum: []
-        format: ""
-        pattern: ""
-        minimum: null
-        maximum: null
-        minlength: null
-        maxlength: null
-        required: []
-        additionalproperties: false
-        anyof: []
-    definitions: {}
-    description: Credentials used to authenticate to retrieve JWT token
-    defaultvalue: null
-    example:
-      password: password
-      user: username
-    media: null
-    readonly: false
-    pathstart: ""
-    links: []
-    ref: ""
-    enum: []
-    format: ""
-    pattern: ""
-    minimum: null
-    maximum: null
-    minlength: null
-    maxlength: null
-    required:
-    - user
-    - password
-    additionalproperties: false
-    anyof: []
   LoginUnauthorizedResponseBody:
     schema: ""
     id: ""

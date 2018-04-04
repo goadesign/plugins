@@ -11,24 +11,6 @@ import (
 	securedservice "goa.design/plugins/security/examples/multi_auth/gen/secured_service"
 )
 
-// SigninRequestBody is the type of the "secured_service" service "signin"
-// endpoint HTTP request body.
-type SigninRequestBody struct {
-	// Username used to perform signin
-	Username *string `form:"username,omitempty" json:"username,omitempty" xml:"username,omitempty"`
-	// Username used to perform signin
-	Password *string `form:"password,omitempty" json:"password,omitempty" xml:"password,omitempty"`
-}
-
-// AlsoDoublySecureRequestBody is the type of the "secured_service" service
-// "also_doubly_secure" endpoint HTTP request body.
-type AlsoDoublySecureRequestBody struct {
-	// Username used to perform signin
-	Username *string `form:"username,omitempty" json:"username,omitempty" xml:"username,omitempty"`
-	// Username used to perform signin
-	Password *string `form:"password,omitempty" json:"password,omitempty" xml:"password,omitempty"`
-}
-
 // SigninUnauthorizedResponseBody is the type of the "secured_service" service
 // "signin" endpoint HTTP response body for the "unauthorized" error.
 type SigninUnauthorizedResponseBody string
@@ -46,26 +28,6 @@ type DoublySecureUnauthorizedResponseBody string
 // "secured_service" service "also_doubly_secure" endpoint HTTP response body
 // for the "unauthorized" error.
 type AlsoDoublySecureUnauthorizedResponseBody string
-
-// NewSigninRequestBody builds the HTTP request body from the payload of the
-// "signin" endpoint of the "secured_service" service.
-func NewSigninRequestBody(p *securedservice.SigninPayload) *SigninRequestBody {
-	body := &SigninRequestBody{
-		Username: p.Username,
-		Password: p.Password,
-	}
-	return body
-}
-
-// NewAlsoDoublySecureRequestBody builds the HTTP request body from the payload
-// of the "also_doubly_secure" endpoint of the "secured_service" service.
-func NewAlsoDoublySecureRequestBody(p *securedservice.AlsoDoublySecurePayload) *AlsoDoublySecureRequestBody {
-	body := &AlsoDoublySecureRequestBody{
-		Username: p.Username,
-		Password: p.Password,
-	}
-	return body
-}
 
 // NewSigninUnauthorized builds a secured_service service signin endpoint
 // unauthorized error.

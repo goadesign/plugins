@@ -168,12 +168,24 @@ func (s *EndpointSecurityExpr) Validate() error {
 // parameter/header name.
 func (s *EndpointSecurityExpr) Finalize() {
 	if svc := httpdesign.Root.Service(s.Method.Service.Name); svc != nil {
+		// Set the default authorization header and recompute body
+		recompute := func(ep *httpdesign.EndpointExpr, field, suffix string) {
+			addHeaderAttr(ep, field, suffix)
+			if ep.Body.Find(field) != nil {
+				ep.Body = nil
+				ep.Body = httpdesign.RequestBody(ep)
+			}
+		}
 		ep := svc.Endpoint(s.Method.Name)
 		for _, sch := range s.Schemes {
 			sch.Finalize()
 			var field string
 			switch sch.Kind {
 			case BasicAuthKind:
+				userField := securityField(s.Method.Payload, "security:username")
+				passField := securityField(s.Method.Payload, "security:password")
+				recompute(ep, userField, "Authorization")
+				recompute(ep, passField, "Authorization")
 				continue
 			case APIKeyKind:
 				field = securityField(s.Method.Payload, "security:apikey:"+sch.SchemeName)
@@ -185,10 +197,7 @@ func (s *EndpointSecurityExpr) Finalize() {
 			sch.Name, sch.In = findKey(ep, field)
 			if sch.Name == "" {
 				sch.Name = "Authorization"
-				// Remove security field from body since by default it is found in headers
-				ep.Body = removeAttribute(ep.Body, field)
-				// Set the default authorization header
-				addAttribute(field, s.Method.Payload, ep.Headers(), "Authorization")
+				recompute(ep, field, sch.Name)
 			}
 		}
 	}
@@ -364,42 +373,22 @@ func findKey(e *httpdesign.EndpointExpr, keyAtt string) (string, string) {
 	}
 }
 
-func removeAttribute(attr *design.AttributeExpr, name string) *design.AttributeExpr {
-	obj := design.AsObject(attr.Type)
-	if obj == nil {
-		return attr
-	}
-	obj.Delete(name)
-	if len(*obj) == 0 {
-		return &design.AttributeExpr{Type: design.Empty}
-	}
-	if attr.Validation != nil {
-		attr.Validation.RemoveRequired(name)
-	}
-	for _, ex := range attr.UserExamples {
-		if m, ok := ex.Value.(map[string]interface{}); ok {
-			delete(m, name)
-		}
-	}
-	return attr
-}
-
-func addAttribute(name string, src *design.AttributeExpr, tgt *design.AttributeExpr, suffix string) {
-	sObj := design.AsObject(src.Type)
-	tObj := design.AsObject(tgt.Type)
-	if sObj == nil || tObj == nil {
+func addHeaderAttr(ep *httpdesign.EndpointExpr, name, suffix string) {
+	headers := ep.Headers()
+	hObj := design.AsObject(headers.Type)
+	if hObj == nil {
 		return
 	}
 	attName := name
 	if suffix != "" {
 		attName = attName + ":" + suffix
 	}
-	attr := src.Type.(*design.Object).Attribute(name)
-	tObj.Set(attName, attr)
-	if src.IsRequired(name) {
-		if tgt.Validation == nil {
-			tgt.Validation = &design.ValidationExpr{}
+	attr := ep.MethodExpr.Payload.Find(name)
+	hObj.Set(attName, attr)
+	if ep.MethodExpr.Payload.IsRequired(name) {
+		if headers.Validation == nil {
+			headers.Validation = &design.ValidationExpr{}
 		}
-		tgt.Validation.AddRequired(name)
+		headers.Validation.AddRequired(name)
 	}
 }

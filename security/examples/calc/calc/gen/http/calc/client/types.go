@@ -11,26 +11,9 @@ import (
 	calcsvc "goa.design/plugins/security/examples/calc/calc/gen/calc"
 )
 
-// LoginRequestBody is the type of the "calc" service "login" endpoint HTTP
-// request body.
-type LoginRequestBody struct {
-	User     string `form:"user" json:"user" xml:"user"`
-	Password string `form:"password" json:"password" xml:"password"`
-}
-
 // LoginUnauthorizedResponseBody is the type of the "calc" service "login"
 // endpoint HTTP response body for the "unauthorized" error.
 type LoginUnauthorizedResponseBody string
-
-// NewLoginRequestBody builds the HTTP request body from the payload of the
-// "login" endpoint of the "calc" service.
-func NewLoginRequestBody(p *calcsvc.LoginPayload) *LoginRequestBody {
-	body := &LoginRequestBody{
-		User:     p.User,
-		Password: p.Password,
-	}
-	return body
-}
 
 // NewLoginUnauthorized builds a calc service login endpoint unauthorized error.
 func NewLoginUnauthorized(body LoginUnauthorizedResponseBody) calcsvc.Unauthorized {

@@ -9,7 +9,6 @@ package server
 
 import (
 	"context"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -36,22 +35,23 @@ func EncodeLoginResponse(encoder func(context.Context, http.ResponseWriter) goah
 func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
 	return func(r *http.Request) (interface{}, error) {
 		var (
-			body LoginRequestBody
-			err  error
+			user     string
+			password string
+			err      error
 		)
-		err = decoder(r).Decode(&body)
-		if err != nil {
-			if err == io.EOF {
-				return nil, goa.MissingPayloadError()
-			}
-			return nil, goa.DecodePayloadError(err.Error())
+		user = r.Header.Get("Authorization")
+		if user == "" {
+			err = goa.MergeErrors(err, goa.MissingFieldError("Authorization", "header"))
 		}
-		err = body.Validate()
+		password = r.Header.Get("Authorization")
+		if password == "" {
+			err = goa.MergeErrors(err, goa.MissingFieldError("Authorization", "header"))
+		}
 		if err != nil {
 			return nil, err
 		}
 
-		return NewLoginLoginPayload(&body), nil
+		return NewLoginLoginPayload(user, password), nil
 	}
 }
 

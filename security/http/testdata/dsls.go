@@ -153,6 +153,31 @@ var MultipleOrDSL = func() {
 	})
 }
 
+var SameSchemeMultipleEndpoints = func() {
+	Service("SameSchemeMultipleEndpoints", func() {
+		Method("method1", func() {
+			Security(APIKeyAuth)
+			Payload(func() {
+				APIKey("api_key", "key", String)
+			})
+			HTTP(func() {
+				POST("/method1")
+				Param("key:k")
+			})
+		})
+		Method("method2", func() {
+			Security(APIKeyAuth)
+			Payload(func() {
+				APIKey("api_key", "key", String)
+			})
+			HTTP(func() {
+				POST("/method1")
+				Header("key:Authorization")
+			})
+		})
+	})
+}
+
 var SingleServiceDSL = func() {
 	Service("SingleService", func() {
 		Method("Method", func() {

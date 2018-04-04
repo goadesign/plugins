@@ -71,7 +71,7 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 		switch r := root.(type) {
 		case *goadesign.RootExpr:
 			for _, s := range r.Services {
-				sd := seccodegen.BuildSecureServiceData(s, "")
+				sd := seccodegen.Data.Get(s.Name)
 				data = append(data, &AuthFuncsData{
 					Schemes:        sd.Schemes,
 					SecurityPkg:    "security",
@@ -109,8 +109,12 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 // OpenAPIV2 updates the openapi.json file with the security definitions.
 func OpenAPIV2(r *design.RootExpr, f *codegen.File) {
 	for _, s := range f.Section("openapi") {
+		schemes := []*design.SchemeExpr{}
+		for _, sexp := range r.EndpointSecurity {
+			schemes = append(schemes, sexp.Schemes...)
+		}
 		spec := s.Data.(*openapi.V2)
-		spec.SecurityDefinitions = buildV2SecurityDefinitions(r.Schemes)
+		spec.SecurityDefinitions = buildV2SecurityDefinitions(schemes)
 		s.Data = spec
 	}
 }
@@ -118,7 +122,7 @@ func OpenAPIV2(r *design.RootExpr, f *codegen.File) {
 // SecureEndpointFile returns the file containing the secure endpoint
 // definitions.
 func SecureEndpointFile(genpkg string, svc *goadesign.ServiceExpr) *codegen.File {
-	data := seccodegen.BuildSecureServiceData(svc, "")
+	data := seccodegen.Data.Get(svc.Name)
 	path := filepath.Join(codegen.Gendir, codegen.SnakeCase(svc.Name), "security.go")
 	header := codegen.Header(
 		svc.Name+" service security",

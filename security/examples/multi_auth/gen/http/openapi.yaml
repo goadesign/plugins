@@ -256,56 +256,7 @@ paths:
       operationid: secured_service#also_doubly_secure
       consumes: []
       produces: []
-      parameters:
-      - name: AlsoDoublySecureRequestBody
-        in: body
-        description: ""
-        required: true
-        schema:
-          schema: ""
-          id: ""
-          title: ""
-          type: ""
-          items: null
-          properties: {}
-          definitions: {}
-          description: ""
-          defaultvalue: null
-          example: null
-          media: null
-          readonly: false
-          pathstart: ""
-          links: []
-          ref: '#/definitions/AlsoDoublySecureRequestBody'
-          enum: []
-          format: ""
-          pattern: ""
-          minimum: null
-          maximum: null
-          minlength: null
-          maxlength: null
-          required: []
-          additionalproperties: false
-          anyof: []
-        type: ""
-        format: ""
-        allowemptyvalue: false
-        items: null
-        collectionformat: ""
-        default: null
-        maximum: null
-        exclusivemaximum: false
-        minimum: null
-        exclusiveminimum: false
-        maxlength: null
-        minlength: null
-        pattern: ""
-        maxitems: null
-        minitems: null
-        uniqueitems: false
-        enum: []
-        multipleof: 0
-        extensions: {}
+      parameters: []
       responses:
         "200":
           description: OK response.
@@ -399,56 +350,7 @@ paths:
       operationid: secured_service#signin
       consumes: []
       produces: []
-      parameters:
-      - name: SigninRequestBody
-        in: body
-        description: ""
-        required: true
-        schema:
-          schema: ""
-          id: ""
-          title: ""
-          type: ""
-          items: null
-          properties: {}
-          definitions: {}
-          description: ""
-          defaultvalue: null
-          example: null
-          media: null
-          readonly: false
-          pathstart: ""
-          links: []
-          ref: '#/definitions/SigninRequestBody'
-          enum: []
-          format: ""
-          pattern: ""
-          minimum: null
-          maximum: null
-          minlength: null
-          maxlength: null
-          required: []
-          additionalproperties: false
-          anyof: []
-        type: ""
-        format: ""
-        allowemptyvalue: false
-        items: null
-        collectionformat: ""
-        default: null
-        maximum: null
-        exclusivemaximum: false
-        minimum: null
-        exclusiveminimum: false
-        maxlength: null
-        minlength: null
-        pattern: ""
-        maxitems: null
-        minitems: null
-        uniqueitems: false
-        enum: []
-        multipleof: 0
-        extensions: {}
+      parameters: []
       responses:
         "204":
           description: No Content response.
@@ -519,86 +421,6 @@ paths:
     parameters: []
     extensions: {}
 definitions:
-  AlsoDoublySecureRequestBody:
-    schema: ""
-    id: ""
-    title: AlsoDoublySecureRequestBody
-    type: object
-    items: null
-    properties:
-      password:
-        schema: ""
-        id: ""
-        title: ""
-        type: string
-        items: null
-        properties: {}
-        definitions: {}
-        description: Username used to perform signin
-        defaultvalue: null
-        example: password
-        media: null
-        readonly: false
-        pathstart: ""
-        links: []
-        ref: ""
-        enum: []
-        format: ""
-        pattern: ""
-        minimum: null
-        maximum: null
-        minlength: null
-        maxlength: null
-        required: []
-        additionalproperties: false
-        anyof: []
-      username:
-        schema: ""
-        id: ""
-        title: ""
-        type: string
-        items: null
-        properties: {}
-        definitions: {}
-        description: Username used to perform signin
-        defaultvalue: null
-        example: user
-        media: null
-        readonly: false
-        pathstart: ""
-        links: []
-        ref: ""
-        enum: []
-        format: ""
-        pattern: ""
-        minimum: null
-        maximum: null
-        minlength: null
-        maxlength: null
-        required: []
-        additionalproperties: false
-        anyof: []
-    definitions: {}
-    description: ""
-    defaultvalue: null
-    example:
-      password: password
-      username: user
-    media: null
-    readonly: false
-    pathstart: ""
-    links: []
-    ref: ""
-    enum: []
-    format: ""
-    pattern: ""
-    minimum: null
-    maximum: null
-    minlength: null
-    maxlength: null
-    required: []
-    additionalproperties: false
-    anyof: []
   AlsoDoublySecureUnauthorizedResponseBody:
     schema: ""
     id: ""
@@ -662,86 +484,6 @@ definitions:
     description: Credentials are invalid
     defaultvalue: null
     example: Porro sit autem nostrum.
-    media: null
-    readonly: false
-    pathstart: ""
-    links: []
-    ref: ""
-    enum: []
-    format: ""
-    pattern: ""
-    minimum: null
-    maximum: null
-    minlength: null
-    maxlength: null
-    required: []
-    additionalproperties: false
-    anyof: []
-  SigninRequestBody:
-    schema: ""
-    id: ""
-    title: SigninRequestBody
-    type: object
-    items: null
-    properties:
-      password:
-        schema: ""
-        id: ""
-        title: ""
-        type: string
-        items: null
-        properties: {}
-        definitions: {}
-        description: Username used to perform signin
-        defaultvalue: null
-        example: password
-        media: null
-        readonly: false
-        pathstart: ""
-        links: []
-        ref: ""
-        enum: []
-        format: ""
-        pattern: ""
-        minimum: null
-        maximum: null
-        minlength: null
-        maxlength: null
-        required: []
-        additionalproperties: false
-        anyof: []
-      username:
-        schema: ""
-        id: ""
-        title: ""
-        type: string
-        items: null
-        properties: {}
-        definitions: {}
-        description: Username used to perform signin
-        defaultvalue: null
-        example: user
-        media: null
-        readonly: false
-        pathstart: ""
-        links: []
-        ref: ""
-        enum: []
-        format: ""
-        pattern: ""
-        minimum: null
-        maximum: null
-        minlength: null
-        maxlength: null
-        required: []
-        additionalproperties: false
-        anyof: []
-    definitions: {}
-    description: Credentials used to authenticate to retrieve JWT token
-    defaultvalue: null
-    example:
-      password: password
-      username: user
     media: null
     readonly: false
     pathstart: ""

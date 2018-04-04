@@ -2,6 +2,7 @@ package multiauth
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"goa.design/plugins/security"
@@ -49,44 +50,44 @@ func (s *securedServiceSvc) AlsoDoublySecure(ctx context.Context, p *securedserv
 	return res, nil
 }
 
-// SecuredServiceAuthBasicAuthFn implements the authorization logic for
+// secured_serviceAuthBasicAuthFn implements the authorization logic for
 // BasicAuth scheme.
 func SecuredServiceAuthBasicAuthFn(ctx context.Context, user, pass string, s *security.BasicAuthScheme) (context.Context, error) {
 	// Add authorization logic
 	if user == "" {
-		return ctx, securedservice.Unauthorized("invalid username")
+		return ctx, fmt.Errorf("error")
 	}
 	if pass == "" {
-		return ctx, securedservice.Unauthorized("invalid password")
+		return ctx, fmt.Errorf("error")
 	}
 	return ctx, nil
 }
 
-// SecuredServiceAuthJWTFn implements the authorization logic for JWT scheme.
+// secured_serviceAuthJWTFn implements the authorization logic for JWT scheme.
 func SecuredServiceAuthJWTFn(ctx context.Context, token string, s *security.JWTScheme) (context.Context, error) {
 	// Add authorization logic
 	if token == "" {
-		return ctx, securedservice.Unauthorized("invalid token")
+		return ctx, fmt.Errorf("error")
 	}
 	return ctx, nil
 }
 
-// SecuredServiceAuthAPIKeyFn implements the authorization logic for APIKey
+// secured_serviceAuthAPIKeyFn implements the authorization logic for APIKey
 // scheme.
 func SecuredServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
 	if key == "" {
-		return ctx, securedservice.Unauthorized("invalid key")
+		return ctx, fmt.Errorf("error")
 	}
 	return ctx, nil
 }
 
-// SecuredServiceAuthOAuth2Fn implements the authorization logic for OAuth2
+// secured_serviceAuthOAuth2Fn implements the authorization logic for OAuth2
 // scheme.
 func SecuredServiceAuthOAuth2Fn(ctx context.Context, token string, s *security.OAuth2Scheme) (context.Context, error) {
 	// Add authorization logic
 	if token == "" {
-		return ctx, securedservice.Unauthorized("invalid token")
+		return ctx, fmt.Errorf("error")
 	}
 	return ctx, nil
 }

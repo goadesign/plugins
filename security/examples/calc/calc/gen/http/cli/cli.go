@@ -29,10 +29,7 @@ func UsageCommands() string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + ` calc login --body '{
-      "password": "password",
-      "user": "username"
-   }'` + "\n" +
+	return os.Args[0] + ` calc login --user "username" --password "password"` + "\n" +
 		""
 }
 
@@ -48,8 +45,9 @@ func ParseEndpoint(
 	var (
 		calcFlags = flag.NewFlagSet("calc", flag.ContinueOnError)
 
-		calcLoginFlags    = flag.NewFlagSet("login", flag.ExitOnError)
-		calcLoginBodyFlag = calcLoginFlags.String("body", "REQUIRED", "")
+		calcLoginFlags        = flag.NewFlagSet("login", flag.ExitOnError)
+		calcLoginUserFlag     = calcLoginFlags.String("user", "REQUIRED", "")
+		calcLoginPasswordFlag = calcLoginFlags.String("password", "REQUIRED", "")
 
 		calcAddFlags     = flag.NewFlagSet("add", flag.ExitOnError)
 		calcAddAFlag     = calcAddFlags.String("a", "REQUIRED", "Left operand")
@@ -127,7 +125,7 @@ func ParseEndpoint(
 			switch epn {
 			case "login":
 				endpoint = c.Login()
-				data, err = calcsvcc.BuildLoginPayload(*calcLoginBodyFlag)
+				data, err = calcsvcc.BuildLoginPayload(*calcLoginUserFlag, *calcLoginPasswordFlag)
 			case "add":
 				endpoint = c.Add()
 				data, err = calcsvcc.BuildAddPayload(*calcAddAFlag, *calcAddBFlag, *calcAddTokenFlag)
@@ -156,16 +154,14 @@ Additional help:
 `, os.Args[0], os.Args[0])
 }
 func calcLoginUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] calc login -body JSON
+	fmt.Fprintf(os.Stderr, `%s [flags] calc login -user STRING -password STRING
 
 Creates a valid JWT
-    -body JSON: 
+    -user STRING: 
+    -password STRING: 
 
 Example:
-    `+os.Args[0]+` calc login --body '{
-      "password": "password",
-      "user": "username"
-   }'
+    `+os.Args[0]+` calc login --user "username" --password "password"
 `, os.Args[0])
 }
 

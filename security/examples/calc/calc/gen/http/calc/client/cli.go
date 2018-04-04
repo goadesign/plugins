@@ -8,7 +8,6 @@
 package client
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -17,23 +16,20 @@ import (
 
 // BuildLoginPayload builds the payload for the calc login endpoint from CLI
 // flags.
-func BuildLoginPayload(calcLoginBody string) (*calcsvc.LoginPayload, error) {
-	var err error
-	var body LoginRequestBody
+func BuildLoginPayload(calcLoginUser string, calcLoginPassword string) (*calcsvc.LoginPayload, error) {
+	var user string
 	{
-		err = json.Unmarshal([]byte(calcLoginBody), &body)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"password\": \"password\",\n      \"user\": \"username\"\n   }'")
-		}
+		user = calcLoginUser
 	}
-	if err != nil {
-		return nil, err
+	var password string
+	{
+		password = calcLoginPassword
 	}
-	v := &calcsvc.LoginPayload{
-		User:     body.User,
-		Password: body.Password,
+	payload := &calcsvc.LoginPayload{
+		User:     user,
+		Password: password,
 	}
-	return v, nil
+	return payload, nil
 }
 
 // BuildAddPayload builds the payload for the calc add endpoint from CLI flags.

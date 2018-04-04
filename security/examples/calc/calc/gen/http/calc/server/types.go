@@ -8,16 +8,8 @@
 package server
 
 import (
-	goa "goa.design/goa"
 	calcsvc "goa.design/plugins/security/examples/calc/calc/gen/calc"
 )
-
-// LoginRequestBody is the type of the "calc" service "login" endpoint HTTP
-// request body.
-type LoginRequestBody struct {
-	User     *string `form:"user,omitempty" json:"user,omitempty" xml:"user,omitempty"`
-	Password *string `form:"password,omitempty" json:"password,omitempty" xml:"password,omitempty"`
-}
 
 // LoginUnauthorizedResponseBody is the type of the "calc" service "login"
 // endpoint HTTP response body for the "unauthorized" error.
@@ -31,12 +23,11 @@ func NewLoginUnauthorizedResponseBody(res calcsvc.Unauthorized) LoginUnauthorize
 }
 
 // NewLoginLoginPayload builds a calc service login endpoint payload.
-func NewLoginLoginPayload(body *LoginRequestBody) *calcsvc.LoginPayload {
-	v := &calcsvc.LoginPayload{
-		User:     *body.User,
-		Password: *body.Password,
+func NewLoginLoginPayload(user string, password string) *calcsvc.LoginPayload {
+	return &calcsvc.LoginPayload{
+		User:     user,
+		Password: password,
 	}
-	return v
 }
 
 // NewAddAddPayload builds a calc service add endpoint payload.
@@ -46,15 +37,4 @@ func NewAddAddPayload(a int, b int, token string) *calcsvc.AddPayload {
 		B:     b,
 		Token: token,
 	}
-}
-
-// Validate runs the validations defined on LoginRequestBody
-func (body *LoginRequestBody) Validate() (err error) {
-	if body.User == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("user", "body"))
-	}
-	if body.Password == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("password", "body"))
-	}
-	return
 }

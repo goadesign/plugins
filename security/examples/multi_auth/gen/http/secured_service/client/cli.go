@@ -8,7 +8,6 @@
 package client
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -17,23 +16,24 @@ import (
 
 // BuildSigninPayload builds the payload for the secured_service signin
 // endpoint from CLI flags.
-func BuildSigninPayload(securedServiceSigninBody string) (*securedservice.SigninPayload, error) {
-	var err error
-	var body SigninRequestBody
+func BuildSigninPayload(securedServiceSigninUsername string, securedServiceSigninPassword string) (*securedservice.SigninPayload, error) {
+	var username *string
 	{
-		err = json.Unmarshal([]byte(securedServiceSigninBody), &body)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"password\": \"password\",\n      \"username\": \"user\"\n   }'")
+		if securedServiceSigninUsername != "" {
+			username = &securedServiceSigninUsername
 		}
 	}
-	if err != nil {
-		return nil, err
+	var password *string
+	{
+		if securedServiceSigninPassword != "" {
+			password = &securedServiceSigninPassword
+		}
 	}
-	v := &securedservice.SigninPayload{
-		Username: body.Username,
-		Password: body.Password,
+	payload := &securedservice.SigninPayload{
+		Username: username,
+		Password: password,
 	}
-	return v, nil
+	return payload, nil
 }
 
 // BuildSecurePayload builds the payload for the secured_service secure
@@ -90,15 +90,7 @@ func BuildDoublySecurePayload(securedServiceDoublySecureKey string, securedServi
 
 // BuildAlsoDoublySecurePayload builds the payload for the secured_service
 // also_doubly_secure endpoint from CLI flags.
-func BuildAlsoDoublySecurePayload(securedServiceAlsoDoublySecureBody string, securedServiceAlsoDoublySecureKey string, securedServiceAlsoDoublySecureToken string, securedServiceAlsoDoublySecureOauthToken string) (*securedservice.AlsoDoublySecurePayload, error) {
-	var err error
-	var body AlsoDoublySecureRequestBody
-	{
-		err = json.Unmarshal([]byte(securedServiceAlsoDoublySecureBody), &body)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"password\": \"password\",\n      \"username\": \"user\"\n   }'")
-		}
-	}
+func BuildAlsoDoublySecurePayload(securedServiceAlsoDoublySecureKey string, securedServiceAlsoDoublySecureToken string, securedServiceAlsoDoublySecureOauthToken string, securedServiceAlsoDoublySecureUsername string, securedServiceAlsoDoublySecurePassword string) (*securedservice.AlsoDoublySecurePayload, error) {
 	var key *string
 	{
 		if securedServiceAlsoDoublySecureKey != "" {
@@ -117,15 +109,24 @@ func BuildAlsoDoublySecurePayload(securedServiceAlsoDoublySecureBody string, sec
 			oauthToken = &securedServiceAlsoDoublySecureOauthToken
 		}
 	}
-	if err != nil {
-		return nil, err
+	var username *string
+	{
+		if securedServiceAlsoDoublySecureUsername != "" {
+			username = &securedServiceAlsoDoublySecureUsername
+		}
 	}
-	v := &securedservice.AlsoDoublySecurePayload{
-		Username: body.Username,
-		Password: body.Password,
+	var password *string
+	{
+		if securedServiceAlsoDoublySecurePassword != "" {
+			password = &securedServiceAlsoDoublySecurePassword
+		}
 	}
-	v.Key = key
-	v.Token = token
-	v.OauthToken = oauthToken
-	return v, nil
+	payload := &securedservice.AlsoDoublySecurePayload{
+		Key:        key,
+		Token:      token,
+		OauthToken: oauthToken,
+		Username:   username,
+		Password:   password,
+	}
+	return payload, nil
 }

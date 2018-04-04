@@ -43,9 +43,11 @@ func EncodeSigninRequest(encoder func(*http.Request) goahttp.Encoder) func(*http
 		if !ok {
 			return goahttp.ErrInvalidType("secured_service", "signin", "*securedservice.SigninPayload", v)
 		}
-		body := NewSigninRequestBody(p)
-		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("secured_service", "signin", err)
+		if p.Username != nil {
+			req.Header.Set("Authorization", *p.Username)
+		}
+		if p.Password != nil {
+			req.Header.Set("Authorization", *p.Password)
 		}
 		return nil
 	}
@@ -306,9 +308,11 @@ func EncodeAlsoDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) 
 		if p.OauthToken != nil {
 			req.Header.Set("Authorization", *p.OauthToken)
 		}
-		body := NewAlsoDoublySecureRequestBody(p)
-		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("secured_service", "also_doubly_secure", err)
+		if p.Username != nil {
+			req.Header.Set("Authorization", *p.Username)
+		}
+		if p.Password != nil {
+			req.Header.Set("Authorization", *p.Password)
 		}
 		return nil
 	}
@@ -401,8 +405,10 @@ func SecureEncodeDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder
 			return err
 		}
 		payload := v.(*securedservice.DoublySecurePayload)
+		values := req.URL.Query()
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
-		req.Header.Add("Authorization", *payload.Key)
+		values.Add("k", *payload.Key)
+		req.URL.RawQuery = values.Encode()
 		return nil
 	}
 }

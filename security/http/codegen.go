@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"goa.design/goa/codegen"
@@ -75,8 +76,8 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 		switch r := root.(type) {
 		case *httpdesign.RootExpr:
 			for _, f := range files {
-				SecureRequestDecoders(r, f)
-				SecureRequestEncoders(r, f)
+				SecureRequestDecoders(f)
+				SecureRequestEncoders(f)
 				OpenAPIV2(r, f)
 			}
 		}
@@ -88,16 +89,14 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 // context gets initialized with the security requirements.
 func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	var (
-		apiPkg  string
 		data    = make(map[string]*seccodegen.ServiceData)
 		svcData []*ServiceData
 	)
 	for _, root := range roots {
 		switch r := root.(type) {
 		case *goadesign.RootExpr:
-			apiPkg = strings.ToLower(codegen.Goify(r.API.Name, false))
 			for _, s := range r.Services {
-				data[s.Name] = seccodegen.BuildSecureServiceData(s, apiPkg)
+				data[s.Name] = seccodegen.Data.Get(s.Name)
 			}
 		case *httpdesign.RootExpr:
 			for _, s := range r.HTTPServices {
@@ -133,82 +132,52 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 }
 
 // SecureRequestDecoders initializes the security attributes for HTTP request decoders.
-func SecureRequestDecoders(r *httpdesign.RootExpr, f *codegen.File) {
-	needsImport := false
-	for _, s := range f.Section("server-handler-init") {
-		needsImport = true
+func SecureRequestDecoders(f *codegen.File) {
+	secureDecoder(f)
+	for _, s := range f.Section("response-encoder") {
 		data := s.Data.(*httpcodegen.EndpointData)
-		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
-		if len(design.Requirements(e.MethodExpr)) > 0 {
-			s.Source = strings.Replace(s.Source, "{{ .RequestDecoder }}", "Secure{{ .RequestDecoder }}", -1)
+		md := seccodegen.Data.Get(data.ServiceName).MethodData(data.Method.Name)
+		if len(md.Requirements) > 0 {
+			f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
+				Name:   "secure-request-decoder",
+				Source: authDecoderT,
+				Data: &SecureDecoderData{
+					SecureRequestDecoder: "Secure" + data.RequestDecoder,
+					RequestDecoder:       data.RequestDecoder,
+					PayloadType:          data.Payload.Ref,
+					Schemes:              md.Schemes,
+					ServiceName:          data.ServiceName,
+					MethodName:           data.Method.Name,
+				},
+				FuncMap: codegen.TemplateFuncs(),
+			})
 		}
-	}
-	if needsImport {
-		codegen.AddImport(f.SectionTemplates[0],
-			&codegen.ImportSpec{Path: "goa.design/plugins/security"})
-	}
-	var schemes []*seccodegen.SchemeData
-	for _, s := range f.Section("request-decoder") {
-		data := s.Data.(*httpcodegen.EndpointData)
-		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
-		schemes = computeSchemes(e)
-		if len(schemes) == 0 {
-			continue
-		}
-		f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
-			Name:   "secure-request-decoder",
-			Source: authDecoderT,
-			Data: &SecureDecoderData{
-				SecureRequestDecoder: "Secure" + data.RequestDecoder,
-				RequestDecoder:       data.RequestDecoder,
-				PayloadType:          data.Payload.Ref,
-				Schemes:              schemes,
-				ServiceName:          data.ServiceName,
-				MethodName:           data.Method.Name,
-			},
-			FuncMap: codegen.TemplateFuncs(),
-		})
 	}
 }
 
 // SecureRequestEncoders initializes the security attributes for HTTP encoders.
-func SecureRequestEncoders(r *httpdesign.RootExpr, f *codegen.File) {
-	needsImport := false
-	for _, s := range f.Section("client-endpoint-init") {
-		needsImport = true
+func SecureRequestEncoders(f *codegen.File) {
+	secureEncoder(f)
+	for _, s := range f.Section("request-builder") {
 		data := s.Data.(*httpcodegen.EndpointData)
-		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
-		if len(design.Requirements(e.MethodExpr)) > 0 {
-			s.Source = strings.Replace(s.Source, "{{ .RequestEncoder }}", "Secure{{ .RequestEncoder }}", -1)
+		md := seccodegen.Data.Get(data.ServiceName).MethodData(data.Method.Name)
+		if len(md.Requirements) > 0 {
+			funcs := codegen.TemplateFuncs()
+			funcs["querySchemes"] = querySchemes
+			f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
+				Name:   "secure-request-encoder",
+				Source: authEncoderT,
+				Data: &SecureEncoderData{
+					SecureRequestEncoder: "Secure" + data.RequestEncoder,
+					RequestEncoder:       data.RequestEncoder,
+					PayloadType:          data.Payload.Ref,
+					Schemes:              md.Schemes,
+					ServiceName:          data.ServiceName,
+					MethodName:           data.Method.Name,
+				},
+				FuncMap: funcs,
+			})
 		}
-	}
-	if needsImport {
-		codegen.AddImport(f.SectionTemplates[0],
-			&codegen.ImportSpec{Path: "goa.design/plugins/security"})
-	}
-	var schemes []*seccodegen.SchemeData
-	for _, s := range f.Section("request-encoder") {
-		data := s.Data.(*httpcodegen.EndpointData)
-		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
-		schemes = computeSchemes(e)
-		if len(schemes) == 0 {
-			continue
-		}
-		funcs := codegen.TemplateFuncs()
-		funcs["querySchemes"] = querySchemes
-		f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
-			Name:   "secure-request-encoder",
-			Source: authEncoderT,
-			Data: &SecureEncoderData{
-				SecureRequestEncoder: "Secure" + data.RequestEncoder,
-				RequestEncoder:       data.RequestEncoder,
-				PayloadType:          data.Payload.Ref,
-				Schemes:              schemes,
-				ServiceName:          data.ServiceName,
-				MethodName:           data.Method.Name,
-			},
-			FuncMap: funcs,
-		})
 	}
 }
 
@@ -290,17 +259,46 @@ func applySecurity(op *openapi.Operation, reqs []*design.EndpointSecurityExpr) {
 	op.Security = requirements
 }
 
-// computeSchemes collects the security schemes for the given endpoint.
-func computeSchemes(e *httpdesign.EndpointExpr) []*seccodegen.SchemeData {
-	var schemes []*seccodegen.SchemeData
-	for _, req := range design.Requirements(e.MethodExpr) {
-		for _, s := range req.Schemes {
-			if sd := seccodegen.BuildSchemeData(s, e.MethodExpr); sd != nil {
-				schemes = append(schemes, sd)
+var (
+	// decoderRegexp matches occurrences of "{{ .RequestDecoder }}" in section template code.
+	decoderRegexp = regexp.MustCompile(`({{.?\.RequestDecoder.?}})`)
+
+	// encoderRegexp matches occurrences of "{{ .RequestEncoder }}" in section template code.
+	encoderRegexp = regexp.MustCompile(`({{.?\.RequestEncoder.?}})`)
+)
+
+// secureDecoder prefixes all occurrences of "{{ .RequestDecoder }}" with "Secure"
+// (except in server decode files) if the corresponding endpoint is secured.
+func secureDecoder(f *codegen.File) {
+	for _, s := range f.SectionTemplates {
+		if s.Name == "request-decoder" {
+			continue
+		}
+		if decoderRegexp.MatchString(s.Source) {
+			if data, ok := s.Data.(*httpcodegen.EndpointData); ok {
+				svc := seccodegen.Data.Get(data.ServiceName)
+				if len(svc.MethodData(data.Method.Name).Requirements) > 0 {
+					s.Source = decoderRegexp.ReplaceAllString(s.Source, "Secure${1}")
+				}
 			}
 		}
 	}
-	return schemes
+}
+
+// secureEncoder prefixes all occurrences of "{{ .RequestDecoder }}" with "Secure"
+// (except in client encode files) if the corresponding endpoint is secured.
+func secureEncoder(f *codegen.File) {
+	for _, s := range f.SectionTemplates {
+		if s.Name == "request-encoder" {
+			continue
+		}
+		if data, ok := s.Data.(*httpcodegen.EndpointData); ok {
+			svc := seccodegen.Data.Get(data.ServiceName)
+			if len(svc.MethodData(data.Method.Name).Requirements) > 0 {
+				s.Source = encoderRegexp.ReplaceAllString(s.Source, "Secure${1}")
+			}
+		}
+	}
 }
 
 func querySchemes(schemes []*seccodegen.SchemeData) bool {

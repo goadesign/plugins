@@ -174,3 +174,43 @@ func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 	}
 }
 `
+
+var SameSchemeMethod1DecoderCode = `// SecureDecodeMethod1Request returns a decoder for requests sent to the
+// SameSchemeMultipleEndpoints method1 endpoint that is security scheme aware.
+func SecureDecodeMethod1Request(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	rawDecoder := DecodeMethod1Request(mux, decoder)
+	return func(r *http.Request) (interface{}, error) {
+		p, err := rawDecoder(r)
+		if err != nil {
+			return nil, err
+		}
+		payload := p.(*sameschememultipleendpoints.Method1Payload)
+		key := r.URL.Query().Get("k")
+		if key == "" {
+			return p, nil
+		}
+		payload.Key = &key
+		return payload, nil
+	}
+}
+`
+
+var SameSchemeMethod2DecoderCode = `// SecureDecodeMethod2Request returns a decoder for requests sent to the
+// SameSchemeMultipleEndpoints method2 endpoint that is security scheme aware.
+func SecureDecodeMethod2Request(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	rawDecoder := DecodeMethod2Request(mux, decoder)
+	return func(r *http.Request) (interface{}, error) {
+		p, err := rawDecoder(r)
+		if err != nil {
+			return nil, err
+		}
+		payload := p.(*sameschememultipleendpoints.Method2Payload)
+		key := r.Header.Get("Authorization")
+		if key == "" {
+			return p, nil
+		}
+		payload.Key = &key
+		return payload, nil
+	}
+}
+`

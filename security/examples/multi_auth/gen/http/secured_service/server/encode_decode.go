@@ -9,7 +9,6 @@ package server
 
 import (
 	"context"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -35,18 +34,19 @@ func EncodeSigninResponse(encoder func(context.Context, http.ResponseWriter) goa
 func DecodeSigninRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
 	return func(r *http.Request) (interface{}, error) {
 		var (
-			body SigninRequestBody
-			err  error
+			username *string
+			password *string
 		)
-		err = decoder(r).Decode(&body)
-		if err != nil {
-			if err == io.EOF {
-				return nil, goa.MissingPayloadError()
-			}
-			return nil, goa.DecodePayloadError(err.Error())
+		usernameRaw := r.Header.Get("Authorization")
+		if usernameRaw != "" {
+			username = &usernameRaw
+		}
+		passwordRaw := r.Header.Get("Authorization")
+		if passwordRaw != "" {
+			password = &passwordRaw
 		}
 
-		return NewSigninSigninPayload(&body), nil
+		return NewSigninSigninPayload(username, password), nil
 	}
 }
 
@@ -197,21 +197,11 @@ func EncodeAlsoDoublySecureResponse(encoder func(context.Context, http.ResponseW
 func DecodeAlsoDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
 	return func(r *http.Request) (interface{}, error) {
 		var (
-			body AlsoDoublySecureRequestBody
-			err  error
-		)
-		err = decoder(r).Decode(&body)
-		if err != nil {
-			if err == io.EOF {
-				return nil, goa.MissingPayloadError()
-			}
-			return nil, goa.DecodePayloadError(err.Error())
-		}
-
-		var (
 			key        *string
 			token      *string
 			oauthToken *string
+			username   *string
+			password   *string
 		)
 		keyRaw := r.Header.Get("Authorization")
 		if keyRaw != "" {
@@ -225,8 +215,16 @@ func DecodeAlsoDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Request
 		if oauthTokenRaw != "" {
 			oauthToken = &oauthTokenRaw
 		}
+		usernameRaw := r.Header.Get("Authorization")
+		if usernameRaw != "" {
+			username = &usernameRaw
+		}
+		passwordRaw := r.Header.Get("Authorization")
+		if passwordRaw != "" {
+			password = &passwordRaw
+		}
 
-		return NewAlsoDoublySecureAlsoDoublySecurePayload(&body, key, token, oauthToken), nil
+		return NewAlsoDoublySecureAlsoDoublySecurePayload(key, token, oauthToken, username, password), nil
 	}
 }
 
@@ -304,7 +302,7 @@ func SecureDecodeDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Reque
 		}
 		tokenJWT := strings.TrimPrefix(hJWT, "Bearer ")
 		payload.Token = &tokenJWT
-		key := r.Header.Get("Authorization")
+		key := r.URL.Query().Get("k")
 		if key == "" {
 			return p, nil
 		}

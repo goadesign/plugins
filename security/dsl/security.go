@@ -284,7 +284,7 @@ func Security(args ...interface{}) {
 					return
 				}
 			case *design.SchemeExpr:
-				schemes[i] = val
+				schemes[i] = design.DupScheme(val)
 			default:
 				eval.InvalidArgError("security scheme or security scheme name", val)
 				return

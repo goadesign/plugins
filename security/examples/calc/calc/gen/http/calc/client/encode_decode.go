@@ -42,10 +42,8 @@ func EncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.
 		if !ok {
 			return goahttp.ErrInvalidType("calc", "login", "*calcsvc.LoginPayload", v)
 		}
-		body := NewLoginRequestBody(p)
-		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("calc", "login", err)
-		}
+		req.Header.Set("Authorization", p.User)
+		req.Header.Set("Authorization", p.Password)
 		return nil
 	}
 }
