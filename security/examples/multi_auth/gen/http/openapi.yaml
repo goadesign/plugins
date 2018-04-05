@@ -256,7 +256,55 @@ paths:
       operationid: secured_service#also_doubly_secure
       consumes: []
       produces: []
-      parameters: []
+      parameters:
+      - name: k
+        in: query
+        description: API key
+        required: false
+        schema: null
+        type: string
+        format: ""
+        allowemptyvalue: false
+        items: null
+        collectionformat: ""
+        default: null
+        maximum: null
+        exclusivemaximum: false
+        minimum: null
+        exclusiveminimum: false
+        maxlength: null
+        minlength: null
+        pattern: ""
+        maxitems: null
+        minitems: null
+        uniqueitems: false
+        enum: []
+        multipleof: 0
+        extensions: {}
+      - name: oauth
+        in: query
+        description: ""
+        required: false
+        schema: null
+        type: string
+        format: ""
+        allowemptyvalue: false
+        items: null
+        collectionformat: ""
+        default: null
+        maximum: null
+        exclusivemaximum: false
+        minimum: null
+        exclusiveminimum: false
+        maxlength: null
+        minlength: null
+        pattern: ""
+        maxitems: null
+        minitems: null
+        uniqueitems: false
+        enum: []
+        multipleof: 0
+        extensions: {}
       responses:
         "200":
           description: OK response.
@@ -355,26 +403,7 @@ paths:
         "204":
           description: No Content response.
           schema: null
-          headers:
-            Authorization:
-              description: Generated JWT
-              type: string
-              format: ""
-              items: null
-              collectionformat: ""
-              default: null
-              maximum: null
-              exclusivemaximum: false
-              minimum: null
-              exclusiveminimum: false
-              maxlength: null
-              minlength: null
-              pattern: ""
-              maxitems: null
-              minitems: null
-              uniqueitems: false
-              enum: []
-              multipleof: 0
+          headers: {}
           ref: ""
           extensions: {}
         "401":
@@ -431,7 +460,7 @@ definitions:
     definitions: {}
     description: Credentials are invalid
     defaultvalue: null
-    example: Nesciunt quae vero aut iste.
+    example: Maxime ipsam esse et.
     media: null
     readonly: false
     pathstart: ""
@@ -457,7 +486,7 @@ definitions:
     definitions: {}
     description: Credentials are invalid
     defaultvalue: null
-    example: Sint officia provident qui.
+    example: Itaque accusamus enim.
     media: null
     readonly: false
     pathstart: ""
@@ -483,7 +512,7 @@ definitions:
     definitions: {}
     description: Credentials are invalid
     defaultvalue: null
-    example: Porro sit autem nostrum.
+    example: Accusantium voluptatem alias corrupti voluptates a.
     media: null
     readonly: false
     pathstart: ""
@@ -509,7 +538,7 @@ definitions:
     definitions: {}
     description: Credentials are invalid
     defaultvalue: null
-    example: Doloremque odit sapiente provident.
+    example: Tenetur est et.
     media: null
     readonly: false
     pathstart: ""
@@ -531,8 +560,8 @@ securitydefinitions:
   api_key:
     type: apiKey
     description: Secures endpoint by requiring an API key.
-    name: Authorization
-    in: header
+    name: k
+    in: query
     flow: ""
     authorizationurl: ""
     tokenurl: ""

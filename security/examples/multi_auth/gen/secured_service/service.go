@@ -15,7 +15,7 @@ import (
 // credentials.
 type Service interface {
 	// Creates a valid JWT
-	Signin(context.Context, *SigninPayload) (string, error)
+	Signin(context.Context, *SigninPayload) error
 	// This action is secured with the jwt scheme
 	Secure(context.Context, *SecurePayload) (string, error)
 	// This action is secured with the jwt scheme and also requires an API key
@@ -40,7 +40,7 @@ var MethodNames = [4]string{"signin", "secure", "doubly_secure", "also_doubly_se
 type SigninPayload struct {
 	// Username used to perform signin
 	Username *string
-	// Username used to perform signin
+	// Password used to perform signin
 	Password *string
 }
 
@@ -67,7 +67,7 @@ type DoublySecurePayload struct {
 type AlsoDoublySecurePayload struct {
 	// Username used to perform signin
 	Username *string
-	// Username used to perform signin
+	// Password used to perform signin
 	Password *string
 	// API key
 	Key *string

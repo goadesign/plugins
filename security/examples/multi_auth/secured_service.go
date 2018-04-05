@@ -21,16 +21,15 @@ func NewSecuredService(logger *log.Logger) securedservice.Service {
 }
 
 // Creates a valid JWT
-func (s *securedServiceSvc) Signin(ctx context.Context, p *securedservice.SigninPayload) (string, error) {
-	var res string
+func (s *securedServiceSvc) Signin(ctx context.Context, p *securedservice.SigninPayload) error {
 	s.logger.Print("securedService.signin")
-	return res, nil
+	return nil
 }
 
 // This action is secured with the jwt scheme
 func (s *securedServiceSvc) Secure(ctx context.Context, p *securedservice.SecurePayload) (string, error) {
 	var res string
-	s.logger.Print("securedService.secure")
+	s.logger.Print("securedService.secure", *p.Token)
 	return res, nil
 }
 
@@ -55,10 +54,10 @@ func (s *securedServiceSvc) AlsoDoublySecure(ctx context.Context, p *securedserv
 func SecuredServiceAuthBasicAuthFn(ctx context.Context, user, pass string, s *security.BasicAuthScheme) (context.Context, error) {
 	// Add authorization logic
 	if user == "" {
-		return ctx, fmt.Errorf("error")
+		return ctx, fmt.Errorf("invalid username")
 	}
 	if pass == "" {
-		return ctx, fmt.Errorf("error")
+		return ctx, fmt.Errorf("invalid password")
 	}
 	return ctx, nil
 }
@@ -67,7 +66,7 @@ func SecuredServiceAuthBasicAuthFn(ctx context.Context, user, pass string, s *se
 func SecuredServiceAuthJWTFn(ctx context.Context, token string, s *security.JWTScheme) (context.Context, error) {
 	// Add authorization logic
 	if token == "" {
-		return ctx, fmt.Errorf("error")
+		return ctx, fmt.Errorf("invalid token")
 	}
 	return ctx, nil
 }
@@ -77,7 +76,7 @@ func SecuredServiceAuthJWTFn(ctx context.Context, token string, s *security.JWTS
 func SecuredServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
 	if key == "" {
-		return ctx, fmt.Errorf("error")
+		return ctx, fmt.Errorf("invalid key")
 	}
 	return ctx, nil
 }
@@ -87,7 +86,7 @@ func SecuredServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.API
 func SecuredServiceAuthOAuth2Fn(ctx context.Context, token string, s *security.OAuth2Scheme) (context.Context, error) {
 	// Add authorization logic
 	if token == "" {
-		return ctx, fmt.Errorf("error")
+		return ctx, fmt.Errorf("invalid token")
 	}
 	return ctx, nil
 }

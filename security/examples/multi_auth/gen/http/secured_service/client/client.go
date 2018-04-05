@@ -76,6 +76,7 @@ func (c *Client) Signin() goa.Endpoint {
 		if err != nil {
 			return nil, err
 		}
+
 		err = encodeRequest(req, v)
 		if err != nil {
 			return nil, err

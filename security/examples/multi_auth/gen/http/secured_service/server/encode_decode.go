@@ -22,8 +22,6 @@ import (
 // secured_service signin endpoint.
 func EncodeSigninResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(string)
-		w.Header().Set("Authorization", res)
 		w.WriteHeader(http.StatusNoContent)
 		return nil
 	}
@@ -33,20 +31,8 @@ func EncodeSigninResponse(encoder func(context.Context, http.ResponseWriter) goa
 // secured_service signin endpoint.
 func DecodeSigninRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
 	return func(r *http.Request) (interface{}, error) {
-		var (
-			username *string
-			password *string
-		)
-		usernameRaw := r.Header.Get("Authorization")
-		if usernameRaw != "" {
-			username = &usernameRaw
-		}
-		passwordRaw := r.Header.Get("Authorization")
-		if passwordRaw != "" {
-			password = &passwordRaw
-		}
 
-		return NewSigninSigninPayload(username, password), nil
+		return NewSigninSigninPayload(), nil
 	}
 }
 
@@ -198,33 +184,23 @@ func DecodeAlsoDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Request
 	return func(r *http.Request) (interface{}, error) {
 		var (
 			key        *string
-			token      *string
 			oauthToken *string
-			username   *string
-			password   *string
+			token      *string
 		)
-		keyRaw := r.Header.Get("Authorization")
+		keyRaw := r.URL.Query().Get("k")
 		if keyRaw != "" {
 			key = &keyRaw
+		}
+		oauthTokenRaw := r.URL.Query().Get("oauth")
+		if oauthTokenRaw != "" {
+			oauthToken = &oauthTokenRaw
 		}
 		tokenRaw := r.Header.Get("Authorization")
 		if tokenRaw != "" {
 			token = &tokenRaw
 		}
-		oauthTokenRaw := r.Header.Get("Authorization")
-		if oauthTokenRaw != "" {
-			oauthToken = &oauthTokenRaw
-		}
-		usernameRaw := r.Header.Get("Authorization")
-		if usernameRaw != "" {
-			username = &usernameRaw
-		}
-		passwordRaw := r.Header.Get("Authorization")
-		if passwordRaw != "" {
-			password = &passwordRaw
-		}
 
-		return NewAlsoDoublySecureAlsoDoublySecurePayload(key, token, oauthToken, username, password), nil
+		return NewAlsoDoublySecureAlsoDoublySecurePayload(key, oauthToken, token), nil
 	}
 }
 
@@ -276,12 +252,9 @@ func SecureDecodeSecureRequest(mux goahttp.Muxer, decoder func(*http.Request) go
 			return nil, err
 		}
 		payload := p.(*securedservice.SecurePayload)
-		hJWT := r.Header.Get("Authorization")
-		if hJWT == "" {
-			return p, nil
+		if strings.Contains(*payload.Token, " ") {
+			payload.Token = &(strings.SplitN(*payload.Token, " ", 2)[1])
 		}
-		tokenJWT := strings.TrimPrefix(hJWT, "Bearer ")
-		payload.Token = &tokenJWT
 		return payload, nil
 	}
 }
@@ -296,17 +269,12 @@ func SecureDecodeDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Reque
 			return nil, err
 		}
 		payload := p.(*securedservice.DoublySecurePayload)
-		hJWT := r.Header.Get("Authorization")
-		if hJWT == "" {
-			return p, nil
+		if strings.Contains(*payload.Token, " ") {
+			payload.Token = &(strings.SplitN(*payload.Token, " ", 2)[1])
 		}
-		tokenJWT := strings.TrimPrefix(hJWT, "Bearer ")
-		payload.Token = &tokenJWT
-		key := r.URL.Query().Get("k")
-		if key == "" {
-			return p, nil
+		if strings.Contains(*payload.Key, " ") {
+			payload.Key = &(strings.SplitN(*payload.Key, " ", 2)[1])
 		}
-		payload.Key = &key
 		return payload, nil
 	}
 }
@@ -322,23 +290,15 @@ func SecureDecodeAlsoDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.R
 			return nil, err
 		}
 		payload := p.(*securedservice.AlsoDoublySecurePayload)
-		hJWT := r.Header.Get("Authorization")
-		if hJWT == "" {
-			return p, nil
+		if strings.Contains(*payload.Token, " ") {
+			payload.Token = &(strings.SplitN(*payload.Token, " ", 2)[1])
 		}
-		tokenJWT := strings.TrimPrefix(hJWT, "Bearer ")
-		payload.Token = &tokenJWT
-		key := r.Header.Get("Authorization")
-		if key == "" {
-			return p, nil
+		if strings.Contains(*payload.Key, " ") {
+			payload.Key = &(strings.SplitN(*payload.Key, " ", 2)[1])
 		}
-		payload.Key = &key
-		hOAuth2 := r.Header.Get("Authorization")
-		if hOAuth2 == "" {
-			return p, nil
+		if strings.Contains(*payload.OauthToken, " ") {
+			payload.OauthToken = &(strings.SplitN(*payload.OauthToken, " ", 2)[1])
 		}
-		tokenOAuth2 := strings.TrimPrefix(hOAuth2, "Bearer ")
-		payload.OauthToken = &tokenOAuth2
 		user, pass, ok := r.BasicAuth()
 		if !ok {
 			return p, nil

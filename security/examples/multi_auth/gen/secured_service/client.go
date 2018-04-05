@@ -32,13 +32,9 @@ func NewClient(signin, secure, doublySecure, alsoDoublySecure goa.Endpoint) *Cli
 }
 
 // Signin calls the "signin" endpoint of the "secured_service" service.
-func (c *Client) Signin(ctx context.Context, p *SigninPayload) (res string, err error) {
-	var ires interface{}
-	ires, err = c.SigninEndpoint(ctx, p)
-	if err != nil {
-		return
-	}
-	return ires.(string), nil
+func (c *Client) Signin(ctx context.Context, p *SigninPayload) (err error) {
+	_, err = c.SigninEndpoint(ctx, p)
+	return
 }
 
 // Secure calls the "secure" endpoint of the "secured_service" service.

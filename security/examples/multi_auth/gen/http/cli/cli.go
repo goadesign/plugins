@@ -29,7 +29,7 @@ func UsageCommands() string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + ` secured_service signin --username "user" --password "password"` + "\n" +
+	return os.Args[0] + ` secured-service signin` + "\n" +
 		""
 }
 
@@ -46,8 +46,8 @@ func ParseEndpoint(
 		securedServiceFlags = flag.NewFlagSet("secured-service", flag.ContinueOnError)
 
 		securedServiceSigninFlags        = flag.NewFlagSet("signin", flag.ExitOnError)
-		securedServiceSigninUsernameFlag = securedServiceSigninFlags.String("username", "", "")
-		securedServiceSigninPasswordFlag = securedServiceSigninFlags.String("password", "", "")
+		securedServiceSigninUsernameFlag = securedServiceSigninFlags.String("username", "", "Username used to perform signin")
+		securedServiceSigninPasswordFlag = securedServiceSigninFlags.String("password", "", "Password used to perform signin")
 
 		securedServiceSecureFlags     = flag.NewFlagSet("secure", flag.ExitOnError)
 		securedServiceSecureFailFlag  = securedServiceSecureFlags.String("fail", "", "")
@@ -58,11 +58,11 @@ func ParseEndpoint(
 		securedServiceDoublySecureTokenFlag = securedServiceDoublySecureFlags.String("token", "", "")
 
 		securedServiceAlsoDoublySecureFlags          = flag.NewFlagSet("also-doubly-secure", flag.ExitOnError)
+		securedServiceAlsoDoublySecureUsernameFlag   = securedServiceAlsoDoublySecureFlags.String("username", "", "Username used to perform signin")
+		securedServiceAlsoDoublySecurePasswordFlag   = securedServiceAlsoDoublySecureFlags.String("password", "", "Password used to perform signin")
 		securedServiceAlsoDoublySecureKeyFlag        = securedServiceAlsoDoublySecureFlags.String("key", "", "")
-		securedServiceAlsoDoublySecureTokenFlag      = securedServiceAlsoDoublySecureFlags.String("token", "", "")
 		securedServiceAlsoDoublySecureOauthTokenFlag = securedServiceAlsoDoublySecureFlags.String("oauth-token", "", "")
-		securedServiceAlsoDoublySecureUsernameFlag   = securedServiceAlsoDoublySecureFlags.String("username", "", "")
-		securedServiceAlsoDoublySecurePasswordFlag   = securedServiceAlsoDoublySecureFlags.String("password", "", "")
+		securedServiceAlsoDoublySecureTokenFlag      = securedServiceAlsoDoublySecureFlags.String("token", "", "")
 	)
 	securedServiceFlags.Usage = securedServiceUsage
 	securedServiceSigninFlags.Usage = securedServiceSigninUsage
@@ -152,7 +152,7 @@ func ParseEndpoint(
 				data, err = securedservicec.BuildDoublySecurePayload(*securedServiceDoublySecureKeyFlag, *securedServiceDoublySecureTokenFlag)
 			case "also-doubly-secure":
 				endpoint = c.AlsoDoublySecure()
-				data, err = securedservicec.BuildAlsoDoublySecurePayload(*securedServiceAlsoDoublySecureKeyFlag, *securedServiceAlsoDoublySecureTokenFlag, *securedServiceAlsoDoublySecureOauthTokenFlag, *securedServiceAlsoDoublySecureUsernameFlag, *securedServiceAlsoDoublySecurePasswordFlag)
+				data, err = securedservicec.BuildAlsoDoublySecurePayload(*securedServiceAlsoDoublySecureUsernameFlag, *securedServiceAlsoDoublySecurePasswordFlag, *securedServiceAlsoDoublySecureKeyFlag, *securedServiceAlsoDoublySecureOauthTokenFlag, *securedServiceAlsoDoublySecureTokenFlag)
 			}
 		}
 	}
@@ -184,11 +184,11 @@ func securedServiceSigninUsage() {
 	fmt.Fprintf(os.Stderr, `%s [flags] secured-service signin -username STRING -password STRING
 
 Creates a valid JWT
-    -username STRING: 
-    -password STRING: 
+    -username STRING: Username used to perform signin
+    -password STRING: Password used to perform signin
 
 Example:
-    `+os.Args[0]+` secured_service signin --username "user" --password "password"
+    `+os.Args[0]+` secured-service signin --username "user" --password "password"
 `, os.Args[0])
 }
 
@@ -200,7 +200,7 @@ This action is secured with the jwt scheme
     -token STRING: 
 
 Example:
-    `+os.Args[0]+` secured_service secure --fail true --token "Possimus ab asperiores quae deleniti molestiae et."
+    `+os.Args[0]+` secured-service secure --fail true --token "Tempore aut animi officiis."
 `, os.Args[0])
 }
 
@@ -212,21 +212,21 @@ This action is secured with the jwt scheme and also requires an API key query st
     -token STRING: 
 
 Example:
-    `+os.Args[0]+` secured_service doubly-secure --key "abcdef12345" --token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+    `+os.Args[0]+` secured-service doubly-secure --key "abcdef12345" --token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
 `, os.Args[0])
 }
 
 func securedServiceAlsoDoublySecureUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] secured-service also-doubly-secure -key STRING -token STRING -oauth-token STRING -username STRING -password STRING
+	fmt.Fprintf(os.Stderr, `%s [flags] secured-service also-doubly-secure -username STRING -password STRING -key STRING -oauth-token STRING -token STRING
 
 This action is secured with the jwt scheme and also requires an API key header.
+    -username STRING: Username used to perform signin
+    -password STRING: Password used to perform signin
     -key STRING: 
-    -token STRING: 
     -oauth-token STRING: 
-    -username STRING: 
-    -password STRING: 
+    -token STRING: 
 
 Example:
-    `+os.Args[0]+` secured_service also-doubly-secure --key "abcdef12345" --token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ" --oauth-token "A non itaque." --username "user" --password "password"
+    `+os.Args[0]+` secured-service also-doubly-secure --username "user" --password "password" --key "abcdef12345" --oauth-token "Praesentium minus possimus ab asperiores." --token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
 `, os.Args[0])
 }

@@ -60,22 +60,15 @@ var _ = Service("secured_service", func() {
 			Username("username", String, "Username used to perform signin", func() {
 				Example("user")
 			})
-			Password("password", String, "Username used to perform signin", func() {
+			Password("password", String, "Password used to perform signin", func() {
 				Example("password")
 			})
-		})
-		Result(String, func() {
-			Description("New JWT")
 		})
 
 		HTTP(func() {
 			POST("/signin")
 			// Use Authorization header to provide basic auth value.
-			Response(StatusNoContent, func() {
-				Headers(func() {
-					Header("Authorization", String, "Generated JWT")
-				})
-			})
+			Response(StatusNoContent)
 		})
 	})
 
@@ -97,9 +90,7 @@ var _ = Service("secured_service", func() {
 		})
 		HTTP(func() {
 			GET("/secure")
-
 			Param("fail")
-
 			Response(StatusOK)
 		})
 	})
@@ -125,9 +116,7 @@ var _ = Service("secured_service", func() {
 		})
 		HTTP(func() {
 			PUT("/secure")
-
 			Param("key:k")
-
 			Response(StatusOK)
 		})
 	})
@@ -146,7 +135,7 @@ var _ = Service("secured_service", func() {
 			Username("username", String, "Username used to perform signin", func() {
 				Example("user")
 			})
-			Password("password", String, "Username used to perform signin", func() {
+			Password("password", String, "Password used to perform signin", func() {
 				Example("password")
 			})
 			APIKey("api_key", "key", String, func() {
@@ -164,9 +153,9 @@ var _ = Service("secured_service", func() {
 		})
 		HTTP(func() {
 			POST("/secure")
-
-			Header("key:Authorization")
-
+			Header("token:Authorization")
+			Param("key:k")
+			Param("oauth_token:oauth")
 			Response(StatusOK)
 		})
 	})

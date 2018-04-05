@@ -90,25 +90,7 @@ func BuildDoublySecurePayload(securedServiceDoublySecureKey string, securedServi
 
 // BuildAlsoDoublySecurePayload builds the payload for the secured_service
 // also_doubly_secure endpoint from CLI flags.
-func BuildAlsoDoublySecurePayload(securedServiceAlsoDoublySecureKey string, securedServiceAlsoDoublySecureToken string, securedServiceAlsoDoublySecureOauthToken string, securedServiceAlsoDoublySecureUsername string, securedServiceAlsoDoublySecurePassword string) (*securedservice.AlsoDoublySecurePayload, error) {
-	var key *string
-	{
-		if securedServiceAlsoDoublySecureKey != "" {
-			key = &securedServiceAlsoDoublySecureKey
-		}
-	}
-	var token *string
-	{
-		if securedServiceAlsoDoublySecureToken != "" {
-			token = &securedServiceAlsoDoublySecureToken
-		}
-	}
-	var oauthToken *string
-	{
-		if securedServiceAlsoDoublySecureOauthToken != "" {
-			oauthToken = &securedServiceAlsoDoublySecureOauthToken
-		}
-	}
+func BuildAlsoDoublySecurePayload(securedServiceAlsoDoublySecureUsername string, securedServiceAlsoDoublySecurePassword string, securedServiceAlsoDoublySecureKey string, securedServiceAlsoDoublySecureOauthToken string, securedServiceAlsoDoublySecureToken string) (*securedservice.AlsoDoublySecurePayload, error) {
 	var username *string
 	{
 		if securedServiceAlsoDoublySecureUsername != "" {
@@ -121,12 +103,30 @@ func BuildAlsoDoublySecurePayload(securedServiceAlsoDoublySecureKey string, secu
 			password = &securedServiceAlsoDoublySecurePassword
 		}
 	}
+	var key *string
+	{
+		if securedServiceAlsoDoublySecureKey != "" {
+			key = &securedServiceAlsoDoublySecureKey
+		}
+	}
+	var oauthToken *string
+	{
+		if securedServiceAlsoDoublySecureOauthToken != "" {
+			oauthToken = &securedServiceAlsoDoublySecureOauthToken
+		}
+	}
+	var token *string
+	{
+		if securedServiceAlsoDoublySecureToken != "" {
+			token = &securedServiceAlsoDoublySecureToken
+		}
+	}
 	payload := &securedservice.AlsoDoublySecurePayload{
-		Key:        key,
-		Token:      token,
-		OauthToken: oauthToken,
 		Username:   username,
 		Password:   password,
+		Key:        key,
+		OauthToken: oauthToken,
+		Token:      token,
 	}
 	return payload, nil
 }

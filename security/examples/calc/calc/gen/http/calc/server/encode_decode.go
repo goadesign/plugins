@@ -34,24 +34,8 @@ func EncodeLoginResponse(encoder func(context.Context, http.ResponseWriter) goah
 // endpoint.
 func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
 	return func(r *http.Request) (interface{}, error) {
-		var (
-			user     string
-			password string
-			err      error
-		)
-		user = r.Header.Get("Authorization")
-		if user == "" {
-			err = goa.MergeErrors(err, goa.MissingFieldError("Authorization", "header"))
-		}
-		password = r.Header.Get("Authorization")
-		if password == "" {
-			err = goa.MergeErrors(err, goa.MissingFieldError("Authorization", "header"))
-		}
-		if err != nil {
-			return nil, err
-		}
 
-		return NewLoginLoginPayload(user, password), nil
+		return NewLoginLoginPayload(), nil
 	}
 }
 
@@ -155,12 +139,9 @@ func SecureDecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goaht
 			return nil, err
 		}
 		payload := p.(*calcsvc.AddPayload)
-		hJWT := r.Header.Get("Authorization")
-		if hJWT == "" {
-			return p, nil
+		if strings.Contains(payload.Token, " ") {
+			payload.Token = strings.SplitN(payload.Token, " ", 2)[1]
 		}
-		tokenJWT := strings.TrimPrefix(hJWT, "Bearer ")
-		payload.Token = tokenJWT
 		return payload, nil
 	}
 }

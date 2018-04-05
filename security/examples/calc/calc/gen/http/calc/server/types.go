@@ -23,11 +23,8 @@ func NewLoginUnauthorizedResponseBody(res calcsvc.Unauthorized) LoginUnauthorize
 }
 
 // NewLoginLoginPayload builds a calc service login endpoint payload.
-func NewLoginLoginPayload(user string, password string) *calcsvc.LoginPayload {
-	return &calcsvc.LoginPayload{
-		User:     user,
-		Password: password,
-	}
+func NewLoginLoginPayload() *calcsvc.LoginPayload {
+	return &calcsvc.LoginPayload{}
 }
 
 // NewAddAddPayload builds a calc service add endpoint payload.

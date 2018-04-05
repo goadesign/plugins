@@ -46,7 +46,7 @@ func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
 func NewSigninEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*SigninPayload)
-		return s.Signin(ctx, p)
+		return nil, s.Signin(ctx, p)
 	}
 }
 

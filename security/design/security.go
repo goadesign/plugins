@@ -168,14 +168,6 @@ func (s *EndpointSecurityExpr) Validate() error {
 // parameter/header name.
 func (s *EndpointSecurityExpr) Finalize() {
 	if svc := httpdesign.Root.Service(s.Method.Service.Name); svc != nil {
-		// Set the default authorization header and recompute body
-		recompute := func(ep *httpdesign.EndpointExpr, field, suffix string) {
-			addHeaderAttr(ep, field, suffix)
-			if ep.Body.Find(field) != nil {
-				ep.Body = nil
-				ep.Body = httpdesign.RequestBody(ep)
-			}
-		}
 		ep := svc.Endpoint(s.Method.Name)
 		for _, sch := range s.Schemes {
 			sch.Finalize()
@@ -184,8 +176,11 @@ func (s *EndpointSecurityExpr) Finalize() {
 			case BasicAuthKind:
 				userField := securityField(s.Method.Payload, "security:username")
 				passField := securityField(s.Method.Payload, "security:password")
-				recompute(ep, userField, "Authorization")
-				recompute(ep, passField, "Authorization")
+				ep.Body.Delete(userField)
+				ep.Body.Delete(passField)
+				if isEmpty(ep.Body) {
+					ep.Body = &design.AttributeExpr{Type: design.Empty}
+				}
 				continue
 			case APIKeyKind:
 				field = securityField(s.Method.Payload, "security:apikey:"+sch.SchemeName)
@@ -197,7 +192,13 @@ func (s *EndpointSecurityExpr) Finalize() {
 			sch.Name, sch.In = findKey(ep, field)
 			if sch.Name == "" {
 				sch.Name = "Authorization"
-				recompute(ep, field, sch.Name)
+				addHeaderAttr(ep, field, sch.Name)
+				// Recompute body to remove the security fields now that they are added
+				// to the header
+				if ep.Body.Find(field) != nil {
+					ep.Body = nil
+					ep.Body = httpdesign.RequestBody(ep)
+				}
 			}
 		}
 	}
@@ -362,15 +363,21 @@ func securityField(att *design.AttributeExpr, tag string) string {
 }
 
 // findKey finds the given key in the endpoint expression and returns the
-// transport element name and the position (header or query).
+// transport element name and the position (header, query, or body).
 func findKey(e *httpdesign.EndpointExpr, keyAtt string) (string, string) {
 	if n, exists := e.AllParams().FindKey(keyAtt); exists {
 		return n, "query"
 	} else if n, exists := e.MappedHeaders().FindKey(keyAtt); exists {
 		return n, "header"
-	} else {
-		return "", "header"
+	} else if _, ok := e.Body.Metadata["http:body"]; ok {
+		if e.Body.Find(keyAtt) != nil {
+			return keyAtt, "body"
+		}
+		if m, ok := e.Body.Metadata["origin:attribute"]; ok && m[0] == keyAtt {
+			return keyAtt, "body"
+		}
 	}
+	return "", "header"
 }
 
 func addHeaderAttr(ep *httpdesign.EndpointExpr, name, suffix string) {
@@ -391,4 +398,15 @@ func addHeaderAttr(ep *httpdesign.EndpointExpr, name, suffix string) {
 		}
 		headers.Validation.AddRequired(name)
 	}
+}
+
+func isEmpty(a *design.AttributeExpr) bool {
+	if a.Type == design.Empty {
+		return true
+	}
+	obj := design.AsObject(a.Type)
+	if obj != nil {
+		return len(*obj) == 0
+	}
+	return false
 }

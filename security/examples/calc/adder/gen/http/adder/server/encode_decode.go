@@ -11,6 +11,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"strings"
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
@@ -102,11 +103,9 @@ func SecureDecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goaht
 			return nil, err
 		}
 		payload := p.(*addersvc.AddPayload)
-		key := r.URL.Query().Get("key")
-		if key == "" {
-			return p, nil
+		if strings.Contains(payload.Key, " ") {
+			payload.Key = strings.SplitN(payload.Key, " ", 2)[1]
 		}
-		payload.Key = key
 		return payload, nil
 	}
 }

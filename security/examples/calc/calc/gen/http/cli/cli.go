@@ -29,7 +29,7 @@ func UsageCommands() string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + ` calc login --user "username" --password "password"` + "\n" +
+	return os.Args[0] + ` calc login` + "\n" +
 		""
 }
 

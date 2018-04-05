@@ -63,11 +63,15 @@ type (
 		UsernameField string
 		// UsernamePointer is true if the username field is a pointer.
 		UsernamePointer bool
+		// UsernameAttr is the attribute name containing the username.
+		UsernameAttr string
 		// PasswordField is the name of the payload field that should be
 		// initialized with the basic auth password if any.
 		PasswordField string
 		// PasswordPointer is true if the password field is a pointer.
 		PasswordPointer bool
+		// PasswordAttr is the attribute name containing the password.
+		PasswordAttr string
 		// CredField contains the name of the payload field that should
 		// be initialized with the API key, the JWT token or the OAuth2
 		// access token.
@@ -169,8 +173,10 @@ func buildSchemeData(s *design.SchemeExpr, m *goadesign.MethodExpr) *SchemeData 
 		userAtt, user := findSecurityField(m.Payload, "security:username")
 		passAtt, pass := findSecurityField(m.Payload, "security:password")
 		return &SchemeData{
+			UsernameAttr:    userAtt,
 			UsernameField:   user,
 			UsernamePointer: m.Payload.IsPrimitivePointer(userAtt, true),
+			PasswordAttr:    passAtt,
 			PasswordField:   pass,
 			PasswordPointer: m.Payload.IsPrimitivePointer(passAtt, true),
 			Scheme:          s,

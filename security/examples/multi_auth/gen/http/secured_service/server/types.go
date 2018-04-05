@@ -60,11 +60,8 @@ func NewAlsoDoublySecureUnauthorizedResponseBody(res securedservice.Unauthorized
 
 // NewSigninSigninPayload builds a secured_service service signin endpoint
 // payload.
-func NewSigninSigninPayload(username *string, password *string) *securedservice.SigninPayload {
-	return &securedservice.SigninPayload{
-		Username: username,
-		Password: password,
-	}
+func NewSigninSigninPayload() *securedservice.SigninPayload {
+	return &securedservice.SigninPayload{}
 }
 
 // NewSecureSecurePayload builds a secured_service service secure endpoint
@@ -87,12 +84,10 @@ func NewDoublySecureDoublySecurePayload(key *string, token *string) *securedserv
 
 // NewAlsoDoublySecureAlsoDoublySecurePayload builds a secured_service service
 // also_doubly_secure endpoint payload.
-func NewAlsoDoublySecureAlsoDoublySecurePayload(key *string, token *string, oauthToken *string, username *string, password *string) *securedservice.AlsoDoublySecurePayload {
+func NewAlsoDoublySecureAlsoDoublySecurePayload(key *string, oauthToken *string, token *string) *securedservice.AlsoDoublySecurePayload {
 	return &securedservice.AlsoDoublySecurePayload{
 		Key:        key,
-		Token:      token,
 		OauthToken: oauthToken,
-		Username:   username,
-		Password:   password,
+		Token:      token,
 	}
 }

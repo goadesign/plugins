@@ -14,8 +14,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
-	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
 	securedservice "goa.design/plugins/security/examples/multi_auth/gen/secured_service"
 )
@@ -33,24 +33,6 @@ func (c *Client) BuildSigninRequest(ctx context.Context, v interface{}) (*http.R
 	}
 
 	return req, nil
-}
-
-// EncodeSigninRequest returns an encoder for requests sent to the
-// secured_service signin server.
-func EncodeSigninRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
-	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(*securedservice.SigninPayload)
-		if !ok {
-			return goahttp.ErrInvalidType("secured_service", "signin", "*securedservice.SigninPayload", v)
-		}
-		if p.Username != nil {
-			req.Header.Set("Authorization", *p.Username)
-		}
-		if p.Password != nil {
-			req.Header.Set("Authorization", *p.Password)
-		}
-		return nil
-	}
 }
 
 // DecodeSigninResponse returns a decoder for responses returned by the
@@ -75,17 +57,6 @@ func DecodeSigninResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 		}
 		switch resp.StatusCode {
 		case http.StatusNoContent:
-			var (
-				authorization string
-				err           error
-			)
-			authorization = resp.Header.Get("Authorization")
-			if authorization != "" {
-				err = goa.MergeErrors(err, goa.MissingFieldError("Authorization", "header"))
-			}
-			if err != nil {
-				return nil, fmt.Errorf("invalid response: %s", err)
-			}
 			return nil, nil
 		case http.StatusUnauthorized:
 			var (
@@ -299,21 +270,17 @@ func EncodeAlsoDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) 
 		if !ok {
 			return goahttp.ErrInvalidType("secured_service", "also_doubly_secure", "*securedservice.AlsoDoublySecurePayload", v)
 		}
-		if p.Key != nil {
-			req.Header.Set("Authorization", *p.Key)
-		}
 		if p.Token != nil {
 			req.Header.Set("Authorization", *p.Token)
 		}
+		values := req.URL.Query()
+		if p.Key != nil {
+			values.Add("k", *p.Key)
+		}
 		if p.OauthToken != nil {
-			req.Header.Set("Authorization", *p.OauthToken)
+			values.Add("oauth", *p.OauthToken)
 		}
-		if p.Username != nil {
-			req.Header.Set("Authorization", *p.Username)
-		}
-		if p.Password != nil {
-			req.Header.Set("Authorization", *p.Password)
-		}
+		req.URL.RawQuery = values.Encode()
 		return nil
 	}
 }
@@ -371,11 +338,7 @@ func DecodeAlsoDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder
 // SecureEncodeSigninRequest returns an encoder for requests sent to the
 // secured_service signin endpoint that is security scheme aware.
 func SecureEncodeSigninRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
-	rawEncoder := EncodeSigninRequest(encoder)
 	return func(req *http.Request, v interface{}) error {
-		if err := rawEncoder(req, v); err != nil {
-			return err
-		}
 		payload := v.(*securedservice.SigninPayload)
 		req.SetBasicAuth(*payload.Username, *payload.Password)
 		return nil
@@ -391,7 +354,9 @@ func SecureEncodeSecureRequest(encoder func(*http.Request) goahttp.Encoder) func
 			return err
 		}
 		payload := v.(*securedservice.SecurePayload)
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
+		if !strings.Contains(*payload.Token, " ") {
+			req.Header.Set("Authorization", "Bearer "+*payload.Token)
+		}
 		return nil
 	}
 }
@@ -406,8 +371,13 @@ func SecureEncodeDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder
 		}
 		payload := v.(*securedservice.DoublySecurePayload)
 		values := req.URL.Query()
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
-		values.Add("k", *payload.Key)
+		if !strings.Contains(*payload.Token, " ") {
+			req.Header.Set("Authorization", "Bearer "+*payload.Token)
+		}
+		if strings.Contains(*payload.Key, " ") {
+			s := strings.SplitN(*payload.Key, " ", 2)[1]
+			values.Set("k", s)
+		}
 		req.URL.RawQuery = values.Encode()
 		return nil
 	}
@@ -423,10 +393,20 @@ func SecureEncodeAlsoDoublySecureRequest(encoder func(*http.Request) goahttp.Enc
 			return err
 		}
 		payload := v.(*securedservice.AlsoDoublySecurePayload)
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *payload.Token))
-		req.Header.Add("Authorization", *payload.Key)
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *payload.OauthToken))
+		values := req.URL.Query()
+		if !strings.Contains(*payload.Token, " ") {
+			req.Header.Set("Authorization", "Bearer "+*payload.Token)
+		}
+		if strings.Contains(*payload.Key, " ") {
+			s := strings.SplitN(*payload.Key, " ", 2)[1]
+			values.Set("k", s)
+		}
+		if strings.Contains(*payload.OauthToken, " ") {
+			s := strings.SplitN(*payload.OauthToken, " ", 2)[1]
+			values.Set("oauth", s)
+		}
 		req.SetBasicAuth(*payload.Username, *payload.Password)
+		req.URL.RawQuery = values.Encode()
 		return nil
 	}
 }
