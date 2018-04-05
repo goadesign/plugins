@@ -266,7 +266,7 @@ securitydefinitions:
     type: apiKey
     description: Secures endpoint by requiring an API key.
     name: key
-    in: header
+    in: query
     flow: ""
     authorizationurl: ""
     tokenurl: ""

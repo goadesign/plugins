@@ -10,10 +10,10 @@ package client
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	goahttp "goa.design/goa/http"
 	calcsvc "goa.design/plugins/security/examples/calc/calc/gen/calc"
@@ -32,22 +32,6 @@ func (c *Client) BuildLoginRequest(ctx context.Context, v interface{}) (*http.Re
 	}
 
 	return req, nil
-}
-
-// EncodeLoginRequest returns an encoder for requests sent to the calc login
-// server.
-func EncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
-	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(*calcsvc.LoginPayload)
-		if !ok {
-			return goahttp.ErrInvalidType("calc", "login", "*calcsvc.LoginPayload", v)
-		}
-		body := NewLoginRequestBody(p)
-		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("calc", "login", err)
-		}
-		return nil
-	}
 }
 
 // DecodeLoginResponse returns a decoder for responses returned by the calc
@@ -134,10 +118,7 @@ func EncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Re
 		if !ok {
 			return goahttp.ErrInvalidType("calc", "add", "*calcsvc.AddPayload", v)
 		}
-		body := NewAddRequestBody(p)
-		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("calc", "add", err)
-		}
+		req.Header.Set("Authorization", p.Token)
 		return nil
 	}
 }
@@ -181,11 +162,7 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 // SecureEncodeLoginRequest returns an encoder for requests sent to the calc
 // login endpoint that is security scheme aware.
 func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
-	rawEncoder := EncodeLoginRequest(encoder)
 	return func(req *http.Request, v interface{}) error {
-		if err := rawEncoder(req, v); err != nil {
-			return err
-		}
 		payload := v.(*calcsvc.LoginPayload)
 		req.SetBasicAuth(payload.User, payload.Password)
 		return nil
@@ -201,7 +178,9 @@ func SecureEncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*h
 			return err
 		}
 		payload := v.(*calcsvc.AddPayload)
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", payload.Token))
+		if !strings.Contains(payload.Token, " ") {
+			req.Header.Set("Authorization", "Bearer "+payload.Token)
+		}
 		return nil
 	}
 }

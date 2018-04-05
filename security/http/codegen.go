@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"goa.design/goa/codegen"
@@ -75,10 +76,11 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 		switch r := root.(type) {
 		case *httpdesign.RootExpr:
 			for _, f := range files {
-				SecureRequestDecoders(r, f)
-				SecureRequestEncoders(r, f)
+				SecureRequestDecoders(f)
+				SecureRequestEncoders(f)
 				OpenAPIV2(r, f)
 			}
+			AddCLIFlags(r)
 		}
 	}
 	return files, nil
@@ -88,16 +90,14 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 // context gets initialized with the security requirements.
 func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	var (
-		apiPkg  string
 		data    = make(map[string]*seccodegen.ServiceData)
 		svcData []*ServiceData
 	)
 	for _, root := range roots {
 		switch r := root.(type) {
 		case *goadesign.RootExpr:
-			apiPkg = strings.ToLower(codegen.Goify(r.API.Name, false))
 			for _, s := range r.Services {
-				data[s.Name] = seccodegen.BuildSecureServiceData(s, apiPkg)
+				data[s.Name] = seccodegen.Data.Get(s.Name)
 			}
 		case *httpdesign.RootExpr:
 			for _, s := range r.HTTPServices {
@@ -133,80 +133,108 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 }
 
 // SecureRequestDecoders initializes the security attributes for HTTP request decoders.
-func SecureRequestDecoders(r *httpdesign.RootExpr, f *codegen.File) {
-	needsImport := false
-	for _, s := range f.Section("server-handler-init") {
-		needsImport = true
+func SecureRequestDecoders(f *codegen.File) {
+	for _, s := range f.Section("response-encoder") {
 		data := s.Data.(*httpcodegen.EndpointData)
-		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
-		if len(design.Requirements(e.Service.Name(), e.Name())) > 0 {
-			s.Source = strings.Replace(s.Source, "{{ .RequestDecoder }}", "Secure{{ .RequestDecoder }}", -1)
+		md := seccodegen.Data.Get(data.ServiceName).MethodData(data.Method.Name)
+		if len(md.Requirements) > 0 {
+			f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
+				Name:   "secure-request-decoder",
+				Source: authDecoderT,
+				Data: &SecureDecoderData{
+					SecureRequestDecoder: "Secure" + data.RequestDecoder,
+					RequestDecoder:       data.RequestDecoder,
+					PayloadType:          data.Payload.Ref,
+					Schemes:              md.Schemes,
+					ServiceName:          data.ServiceName,
+					MethodName:           data.Method.Name,
+				},
+				FuncMap: codegen.TemplateFuncs(),
+			})
 		}
 	}
-	if needsImport {
-		codegen.AddImport(f.SectionTemplates[0],
-			&codegen.ImportSpec{Path: "goa.design/plugins/security"})
-	}
-	var schemes []*seccodegen.SchemeData
-	for _, s := range f.Section("request-decoder") {
-		data := s.Data.(*httpcodegen.EndpointData)
-		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
-		schemes = computeSchemes(e)
-		if len(schemes) == 0 {
-			continue
-		}
-		f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
-			Name:   "secure-request-decoder",
-			Source: authDecoderT,
-			Data: &SecureDecoderData{
-				SecureRequestDecoder: "Secure" + data.RequestDecoder,
-				RequestDecoder:       data.RequestDecoder,
-				PayloadType:          data.Payload.Ref,
-				Schemes:              schemes,
-				ServiceName:          data.ServiceName,
-				MethodName:           data.Method.Name,
-			},
-			FuncMap: codegen.TemplateFuncs(),
-		})
-	}
+	secureDecoder(f)
 }
 
 // SecureRequestEncoders initializes the security attributes for HTTP encoders.
-func SecureRequestEncoders(r *httpdesign.RootExpr, f *codegen.File) {
-	needsImport := false
+func SecureRequestEncoders(f *codegen.File) {
 	for _, s := range f.Section("client-endpoint-init") {
-		needsImport = true
 		data := s.Data.(*httpcodegen.EndpointData)
-		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
-		if len(design.Requirements(e.Service.Name(), e.Name())) > 0 {
-			s.Source = strings.Replace(s.Source, "{{ .RequestEncoder }}", "Secure{{ .RequestEncoder }}", -1)
+		md := seccodegen.Data.Get(data.ServiceName).MethodData(data.Method.Name)
+		if len(md.Requirements) > 0 {
+			if data.RequestEncoder == "" {
+				s.Source = strings.Replace(s.Source, "decodeResponse =", fmt.Sprintf("encodeRequest = SecureEncode%sRequest(c.encoder)\ndecodeResponse =", data.Method.VarName), 1)
+				s.Source = strings.Replace(s.Source, "resp, err :=", "err = encodeRequest(req, v)\nif err != nil {\nreturn nil, err\n}\n\nresp, err :=", 1)
+			}
 		}
 	}
-	if needsImport {
-		codegen.AddImport(f.SectionTemplates[0],
-			&codegen.ImportSpec{Path: "goa.design/plugins/security"})
-	}
-	var schemes []*seccodegen.SchemeData
-	for _, s := range f.Section("request-encoder") {
+	for _, s := range f.Section("request-builder") {
 		data := s.Data.(*httpcodegen.EndpointData)
-		e := r.Service(data.ServiceName).Endpoint(data.Method.Name)
-		schemes = computeSchemes(e)
-		if len(schemes) == 0 {
-			continue
+		md := seccodegen.Data.Get(data.ServiceName).MethodData(data.Method.Name)
+		if len(md.Requirements) > 0 {
+			funcs := codegen.TemplateFuncs()
+			funcs["querySchemes"] = querySchemes
+			funcs["onlyBodySchemes"] = onlyBodySchemes
+			name := "Secure" + data.RequestEncoder
+			if data.RequestEncoder == "" {
+				name = fmt.Sprintf("SecureEncode%sRequest", data.Method.VarName)
+			}
+			f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
+				Name:   "secure-request-encoder",
+				Source: authEncoderT,
+				Data: &SecureEncoderData{
+					SecureRequestEncoder: name,
+					RequestEncoder:       data.RequestEncoder,
+					PayloadType:          data.Payload.Ref,
+					Schemes:              md.Schemes,
+					ServiceName:          data.ServiceName,
+					MethodName:           data.Method.Name,
+				},
+				FuncMap: funcs,
+			})
 		}
-		f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
-			Name:   "secure-request-encoder",
-			Source: authEncoderT,
-			Data: &SecureEncoderData{
-				SecureRequestEncoder: "Secure" + data.RequestEncoder,
-				RequestEncoder:       data.RequestEncoder,
-				PayloadType:          data.Payload.Ref,
-				Schemes:              schemes,
-				ServiceName:          data.ServiceName,
-				MethodName:           data.Method.Name,
-			},
-			FuncMap: codegen.TemplateFuncs(),
-		})
+	}
+	secureEncoder(f)
+}
+
+// AddCLIFlags adds the necessary CLI flags for services using the basic auth scheme.
+func AddCLIFlags(root *httpdesign.RootExpr) {
+	for _, svc := range root.HTTPServices {
+		svcData := httpcodegen.HTTPServices.Get(svc.Name())
+		for _, ep := range svc.HTTPEndpoints {
+			md := seccodegen.Data.Get(svc.Name()).MethodData(ep.Name())
+			for _, sch := range md.Schemes {
+				if sch.Scheme.Kind == design.BasicAuthKind {
+					userAttr := ep.MethodExpr.Payload.Find(sch.UsernameAttr)
+					userArg := &httpcodegen.InitArgData{
+						Name:        sch.UsernameAttr,
+						FieldName:   sch.UsernameField,
+						Description: userAttr.Description,
+						Ref:         sch.UsernameAttr,
+						Required:    ep.MethodExpr.Payload.IsRequired(sch.UsernameAttr),
+						TypeName:    svcData.Service.Scope.GoTypeName(userAttr),
+						TypeRef:     svcData.Service.Scope.GoTypeRef(userAttr),
+						Pointer:     sch.UsernamePointer,
+						Validate:    codegen.RecursiveValidationCode(userAttr, true, false, false, sch.UsernameAttr),
+						Example:     userAttr.Example(goadesign.Root.API.Random()),
+					}
+					passAttr := ep.MethodExpr.Payload.Find(sch.PasswordAttr)
+					passArg := &httpcodegen.InitArgData{
+						Name:        sch.PasswordAttr,
+						FieldName:   sch.PasswordField,
+						Description: passAttr.Description,
+						Ref:         sch.PasswordAttr,
+						Required:    ep.MethodExpr.Payload.IsRequired(sch.PasswordAttr),
+						TypeName:    svcData.Service.Scope.GoTypeName(passAttr),
+						TypeRef:     svcData.Service.Scope.GoTypeRef(passAttr),
+						Pointer:     sch.PasswordPointer,
+						Validate:    codegen.RecursiveValidationCode(userAttr, true, false, false, sch.PasswordAttr),
+						Example:     passAttr.Example(goadesign.Root.API.Random()),
+					}
+					httpcodegen.AddFlags(ep, []*httpcodegen.InitArgData{userArg, passArg})
+				}
+			}
+		}
 	}
 }
 
@@ -216,7 +244,7 @@ func OpenAPIV2(r *httpdesign.RootExpr, f *codegen.File) {
 		spec := s.Data.(*openapi.V2)
 		for _, svc := range r.HTTPServices {
 			for _, e := range svc.HTTPEndpoints {
-				reqs := design.Requirements(svc.Name(), e.Name())
+				reqs := design.Requirements(e.MethodExpr)
 				for _, route := range e.Routes {
 					var (
 						p  *openapi.Path
@@ -258,7 +286,7 @@ func OpenAPIV2(r *httpdesign.RootExpr, f *codegen.File) {
 }
 
 // applySecurity applies the security requirements to the openapi V2 operation.
-func applySecurity(op *openapi.Operation, reqs []*design.SecurityExpr) {
+func applySecurity(op *openapi.Operation, reqs []*design.EndpointSecurityExpr) {
 	if len(reqs) == 0 {
 		return
 	}
@@ -288,38 +316,68 @@ func applySecurity(op *openapi.Operation, reqs []*design.SecurityExpr) {
 	op.Security = requirements
 }
 
-// computeSchemes collects the security schemes for the given endpoint.
-func computeSchemes(e *httpdesign.EndpointExpr) []*seccodegen.SchemeData {
-	var schemes []*seccodegen.SchemeData
-	for _, req := range design.Requirements(e.Service.Name(), e.Name()) {
-		for _, s := range req.Schemes {
-			if sd := seccodegen.BuildSchemeData(s, e.MethodExpr); sd != nil {
-				scheme := *s
-				if scheme.Kind == design.APIKeyKind || scheme.Kind == design.OAuth2Kind {
-					var name string
-					name, scheme.In = findKey(e, sd.KeyAttr)
-					if name != "" {
-						scheme.Name = name
-					}
+var (
+	// decoderRegexp matches occurrences of "{{ .RequestDecoder }}" in section template code.
+	decoderRegexp = regexp.MustCompile(`({{.?\.RequestDecoder.?}})`)
+
+	// encoderRegexp matches occurrences of "{{ .RequestEncoder }}" in section template code.
+	encoderRegexp = regexp.MustCompile(`({{.?\.RequestEncoder.?}})`)
+)
+
+// secureDecoder prefixes all occurrences of "{{ .RequestDecoder }}" with "Secure"
+// (except in server decode files) if the corresponding endpoint is secured.
+func secureDecoder(f *codegen.File) {
+	for _, s := range f.SectionTemplates {
+		if s.Name == "request-decoder" {
+			continue
+		}
+		if decoderRegexp.MatchString(s.Source) {
+			if data, ok := s.Data.(*httpcodegen.EndpointData); ok {
+				svc := seccodegen.Data.Get(data.ServiceName)
+				if len(svc.MethodData(data.Method.Name).Requirements) > 0 {
+					s.Source = decoderRegexp.ReplaceAllString(s.Source, "Secure${1}")
 				}
-				sd.Scheme = &scheme
-				schemes = append(schemes, sd)
 			}
 		}
 	}
-	return schemes
 }
 
-// findKey finds the given key in the endpoint expression and returns the
-// transport element name and the position (header or query).
-func findKey(e *httpdesign.EndpointExpr, keyAtt string) (string, string) {
-	if n, exists := e.AllParams().FindKey(keyAtt); exists {
-		return n, "query"
-	} else if n, exists := e.MappedHeaders().FindKey(keyAtt); exists {
-		return n, "header"
-	} else {
-		return "", "header"
+// secureEncoder prefixes all occurrences of "{{ .RequestDecoder }}" with "Secure"
+// (except in client encode files) if the corresponding endpoint is secured.
+func secureEncoder(f *codegen.File) {
+	for _, s := range f.SectionTemplates {
+		if s.Name == "request-encoder" {
+			continue
+		}
+		if data, ok := s.Data.(*httpcodegen.EndpointData); ok {
+			svc := seccodegen.Data.Get(data.ServiceName)
+			if len(svc.MethodData(data.Method.Name).Requirements) > 0 {
+				s.Source = encoderRegexp.ReplaceAllString(s.Source, "Secure${1}")
+			}
+		}
 	}
+}
+
+// querySchemes returns true if at least one scheme should be inferred from
+// query parameters.
+func querySchemes(schemes []*seccodegen.SchemeData) bool {
+	for _, s := range schemes {
+		if s.Scheme.In == "query" {
+			return true
+		}
+	}
+	return false
+}
+
+// onlyBodySchemes returns true if all the schemes should be inferred from
+// request body.
+func onlyBodySchemes(schemes []*seccodegen.SchemeData) bool {
+	for _, s := range schemes {
+		if s.Scheme.In != "body" {
+			return false
+		}
+	}
+	return true
 }
 
 // input: SecureDecoderData
@@ -333,7 +391,6 @@ func {{ .SecureRequestDecoder }}(mux goahttp.Muxer, decoder func(*http.Request) 
 		}
 		payload := p.({{ .PayloadType }})
 {{- range .Schemes }}
-
 	{{- if eq .Scheme.Kind 2 }}{{/* BasicAuth */}}
 		user, pass, ok := r.BasicAuth()
 		if !ok {
@@ -341,40 +398,11 @@ func {{ .SecureRequestDecoder }}(mux goahttp.Muxer, decoder func(*http.Request) 
 		}
 		payload.{{ .UsernameField }} = {{ if .UsernamePointer }}&{{ end }}user
 		payload.{{ .PasswordField }} = {{ if .PasswordPointer }}&{{ end }}pass
-
-	{{- else if eq .Scheme.Kind 3 }}{{/* APIKey */}}
-		{{- if eq .Scheme.In "query" }}
-		key := r.URL.Query().Get({{ printf "%q" .Scheme.Name }})
-		if key == "" {
-			return p, nil
+	{{- else }}{{/* API key, OAuth2, and JWT */}}
+		if strings.Contains({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ") {
+			payload.{{ .CredField }} = {{ if .CredPointer }}&({{ end }}strings.SplitN({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ", 2)[1]{{ if .CredPointer }}){{ end }}
 		}
-		payload.{{ .CredField }} = {{ if .CredPointer }}&{{ end }}key
-		{{- else }}
-		key := r.Header.Get({{ printf "%q" .Scheme.Name }})
-		if key == "" {
-			return p, nil
-		}
-		payload.{{ .CredField }} = {{ if .CredPointer }}&{{ end }}key
-		{{- end }}
-
-	{{- else }}{{/* OAuth2 and JWT */}}
-		{{- if eq .Scheme.In "query" }}
-		token{{ .Scheme.Type }} := r.URL.Query().Get({{ printf "%q" .Scheme.Name }})
-		if token{{ .Scheme.Type }} == "" {
-			return p, nil
-		}
-		payload.{{ .CredField }} = {{ if .CredPointer }}&{{ end }}token{{ .Scheme.Type }}
-		{{- else }}
-		h{{ .Scheme.Type }} := r.Header.Get({{ printf "%q" .Scheme.Name }})
-		if h{{ .Scheme.Type }} == "" {
-			return p, nil
-		}
-		token{{ .Scheme.Type }} := strings.TrimPrefix(h{{ .Scheme.Type }}, "Bearer ")
-		payload.{{ .CredField }} = {{ if .CredPointer }}&{{ end }}token{{ .Scheme.Type }}
-		{{- end }}
-
 	{{- end }}
-
 {{- end }}
 		return payload, nil
 	}
@@ -384,34 +412,50 @@ func {{ .SecureRequestDecoder }}(mux goahttp.Muxer, decoder func(*http.Request) 
 // input: SecureEncoderData
 const authEncoderT = `{{ printf "%s returns an encoder for requests sent to the %s %s endpoint that is security scheme aware." .SecureRequestEncoder .ServiceName .MethodName | comment }}
 func {{ .SecureRequestEncoder }}(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	{{- if .RequestEncoder }}
 	rawEncoder := {{ .RequestEncoder }}(encoder)
+	{{- end }}
 	return func(req *http.Request, v interface{}) error {
+		{{- if .RequestEncoder }}
 		if err := rawEncoder(req, v); err != nil {
 			return err
 		}
+		{{- end }}
+		{{- if not (onlyBodySchemes .Schemes) }}
 		payload := v.({{ .PayloadType }})
+		{{- if querySchemes .Schemes }}
+		values := req.URL.Query()
+		{{- end }}
 {{- range .Schemes }}
-
 	{{- if eq .Scheme.Kind 2 }}{{/* BasicAuth */}}
 		req.SetBasicAuth({{ if .UsernamePointer }}*{{ end }}payload.{{ .UsernameField }}, {{ if .PasswordPointer }}*{{ end }}payload.{{ .PasswordField }})
 
 	{{- else if eq .Scheme.Kind 3 }}{{/* APIKey */}}
-		{{- if eq .Scheme.In "query" }}
-		req.URL.Query().Set({{ printf "%q" .Scheme.Name }}, {{ if .CredPointer }}*{{ end }}payload.{{ .CredField }})
-		{{- else }}
-		req.Header.Set({{ printf "%q" .Scheme.Name }}, {{ if .CredPointer }}*{{ end }}payload.{{ .CredField }})
-		{{- end }}
-
+		if strings.Contains({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ") {
+			s := strings.SplitN({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ", 2)[1]
+			{{- if eq .Scheme.In "query" }}
+			values.Set({{ printf "%q" .Scheme.Name }}, s)
+			{{- else if eq .Scheme.In "header" }}
+			req.Header.Set({{ printf "%q" .Scheme.Name }}, s)
+			{{- end }}
+		}
 	{{- else }}{{/* OAuth2 and JWT */}}
 		{{- if eq .Scheme.In "query" }}
-		req.URL.Query().Set({{ printf "%q" .Scheme.Name }}, {{ if .CredPointer }}*{{ end }}payload.{{ .CredField }})
-		{{- else }}
-		req.Header.Set({{ printf "%q" .Scheme.Name }}, fmt.Sprintf("Bearer %s", {{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}))
+		if strings.Contains({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ") {
+			s := strings.SplitN({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ", 2)[1]
+			values.Set({{ printf "%q" .Scheme.Name }}, s)
+		}
+		{{- else if eq .Scheme.In "header" }}
+		if !strings.Contains({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ") {
+			req.Header.Set({{ printf "%q" .Scheme.Name }}, "Bearer "+{{ if .CredPointer }}*{{ end }}payload.{{ .CredField }})
+		}
 		{{- end }}
-
 	{{- end }}
-
 {{- end }}
+		{{- if querySchemes .Schemes }}
+		req.URL.RawQuery = values.Encode()
+		{{- end }}
+		{{- end }}
 		return nil
 	}
 }

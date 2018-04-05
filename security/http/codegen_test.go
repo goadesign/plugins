@@ -26,12 +26,13 @@ func TestSecureDecoder(t *testing.T) {
 	}{
 		{"basic-auth", testdata.BasicAuthDSL, testdata.BasicAuthSecureDecoderCode},
 		{"oauth2", testdata.OAuth2DSL, testdata.OAuth2SecureDecoderCode},
-		{"oauth2-in-param", testdata.OAuth2InParamDSL, testdata.OAuth2InParamSecureDecoderCode},
 		{"jwt", testdata.JWTDSL, testdata.JWTSecureDecoderCode},
 		{"api-key", testdata.APIKeyDSL, testdata.APIKeySecureDecoderCode},
 		{"api-key-in-param", testdata.APIKeyInParamDSL, testdata.APIKeyInParamSecureDecoderCode},
+		{"api-key-in-body", testdata.APIKeyInBodyDSL, testdata.APIKeyInBodySecureDecoderCode},
 		{"multiple-and", testdata.MultipleAndDSL, testdata.MultipleAndSecureDecoderCode},
 		{"multiple-or", testdata.MultipleOrDSL, testdata.MultipleOrSecureDecoderCode},
+		{"schemes-in-type", testdata.SchemesInTypeDSL, testdata.SchemesInTypeSecureDecoderCode},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
@@ -68,20 +69,66 @@ func TestSecureDecoder(t *testing.T) {
 	}
 }
 
-func TestSecureEncoder(t *testing.T) {
+func TestDecoder(t *testing.T) {
 	cases := []struct {
 		Name string
 		DSL  func()
 		Code string
 	}{
-		{"basic-auth", testdata.BasicAuthDSL, testdata.BasicAuthSecureEncoderCode},
-		{"oauth2", testdata.OAuth2DSL, testdata.OAuth2SecureEncoderCode},
-		{"oauth2-in-param", testdata.OAuth2InParamDSL, testdata.OAuth2InParamSecureEncoderCode},
-		{"jwt", testdata.JWTDSL, testdata.JWTSecureEncoderCode},
-		{"api-key", testdata.APIKeyDSL, testdata.APIKeySecureEncoderCode},
-		{"api-key-in-param", testdata.APIKeyInParamDSL, testdata.APIKeyInParamSecureEncoderCode},
-		{"multiple-and", testdata.MultipleAndDSL, testdata.MultipleAndSecureEncoderCode},
-		{"multiple-or", testdata.MultipleOrDSL, testdata.MultipleOrSecureEncoderCode},
+		{"basic-auth", testdata.BasicAuthDSL, testdata.BasicAuthDecoderCode},
+		{"oauth2", testdata.OAuth2DSL, testdata.OAuth2DecoderCode},
+		{"jwt", testdata.JWTDSL, testdata.JWTDecoderCode},
+		{"api-key", testdata.APIKeyDSL, testdata.APIKeyDecoderCode},
+		{"api-key-in-param", testdata.APIKeyInParamDSL, testdata.APIKeyInParamDecoderCode},
+		{"api-key-in-body", testdata.APIKeyInBodyDSL, testdata.APIKeyInBodyDecoderCode},
+		{"multiple-and", testdata.MultipleAndDSL, testdata.MultipleAndDecoderCode},
+		{"multiple-or", testdata.MultipleOrDSL, testdata.MultipleOrDecoderCode},
+		{"multiple-schemes-with-params", testdata.MultipleSchemesWithParamsDSL, testdata.MultipleSchemesWithParamsDecoderCode},
+		{"schemes-in-type", testdata.SchemesInTypeDSL, testdata.SchemesInTypeDecoderCode},
+	}
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			RunHTTPDSL(t, c.DSL, testdata.TopLevelSchemes)
+			fs := httpcodegen.ServerFiles("", httpdesign.Root)
+			if len(fs) != 2 {
+				t.Fatalf("got %d files, expected two", len(fs))
+			}
+			Generate("", []eval.Root{httpdesign.Root}, fs)
+			for _, f := range fs {
+				if filepath.Base(f.Path) == "encode_decode.go" {
+					sections := f.Section("request-decoder")
+					if len(sections) < 1 {
+						t.Fatalf("got %d sections, expected at least 1", len(sections))
+					}
+					code := codegen.SectionCode(t, sections[0])
+					if code != c.Code {
+						t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c.Code))
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestSecureEncoder(t *testing.T) {
+	cases := []struct {
+		Name string
+		DSL  func()
+		Code string
+		Sec  int
+	}{
+		{"basic-auth", testdata.BasicAuthDSL, testdata.BasicAuthSecureEncoderCode, 0},
+		{"oauth2", testdata.OAuth2DSL, testdata.OAuth2SecureEncoderCode, 0},
+		{"oauth2-in-param", testdata.OAuth2InParamDSL, testdata.OAuth2InParamSecureEncoderCode, 0},
+		{"jwt", testdata.JWTDSL, testdata.JWTSecureEncoderCode, 0},
+		{"api-key", testdata.APIKeyDSL, testdata.APIKeySecureEncoderCode, 0},
+		{"api-key-in-param", testdata.APIKeyInParamDSL, testdata.APIKeyInParamSecureEncoderCode, 0},
+		{"api-key-in-body", testdata.APIKeyInBodyDSL, testdata.APIKeyInBodySecureEncoderCode, 0},
+		{"multiple-and", testdata.MultipleAndDSL, testdata.MultipleAndSecureEncoderCode, 0},
+		{"multiple-or", testdata.MultipleOrDSL, testdata.MultipleOrSecureEncoderCode, 0},
+		{"same-scheme-multiple-endpoints-1", testdata.SameSchemeMultipleEndpoints, testdata.SameSchemeMethod1SecureEncoderCode, 0},
+		{"same-scheme-multiple-endpoints-2", testdata.SameSchemeMultipleEndpoints, testdata.SameSchemeMethod2SecureEncoderCode, 1},
+		{"schemes-in-type", testdata.SchemesInTypeDSL, testdata.SchemesInTypeSecureEncoderCode, 0},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
@@ -98,7 +145,7 @@ func TestSecureEncoder(t *testing.T) {
 					if len(sections) < 1 {
 						t.Fatalf("got %d sections, expected at least 1", len(sections))
 					}
-					code := codegen.SectionCode(t, sections[0])
+					code := codegen.SectionCode(t, sections[c.Sec])
 					if code != c.Code {
 						t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c.Code))
 					}
@@ -108,11 +155,78 @@ func TestSecureEncoder(t *testing.T) {
 						t.Fatalf("got %d sections, expected at least 1", len(sections))
 					}
 					code := codegen.SectionCode(t, sections[0])
-					data := sections[0].Data.(*httpcodegen.EndpointData)
-					if !strings.Contains(code, "Secure"+data.RequestEncoder) {
-						t.Errorf("invalid code, got:\n%s\n expected %s in the code", strings.TrimSpace(code), "Secure"+data.RequestEncoder)
+					if !strings.Contains(code, "Secure") {
+						t.Errorf("invalid code, got:\n%s\n expected %s in the code", strings.TrimSpace(code), "Secure")
 					}
 				}
+			}
+		})
+	}
+}
+
+func TestEncoder(t *testing.T) {
+	cases := []struct {
+		Name string
+		DSL  func()
+		Code string
+	}{
+		{"basic-auth", testdata.BasicAuthRequiredDSL, testdata.BasicAuthRequiredEncoderCode},
+		{"oauth2", testdata.OAuth2DSL, testdata.OAuth2EncoderCode},
+		{"jwt", testdata.JWTDSL, testdata.JWTEncoderCode},
+		{"api-key", testdata.APIKeyDSL, testdata.APIKeyEncoderCode},
+		{"api-key-in-param", testdata.APIKeyInParamDSL, testdata.APIKeyInParamEncoderCode},
+		{"api-key-in-body", testdata.APIKeyInBodyDSL, testdata.APIKeyInBodyEncoderCode},
+		{"multiple-and", testdata.MultipleAndDSL, testdata.MultipleAndEncoderCode},
+		{"multiple-or", testdata.MultipleOrDSL, testdata.MultipleOrEncoderCode},
+		{"multiple-schemes-with-params", testdata.MultipleSchemesWithParamsDSL, testdata.MultipleSchemesWithParamsEncoderCode},
+		{"schemes-in-type", testdata.SchemesInTypeDSL, testdata.SchemesInTypeEncoderCode},
+	}
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			RunHTTPDSL(t, c.DSL, testdata.TopLevelSchemes)
+			fs := httpcodegen.ClientFiles("", httpdesign.Root)
+			if len(fs) != 2 {
+				t.Fatalf("got %d files, expected two", len(fs))
+			}
+			Generate("", []eval.Root{httpdesign.Root}, fs)
+			for _, f := range fs {
+				if filepath.Base(f.Path) == "encode_decode.go" {
+					sections := f.Section("request-encoder")
+					if len(sections) < 1 {
+						t.Fatalf("got %d sections, expected at least 1", len(sections))
+					}
+					code := codegen.SectionCode(t, sections[0])
+					if code != c.Code {
+						t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c.Code))
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestAddCLIFlags(t *testing.T) {
+	cases := []struct {
+		Name         string
+		DSL          func()
+		FileIndex    int
+		Code         string
+		SectionIndex int
+	}{
+		{"basic-auth-build", testdata.BasicAuthDSL, 1, testdata.BasicAuthBuildCode, 1},
+		{"basic-auth-required-parse", testdata.BasicAuthRequiredDSL, 0, testdata.BasicAuthRequiredParseCode, 3},
+		{"basic-auth-required-build", testdata.BasicAuthRequiredDSL, 1, testdata.BasicAuthRequiredBuildCode, 1},
+		{"jwt-build", testdata.JWTDSL, 1, testdata.JWTBuildCode, 1},
+	}
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			RunHTTPDSL(t, c.DSL, testdata.TopLevelSchemes)
+			fs := httpcodegen.ClientCLIFiles("", httpdesign.Root)
+			Generate("", []eval.Root{httpdesign.Root}, fs)
+			sections := fs[c.FileIndex].SectionTemplates
+			code := codegen.SectionCode(t, sections[c.SectionIndex])
+			if code != c.Code {
+				t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c.Code))
 			}
 		})
 	}

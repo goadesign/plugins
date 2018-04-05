@@ -40,6 +40,24 @@ var BasicAuthDSL = func() {
 	})
 }
 
+var BasicAuthRequiredDSL = func() {
+	Service("BasicAuthRequired", func() {
+		Method("login", func() {
+			Security(BasicAuth)
+			Payload(func() {
+				Username("user", String)
+				Password("pass", String)
+				Attribute("id", String)
+				Required("user", "pass")
+			})
+			HTTP(func() {
+				POST("/login")
+				Param("id")
+			})
+		})
+	})
+}
+
 var OAuth2DSL = func() {
 	Service("OAuth2", func() {
 		Method("login", func() {
@@ -118,6 +136,21 @@ var APIKeyInParamDSL = func() {
 	})
 }
 
+var APIKeyInBodyDSL = func() {
+	Service("APIKeyInBody", func() {
+		Method("login", func() {
+			Security(APIKeyAuth)
+			Payload(func() {
+				APIKey("api_key", "key", String)
+			})
+			HTTP(func() {
+				POST("/login")
+				Body("key")
+			})
+		})
+	})
+}
+
 var MultipleAndDSL = func() {
 	Service("MultipleAnd", func() {
 		Method("login", func() {
@@ -148,6 +181,73 @@ var MultipleOrDSL = func() {
 			HTTP(func() {
 				POST("/login")
 				Param("key:k")
+			})
+		})
+	})
+}
+
+var MultipleSchemesWithParamsDSL = func() {
+	Service("MultipleSchemesWithParams", func() {
+		Method("login", func() {
+			Security(JWTAuth)
+			Security(APIKeyAuth)
+			Payload(func() {
+				Token("token", String)
+				APIKey("api_key", "key", String)
+				Attribute("id", Int)
+				Attribute("user_agent", String)
+				Attribute("name", String)
+				Attribute("description", String)
+				Required("token")
+			})
+			HTTP(func() {
+				POST("/login/{id}")
+				Param("key:k")
+				Param("name")
+				Header("user_agent:User-Agent")
+			})
+		})
+	})
+}
+
+var SchemesInTypeDSL = func() {
+	var Schemes = Type("Schemes", func() {
+		APIKey("api_key", "key", String)
+		AccessToken("token", String)
+	})
+	Service("SchemesInTypeDSL", func() {
+		Method("login", func() {
+			Security(APIKeyAuth)
+			Security(OAuth2Auth)
+			Payload(Schemes)
+			HTTP(func() {
+				POST("/login")
+				Param("key:k")
+			})
+		})
+	})
+}
+
+var SameSchemeMultipleEndpoints = func() {
+	Service("SameSchemeMultipleEndpoints", func() {
+		Method("method1", func() {
+			Security(APIKeyAuth)
+			Payload(func() {
+				APIKey("api_key", "key", String)
+			})
+			HTTP(func() {
+				POST("/method1")
+				Param("key:k")
+			})
+		})
+		Method("method2", func() {
+			Security(APIKeyAuth)
+			Payload(func() {
+				APIKey("api_key", "key", String)
+			})
+			HTTP(func() {
+				POST("/method1")
+				Header("key:Authorization")
 			})
 		})
 	})

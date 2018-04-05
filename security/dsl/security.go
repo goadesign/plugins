@@ -275,7 +275,7 @@ func Security(args ...interface{}) {
 			case string:
 				for _, s := range design.Root.Schemes {
 					if s.SchemeName == val {
-						schemes[i] = s
+						schemes[i] = design.DupScheme(s)
 						break
 					}
 				}
@@ -284,7 +284,7 @@ func Security(args ...interface{}) {
 					return
 				}
 			case *design.SchemeExpr:
-				schemes[i] = val
+				schemes[i] = design.DupScheme(val)
 			default:
 				eval.InvalidArgError("security scheme or security scheme name", val)
 				return

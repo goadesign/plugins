@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	goahttp "goa.design/goa/http"
 	addersvc "goa.design/plugins/security/examples/calc/adder/gen/adder"
@@ -131,7 +132,12 @@ func SecureEncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*h
 			return err
 		}
 		payload := v.(*addersvc.AddPayload)
-		req.URL.Query().Set("key", payload.Key)
+		values := req.URL.Query()
+		if strings.Contains(payload.Key, " ") {
+			s := strings.SplitN(payload.Key, " ", 2)[1]
+			values.Set("key", s)
+		}
+		req.URL.RawQuery = values.Encode()
 		return nil
 	}
 }

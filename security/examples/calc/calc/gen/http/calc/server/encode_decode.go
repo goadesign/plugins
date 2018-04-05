@@ -9,7 +9,6 @@ package server
 
 import (
 	"context"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -35,23 +34,8 @@ func EncodeLoginResponse(encoder func(context.Context, http.ResponseWriter) goah
 // endpoint.
 func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
 	return func(r *http.Request) (interface{}, error) {
-		var (
-			body LoginRequestBody
-			err  error
-		)
-		err = decoder(r).Decode(&body)
-		if err != nil {
-			if err == io.EOF {
-				return nil, goa.MissingPayloadError()
-			}
-			return nil, goa.DecodePayloadError(err.Error())
-		}
-		err = body.Validate()
-		if err != nil {
-			return nil, err
-		}
 
-		return NewLoginLoginPayload(&body), nil
+		return NewLoginLoginPayload(), nil
 	}
 }
 
@@ -90,24 +74,10 @@ func EncodeAddResponse(encoder func(context.Context, http.ResponseWriter) goahtt
 func DecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
 	return func(r *http.Request) (interface{}, error) {
 		var (
-			body AddRequestBody
-			err  error
-		)
-		err = decoder(r).Decode(&body)
-		if err != nil {
-			if err == io.EOF {
-				return nil, goa.MissingPayloadError()
-			}
-			return nil, goa.DecodePayloadError(err.Error())
-		}
-		err = body.Validate()
-		if err != nil {
-			return nil, err
-		}
-
-		var (
-			a int
-			b int
+			a     int
+			b     int
+			token string
+			err   error
 
 			params = mux.Vars(r)
 		)
@@ -127,11 +97,15 @@ func DecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Dec
 			}
 			b = int(v)
 		}
+		token = r.Header.Get("Authorization")
+		if token == "" {
+			err = goa.MergeErrors(err, goa.MissingFieldError("Authorization", "header"))
+		}
 		if err != nil {
 			return nil, err
 		}
 
-		return NewAddAddPayload(&body, a, b), nil
+		return NewAddAddPayload(a, b, token), nil
 	}
 }
 
@@ -165,12 +139,9 @@ func SecureDecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goaht
 			return nil, err
 		}
 		payload := p.(*calcsvc.AddPayload)
-		hJWT := r.Header.Get("Authorization")
-		if hJWT == "" {
-			return p, nil
+		if strings.Contains(payload.Token, " ") {
+			payload.Token = strings.SplitN(payload.Token, " ", 2)[1]
 		}
-		tokenJWT := strings.TrimPrefix(hJWT, "Bearer ")
-		payload.Token = tokenJWT
 		return payload, nil
 	}
 }

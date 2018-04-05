@@ -9,7 +9,13 @@ import (
 	"goa.design/plugins/security/design"
 )
 
+// Data contains the secure service data indexed by service name.
+var Data = make(ServicesData)
+
 type (
+	// ServicesData contains the secure service data indexed by service name.
+	ServicesData map[string]*ServiceData
+
 	// ServiceData contains the data necessary to render the secure endpoints
 	// constructor.
 	ServiceData struct {
@@ -43,7 +49,7 @@ type (
 		ServiceName string
 		// Requirements lists the security requirements that apply to
 		// the secured method.
-		Requirements []*design.SecurityExpr
+		Requirements []*design.EndpointSecurityExpr
 		// SecurityPkgName is the name of the security package.
 		SecurityPkgName string
 		// Schemes is the security schemes for the method.
@@ -57,23 +63,50 @@ type (
 		UsernameField string
 		// UsernamePointer is true if the username field is a pointer.
 		UsernamePointer bool
+		// UsernameAttr is the attribute name containing the username.
+		UsernameAttr string
 		// PasswordField is the name of the payload field that should be
 		// initialized with the basic auth password if any.
 		PasswordField string
 		// PasswordPointer is true if the password field is a pointer.
 		PasswordPointer bool
+		// PasswordAttr is the attribute name containing the password.
+		PasswordAttr string
 		// CredField contains the name of the payload field that should
 		// be initialized with the API key, the JWT token or the OAuth2
 		// access token.
 		CredField string
 		// CredPointer is true if the credential field is a pointer.
 		CredPointer bool
-		// KeyAttr is the attribute name containing the security tag.
+		// KeyAttr is the attribute name containing the security tag
+		// (for APIKey, OAuth2, and JWT schemes).
 		KeyAttr string
 		// Scheme is the security scheme expression.
 		Scheme *design.SchemeExpr
 	}
 )
+
+// Get returns the secure service data for the given service. If data
+// not found it builds one for existing service.
+func (s ServicesData) Get(name string) *ServiceData {
+	if data, ok := s[name]; ok {
+		return data
+	}
+	if svc := goadesign.Root.Service(name); svc != nil {
+		s[name] = buildSecureServiceData(svc, codegen.Goify(goadesign.Root.API.Name, false))
+	}
+	return s[name]
+}
+
+// MethodData returns the data for the given method name.
+func (s *ServiceData) MethodData(name string) *MethodData {
+	for _, m := range s.Methods {
+		if m.Name == name {
+			return m
+		}
+	}
+	return nil
+}
 
 // SchemeData returns the scheme data for the given scheme.
 func (m *MethodData) SchemeData(s *design.SchemeExpr) *SchemeData {
@@ -85,9 +118,9 @@ func (m *MethodData) SchemeData(s *design.SchemeExpr) *SchemeData {
 	return nil
 }
 
-// BuildSecureServiceData builds the data needed to render the secured endpoints
+// buildSecureServiceData builds the data needed to render the secured endpoints
 // struct constructor and the secure endpoint methods.
-func BuildSecureServiceData(svc *goadesign.ServiceExpr, apiPkg string) *ServiceData {
+func buildSecureServiceData(svc *goadesign.ServiceExpr, apiPkg string) *ServiceData {
 	data := &ServiceData{
 		APIPkg:           apiPkg,
 		Data:             service.Services.Get(svc.Name),
@@ -98,7 +131,7 @@ func BuildSecureServiceData(svc *goadesign.ServiceExpr, apiPkg string) *ServiceD
 	var svcSchemes []*design.SchemeExpr
 	svcSchemesFound := map[design.SchemeKind]bool{}
 	for _, m := range svc.Methods {
-		reqs := design.Requirements(svc.Name, m.Name)
+		reqs := design.Requirements(m)
 		md := data.Method(m.Name)
 		varn := md.VarName
 		cn := "New" + varn
@@ -108,7 +141,7 @@ func BuildSecureServiceData(svc *goadesign.ServiceExpr, apiPkg string) *ServiceD
 		var schemeData []*SchemeData
 		for _, req := range reqs {
 			for _, sch := range req.Schemes {
-				schemeData = append(schemeData, BuildSchemeData(sch, m))
+				schemeData = append(schemeData, buildSchemeData(sch, m))
 				if _, ok := svcSchemesFound[sch.Kind]; ok {
 					continue
 				}
@@ -130,8 +163,8 @@ func BuildSecureServiceData(svc *goadesign.ServiceExpr, apiPkg string) *ServiceD
 	return data
 }
 
-// BuildSchemeData builds the scheme data for the given scheme and method expressions.
-func BuildSchemeData(s *design.SchemeExpr, m *goadesign.MethodExpr) *SchemeData {
+// buildSchemeData builds the scheme data for the given scheme and method expressions.
+func buildSchemeData(s *design.SchemeExpr, m *goadesign.MethodExpr) *SchemeData {
 	if !goadesign.IsObject(m.Payload.Type) {
 		return nil
 	}
@@ -140,8 +173,10 @@ func BuildSchemeData(s *design.SchemeExpr, m *goadesign.MethodExpr) *SchemeData 
 		userAtt, user := findSecurityField(m.Payload, "security:username")
 		passAtt, pass := findSecurityField(m.Payload, "security:password")
 		return &SchemeData{
+			UsernameAttr:    userAtt,
 			UsernameField:   user,
 			UsernamePointer: m.Payload.IsPrimitivePointer(userAtt, true),
+			PasswordAttr:    passAtt,
 			PasswordField:   pass,
 			PasswordPointer: m.Payload.IsPrimitivePointer(passAtt, true),
 			Scheme:          s,

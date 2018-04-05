@@ -21,6 +21,16 @@ func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 }
 `
 
+var BasicAuthDecoderCode = `// DecodeLoginRequest returns a decoder for requests sent to the BasicAuth
+// login endpoint.
+func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+
+		return NewLoginLoginPayload(), nil
+	}
+}
+`
+
 var OAuth2SecureDecoderCode = `// SecureDecodeLoginRequest returns a decoder for requests sent to the OAuth2
 // login endpoint that is security scheme aware.
 func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
@@ -31,33 +41,27 @@ func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 			return nil, err
 		}
 		payload := p.(*oauth2.LoginPayload)
-		hOAuth2 := r.Header.Get("Authorization")
-		if hOAuth2 == "" {
-			return p, nil
+		if strings.Contains(*payload.Token, " ") {
+			payload.Token = &(strings.SplitN(*payload.Token, " ", 2)[1])
 		}
-		tokenOAuth2 := strings.TrimPrefix(hOAuth2, "Bearer ")
-		payload.Token = &tokenOAuth2
 		return payload, nil
 	}
 }
 `
 
-var OAuth2InParamSecureDecoderCode = `// SecureDecodeLoginRequest returns a decoder for requests sent to the
-// OAuth2InParam login endpoint that is security scheme aware.
-func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
-	rawDecoder := DecodeLoginRequest(mux, decoder)
+var OAuth2DecoderCode = `// DecodeLoginRequest returns a decoder for requests sent to the OAuth2 login
+// endpoint.
+func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
 	return func(r *http.Request) (interface{}, error) {
-		p, err := rawDecoder(r)
-		if err != nil {
-			return nil, err
+		var (
+			token *string
+		)
+		tokenRaw := r.Header.Get("Authorization")
+		if tokenRaw != "" {
+			token = &tokenRaw
 		}
-		payload := p.(*oauth2inparam.LoginPayload)
-		tokenOAuth2 := r.URL.Query().Get("t")
-		if tokenOAuth2 == "" {
-			return p, nil
-		}
-		payload.Token = &tokenOAuth2
-		return payload, nil
+
+		return NewLoginLoginPayload(token), nil
 	}
 }
 `
@@ -72,13 +76,27 @@ func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 			return nil, err
 		}
 		payload := p.(*jwt.LoginPayload)
-		hJWT := r.Header.Get("Authorization")
-		if hJWT == "" {
-			return p, nil
+		if strings.Contains(*payload.Token, " ") {
+			payload.Token = &(strings.SplitN(*payload.Token, " ", 2)[1])
 		}
-		tokenJWT := strings.TrimPrefix(hJWT, "Bearer ")
-		payload.Token = &tokenJWT
 		return payload, nil
+	}
+}
+`
+
+var JWTDecoderCode = `// DecodeLoginRequest returns a decoder for requests sent to the JWT login
+// endpoint.
+func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			token *string
+		)
+		tokenRaw := r.Header.Get("Authorization")
+		if tokenRaw != "" {
+			token = &tokenRaw
+		}
+
+		return NewLoginLoginPayload(token), nil
 	}
 }
 `
@@ -93,12 +111,27 @@ func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 			return nil, err
 		}
 		payload := p.(*apikey.LoginPayload)
-		key := r.Header.Get("Authorization")
-		if key == "" {
-			return p, nil
+		if strings.Contains(*payload.Key, " ") {
+			payload.Key = &(strings.SplitN(*payload.Key, " ", 2)[1])
 		}
-		payload.Key = &key
 		return payload, nil
+	}
+}
+`
+
+var APIKeyDecoderCode = `// DecodeLoginRequest returns a decoder for requests sent to the APIKey login
+// endpoint.
+func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			key *string
+		)
+		keyRaw := r.Header.Get("Authorization")
+		if keyRaw != "" {
+			key = &keyRaw
+		}
+
+		return NewLoginLoginPayload(key), nil
 	}
 }
 `
@@ -113,12 +146,66 @@ func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 			return nil, err
 		}
 		payload := p.(*apikeyinparam.LoginPayload)
-		key := r.URL.Query().Get("key")
-		if key == "" {
-			return p, nil
+		if strings.Contains(*payload.Key, " ") {
+			payload.Key = &(strings.SplitN(*payload.Key, " ", 2)[1])
 		}
-		payload.Key = &key
 		return payload, nil
+	}
+}
+`
+
+var APIKeyInParamDecoderCode = `// DecodeLoginRequest returns a decoder for requests sent to the APIKeyInParam
+// login endpoint.
+func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			key *string
+		)
+		keyRaw := r.URL.Query().Get("key")
+		if keyRaw != "" {
+			key = &keyRaw
+		}
+
+		return NewLoginLoginPayload(key), nil
+	}
+}
+`
+
+var APIKeyInBodySecureDecoderCode = `// SecureDecodeLoginRequest returns a decoder for requests sent to the
+// APIKeyInBody login endpoint that is security scheme aware.
+func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	rawDecoder := DecodeLoginRequest(mux, decoder)
+	return func(r *http.Request) (interface{}, error) {
+		p, err := rawDecoder(r)
+		if err != nil {
+			return nil, err
+		}
+		payload := p.(*apikeyinbody.LoginPayload)
+		if strings.Contains(*payload.Key, " ") {
+			payload.Key = &(strings.SplitN(*payload.Key, " ", 2)[1])
+		}
+		return payload, nil
+	}
+}
+`
+
+var APIKeyInBodyDecoderCode = `// DecodeLoginRequest returns a decoder for requests sent to the APIKeyInBody
+// login endpoint.
+func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			body string
+			err  error
+		)
+		err = decoder(r).Decode(&body)
+		if err != nil {
+			if err == io.EOF {
+				return nil, goa.MissingPayloadError()
+			}
+			return nil, goa.DecodePayloadError(err.Error())
+		}
+
+		return NewLoginLoginPayload(body), nil
 	}
 }
 `
@@ -139,12 +226,27 @@ func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 		}
 		payload.User = &user
 		payload.Password = &pass
-		key := r.URL.Query().Get("k")
-		if key == "" {
-			return p, nil
+		if strings.Contains(*payload.Key, " ") {
+			payload.Key = &(strings.SplitN(*payload.Key, " ", 2)[1])
 		}
-		payload.Key = &key
 		return payload, nil
+	}
+}
+`
+
+var MultipleAndDecoderCode = `// DecodeLoginRequest returns a decoder for requests sent to the MultipleAnd
+// login endpoint.
+func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			key *string
+		)
+		keyRaw := r.URL.Query().Get("k")
+		if keyRaw != "" {
+			key = &keyRaw
+		}
+
+		return NewLoginLoginPayload(key), nil
 	}
 }
 `
@@ -165,12 +267,128 @@ func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 		}
 		payload.User = &user
 		payload.Password = &pass
-		key := r.URL.Query().Get("k")
-		if key == "" {
-			return p, nil
+		if strings.Contains(*payload.Key, " ") {
+			payload.Key = &(strings.SplitN(*payload.Key, " ", 2)[1])
 		}
-		payload.Key = &key
 		return payload, nil
+	}
+}
+`
+
+var MultipleOrDecoderCode = `// DecodeLoginRequest returns a decoder for requests sent to the MultipleOr
+// login endpoint.
+func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			key *string
+		)
+		keyRaw := r.URL.Query().Get("k")
+		if keyRaw != "" {
+			key = &keyRaw
+		}
+
+		return NewLoginLoginPayload(key), nil
+	}
+}
+`
+
+var SchemesInTypeSecureDecoderCode = `// SecureDecodeLoginRequest returns a decoder for requests sent to the
+// SchemesInTypeDSL login endpoint that is security scheme aware.
+func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	rawDecoder := DecodeLoginRequest(mux, decoder)
+	return func(r *http.Request) (interface{}, error) {
+		p, err := rawDecoder(r)
+		if err != nil {
+			return nil, err
+		}
+		payload := p.(*schemesintypedsl.Schemes)
+		if strings.Contains(*payload.Key, " ") {
+			payload.Key = &(strings.SplitN(*payload.Key, " ", 2)[1])
+		}
+		if strings.Contains(*payload.Token, " ") {
+			payload.Token = &(strings.SplitN(*payload.Token, " ", 2)[1])
+		}
+		return payload, nil
+	}
+}
+`
+
+var SchemesInTypeDecoderCode = `// DecodeLoginRequest returns a decoder for requests sent to the
+// SchemesInTypeDSL login endpoint.
+func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			key   *string
+			token *string
+		)
+		keyRaw := r.URL.Query().Get("k")
+		if keyRaw != "" {
+			key = &keyRaw
+		}
+		tokenRaw := r.Header.Get("Authorization")
+		if tokenRaw != "" {
+			token = &tokenRaw
+		}
+
+		return NewLoginSchemes(key, token), nil
+	}
+}
+`
+
+var MultipleSchemesWithParamsDecoderCode = `// DecodeLoginRequest returns a decoder for requests sent to the
+// MultipleSchemesWithParams login endpoint.
+func DecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			body LoginRequestBody
+			err  error
+		)
+		err = decoder(r).Decode(&body)
+		if err != nil {
+			if err == io.EOF {
+				return nil, goa.MissingPayloadError()
+			}
+			return nil, goa.DecodePayloadError(err.Error())
+		}
+
+		var (
+			id        int
+			key       *string
+			name      *string
+			userAgent *string
+			token     string
+
+			params = mux.Vars(r)
+		)
+		{
+			idRaw := params["id"]
+			v, err2 := strconv.ParseInt(idRaw, 10, strconv.IntSize)
+			if err2 != nil {
+				err = goa.MergeErrors(err, goa.InvalidFieldTypeError("id", idRaw, "integer"))
+			}
+			id = int(v)
+		}
+		keyRaw := r.URL.Query().Get("k")
+		if keyRaw != "" {
+			key = &keyRaw
+		}
+		nameRaw := r.URL.Query().Get("name")
+		if nameRaw != "" {
+			name = &nameRaw
+		}
+		userAgentRaw := r.Header.Get("User-Agent")
+		if userAgentRaw != "" {
+			userAgent = &userAgentRaw
+		}
+		token = r.Header.Get("Authorization")
+		if token == "" {
+			err = goa.MergeErrors(err, goa.MissingFieldError("Authorization", "header"))
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		return NewLoginLoginPayload(&body, id, key, name, userAgent, token), nil
 	}
 }
 `

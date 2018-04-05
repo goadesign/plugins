@@ -29,10 +29,7 @@ func UsageCommands() string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + ` calc login --body '{
-      "password": "password",
-      "user": "username"
-   }'` + "\n" +
+	return os.Args[0] + ` calc login` + "\n" +
 		""
 }
 
@@ -48,13 +45,14 @@ func ParseEndpoint(
 	var (
 		calcFlags = flag.NewFlagSet("calc", flag.ContinueOnError)
 
-		calcLoginFlags    = flag.NewFlagSet("login", flag.ExitOnError)
-		calcLoginBodyFlag = calcLoginFlags.String("body", "REQUIRED", "")
+		calcLoginFlags        = flag.NewFlagSet("login", flag.ExitOnError)
+		calcLoginUserFlag     = calcLoginFlags.String("user", "REQUIRED", "")
+		calcLoginPasswordFlag = calcLoginFlags.String("password", "REQUIRED", "")
 
-		calcAddFlags    = flag.NewFlagSet("add", flag.ExitOnError)
-		calcAddBodyFlag = calcAddFlags.String("body", "REQUIRED", "")
-		calcAddAFlag    = calcAddFlags.String("a", "REQUIRED", "Left operand")
-		calcAddBFlag    = calcAddFlags.String("b", "REQUIRED", "Right operand")
+		calcAddFlags     = flag.NewFlagSet("add", flag.ExitOnError)
+		calcAddAFlag     = calcAddFlags.String("a", "REQUIRED", "Left operand")
+		calcAddBFlag     = calcAddFlags.String("b", "REQUIRED", "Right operand")
+		calcAddTokenFlag = calcAddFlags.String("token", "REQUIRED", "")
 	)
 	calcFlags.Usage = calcUsage
 	calcLoginFlags.Usage = calcLoginUsage
@@ -127,10 +125,10 @@ func ParseEndpoint(
 			switch epn {
 			case "login":
 				endpoint = c.Login()
-				data, err = calcsvcc.BuildLoginPayload(*calcLoginBodyFlag)
+				data, err = calcsvcc.BuildLoginPayload(*calcLoginUserFlag, *calcLoginPasswordFlag)
 			case "add":
 				endpoint = c.Add()
-				data, err = calcsvcc.BuildAddPayload(*calcAddBodyFlag, *calcAddAFlag, *calcAddBFlag)
+				data, err = calcsvcc.BuildAddPayload(*calcAddAFlag, *calcAddBFlag, *calcAddTokenFlag)
 			}
 		}
 	}
@@ -156,30 +154,26 @@ Additional help:
 `, os.Args[0], os.Args[0])
 }
 func calcLoginUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] calc login -body JSON
+	fmt.Fprintf(os.Stderr, `%s [flags] calc login -user STRING -password STRING
 
 Creates a valid JWT
-    -body JSON: 
+    -user STRING: 
+    -password STRING: 
 
 Example:
-    `+os.Args[0]+` calc login --body '{
-      "password": "password",
-      "user": "username"
-   }'
+    `+os.Args[0]+` calc login --user "username" --password "password"
 `, os.Args[0])
 }
 
 func calcAddUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] calc add -body JSON -a INT -b INT
+	fmt.Fprintf(os.Stderr, `%s [flags] calc add -a INT -b INT -token STRING
 
 Add adds up the two integer parameters and returns the results. This endpoint is secured with the JWT scheme
-    -body JSON: 
     -a INT: Left operand
     -b INT: Right operand
+    -token STRING: 
 
 Example:
-    `+os.Args[0]+` calc add --body '{
-      "token": "Tenetur qui consequatur tenetur magni."
-   }' --a 1 --b 2
+    `+os.Args[0]+` calc add --a 1 --b 2 --token "Tenetur qui consequatur tenetur magni."
 `, os.Args[0])
 }

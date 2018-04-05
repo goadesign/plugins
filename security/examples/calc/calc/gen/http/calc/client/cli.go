@@ -8,7 +8,6 @@
 package client
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -17,35 +16,25 @@ import (
 
 // BuildLoginPayload builds the payload for the calc login endpoint from CLI
 // flags.
-func BuildLoginPayload(calcLoginBody string) (*calcsvc.LoginPayload, error) {
-	var err error
-	var body LoginRequestBody
+func BuildLoginPayload(calcLoginUser string, calcLoginPassword string) (*calcsvc.LoginPayload, error) {
+	var user string
 	{
-		err = json.Unmarshal([]byte(calcLoginBody), &body)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"password\": \"password\",\n      \"user\": \"username\"\n   }'")
-		}
+		user = calcLoginUser
 	}
-	if err != nil {
-		return nil, err
+	var password string
+	{
+		password = calcLoginPassword
 	}
-	v := &calcsvc.LoginPayload{
-		User:     body.User,
-		Password: body.Password,
+	payload := &calcsvc.LoginPayload{
+		User:     user,
+		Password: password,
 	}
-	return v, nil
+	return payload, nil
 }
 
 // BuildAddPayload builds the payload for the calc add endpoint from CLI flags.
-func BuildAddPayload(calcAddBody string, calcAddA string, calcAddB string) (*calcsvc.AddPayload, error) {
+func BuildAddPayload(calcAddA string, calcAddB string, calcAddToken string) (*calcsvc.AddPayload, error) {
 	var err error
-	var body AddRequestBody
-	{
-		err = json.Unmarshal([]byte(calcAddBody), &body)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"token\": \"Tenetur qui consequatur tenetur magni.\"\n   }'")
-		}
-	}
 	var a int
 	{
 		var v int64
@@ -64,13 +53,17 @@ func BuildAddPayload(calcAddBody string, calcAddA string, calcAddB string) (*cal
 			err = fmt.Errorf("invalid value for b, must be INT")
 		}
 	}
+	var token string
+	{
+		token = calcAddToken
+	}
 	if err != nil {
 		return nil, err
 	}
-	v := &calcsvc.AddPayload{
-		Token: body.Token,
+	payload := &calcsvc.AddPayload{
+		A:     a,
+		B:     b,
+		Token: token,
 	}
-	v.A = a
-	v.B = b
-	return v, nil
+	return payload, nil
 }
