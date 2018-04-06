@@ -318,24 +318,21 @@ func applySecurity(op *openapi.Operation, reqs []*design.EndpointSecurityExpr) {
 
 var (
 	// decoderRegexp matches occurrences of "{{ .RequestDecoder }}" in section template code.
-	decoderRegexp = regexp.MustCompile(`({{.?\.RequestDecoder.?}})`)
+	decoderRegexp = regexp.MustCompile(`([=.].*)({{.?\.RequestDecoder.?}})`)
 
 	// encoderRegexp matches occurrences of "{{ .RequestEncoder }}" in section template code.
-	encoderRegexp = regexp.MustCompile(`({{.?\.RequestEncoder.?}})`)
+	encoderRegexp = regexp.MustCompile(`([=.].*)({{.?\.RequestEncoder.?}})`)
 )
 
 // secureDecoder prefixes all occurrences of "{{ .RequestDecoder }}" with "Secure"
 // (except in server decode files) if the corresponding endpoint is secured.
 func secureDecoder(f *codegen.File) {
 	for _, s := range f.SectionTemplates {
-		if s.Name == "request-decoder" {
-			continue
-		}
 		if decoderRegexp.MatchString(s.Source) {
 			if data, ok := s.Data.(*httpcodegen.EndpointData); ok {
 				svc := seccodegen.Data.Get(data.ServiceName)
 				if len(svc.MethodData(data.Method.Name).Requirements) > 0 {
-					s.Source = decoderRegexp.ReplaceAllString(s.Source, "Secure${1}")
+					s.Source = decoderRegexp.ReplaceAllString(s.Source, "${1}Secure${2}")
 				}
 			}
 		}
@@ -346,13 +343,10 @@ func secureDecoder(f *codegen.File) {
 // (except in client encode files) if the corresponding endpoint is secured.
 func secureEncoder(f *codegen.File) {
 	for _, s := range f.SectionTemplates {
-		if s.Name == "request-encoder" {
-			continue
-		}
 		if data, ok := s.Data.(*httpcodegen.EndpointData); ok {
 			svc := seccodegen.Data.Get(data.ServiceName)
 			if len(svc.MethodData(data.Method.Name).Requirements) > 0 {
-				s.Source = encoderRegexp.ReplaceAllString(s.Source, "Secure${1}")
+				s.Source = encoderRegexp.ReplaceAllString(s.Source, "${1}Secure${2}")
 			}
 		}
 	}
