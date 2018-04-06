@@ -9,27 +9,30 @@ import (
 	httpdesign "goa.design/goa/http/design"
 )
 
-const pluginName = "goakit"
-
 // Register the plugin Generator functions.
 func init() {
-	codegen.RegisterPluginLast(pluginName, "gen", Generate)
-	codegen.RegisterPluginLast(pluginName, "example", Example)
+	codegen.RegisterPluginFirst("goakit", "gen", Generate)
+	codegen.RegisterPluginFirst("goakit", "example", Example)
+	codegen.RegisterPluginLast("goakit-goakitify", "gen", Goakitify)
 }
 
-// Generate modifies all the previously generated files by replacing all
-// instances of "goa.Endpoint" with "github.com/go-kit/kit/endpoint".Endpoint
-// and adding the corresponding import. Generate also generates go-kit
-// specific decoders and encoders.
+// Generate generates go-kit specific decoders and encoders.
 func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
-	for _, f := range files {
-		goakitify(f)
-	}
 	for _, root := range roots {
 		if r, ok := root.(*httpdesign.RootExpr); ok {
 			files = append(files, EncodeDecodeFiles(genpkg, r)...)
 			files = append(files, MountFiles(r)...)
 		}
+	}
+	return files, nil
+}
+
+// Goakitify modifies all the previously generated files by replacing all
+// instances of "goa.Endpoint" with "github.com/go-kit/kit/endpoint".Endpoint
+// and adding the corresponding import.
+func Goakitify(enpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
+	for _, f := range files {
+		goakitify(f)
 	}
 	return files, nil
 }
