@@ -35,7 +35,7 @@ func (s *archiversvcsvc) Archive(ctx context.Context, p *archiversvc.ArchivePayl
 func (s *archiversvcsvc) Read(ctx context.Context, p *archiversvc.ReadPayload) (*archiversvc.ArchiveMedia, error) {
 	doc := s.db.Read(p.ID)
 	if doc == nil {
-		return nil, archiversvc.MakeBadRequest(fmt.Errorf("could not find document with ID %q", p.ID))
+		return nil, archiversvc.MakeNotFound(fmt.Errorf("could not find document with ID %q", p.ID))
 	}
 	return archiveMedia(doc), nil
 }
