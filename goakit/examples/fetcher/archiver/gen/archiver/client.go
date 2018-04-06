@@ -38,10 +38,10 @@ func (c *Client) Archive(ctx context.Context, p *ArchivePayload) (res *ArchiveMe
 }
 
 // Read calls the "read" endpoint of the "archiver" service.
-// Read can return the following error types:
-//	- *Error
-//	- *Error
-//	- error: generic transport error.
+// Read may return the following errors:
+//	- "not_found" (type *goa.ServiceError)
+//	- "bad_request" (type *goa.ServiceError)
+//	- error: internal error
 func (c *Client) Read(ctx context.Context, p *ReadPayload) (res *ArchiveMedia, err error) {
 	var ires interface{}
 	ires, err = c.ReadEndpoint(ctx, p)

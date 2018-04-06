@@ -42,12 +42,22 @@ type Unauthorized string
 
 type InvalidScopes string
 
-// Error returns "unauthorized".
+// Error returns an error description.
 func (e Unauthorized) Error() string {
+	return ""
+}
+
+// ErrorName returns "unauthorized".
+func (e Unauthorized) ErrorName() string {
 	return "unauthorized"
 }
 
-// Error returns "invalid-scopes".
+// Error returns an error description.
 func (e InvalidScopes) Error() string {
+	return ""
+}
+
+// ErrorName returns "invalid-scopes".
+func (e InvalidScopes) ErrorName() string {
 	return "invalid-scopes"
 }

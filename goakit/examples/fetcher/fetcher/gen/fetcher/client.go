@@ -26,10 +26,10 @@ func NewClient(fetch endpoint.Endpoint) *Client {
 }
 
 // Fetch calls the "fetch" endpoint of the "fetcher" service.
-// Fetch can return the following error types:
-//	- *Error
-//	- *Error
-//	- error: generic transport error.
+// Fetch may return the following errors:
+//	- "bad_request" (type *goa.ServiceError)
+//	- "internal_error" (type *goa.ServiceError)
+//	- error: internal error
 func (c *Client) Fetch(ctx context.Context, p *FetchPayload) (res *FetchMedia, err error) {
 	var ires interface{}
 	ires, err = c.FetchEndpoint(ctx, p)

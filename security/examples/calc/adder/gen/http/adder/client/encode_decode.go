@@ -64,10 +64,10 @@ func EncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Re
 // DecodeAddResponse returns a decoder for responses returned by the adder add
 // endpoint. restoreBody controls whether the response body should be restored
 // after having been read.
-// DecodeAddResponse may return the following error types:
-//	- addersvc.InvalidScopes: http.StatusForbidden
-//	- addersvc.Unauthorized: http.StatusUnauthorized
-//	- error: generic transport error.
+// DecodeAddResponse may return the following errors:
+//	- "invalid-scopes" (type addersvc.InvalidScopes): http.StatusForbidden
+//	- "unauthorized" (type addersvc.Unauthorized): http.StatusUnauthorized
+//	- error: internal error
 func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {

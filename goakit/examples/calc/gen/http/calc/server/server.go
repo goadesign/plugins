@@ -23,6 +23,12 @@ type Server struct {
 	Add    http.Handler
 }
 
+// ErrorNamer is an interface implemented by generated error structs that
+// exposes the name of the error as defined in the design.
+type ErrorNamer interface {
+	ErrorName() string
+}
+
 // MountPoint holds information about the mounted endpoints.
 type MountPoint struct {
 	// Method is the name of the service method served by the mounted HTTP handler.
@@ -104,8 +110,8 @@ func NewAddHandler(
 		if err != nil {
 			if err := encodeError(ctx, w, err); err != nil {
 				eh(ctx, w, err)
-				return
 			}
+			return
 		}
 		if err := encodeResponse(ctx, w, res); err != nil {
 			eh(ctx, w, err)

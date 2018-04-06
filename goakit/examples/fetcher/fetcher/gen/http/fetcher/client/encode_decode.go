@@ -47,10 +47,10 @@ func (c *Client) BuildFetchRequest(ctx context.Context, v interface{}) (*http.Re
 // DecodeFetchResponse returns a decoder for responses returned by the fetcher
 // fetch endpoint. restoreBody controls whether the response body should be
 // restored after having been read.
-// DecodeFetchResponse may return the following error types:
-//	- *fetchersvc.Error: http.StatusBadRequest
-//	- *fetchersvc.Error: http.StatusInternalServerError
-//	- error: generic transport error.
+// DecodeFetchResponse may return the following errors:
+//	- "bad_request" (type *goa.ServiceError): http.StatusBadRequest
+//	- "internal_error" (type *goa.ServiceError): http.StatusInternalServerError
+//	- error: internal error
 func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {

@@ -100,20 +100,23 @@ func DecodeReadRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.De
 func EncodeReadError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
 	encodeError := goahttp.ErrorEncoder(encoder)
 	return func(ctx context.Context, w http.ResponseWriter, v error) error {
-		switch res := v.(type) {
-		case *archiversvc.Error:
-			if res.Name == "not_found" {
-				enc := encoder(ctx, w)
-				body := NewReadNotFoundResponseBody(res)
-				w.WriteHeader(http.StatusNotFound)
-				return enc.Encode(body)
-			}
-			if res.Name == "bad_request" {
-				enc := encoder(ctx, w)
-				body := NewReadBadRequestResponseBody(res)
-				w.WriteHeader(http.StatusBadRequest)
-				return enc.Encode(body)
-			}
+		en, ok := v.(ErrorNamer)
+		if !ok {
+			return encodeError(ctx, w, v)
+		}
+		switch en.ErrorName() {
+		case "not_found":
+			res := v.(*goa.ServiceError)
+			enc := encoder(ctx, w)
+			body := NewReadNotFoundResponseBody(res)
+			w.WriteHeader(http.StatusNotFound)
+			return enc.Encode(body)
+		case "bad_request":
+			res := v.(*goa.ServiceError)
+			enc := encoder(ctx, w)
+			body := NewReadBadRequestResponseBody(res)
+			w.WriteHeader(http.StatusBadRequest)
+			return enc.Encode(body)
 		default:
 			return encodeError(ctx, w, v)
 		}

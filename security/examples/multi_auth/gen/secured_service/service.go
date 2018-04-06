@@ -79,7 +79,12 @@ type AlsoDoublySecurePayload struct {
 // Credentials are invalid
 type Unauthorized string
 
-// Error returns "unauthorized".
+// Error returns an error description.
 func (e Unauthorized) Error() string {
+	return "Credentials are invalid"
+}
+
+// ErrorName returns "unauthorized".
+func (e Unauthorized) ErrorName() string {
 	return "unauthorized"
 }

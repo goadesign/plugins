@@ -99,7 +99,7 @@ func NewReadResponseBody(res *archiversvc.ArchiveMedia) *ReadResponseBody {
 
 // NewReadNotFoundResponseBody builds the HTTP response body from the result of
 // the "read" endpoint of the "archiver" service.
-func NewReadNotFoundResponseBody(res *archiversvc.Error) *ReadNotFoundResponseBody {
+func NewReadNotFoundResponseBody(res *goa.ServiceError) *ReadNotFoundResponseBody {
 	body := &ReadNotFoundResponseBody{
 		Name:      res.Name,
 		ID:        res.ID,
@@ -112,7 +112,7 @@ func NewReadNotFoundResponseBody(res *archiversvc.Error) *ReadNotFoundResponseBo
 
 // NewReadBadRequestResponseBody builds the HTTP response body from the result
 // of the "read" endpoint of the "archiver" service.
-func NewReadBadRequestResponseBody(res *archiversvc.Error) *ReadBadRequestResponseBody {
+func NewReadBadRequestResponseBody(res *goa.ServiceError) *ReadBadRequestResponseBody {
 	body := &ReadBadRequestResponseBody{
 		Name:      res.Name,
 		ID:        res.ID,

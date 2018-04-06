@@ -38,9 +38,9 @@ func (c *Client) BuildSigninRequest(ctx context.Context, v interface{}) (*http.R
 // DecodeSigninResponse returns a decoder for responses returned by the
 // secured_service signin endpoint. restoreBody controls whether the response
 // body should be restored after having been read.
-// DecodeSigninResponse may return the following error types:
-//	- securedservice.Unauthorized: http.StatusUnauthorized
-//	- error: generic transport error.
+// DecodeSigninResponse may return the following errors:
+//	- "unauthorized" (type securedservice.Unauthorized): http.StatusUnauthorized
+//	- error: internal error
 func DecodeSigninResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {
@@ -114,9 +114,9 @@ func EncodeSecureRequest(encoder func(*http.Request) goahttp.Encoder) func(*http
 // DecodeSecureResponse returns a decoder for responses returned by the
 // secured_service secure endpoint. restoreBody controls whether the response
 // body should be restored after having been read.
-// DecodeSecureResponse may return the following error types:
-//	- securedservice.Unauthorized: http.StatusUnauthorized
-//	- error: generic transport error.
+// DecodeSecureResponse may return the following errors:
+//	- "unauthorized" (type securedservice.Unauthorized): http.StatusUnauthorized
+//	- error: internal error
 func DecodeSecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {
@@ -199,9 +199,9 @@ func EncodeDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) func
 // DecodeDoublySecureResponse returns a decoder for responses returned by the
 // secured_service doubly_secure endpoint. restoreBody controls whether the
 // response body should be restored after having been read.
-// DecodeDoublySecureResponse may return the following error types:
-//	- securedservice.Unauthorized: http.StatusUnauthorized
-//	- error: generic transport error.
+// DecodeDoublySecureResponse may return the following errors:
+//	- "unauthorized" (type securedservice.Unauthorized): http.StatusUnauthorized
+//	- error: internal error
 func DecodeDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {
@@ -288,9 +288,9 @@ func EncodeAlsoDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) 
 // DecodeAlsoDoublySecureResponse returns a decoder for responses returned by
 // the secured_service also_doubly_secure endpoint. restoreBody controls
 // whether the response body should be restored after having been read.
-// DecodeAlsoDoublySecureResponse may return the following error types:
-//	- securedservice.Unauthorized: http.StatusUnauthorized
-//	- error: generic transport error.
+// DecodeAlsoDoublySecureResponse may return the following errors:
+//	- "unauthorized" (type securedservice.Unauthorized): http.StatusUnauthorized
+//	- error: internal error
 func DecodeAlsoDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {

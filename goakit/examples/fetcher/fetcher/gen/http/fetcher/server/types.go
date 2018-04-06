@@ -8,6 +8,7 @@
 package server
 
 import (
+	goa "goa.design/goa"
 	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
@@ -64,7 +65,7 @@ func NewFetchResponseBody(res *fetchersvc.FetchMedia) *FetchResponseBody {
 
 // NewFetchBadRequestResponseBody builds the HTTP response body from the result
 // of the "fetch" endpoint of the "fetcher" service.
-func NewFetchBadRequestResponseBody(res *fetchersvc.Error) *FetchBadRequestResponseBody {
+func NewFetchBadRequestResponseBody(res *goa.ServiceError) *FetchBadRequestResponseBody {
 	body := &FetchBadRequestResponseBody{
 		Name:      res.Name,
 		ID:        res.ID,
@@ -77,7 +78,7 @@ func NewFetchBadRequestResponseBody(res *fetchersvc.Error) *FetchBadRequestRespo
 
 // NewFetchInternalErrorResponseBody builds the HTTP response body from the
 // result of the "fetch" endpoint of the "fetcher" service.
-func NewFetchInternalErrorResponseBody(res *fetchersvc.Error) *FetchInternalErrorResponseBody {
+func NewFetchInternalErrorResponseBody(res *goa.ServiceError) *FetchInternalErrorResponseBody {
 	body := &FetchInternalErrorResponseBody{
 		Name:      res.Name,
 		ID:        res.ID,

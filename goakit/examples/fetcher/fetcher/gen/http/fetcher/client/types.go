@@ -64,8 +64,8 @@ func NewFetchFetchMediaOK(body *FetchResponseBody) *fetchersvc.FetchMedia {
 }
 
 // NewFetchBadRequest builds a fetcher service fetch endpoint bad_request error.
-func NewFetchBadRequest(body *FetchBadRequestResponseBody) *fetchersvc.Error {
-	v := &fetchersvc.Error{
+func NewFetchBadRequest(body *FetchBadRequestResponseBody) *goa.ServiceError {
+	v := &goa.ServiceError{
 		Name:      *body.Name,
 		ID:        *body.ID,
 		Message:   *body.Message,
@@ -77,8 +77,8 @@ func NewFetchBadRequest(body *FetchBadRequestResponseBody) *fetchersvc.Error {
 
 // NewFetchInternalError builds a fetcher service fetch endpoint internal_error
 // error.
-func NewFetchInternalError(body *FetchInternalErrorResponseBody) *fetchersvc.Error {
-	v := &fetchersvc.Error{
+func NewFetchInternalError(body *FetchInternalErrorResponseBody) *goa.ServiceError {
+	v := &goa.ServiceError{
 		Name:      *body.Name,
 		ID:        *body.ID,
 		Message:   *body.Message,

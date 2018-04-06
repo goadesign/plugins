@@ -41,8 +41,13 @@ func DecodeSigninRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 func EncodeSigninError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
 	encodeError := goahttp.ErrorEncoder(encoder)
 	return func(ctx context.Context, w http.ResponseWriter, v error) error {
-		switch res := v.(type) {
-		case securedservice.Unauthorized:
+		en, ok := v.(ErrorNamer)
+		if !ok {
+			return encodeError(ctx, w, v)
+		}
+		switch en.ErrorName() {
+		case "unauthorized":
+			res := v.(securedservice.Unauthorized)
 			enc := encoder(ctx, w)
 			body := NewSigninUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)
@@ -102,8 +107,13 @@ func DecodeSecureRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 func EncodeSecureError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
 	encodeError := goahttp.ErrorEncoder(encoder)
 	return func(ctx context.Context, w http.ResponseWriter, v error) error {
-		switch res := v.(type) {
-		case securedservice.Unauthorized:
+		en, ok := v.(ErrorNamer)
+		if !ok {
+			return encodeError(ctx, w, v)
+		}
+		switch en.ErrorName() {
+		case "unauthorized":
+			res := v.(securedservice.Unauthorized)
 			enc := encoder(ctx, w)
 			body := NewSecureUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)
@@ -153,8 +163,13 @@ func DecodeDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Request) go
 func EncodeDoublySecureError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
 	encodeError := goahttp.ErrorEncoder(encoder)
 	return func(ctx context.Context, w http.ResponseWriter, v error) error {
-		switch res := v.(type) {
-		case securedservice.Unauthorized:
+		en, ok := v.(ErrorNamer)
+		if !ok {
+			return encodeError(ctx, w, v)
+		}
+		switch en.ErrorName() {
+		case "unauthorized":
+			res := v.(securedservice.Unauthorized)
 			enc := encoder(ctx, w)
 			body := NewDoublySecureUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)
@@ -209,8 +224,13 @@ func DecodeAlsoDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Request
 func EncodeAlsoDoublySecureError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
 	encodeError := goahttp.ErrorEncoder(encoder)
 	return func(ctx context.Context, w http.ResponseWriter, v error) error {
-		switch res := v.(type) {
-		case securedservice.Unauthorized:
+		en, ok := v.(ErrorNamer)
+		if !ok {
+			return encodeError(ctx, w, v)
+		}
+		switch en.ErrorName() {
+		case "unauthorized":
+			res := v.(securedservice.Unauthorized)
 			enc := encoder(ctx, w)
 			body := NewAlsoDoublySecureUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)
