@@ -3,9 +3,7 @@ package archiver
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"sync"
-	"time"
 
 	"github.com/go-kit/kit/log"
 	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
@@ -37,11 +35,7 @@ func (s *archiversvcsvc) Archive(ctx context.Context, p *archiversvc.ArchivePayl
 func (s *archiversvcsvc) Read(ctx context.Context, p *archiversvc.ReadPayload) (*archiversvc.ArchiveMedia, error) {
 	doc := s.db.Read(p.ID)
 	if doc == nil {
-		return nil, &archiversvc.Error{
-			ID:      strconv.Itoa(int(time.Now().Unix())),
-			Name:    "bad_request",
-			Message: fmt.Sprintf("could not find document with ID %q", p.ID),
-		}
+		return nil, archiversvc.MakeBadRequest(fmt.Errorf("could not find document with ID %q", p.ID))
 	}
 	return archiveMedia(doc), nil
 }

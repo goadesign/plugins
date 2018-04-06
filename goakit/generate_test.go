@@ -15,8 +15,6 @@ import (
 )
 
 func TestGenerate(t *testing.T) {
-	// Map all files containing goaEndpoint indexed by file path
-	goaEndpointFiles := map[string]bool{}
 	cases := map[string]struct {
 		DSL      func()
 		ExpFiles int
@@ -29,10 +27,6 @@ func TestGenerate(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
 			roots := []eval.Root{goadesign.Root, httpdesign.Root}
 			files := generateFiles(t, roots)
-			// Before state: Collect all files with goa endpoint.
-			for _, f := range files {
-				goaEndpointFiles[f.Path] = containsGoaEndpoint(f)
-			}
 			newFiles, err := Generate("", roots, files)
 			if err != nil {
 				t.Fatalf("generate error: %v", err)
@@ -40,6 +34,30 @@ func TestGenerate(t *testing.T) {
 			newFilesCount := len(newFiles) - len(files)
 			if newFilesCount != c.ExpFiles {
 				t.Errorf("invalid code: number of new files expected %d, got %d", c.ExpFiles, newFilesCount)
+			}
+		})
+	}
+}
+
+func TestGoakitify(t *testing.T) {
+	// Map all files containing goaEndpoint indexed by file path
+	goaEndpointFiles := map[string]bool{}
+	cases := map[string]func(){
+		"multi-endpoints": testdata.MultiEndpointDSL,
+		"multi-services":  testdata.MultiServiceDSL,
+	}
+	for name, dsl := range cases {
+		t.Run(name, func(t *testing.T) {
+			httpcodegen.RunHTTPDSL(t, dsl)
+			roots := []eval.Root{goadesign.Root, httpdesign.Root}
+			files := generateFiles(t, roots)
+			newFiles, err := Goakitify("", roots, files)
+			if err != nil {
+				t.Fatalf("generate error: %v", err)
+			}
+			// Before state: Collect all files with goa endpoint.
+			for _, f := range newFiles {
+				goaEndpointFiles[f.Path] = containsGoaEndpoint(f)
 			}
 			// After state: files with goa endpoint should be replaced by gokit endpoint
 			for _, f := range files {
@@ -57,7 +75,6 @@ func TestGenerate(t *testing.T) {
 					}
 				}
 			}
-
 		})
 	}
 }

@@ -6,8 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
-	"time"
 
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
@@ -52,29 +50,20 @@ func (s *fetchersvcsvc) Fetch(ctx context.Context, p *fetchersvc.FetchPayload) (
 	// Make request to external endpoint
 	resp, err := http.Get(p.URL)
 	if err != nil {
-		return nil, &fetchersvc.Error{}
+		return nil, fetchersvc.MakeBadRequest(fmt.Errorf("bad request URL: %s", err))
 	}
 
 	// Read response
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	now := int(time.Now().Unix())
 	if err != nil {
-		return nil, &fetchersvc.Error{
-			ID:      strconv.Itoa(now),
-			Name:    "bad_request",
-			Message: fmt.Sprintf("failed to decode response: %s", err),
-		}
+		return nil, fetchersvc.MakeBadRequest(fmt.Errorf("failed to decode response: %s", err))
 	}
 
 	// Archive response using archiver service
 	res, err := s.archive(ctx, &archiversvc.ArchivePayload{Status: resp.StatusCode, Body: string(body)})
 	if err != nil {
-		return nil, &fetchersvc.Error{
-			ID:      strconv.Itoa(now),
-			Name:    "bad_request",
-			Message: fmt.Sprintf("failed to decode response: %s", err),
-		}
+		return nil, fetchersvc.MakeBadRequest(fmt.Errorf("failed to decode response: %s", err))
 	}
 
 	// Return response
