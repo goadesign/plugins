@@ -26,10 +26,10 @@ func NewClient(add goa.Endpoint) *Client {
 }
 
 // Add calls the "add" endpoint of the "adder" service.
-// Add can return the following error types:
-//	- Unauthorized
-//	- InvalidScopes
-//	- error: generic transport error.
+// Add may return the following errors:
+//	- "unauthorized" (type Unauthorized)
+//	- "invalid-scopes" (type InvalidScopes)
+//	- error: internal error
 func (c *Client) Add(ctx context.Context, p *AddPayload) (res int, err error) {
 	var ires interface{}
 	ires, err = c.AddEndpoint(ctx, p)

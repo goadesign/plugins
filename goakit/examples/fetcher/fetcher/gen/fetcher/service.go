@@ -44,38 +44,18 @@ type FetchMedia struct {
 	ArchiveHref string
 }
 
-// Error response result type
-type Error struct {
-	// Name is the name of this class of errors.
-	Name string
-	// ID is a unique identifier for this particular occurrence of the problem.
-	ID string
-	// Message is a human-readable explanation specific to this occurrence of the
-	// problem.
-	Message string
-	// Is the error temporary?
-	Temporary bool
-	// Is the error a timeout?
-	Timeout bool
-}
-
-// Error returns "error".
-func (e *Error) Error() string {
-	return "error"
-}
-
-// MakeBadRequest builds a Error from an error.
-func MakeBadRequest(err error) *Error {
-	return &Error{
+// MakeBadRequest builds a goa.ServiceError from an error.
+func MakeBadRequest(err error) *goa.ServiceError {
+	return &goa.ServiceError{
 		Name:    "bad_request",
 		ID:      goa.NewErrorID(),
 		Message: err.Error(),
 	}
 }
 
-// MakeInternalError builds a Error from an error.
-func MakeInternalError(err error) *Error {
-	return &Error{
+// MakeInternalError builds a goa.ServiceError from an error.
+func MakeInternalError(err error) *goa.ServiceError {
+	return &goa.ServiceError{
 		Name:    "internal_error",
 		ID:      goa.NewErrorID(),
 		Message: err.Error(),

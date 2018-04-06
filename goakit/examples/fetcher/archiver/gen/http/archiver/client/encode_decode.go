@@ -118,10 +118,10 @@ func (c *Client) BuildReadRequest(ctx context.Context, v interface{}) (*http.Req
 // DecodeReadResponse returns a decoder for responses returned by the archiver
 // read endpoint. restoreBody controls whether the response body should be
 // restored after having been read.
-// DecodeReadResponse may return the following error types:
-//	- *archiversvc.Error: http.StatusNotFound
-//	- *archiversvc.Error: http.StatusBadRequest
-//	- error: generic transport error.
+// DecodeReadResponse may return the following errors:
+//	- "not_found" (type *goa.ServiceError): http.StatusNotFound
+//	- "bad_request" (type *goa.ServiceError): http.StatusBadRequest
+//	- error: internal error
 func DecodeReadResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {

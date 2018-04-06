@@ -75,13 +75,19 @@ func DecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Dec
 func EncodeAddError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
 	encodeError := goahttp.ErrorEncoder(encoder)
 	return func(ctx context.Context, w http.ResponseWriter, v error) error {
-		switch res := v.(type) {
-		case addersvc.InvalidScopes:
+		en, ok := v.(ErrorNamer)
+		if !ok {
+			return encodeError(ctx, w, v)
+		}
+		switch en.ErrorName() {
+		case "invalid-scopes":
+			res := v.(addersvc.InvalidScopes)
 			enc := encoder(ctx, w)
 			body := NewAddInvalidScopesResponseBody(res)
 			w.WriteHeader(http.StatusForbidden)
 			return enc.Encode(body)
-		case addersvc.Unauthorized:
+		case "unauthorized":
+			res := v.(addersvc.Unauthorized)
 			enc := encoder(ctx, w)
 			body := NewAddUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)

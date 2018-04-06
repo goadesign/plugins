@@ -108,8 +108,8 @@ func NewReadArchiveMediaOK(body *ReadResponseBody) *archiversvc.ArchiveMedia {
 }
 
 // NewReadNotFound builds a archiver service read endpoint not_found error.
-func NewReadNotFound(body *ReadNotFoundResponseBody) *archiversvc.Error {
-	v := &archiversvc.Error{
+func NewReadNotFound(body *ReadNotFoundResponseBody) *goa.ServiceError {
+	v := &goa.ServiceError{
 		Name:      *body.Name,
 		ID:        *body.ID,
 		Message:   *body.Message,
@@ -120,8 +120,8 @@ func NewReadNotFound(body *ReadNotFoundResponseBody) *archiversvc.Error {
 }
 
 // NewReadBadRequest builds a archiver service read endpoint bad_request error.
-func NewReadBadRequest(body *ReadBadRequestResponseBody) *archiversvc.Error {
-	v := &archiversvc.Error{
+func NewReadBadRequest(body *ReadBadRequestResponseBody) *goa.ServiceError {
+	v := &goa.ServiceError{
 		Name:      *body.Name,
 		ID:        *body.ID,
 		Message:   *body.Message,

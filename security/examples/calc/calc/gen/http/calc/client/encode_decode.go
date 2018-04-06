@@ -37,9 +37,9 @@ func (c *Client) BuildLoginRequest(ctx context.Context, v interface{}) (*http.Re
 // DecodeLoginResponse returns a decoder for responses returned by the calc
 // login endpoint. restoreBody controls whether the response body should be
 // restored after having been read.
-// DecodeLoginResponse may return the following error types:
-//	- calcsvc.Unauthorized: http.StatusUnauthorized
-//	- error: generic transport error.
+// DecodeLoginResponse may return the following errors:
+//	- "unauthorized" (type calcsvc.Unauthorized): http.StatusUnauthorized
+//	- error: internal error
 func DecodeLoginResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {
