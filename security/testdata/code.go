@@ -111,7 +111,7 @@ var SingleServiceAuthFuncsCode = `// SingleServiceAuthAPIKeyFn implements the au
 // scheme.
 func SingleServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
-	return ctx, fmt.Errorf("internal error")
+	return ctx, fmt.Errorf("not implemented")
 }
 `
 
@@ -119,7 +119,7 @@ var MultipleServicesAuth1FuncsCode = `// ServiceWithAPIKeyAuthAuthAPIKeyFn imple
 // APIKey scheme.
 func ServiceWithAPIKeyAuthAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
-	return ctx, fmt.Errorf("internal error")
+	return ctx, fmt.Errorf("not implemented")
 }
 `
 
@@ -127,13 +127,13 @@ var MultipleServicesAuth2FuncsCode = `// ServiceWithJWTAndAPIKeyAuthAPIKeyFn imp
 // APIKey scheme.
 func ServiceWithJWTAndAPIKeyAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
-	return ctx, fmt.Errorf("internal error")
+	return ctx, fmt.Errorf("not implemented")
 }
 
 // ServiceWithJWTAndAPIKeyAuthJWTFn implements the authorization logic for JWT
 // scheme.
 func ServiceWithJWTAndAPIKeyAuthJWTFn(ctx context.Context, token string, s *security.JWTScheme) (context.Context, error) {
 	// Add authorization logic
-	return ctx, fmt.Errorf("internal error")
+	return ctx, fmt.Errorf("not implemented")
 }
 `

@@ -312,7 +312,7 @@ const dummyAuthFuncsT = `{{ range $sd := . }}
 {{ printf "%sAuth%sFn implements the authorization logic for %s scheme." $sd.ServiceName .Type .Type | comment }}
 func {{ $sd.ServiceVarName }}Auth{{ .Type }}Fn(ctx context.Context, {{ if eq .Type "BasicAuth" }}user, pass{{ else if eq .Type "APIKey" }}key{{ else }}token{{ end }} string, s *{{ $sd.SecurityPkg }}.{{ .Type }}Scheme) (context.Context, error) {
 	// Add authorization logic
-	return ctx, fmt.Errorf("internal error")
+	return ctx, fmt.Errorf("not implemented")
 }
 {{- end }}
 {{- end }}

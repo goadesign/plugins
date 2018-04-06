@@ -53,25 +53,25 @@ func (s *securedServiceSvc) AlsoDoublySecure(ctx context.Context, p *securedserv
 // BasicAuth scheme.
 func SecuredServiceAuthBasicAuthFn(ctx context.Context, user, pass string, s *security.BasicAuthScheme) (context.Context, error) {
 	// Add authorization logic
-	return ctx, fmt.Errorf("internal error")
+	return ctx, fmt.Errorf("not implemented")
 }
 
 // secured_serviceAuthJWTFn implements the authorization logic for JWT scheme.
 func SecuredServiceAuthJWTFn(ctx context.Context, token string, s *security.JWTScheme) (context.Context, error) {
 	// Add authorization logic
-	return ctx, fmt.Errorf("internal error")
+	return ctx, fmt.Errorf("not implemented")
 }
 
 // secured_serviceAuthAPIKeyFn implements the authorization logic for APIKey
 // scheme.
 func SecuredServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
-	return ctx, fmt.Errorf("internal error")
+	return ctx, fmt.Errorf("not implemented")
 }
 
 // secured_serviceAuthOAuth2Fn implements the authorization logic for OAuth2
 // scheme.
 func SecuredServiceAuthOAuth2Fn(ctx context.Context, token string, s *security.OAuth2Scheme) (context.Context, error) {
 	// Add authorization logic
-	return ctx, fmt.Errorf("internal error")
+	return ctx, fmt.Errorf("not implemented")
 }
