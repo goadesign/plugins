@@ -111,10 +111,7 @@ var SingleServiceAuthFuncsCode = `// SingleServiceAuthAPIKeyFn implements the au
 // scheme.
 func SingleServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
-	if key == "" {
-		return ctx, &singleservice.Unauthorized{"invalid key"}
-	}
-	return ctx, nil
+	return ctx, fmt.Errorf("internal error")
 }
 `
 
@@ -122,10 +119,7 @@ var MultipleServicesAuth1FuncsCode = `// ServiceWithAPIKeyAuthAuthAPIKeyFn imple
 // APIKey scheme.
 func ServiceWithAPIKeyAuthAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
-	if key == "" {
-		return ctx, &servicewithapikeyauth.Unauthorized{"invalid key"}
-	}
-	return ctx, nil
+	return ctx, fmt.Errorf("internal error")
 }
 `
 
@@ -133,19 +127,13 @@ var MultipleServicesAuth2FuncsCode = `// ServiceWithJWTAndAPIKeyAuthAPIKeyFn imp
 // APIKey scheme.
 func ServiceWithJWTAndAPIKeyAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
-	if key == "" {
-		return ctx, &servicewithjwtandapikey.Unauthorized{"invalid key"}
-	}
-	return ctx, nil
+	return ctx, fmt.Errorf("internal error")
 }
 
 // ServiceWithJWTAndAPIKeyAuthJWTFn implements the authorization logic for JWT
 // scheme.
 func ServiceWithJWTAndAPIKeyAuthJWTFn(ctx context.Context, token string, s *security.JWTScheme) (context.Context, error) {
 	// Add authorization logic
-	if token == "" {
-		return ctx, &servicewithjwtandapikey.Unauthorized{"invalid token"}
-	}
-	return ctx, nil
+	return ctx, fmt.Errorf("internal error")
 }
 `

@@ -340,7 +340,7 @@ func DecodeAlsoDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder
 func SecureEncodeSigninRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
 	return func(req *http.Request, v interface{}) error {
 		payload := v.(*securedservice.SigninPayload)
-		req.SetBasicAuth(*payload.Username, *payload.Password)
+		req.SetBasicAuth(payload.Username, payload.Password)
 		return nil
 	}
 }
@@ -354,7 +354,9 @@ func SecureEncodeSecureRequest(encoder func(*http.Request) goahttp.Encoder) func
 			return err
 		}
 		payload := v.(*securedservice.SecurePayload)
-		if !strings.Contains(*payload.Token, " ") {
+		if payload.Token == nil {
+			req.Header.Set("Authorization", "")
+		} else if !strings.Contains(*payload.Token, " ") {
 			req.Header.Set("Authorization", "Bearer "+*payload.Token)
 		}
 		return nil
@@ -371,10 +373,14 @@ func SecureEncodeDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder
 		}
 		payload := v.(*securedservice.DoublySecurePayload)
 		values := req.URL.Query()
-		if !strings.Contains(*payload.Token, " ") {
+		if payload.Token == nil {
+			req.Header.Set("Authorization", "")
+		} else if !strings.Contains(*payload.Token, " ") {
 			req.Header.Set("Authorization", "Bearer "+*payload.Token)
 		}
-		if strings.Contains(*payload.Key, " ") {
+		if payload.Key == nil {
+			values.Set("k", "")
+		} else if strings.Contains(*payload.Key, " ") {
 			s := strings.SplitN(*payload.Key, " ", 2)[1]
 			values.Set("k", s)
 		}
@@ -394,16 +400,30 @@ func SecureEncodeAlsoDoublySecureRequest(encoder func(*http.Request) goahttp.Enc
 		}
 		payload := v.(*securedservice.AlsoDoublySecurePayload)
 		values := req.URL.Query()
-		if !strings.Contains(*payload.Token, " ") {
+		if payload.Token == nil {
+			req.Header.Set("Authorization", "")
+		} else if !strings.Contains(*payload.Token, " ") {
 			req.Header.Set("Authorization", "Bearer "+*payload.Token)
 		}
-		if strings.Contains(*payload.Key, " ") {
+		if payload.Key == nil {
+			values.Set("k", "")
+		} else if strings.Contains(*payload.Key, " ") {
 			s := strings.SplitN(*payload.Key, " ", 2)[1]
 			values.Set("k", s)
 		}
-		if strings.Contains(*payload.OauthToken, " ") {
+		if payload.OauthToken == nil {
+			values.Set("oauth", "")
+		} else if strings.Contains(*payload.OauthToken, " ") {
 			s := strings.SplitN(*payload.OauthToken, " ", 2)[1]
 			values.Set("oauth", s)
+		}
+		if payload.Username == nil {
+			username := ""
+			payload.Username = &username
+		}
+		if payload.Password == nil {
+			password := ""
+			payload.Password = &password
 		}
 		req.SetBasicAuth(*payload.Username, *payload.Password)
 		req.URL.RawQuery = values.Encode()

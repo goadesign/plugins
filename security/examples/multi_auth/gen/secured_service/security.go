@@ -35,7 +35,7 @@ func SecureSignin(ep goa.Endpoint, authBasicAuthFn security.AuthorizeBasicAuthFu
 		basicAuthSch := security.BasicAuthScheme{
 			Name: "basic",
 		}
-		ctx, err = authBasicAuthFn(ctx, *p.Username, *p.Password, &basicAuthSch)
+		ctx, err = authBasicAuthFn(ctx, p.Username, p.Password, &basicAuthSch)
 		if err != nil {
 			return nil, err
 		}

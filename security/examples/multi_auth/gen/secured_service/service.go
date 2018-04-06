@@ -39,9 +39,9 @@ var MethodNames = [4]string{"signin", "secure", "doubly_secure", "also_doubly_se
 // Credentials used to authenticate to retrieve JWT token
 type SigninPayload struct {
 	// Username used to perform signin
-	Username *string
+	Username string
 	// Password used to perform signin
-	Password *string
+	Password string
 }
 
 // SecurePayload is the payload type of the secured_service service secure

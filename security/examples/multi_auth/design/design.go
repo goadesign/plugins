@@ -63,6 +63,7 @@ var _ = Service("secured_service", func() {
 			Password("password", String, "Password used to perform signin", func() {
 				Example("password")
 			})
+			Required("username", "password")
 		})
 
 		HTTP(func() {

@@ -126,7 +126,7 @@ func SecureDecodeLoginRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 		payload := p.(*calcsvc.LoginPayload)
 		user, pass, ok := r.BasicAuth()
 		if !ok {
-			return p, nil
+			return nil, goa.MissingFieldError("Authorization", "header")
 		}
 		payload.User = user
 		payload.Password = pass

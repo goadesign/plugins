@@ -65,6 +65,8 @@ type (
 		UsernamePointer bool
 		// UsernameAttr is the attribute name containing the username.
 		UsernameAttr string
+		// UsernameRequired specifies if the username is a required attribute.
+		UsernameRequired bool
 		// PasswordField is the name of the payload field that should be
 		// initialized with the basic auth password if any.
 		PasswordField string
@@ -72,6 +74,8 @@ type (
 		PasswordPointer bool
 		// PasswordAttr is the attribute name containing the password.
 		PasswordAttr string
+		// PasswordRequired specifies if the password is a required attribute.
+		PasswordRequired bool
 		// CredField contains the name of the payload field that should
 		// be initialized with the API key, the JWT token or the OAuth2
 		// access token.
@@ -81,6 +85,8 @@ type (
 		// KeyAttr is the attribute name containing the security tag
 		// (for APIKey, OAuth2, and JWT schemes).
 		KeyAttr string
+		// CredRequired specifies if the key is a required attribute.
+		CredRequired bool
 		// Scheme is the security scheme expression.
 		Scheme *design.SchemeExpr
 	}
@@ -173,39 +179,44 @@ func buildSchemeData(s *design.SchemeExpr, m *goadesign.MethodExpr) *SchemeData 
 		userAtt, user := findSecurityField(m.Payload, "security:username")
 		passAtt, pass := findSecurityField(m.Payload, "security:password")
 		return &SchemeData{
-			UsernameAttr:    userAtt,
-			UsernameField:   user,
-			UsernamePointer: m.Payload.IsPrimitivePointer(userAtt, true),
-			PasswordAttr:    passAtt,
-			PasswordField:   pass,
-			PasswordPointer: m.Payload.IsPrimitivePointer(passAtt, true),
-			Scheme:          s,
+			UsernameAttr:     userAtt,
+			UsernameField:    user,
+			UsernamePointer:  m.Payload.IsPrimitivePointer(userAtt, true),
+			UsernameRequired: m.Payload.IsRequired(userAtt),
+			PasswordAttr:     passAtt,
+			PasswordField:    pass,
+			PasswordPointer:  m.Payload.IsPrimitivePointer(passAtt, true),
+			PasswordRequired: m.Payload.IsRequired(passAtt),
+			Scheme:           s,
 		}
 	case design.APIKeyKind:
 		if keyAtt, key := findSecurityField(m.Payload, "security:apikey:"+s.SchemeName); key != "" {
 			return &SchemeData{
-				CredField:   key,
-				CredPointer: m.Payload.IsPrimitivePointer(keyAtt, true),
-				KeyAttr:     keyAtt,
-				Scheme:      s,
+				CredField:    key,
+				CredPointer:  m.Payload.IsPrimitivePointer(keyAtt, true),
+				KeyAttr:      keyAtt,
+				CredRequired: m.Payload.IsRequired(keyAtt),
+				Scheme:       s,
 			}
 		}
 	case design.JWTKind:
 		if keyAtt, key := findSecurityField(m.Payload, "security:token"); key != "" {
 			return &SchemeData{
-				CredField:   key,
-				CredPointer: m.Payload.IsPrimitivePointer(keyAtt, true),
-				KeyAttr:     keyAtt,
-				Scheme:      s,
+				CredField:    key,
+				CredPointer:  m.Payload.IsPrimitivePointer(keyAtt, true),
+				KeyAttr:      keyAtt,
+				CredRequired: m.Payload.IsRequired(keyAtt),
+				Scheme:       s,
 			}
 		}
 	case design.OAuth2Kind:
 		if keyAtt, key := findSecurityField(m.Payload, "security:accesstoken"); key != "" {
 			return &SchemeData{
-				CredField:   key,
-				CredPointer: m.Payload.IsPrimitivePointer(keyAtt, true),
-				KeyAttr:     keyAtt,
-				Scheme:      s,
+				CredField:    key,
+				CredPointer:  m.Payload.IsPrimitivePointer(keyAtt, true),
+				KeyAttr:      keyAtt,
+				CredRequired: m.Payload.IsRequired(keyAtt),
+				Scheme:       s,
 			}
 		}
 	default:

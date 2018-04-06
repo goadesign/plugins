@@ -254,10 +254,10 @@ func SecureDecodeSigninRequest(mux goahttp.Muxer, decoder func(*http.Request) go
 		payload := p.(*securedservice.SigninPayload)
 		user, pass, ok := r.BasicAuth()
 		if !ok {
-			return p, nil
+			return nil, goa.MissingFieldError("Authorization", "header")
 		}
-		payload.Username = &user
-		payload.Password = &pass
+		payload.Username = user
+		payload.Password = pass
 		return payload, nil
 	}
 }
@@ -272,7 +272,10 @@ func SecureDecodeSecureRequest(mux goahttp.Muxer, decoder func(*http.Request) go
 			return nil, err
 		}
 		payload := p.(*securedservice.SecurePayload)
-		if strings.Contains(*payload.Token, " ") {
+		if payload.Token == nil {
+			token := ""
+			payload.Token = &token
+		} else if strings.Contains(*payload.Token, " ") {
 			payload.Token = &(strings.SplitN(*payload.Token, " ", 2)[1])
 		}
 		return payload, nil
@@ -289,10 +292,16 @@ func SecureDecodeDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.Reque
 			return nil, err
 		}
 		payload := p.(*securedservice.DoublySecurePayload)
-		if strings.Contains(*payload.Token, " ") {
+		if payload.Token == nil {
+			token := ""
+			payload.Token = &token
+		} else if strings.Contains(*payload.Token, " ") {
 			payload.Token = &(strings.SplitN(*payload.Token, " ", 2)[1])
 		}
-		if strings.Contains(*payload.Key, " ") {
+		if payload.Key == nil {
+			key := ""
+			payload.Key = &key
+		} else if strings.Contains(*payload.Key, " ") {
 			payload.Key = &(strings.SplitN(*payload.Key, " ", 2)[1])
 		}
 		return payload, nil
@@ -310,18 +319,28 @@ func SecureDecodeAlsoDoublySecureRequest(mux goahttp.Muxer, decoder func(*http.R
 			return nil, err
 		}
 		payload := p.(*securedservice.AlsoDoublySecurePayload)
-		if strings.Contains(*payload.Token, " ") {
+		if payload.Token == nil {
+			token := ""
+			payload.Token = &token
+		} else if strings.Contains(*payload.Token, " ") {
 			payload.Token = &(strings.SplitN(*payload.Token, " ", 2)[1])
 		}
-		if strings.Contains(*payload.Key, " ") {
+		if payload.Key == nil {
+			key := ""
+			payload.Key = &key
+		} else if strings.Contains(*payload.Key, " ") {
 			payload.Key = &(strings.SplitN(*payload.Key, " ", 2)[1])
 		}
-		if strings.Contains(*payload.OauthToken, " ") {
+		if payload.OauthToken == nil {
+			oauth_token := ""
+			payload.OauthToken = &oauth_token
+		} else if strings.Contains(*payload.OauthToken, " ") {
 			payload.OauthToken = &(strings.SplitN(*payload.OauthToken, " ", 2)[1])
 		}
 		user, pass, ok := r.BasicAuth()
 		if !ok {
-			return p, nil
+			user = ""
+			pass = ""
 		}
 		payload.Username = &user
 		payload.Password = &pass

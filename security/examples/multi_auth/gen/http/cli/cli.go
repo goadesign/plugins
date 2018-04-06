@@ -46,8 +46,8 @@ func ParseEndpoint(
 		securedServiceFlags = flag.NewFlagSet("secured-service", flag.ContinueOnError)
 
 		securedServiceSigninFlags        = flag.NewFlagSet("signin", flag.ExitOnError)
-		securedServiceSigninUsernameFlag = securedServiceSigninFlags.String("username", "", "Username used to perform signin")
-		securedServiceSigninPasswordFlag = securedServiceSigninFlags.String("password", "", "Password used to perform signin")
+		securedServiceSigninUsernameFlag = securedServiceSigninFlags.String("username", "REQUIRED", "Username used to perform signin")
+		securedServiceSigninPasswordFlag = securedServiceSigninFlags.String("password", "REQUIRED", "Password used to perform signin")
 
 		securedServiceSecureFlags     = flag.NewFlagSet("secure", flag.ExitOnError)
 		securedServiceSecureFailFlag  = securedServiceSecureFlags.String("fail", "", "")

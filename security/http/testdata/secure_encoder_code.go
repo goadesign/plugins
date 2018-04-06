@@ -5,7 +5,30 @@ var BasicAuthSecureEncoderCode = `// SecureEncodeLoginRequest returns an encoder
 func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
 	return func(req *http.Request, v interface{}) error {
 		payload := v.(*basicauth.LoginPayload)
+		if payload.User == nil {
+			user := ""
+			payload.User = &user
+		}
+		if payload.Pass == nil {
+			pass := ""
+			payload.Pass = &pass
+		}
 		req.SetBasicAuth(*payload.User, *payload.Pass)
+		return nil
+	}
+}
+`
+
+var BasicAuthRequiredSecureEncoderCode = `// SecureEncodeLoginRequest returns an encoder for requests sent to the
+// BasicAuthRequired login endpoint that is security scheme aware.
+func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeLoginRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*basicauthrequired.LoginPayload)
+		req.SetBasicAuth(payload.User, payload.Pass)
 		return nil
 	}
 }
@@ -38,8 +61,27 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 			return err
 		}
 		payload := v.(*oauth2.LoginPayload)
-		if !strings.Contains(*payload.Token, " ") {
+		if payload.Token == nil {
+			req.Header.Set("Authorization", "")
+		} else if !strings.Contains(*payload.Token, " ") {
 			req.Header.Set("Authorization", "Bearer "+*payload.Token)
+		}
+		return nil
+	}
+}
+`
+
+var OAuth2RequiredSecureEncoderCode = `// SecureEncodeLoginRequest returns an encoder for requests sent to the
+// OAuth2Required login endpoint that is security scheme aware.
+func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeLoginRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*oauth2required.LoginPayload)
+		if !strings.Contains(payload.Token, " ") {
+			req.Header.Set("Authorization", "Bearer "+payload.Token)
 		}
 		return nil
 	}
@@ -72,8 +114,30 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 		}
 		payload := v.(*oauth2inparam.LoginPayload)
 		values := req.URL.Query()
-		if strings.Contains(*payload.Token, " ") {
+		if payload.Token == nil {
+			values.Set("t", "")
+		} else if strings.Contains(*payload.Token, " ") {
 			s := strings.SplitN(*payload.Token, " ", 2)[1]
+			values.Set("t", s)
+		}
+		req.URL.RawQuery = values.Encode()
+		return nil
+	}
+}
+`
+
+var OAuth2InParamRequiredSecureEncoderCode = `// SecureEncodeLoginRequest returns an encoder for requests sent to the
+// OAuth2InParamRequired login endpoint that is security scheme aware.
+func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeLoginRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*oauth2inparamrequired.LoginPayload)
+		values := req.URL.Query()
+		if strings.Contains(payload.Token, " ") {
+			s := strings.SplitN(payload.Token, " ", 2)[1]
 			values.Set("t", s)
 		}
 		req.URL.RawQuery = values.Encode()
@@ -91,8 +155,27 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 			return err
 		}
 		payload := v.(*jwt.LoginPayload)
-		if !strings.Contains(*payload.Token, " ") {
+		if payload.Token == nil {
+			req.Header.Set("Authorization", "")
+		} else if !strings.Contains(*payload.Token, " ") {
 			req.Header.Set("Authorization", "Bearer "+*payload.Token)
+		}
+		return nil
+	}
+}
+`
+
+var JWTRequiredSecureEncoderCode = `// SecureEncodeLoginRequest returns an encoder for requests sent to the
+// JWTRequired login endpoint that is security scheme aware.
+func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeLoginRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*jwtrequired.LoginPayload)
+		if !strings.Contains(payload.Token, " ") {
+			req.Header.Set("Authorization", "Bearer "+payload.Token)
 		}
 		return nil
 	}
@@ -124,8 +207,28 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 			return err
 		}
 		payload := v.(*apikey.LoginPayload)
-		if strings.Contains(*payload.Key, " ") {
+		if payload.Key == nil {
+			req.Header.Set("Authorization", "")
+		} else if strings.Contains(*payload.Key, " ") {
 			s := strings.SplitN(*payload.Key, " ", 2)[1]
+			req.Header.Set("Authorization", s)
+		}
+		return nil
+	}
+}
+`
+
+var APIKeyRequiredSecureEncoderCode = `// SecureEncodeLoginRequest returns an encoder for requests sent to the
+// APIKeyRequired login endpoint that is security scheme aware.
+func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeLoginRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*apikeyrequired.LoginPayload)
+		if strings.Contains(payload.Key, " ") {
+			s := strings.SplitN(payload.Key, " ", 2)[1]
 			req.Header.Set("Authorization", s)
 		}
 		return nil
@@ -159,8 +262,30 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 		}
 		payload := v.(*apikeyinparam.LoginPayload)
 		values := req.URL.Query()
-		if strings.Contains(*payload.Key, " ") {
+		if payload.Key == nil {
+			values.Set("key", "")
+		} else if strings.Contains(*payload.Key, " ") {
 			s := strings.SplitN(*payload.Key, " ", 2)[1]
+			values.Set("key", s)
+		}
+		req.URL.RawQuery = values.Encode()
+		return nil
+	}
+}
+`
+
+var APIKeyInParamRequiredSecureEncoderCode = `// SecureEncodeLoginRequest returns an encoder for requests sent to the
+// APIKeyInParamRequired login endpoint that is security scheme aware.
+func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeLoginRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*apikeyinparamrequired.LoginPayload)
+		values := req.URL.Query()
+		if strings.Contains(payload.Key, " ") {
+			s := strings.SplitN(payload.Key, " ", 2)[1]
 			values.Set("key", s)
 		}
 		req.URL.RawQuery = values.Encode()
@@ -227,9 +352,40 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 		}
 		payload := v.(*multipleand.LoginPayload)
 		values := req.URL.Query()
+		if payload.User == nil {
+			user := ""
+			payload.User = &user
+		}
+		if payload.Password == nil {
+			password := ""
+			payload.Password = &password
+		}
 		req.SetBasicAuth(*payload.User, *payload.Password)
-		if strings.Contains(*payload.Key, " ") {
+		if payload.Key == nil {
+			values.Set("k", "")
+		} else if strings.Contains(*payload.Key, " ") {
 			s := strings.SplitN(*payload.Key, " ", 2)[1]
+			values.Set("k", s)
+		}
+		req.URL.RawQuery = values.Encode()
+		return nil
+	}
+}
+`
+
+var MultipleAndRequiredSecureEncoderCode = `// SecureEncodeLoginRequest returns an encoder for requests sent to the
+// MultipleAndRequired login endpoint that is security scheme aware.
+func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeLoginRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*multipleandrequired.LoginPayload)
+		values := req.URL.Query()
+		req.SetBasicAuth(payload.User, payload.Password)
+		if strings.Contains(payload.Key, " ") {
+			s := strings.SplitN(payload.Key, " ", 2)[1]
 			values.Set("k", s)
 		}
 		req.URL.RawQuery = values.Encode()
@@ -266,9 +422,40 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 		}
 		payload := v.(*multipleor.LoginPayload)
 		values := req.URL.Query()
+		if payload.User == nil {
+			user := ""
+			payload.User = &user
+		}
+		if payload.Password == nil {
+			password := ""
+			payload.Password = &password
+		}
 		req.SetBasicAuth(*payload.User, *payload.Password)
-		if strings.Contains(*payload.Key, " ") {
+		if payload.Key == nil {
+			values.Set("k", "")
+		} else if strings.Contains(*payload.Key, " ") {
 			s := strings.SplitN(*payload.Key, " ", 2)[1]
+			values.Set("k", s)
+		}
+		req.URL.RawQuery = values.Encode()
+		return nil
+	}
+}
+`
+
+var MultipleOrRequiredSecureEncoderCode = `// SecureEncodeLoginRequest returns an encoder for requests sent to the
+// MultipleOrRequired login endpoint that is security scheme aware.
+func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeLoginRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*multipleorrequired.LoginPayload)
+		values := req.URL.Query()
+		req.SetBasicAuth(payload.User, payload.Password)
+		if strings.Contains(payload.Key, " ") {
+			s := strings.SplitN(payload.Key, " ", 2)[1]
 			values.Set("k", s)
 		}
 		req.URL.RawQuery = values.Encode()
@@ -305,7 +492,9 @@ func SecureEncodeMethod1Request(encoder func(*http.Request) goahttp.Encoder) fun
 		}
 		payload := v.(*sameschememultipleendpoints.Method1Payload)
 		values := req.URL.Query()
-		if strings.Contains(*payload.Key, " ") {
+		if payload.Key == nil {
+			values.Set("k", "")
+		} else if strings.Contains(*payload.Key, " ") {
 			s := strings.SplitN(*payload.Key, " ", 2)[1]
 			values.Set("k", s)
 		}
@@ -324,7 +513,9 @@ func SecureEncodeMethod2Request(encoder func(*http.Request) goahttp.Encoder) fun
 			return err
 		}
 		payload := v.(*sameschememultipleendpoints.Method2Payload)
-		if strings.Contains(*payload.Key, " ") {
+		if payload.Key == nil {
+			req.Header.Set("Authorization", "")
+		} else if strings.Contains(*payload.Key, " ") {
 			s := strings.SplitN(*payload.Key, " ", 2)[1]
 			req.Header.Set("Authorization", s)
 		}
@@ -343,12 +534,39 @@ func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(
 		}
 		payload := v.(*schemesintypedsl.Schemes)
 		values := req.URL.Query()
-		if strings.Contains(*payload.Key, " ") {
+		if payload.Key == nil {
+			values.Set("k", "")
+		} else if strings.Contains(*payload.Key, " ") {
 			s := strings.SplitN(*payload.Key, " ", 2)[1]
 			values.Set("k", s)
 		}
-		if !strings.Contains(*payload.Token, " ") {
+		if payload.Token == nil {
+			req.Header.Set("Authorization", "")
+		} else if !strings.Contains(*payload.Token, " ") {
 			req.Header.Set("Authorization", "Bearer "+*payload.Token)
+		}
+		req.URL.RawQuery = values.Encode()
+		return nil
+	}
+}
+`
+
+var SchemesInTypeRequiredSecureEncoderCode = `// SecureEncodeLoginRequest returns an encoder for requests sent to the
+// SchemesInTypeRequiredDSL login endpoint that is security scheme aware.
+func SecureEncodeLoginRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
+	rawEncoder := EncodeLoginRequest(encoder)
+	return func(req *http.Request, v interface{}) error {
+		if err := rawEncoder(req, v); err != nil {
+			return err
+		}
+		payload := v.(*schemesintyperequireddsl.SchemesRequired)
+		values := req.URL.Query()
+		if strings.Contains(payload.Key, " ") {
+			s := strings.SplitN(payload.Key, " ", 2)[1]
+			values.Set("k", s)
+		}
+		if !strings.Contains(payload.Token, " ") {
+			req.Header.Set("Authorization", "Bearer "+payload.Token)
 		}
 		req.URL.RawQuery = values.Encode()
 		return nil
