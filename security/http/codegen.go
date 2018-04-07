@@ -211,7 +211,7 @@ func AddCLIFlags(root *httpdesign.RootExpr) {
 						FieldName:   sch.UsernameField,
 						Description: userAttr.Description,
 						Ref:         sch.UsernameAttr,
-						Required:    ep.MethodExpr.Payload.IsRequired(sch.UsernameAttr),
+						Required:    sch.UsernameRequired,
 						TypeName:    svcData.Service.Scope.GoTypeName(userAttr),
 						TypeRef:     svcData.Service.Scope.GoTypeRef(userAttr),
 						Pointer:     sch.UsernamePointer,
@@ -224,7 +224,7 @@ func AddCLIFlags(root *httpdesign.RootExpr) {
 						FieldName:   sch.PasswordField,
 						Description: passAttr.Description,
 						Ref:         sch.PasswordAttr,
-						Required:    ep.MethodExpr.Payload.IsRequired(sch.PasswordAttr),
+						Required:    sch.PasswordRequired,
 						TypeName:    svcData.Service.Scope.GoTypeName(passAttr),
 						TypeRef:     svcData.Service.Scope.GoTypeRef(passAttr),
 						Pointer:     sch.PasswordPointer,
@@ -386,14 +386,22 @@ func {{ .SecureRequestDecoder }}(mux goahttp.Muxer, decoder func(*http.Request) 
 		payload := p.({{ .PayloadType }})
 {{- range .Schemes }}
 	{{- if eq .Scheme.Kind 2 }}{{/* BasicAuth */}}
-		user, pass, ok := r.BasicAuth()
-		if !ok {
-			return p, nil
-		}
-		payload.{{ .UsernameField }} = {{ if .UsernamePointer }}&{{ end }}user
-		payload.{{ .PasswordField }} = {{ if .PasswordPointer }}&{{ end }}pass
+	user, pass, ok := r.BasicAuth()
+	if !ok {
+		{{- if or .UsernameRequired .PasswordRequired }}
+		return nil, goa.MissingFieldError("Authorization", "header")
+		{{- else }}
+		user = ""
+		pass = ""
+		{{- end }}
+	}
+	payload.{{ .UsernameField }} = {{ if .UsernamePointer }}&{{ end }}user
+	payload.{{ .PasswordField }} = {{ if .PasswordPointer }}&{{ end }}pass
 	{{- else }}{{/* API key, OAuth2, and JWT */}}
-		if strings.Contains({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ") {
+		{{ if not .CredRequired }}if payload.{{ .CredField }} == nil {
+			{{ .KeyAttr }} := ""
+			payload.{{ .CredField }} = {{ if .CredPointer }}&{{ end }}{{ .KeyAttr }}
+		} else {{ end }}if strings.Contains({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ") {
 			payload.{{ .CredField }} = {{ if .CredPointer }}&({{ end }}strings.SplitN({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ", 2)[1]{{ if .CredPointer }}){{ end }}
 		}
 	{{- end }}
@@ -422,10 +430,28 @@ func {{ .SecureRequestEncoder }}(encoder func(*http.Request) goahttp.Encoder) fu
 		{{- end }}
 {{- range .Schemes }}
 	{{- if eq .Scheme.Kind 2 }}{{/* BasicAuth */}}
+		{{- if not .UsernameRequired }}
+		if payload.{{ .UsernameField }} == nil {
+			{{ .UsernameAttr }} := ""
+			payload.{{ .UsernameField }} = {{ if .UsernamePointer }}&{{ end }}{{ .UsernameAttr }}
+		}
+		{{- end }}
+		{{- if not .PasswordRequired }}
+		if payload.{{ .PasswordField }} == nil {
+			{{ .PasswordAttr }} := ""
+			payload.{{ .PasswordField }} = {{ if .PasswordPointer }}&{{ end }}{{ .PasswordAttr }}
+		}
+		{{- end }}
 		req.SetBasicAuth({{ if .UsernamePointer }}*{{ end }}payload.{{ .UsernameField }}, {{ if .PasswordPointer }}*{{ end }}payload.{{ .PasswordField }})
 
 	{{- else if eq .Scheme.Kind 3 }}{{/* APIKey */}}
-		if strings.Contains({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ") {
+		{{ if not .CredRequired }}if payload.{{ .CredField }} == nil {
+			{{- if eq .Scheme.In "query" }}
+			values.Set({{ printf "%q" .Scheme.Name }}, "")
+			{{- else if eq .Scheme.In "header" }}
+			req.Header.Set({{ printf "%q" .Scheme.Name }}, "")
+			{{- end }}
+		} else {{ end }}if strings.Contains({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ") {
 			s := strings.SplitN({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ", 2)[1]
 			{{- if eq .Scheme.In "query" }}
 			values.Set({{ printf "%q" .Scheme.Name }}, s)
@@ -434,16 +460,20 @@ func {{ .SecureRequestEncoder }}(encoder func(*http.Request) goahttp.Encoder) fu
 			{{- end }}
 		}
 	{{- else }}{{/* OAuth2 and JWT */}}
-		{{- if eq .Scheme.In "query" }}
-		if strings.Contains({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ") {
+		{{ if not .CredRequired }}if payload.{{ .CredField }} == nil {
+			{{- if eq .Scheme.In "query" }}
+			values.Set({{ printf "%q" .Scheme.Name }}, "")
+			{{- else if eq .Scheme.In "header" }}
+			req.Header.Set({{ printf "%q" .Scheme.Name }}, "")
+			{{- end }}
+		} else {{ end }}if {{ if eq .Scheme.In "header" }}!{{ end }}strings.Contains({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ") {
+			{{- if eq .Scheme.In "query" }}
 			s := strings.SplitN({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ", 2)[1]
 			values.Set({{ printf "%q" .Scheme.Name }}, s)
-		}
-		{{- else if eq .Scheme.In "header" }}
-		if !strings.Contains({{ if .CredPointer }}*{{ end }}payload.{{ .CredField }}, " ") {
+			{{- else if eq .Scheme.In "header" }}
 			req.Header.Set({{ printf "%q" .Scheme.Name }}, "Bearer "+{{ if .CredPointer }}*{{ end }}payload.{{ .CredField }})
+			{{- end }}
 		}
-		{{- end }}
 	{{- end }}
 {{- end }}
 		{{- if querySchemes .Schemes }}

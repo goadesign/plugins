@@ -29,7 +29,7 @@ func (s *securedServiceSvc) Signin(ctx context.Context, p *securedservice.Signin
 // This action is secured with the jwt scheme
 func (s *securedServiceSvc) Secure(ctx context.Context, p *securedservice.SecurePayload) (string, error) {
 	var res string
-	s.logger.Print("securedService.secure", *p.Token)
+	s.logger.Print("securedService.secure")
 	return res, nil
 }
 
@@ -53,40 +53,25 @@ func (s *securedServiceSvc) AlsoDoublySecure(ctx context.Context, p *securedserv
 // BasicAuth scheme.
 func SecuredServiceAuthBasicAuthFn(ctx context.Context, user, pass string, s *security.BasicAuthScheme) (context.Context, error) {
 	// Add authorization logic
-	if user == "" {
-		return ctx, fmt.Errorf("invalid username")
-	}
-	if pass == "" {
-		return ctx, fmt.Errorf("invalid password")
-	}
-	return ctx, nil
+	return ctx, fmt.Errorf("not implemented")
 }
 
 // secured_serviceAuthJWTFn implements the authorization logic for JWT scheme.
 func SecuredServiceAuthJWTFn(ctx context.Context, token string, s *security.JWTScheme) (context.Context, error) {
 	// Add authorization logic
-	if token == "" {
-		return ctx, fmt.Errorf("invalid token")
-	}
-	return ctx, nil
+	return ctx, fmt.Errorf("not implemented")
 }
 
 // secured_serviceAuthAPIKeyFn implements the authorization logic for APIKey
 // scheme.
 func SecuredServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
-	if key == "" {
-		return ctx, fmt.Errorf("invalid key")
-	}
-	return ctx, nil
+	return ctx, fmt.Errorf("not implemented")
 }
 
 // secured_serviceAuthOAuth2Fn implements the authorization logic for OAuth2
 // scheme.
 func SecuredServiceAuthOAuth2Fn(ctx context.Context, token string, s *security.OAuth2Scheme) (context.Context, error) {
 	// Add authorization logic
-	if token == "" {
-		return ctx, fmt.Errorf("invalid token")
-	}
-	return ctx, nil
+	return ctx, fmt.Errorf("not implemented")
 }

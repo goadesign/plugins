@@ -94,6 +94,7 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 				continue
 			}
 			for _, h := range f.Section("source-header") {
+				codegen.AddImport(h, codegen.SimpleImport("fmt"))
 				codegen.AddImport(h, codegen.SimpleImport("goa.design/plugins/security"))
 			}
 			f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
@@ -311,23 +312,7 @@ const dummyAuthFuncsT = `{{ range $sd := . }}
 {{ printf "%sAuth%sFn implements the authorization logic for %s scheme." $sd.ServiceName .Type .Type | comment }}
 func {{ $sd.ServiceVarName }}Auth{{ .Type }}Fn(ctx context.Context, {{ if eq .Type "BasicAuth" }}user, pass{{ else if eq .Type "APIKey" }}key{{ else }}token{{ end }} string, s *{{ $sd.SecurityPkg }}.{{ .Type }}Scheme) (context.Context, error) {
 	// Add authorization logic
-	{{- if eq .Type "BasicAuth" }}
-	if user == "" {
-		return ctx, &{{ $sd.ServicePkg }}.Unauthorized{"invalid username"}
-	}
-	if pass == "" {
-		return ctx, &{{ $sd.ServicePkg }}.Unauthorized{"invalid password"}
-	}
-	{{- else if eq .Type "APIKey" }}
-	if key == "" {
-		return ctx, &{{ $sd.ServicePkg }}.Unauthorized{"invalid key"}
-	}
-	{{- else }}
-	if token == "" {
-		return ctx, &{{ $sd.ServicePkg }}.Unauthorized{"invalid token"}
-	}
-	{{- end }}
-	return ctx, nil
+	return ctx, fmt.Errorf("not implemented")
 }
 {{- end }}
 {{- end }}

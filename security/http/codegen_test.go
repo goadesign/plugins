@@ -25,14 +25,22 @@ func TestSecureDecoder(t *testing.T) {
 		Code string
 	}{
 		{"basic-auth", testdata.BasicAuthDSL, testdata.BasicAuthSecureDecoderCode},
+		{"basic-auth-required", testdata.BasicAuthRequiredDSL, testdata.BasicAuthRequiredSecureDecoderCode},
 		{"oauth2", testdata.OAuth2DSL, testdata.OAuth2SecureDecoderCode},
+		{"oauth2-required", testdata.OAuth2RequiredDSL, testdata.OAuth2RequiredSecureDecoderCode},
 		{"jwt", testdata.JWTDSL, testdata.JWTSecureDecoderCode},
+		{"jwt-required", testdata.JWTRequiredDSL, testdata.JWTRequiredSecureDecoderCode},
 		{"api-key", testdata.APIKeyDSL, testdata.APIKeySecureDecoderCode},
+		{"api-key-required", testdata.APIKeyRequiredDSL, testdata.APIKeyRequiredSecureDecoderCode},
 		{"api-key-in-param", testdata.APIKeyInParamDSL, testdata.APIKeyInParamSecureDecoderCode},
+		{"api-key-in-param-required", testdata.APIKeyInParamRequiredDSL, testdata.APIKeyInParamRequiredSecureDecoderCode},
 		{"api-key-in-body", testdata.APIKeyInBodyDSL, testdata.APIKeyInBodySecureDecoderCode},
 		{"multiple-and", testdata.MultipleAndDSL, testdata.MultipleAndSecureDecoderCode},
+		{"multiple-and-required", testdata.MultipleAndRequiredDSL, testdata.MultipleAndRequiredSecureDecoderCode},
 		{"multiple-or", testdata.MultipleOrDSL, testdata.MultipleOrSecureDecoderCode},
+		{"multiple-or-required", testdata.MultipleOrRequiredDSL, testdata.MultipleOrRequiredSecureDecoderCode},
 		{"schemes-in-type", testdata.SchemesInTypeDSL, testdata.SchemesInTypeSecureDecoderCode},
+		{"schemes-in-type-required", testdata.SchemesInTypeRequiredDSL, testdata.SchemesInTypeRequiredSecureDecoderCode},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
@@ -118,17 +126,26 @@ func TestSecureEncoder(t *testing.T) {
 		Sec  int
 	}{
 		{"basic-auth", testdata.BasicAuthDSL, testdata.BasicAuthSecureEncoderCode, 0},
+		{"basic-auth-required", testdata.BasicAuthRequiredDSL, testdata.BasicAuthRequiredSecureEncoderCode, 0},
 		{"oauth2", testdata.OAuth2DSL, testdata.OAuth2SecureEncoderCode, 0},
+		{"oauth2-required", testdata.OAuth2RequiredDSL, testdata.OAuth2RequiredSecureEncoderCode, 0},
 		{"oauth2-in-param", testdata.OAuth2InParamDSL, testdata.OAuth2InParamSecureEncoderCode, 0},
+		{"oauth2-in-param-required", testdata.OAuth2InParamRequiredDSL, testdata.OAuth2InParamRequiredSecureEncoderCode, 0},
 		{"jwt", testdata.JWTDSL, testdata.JWTSecureEncoderCode, 0},
+		{"jwt-required", testdata.JWTRequiredDSL, testdata.JWTRequiredSecureEncoderCode, 0},
 		{"api-key", testdata.APIKeyDSL, testdata.APIKeySecureEncoderCode, 0},
+		{"api-key-required", testdata.APIKeyRequiredDSL, testdata.APIKeyRequiredSecureEncoderCode, 0},
 		{"api-key-in-param", testdata.APIKeyInParamDSL, testdata.APIKeyInParamSecureEncoderCode, 0},
+		{"api-key-in-param-required", testdata.APIKeyInParamRequiredDSL, testdata.APIKeyInParamRequiredSecureEncoderCode, 0},
 		{"api-key-in-body", testdata.APIKeyInBodyDSL, testdata.APIKeyInBodySecureEncoderCode, 0},
 		{"multiple-and", testdata.MultipleAndDSL, testdata.MultipleAndSecureEncoderCode, 0},
+		{"multiple-and-required", testdata.MultipleAndRequiredDSL, testdata.MultipleAndRequiredSecureEncoderCode, 0},
 		{"multiple-or", testdata.MultipleOrDSL, testdata.MultipleOrSecureEncoderCode, 0},
+		{"multiple-or-required", testdata.MultipleOrRequiredDSL, testdata.MultipleOrRequiredSecureEncoderCode, 0},
 		{"same-scheme-multiple-endpoints-1", testdata.SameSchemeMultipleEndpoints, testdata.SameSchemeMethod1SecureEncoderCode, 0},
 		{"same-scheme-multiple-endpoints-2", testdata.SameSchemeMultipleEndpoints, testdata.SameSchemeMethod2SecureEncoderCode, 1},
 		{"schemes-in-type", testdata.SchemesInTypeDSL, testdata.SchemesInTypeSecureEncoderCode, 0},
+		{"schemes-in-type-required", testdata.SchemesInTypeRequiredDSL, testdata.SchemesInTypeRequiredSecureEncoderCode, 0},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
