@@ -65,7 +65,6 @@ func EncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Re
 // endpoint. restoreBody controls whether the response body should be restored
 // after having been read.
 // DecodeAddResponse may return the following errors:
-//	- "invalid-scopes" (type addersvc.InvalidScopes): http.StatusForbidden
 //	- "unauthorized" (type addersvc.Unauthorized): http.StatusUnauthorized
 //	- error: internal error
 func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
@@ -94,17 +93,6 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 			}
 
 			return body, nil
-		case http.StatusForbidden:
-			var (
-				body AddInvalidScopesResponseBody
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("adder", "add", err)
-			}
-
-			return nil, NewAddInvalidScopes(body)
 		case http.StatusUnauthorized:
 			var (
 				body AddUnauthorizedResponseBody

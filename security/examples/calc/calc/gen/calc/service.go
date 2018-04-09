@@ -9,6 +9,8 @@ package calcsvc
 
 import (
 	"context"
+
+	"goa.design/goa"
 )
 
 // The calc service exposes public endpoints that require valid authorization
@@ -58,4 +60,13 @@ func (e Unauthorized) Error() string {
 // ErrorName returns "unauthorized".
 func (e Unauthorized) ErrorName() string {
 	return "unauthorized"
+}
+
+// MakeForbidden builds a goa.ServiceError from an error.
+func MakeForbidden(err error) *goa.ServiceError {
+	return &goa.ServiceError{
+		Name:    "forbidden",
+		ID:      goa.NewErrorID(),
+		Message: err.Error(),
+	}
 }

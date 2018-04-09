@@ -40,8 +40,6 @@ type AddPayload struct {
 
 type Unauthorized string
 
-type InvalidScopes string
-
 // Error returns an error description.
 func (e Unauthorized) Error() string {
 	return ""
@@ -50,14 +48,4 @@ func (e Unauthorized) Error() string {
 // ErrorName returns "unauthorized".
 func (e Unauthorized) ErrorName() string {
 	return "unauthorized"
-}
-
-// Error returns an error description.
-func (e InvalidScopes) Error() string {
-	return ""
-}
-
-// ErrorName returns "invalid-scopes".
-func (e InvalidScopes) ErrorName() string {
-	return "invalid-scopes"
 }

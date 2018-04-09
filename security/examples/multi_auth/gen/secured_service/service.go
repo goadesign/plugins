@@ -9,6 +9,8 @@ package securedservice
 
 import (
 	"context"
+
+	"goa.design/goa"
 )
 
 // The secured service exposes endpoints that require valid authorization
@@ -76,15 +78,33 @@ type AlsoDoublySecurePayload struct {
 	OauthToken *string
 }
 
-// Credentials are invalid
-type Unauthorized string
+// Authentication failed
+type Forbidden string
 
 // Error returns an error description.
-func (e Unauthorized) Error() string {
-	return "Credentials are invalid"
+func (e Forbidden) Error() string {
+	return "Authentication failed"
 }
 
-// ErrorName returns "unauthorized".
-func (e Unauthorized) ErrorName() string {
-	return "unauthorized"
+// ErrorName returns "forbidden".
+func (e Forbidden) ErrorName() string {
+	return "forbidden"
+}
+
+// MakeBadRequest builds a goa.ServiceError from an error.
+func MakeBadRequest(err error) *goa.ServiceError {
+	return &goa.ServiceError{
+		Name:    "bad_request",
+		ID:      goa.NewErrorID(),
+		Message: err.Error(),
+	}
+}
+
+// MakeUnauthorized builds a goa.ServiceError from an error.
+func MakeUnauthorized(err error) *goa.ServiceError {
+	return &goa.ServiceError{
+		Name:    "unauthorized",
+		ID:      goa.NewErrorID(),
+		Message: err.Error(),
+	}
 }

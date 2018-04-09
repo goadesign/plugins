@@ -8,53 +8,137 @@
 package server
 
 import (
+	goa "goa.design/goa"
 	securedservice "goa.design/plugins/security/examples/multi_auth/gen/secured_service"
 )
 
+// SigninBadRequestResponseBody is the type of the "secured_service" service
+// "signin" endpoint HTTP response body for the "bad_request" error.
+type SigninBadRequestResponseBody struct {
+	// Name is the name of this class of errors.
+	Name string `form:"name" json:"name" xml:"name"`
+	// ID is a unique identifier for this particular occurrence of the problem.
+	ID string `form:"id" json:"id" xml:"id"`
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
+	Message string `form:"message" json:"message" xml:"message"`
+	// Is the error temporary?
+	Temporary bool `form:"temporary" json:"temporary" xml:"temporary"`
+	// Is the error a timeout?
+	Timeout bool `form:"timeout" json:"timeout" xml:"timeout"`
+}
+
 // SigninUnauthorizedResponseBody is the type of the "secured_service" service
 // "signin" endpoint HTTP response body for the "unauthorized" error.
-type SigninUnauthorizedResponseBody string
+type SigninUnauthorizedResponseBody struct {
+	// Name is the name of this class of errors.
+	Name string `form:"name" json:"name" xml:"name"`
+	// ID is a unique identifier for this particular occurrence of the problem.
+	ID string `form:"id" json:"id" xml:"id"`
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
+	Message string `form:"message" json:"message" xml:"message"`
+	// Is the error temporary?
+	Temporary bool `form:"temporary" json:"temporary" xml:"temporary"`
+	// Is the error a timeout?
+	Timeout bool `form:"timeout" json:"timeout" xml:"timeout"`
+}
 
-// SecureUnauthorizedResponseBody is the type of the "secured_service" service
-// "secure" endpoint HTTP response body for the "unauthorized" error.
-type SecureUnauthorizedResponseBody string
+// SecureForbiddenResponseBody is the type of the "secured_service" service
+// "secure" endpoint HTTP response body for the "forbidden" error.
+type SecureForbiddenResponseBody string
 
 // DoublySecureUnauthorizedResponseBody is the type of the "secured_service"
 // service "doubly_secure" endpoint HTTP response body for the "unauthorized"
 // error.
-type DoublySecureUnauthorizedResponseBody string
+type DoublySecureUnauthorizedResponseBody struct {
+	// Name is the name of this class of errors.
+	Name string `form:"name" json:"name" xml:"name"`
+	// ID is a unique identifier for this particular occurrence of the problem.
+	ID string `form:"id" json:"id" xml:"id"`
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
+	Message string `form:"message" json:"message" xml:"message"`
+	// Is the error temporary?
+	Temporary bool `form:"temporary" json:"temporary" xml:"temporary"`
+	// Is the error a timeout?
+	Timeout bool `form:"timeout" json:"timeout" xml:"timeout"`
+}
 
 // AlsoDoublySecureUnauthorizedResponseBody is the type of the
 // "secured_service" service "also_doubly_secure" endpoint HTTP response body
 // for the "unauthorized" error.
-type AlsoDoublySecureUnauthorizedResponseBody string
+type AlsoDoublySecureUnauthorizedResponseBody struct {
+	// Name is the name of this class of errors.
+	Name string `form:"name" json:"name" xml:"name"`
+	// ID is a unique identifier for this particular occurrence of the problem.
+	ID string `form:"id" json:"id" xml:"id"`
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
+	Message string `form:"message" json:"message" xml:"message"`
+	// Is the error temporary?
+	Temporary bool `form:"temporary" json:"temporary" xml:"temporary"`
+	// Is the error a timeout?
+	Timeout bool `form:"timeout" json:"timeout" xml:"timeout"`
+}
 
-// NewSigninUnauthorizedResponseBody builds the HTTP response body from the
+// NewSigninBadRequestResponseBody builds the HTTP response body from the
 // result of the "signin" endpoint of the "secured_service" service.
-func NewSigninUnauthorizedResponseBody(res securedservice.Unauthorized) SigninUnauthorizedResponseBody {
-	body := SigninUnauthorizedResponseBody(res)
+func NewSigninBadRequestResponseBody(res *goa.ServiceError) *SigninBadRequestResponseBody {
+	body := &SigninBadRequestResponseBody{
+		Name:      res.Name,
+		ID:        res.ID,
+		Message:   res.Message,
+		Temporary: res.Temporary,
+		Timeout:   res.Timeout,
+	}
 	return body
 }
 
-// NewSecureUnauthorizedResponseBody builds the HTTP response body from the
-// result of the "secure" endpoint of the "secured_service" service.
-func NewSecureUnauthorizedResponseBody(res securedservice.Unauthorized) SecureUnauthorizedResponseBody {
-	body := SecureUnauthorizedResponseBody(res)
+// NewSigninUnauthorizedResponseBody builds the HTTP response body from the
+// result of the "signin" endpoint of the "secured_service" service.
+func NewSigninUnauthorizedResponseBody(res *goa.ServiceError) *SigninUnauthorizedResponseBody {
+	body := &SigninUnauthorizedResponseBody{
+		Name:      res.Name,
+		ID:        res.ID,
+		Message:   res.Message,
+		Temporary: res.Temporary,
+		Timeout:   res.Timeout,
+	}
+	return body
+}
+
+// NewSecureForbiddenResponseBody builds the HTTP response body from the result
+// of the "secure" endpoint of the "secured_service" service.
+func NewSecureForbiddenResponseBody(res securedservice.Forbidden) SecureForbiddenResponseBody {
+	body := SecureForbiddenResponseBody(res)
 	return body
 }
 
 // NewDoublySecureUnauthorizedResponseBody builds the HTTP response body from
 // the result of the "doubly_secure" endpoint of the "secured_service" service.
-func NewDoublySecureUnauthorizedResponseBody(res securedservice.Unauthorized) DoublySecureUnauthorizedResponseBody {
-	body := DoublySecureUnauthorizedResponseBody(res)
+func NewDoublySecureUnauthorizedResponseBody(res *goa.ServiceError) *DoublySecureUnauthorizedResponseBody {
+	body := &DoublySecureUnauthorizedResponseBody{
+		Name:      res.Name,
+		ID:        res.ID,
+		Message:   res.Message,
+		Temporary: res.Temporary,
+		Timeout:   res.Timeout,
+	}
 	return body
 }
 
 // NewAlsoDoublySecureUnauthorizedResponseBody builds the HTTP response body
 // from the result of the "also_doubly_secure" endpoint of the
 // "secured_service" service.
-func NewAlsoDoublySecureUnauthorizedResponseBody(res securedservice.Unauthorized) AlsoDoublySecureUnauthorizedResponseBody {
-	body := AlsoDoublySecureUnauthorizedResponseBody(res)
+func NewAlsoDoublySecureUnauthorizedResponseBody(res *goa.ServiceError) *AlsoDoublySecureUnauthorizedResponseBody {
+	body := &AlsoDoublySecureUnauthorizedResponseBody{
+		Name:      res.Name,
+		ID:        res.ID,
+		Message:   res.Message,
+		Temporary: res.Temporary,
+		Timeout:   res.Timeout,
+	}
 	return body
 }
 

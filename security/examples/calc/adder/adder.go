@@ -25,9 +25,11 @@ func (s *adderSvc) Add(ctx context.Context, p *addersvc.AddPayload) (int, error)
 	return p.A + p.B, nil
 }
 
-// AdderAuthAPIKeyFn implements the authorization logic for APIKey scheme.
+// AdderAuthAPIKeyFn implements the authorization logic for APIKey scheme. It
+// must return one of the following errors
+// * addersvc.Unauthorized
+// * error
 func AdderAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
-	// Add authorization logic
 	if key == "" {
 		return ctx, addersvc.Unauthorized("invalid key")
 	}

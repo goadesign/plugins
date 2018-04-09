@@ -46,8 +46,14 @@ func EncodeSigninError(encoder func(context.Context, http.ResponseWriter) goahtt
 			return encodeError(ctx, w, v)
 		}
 		switch en.ErrorName() {
+		case "bad_request":
+			res := v.(*goa.ServiceError)
+			enc := encoder(ctx, w)
+			body := NewSigninBadRequestResponseBody(res)
+			w.WriteHeader(http.StatusBadRequest)
+			return enc.Encode(body)
 		case "unauthorized":
-			res := v.(securedservice.Unauthorized)
+			res := v.(*goa.ServiceError)
 			enc := encoder(ctx, w)
 			body := NewSigninUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)
@@ -111,11 +117,11 @@ func EncodeSecureError(encoder func(context.Context, http.ResponseWriter) goahtt
 			return encodeError(ctx, w, v)
 		}
 		switch en.ErrorName() {
-		case "unauthorized":
-			res := v.(securedservice.Unauthorized)
+		case "forbidden":
+			res := v.(securedservice.Forbidden)
 			enc := encoder(ctx, w)
-			body := NewSecureUnauthorizedResponseBody(res)
-			w.WriteHeader(http.StatusUnauthorized)
+			body := NewSecureForbiddenResponseBody(res)
+			w.WriteHeader(http.StatusForbidden)
 			return enc.Encode(body)
 		default:
 			return encodeError(ctx, w, v)
@@ -167,7 +173,7 @@ func EncodeDoublySecureError(encoder func(context.Context, http.ResponseWriter) 
 		}
 		switch en.ErrorName() {
 		case "unauthorized":
-			res := v.(securedservice.Unauthorized)
+			res := v.(*goa.ServiceError)
 			enc := encoder(ctx, w)
 			body := NewDoublySecureUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)
@@ -227,7 +233,7 @@ func EncodeAlsoDoublySecureError(encoder func(context.Context, http.ResponseWrit
 		}
 		switch en.ErrorName() {
 		case "unauthorized":
-			res := v.(securedservice.Unauthorized)
+			res := v.(*goa.ServiceError)
 			enc := encoder(ctx, w)
 			body := NewAlsoDoublySecureUnauthorizedResponseBody(res)
 			w.WriteHeader(http.StatusUnauthorized)

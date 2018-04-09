@@ -43,12 +43,6 @@ var OAuth2Auth = OAuth2Security("oauth2", func() {
 
 var _ = Service("secured_service", func() {
 	Description("The secured service exposes endpoints that require valid authorization credentials.")
-
-	Error("unauthorized", String, "Credentials are invalid")
-	HTTP(func() {
-		Response("unauthorized", StatusUnauthorized)
-	})
-
 	Method("signin", func() {
 		Description("Creates a valid JWT")
 
@@ -65,11 +59,14 @@ var _ = Service("secured_service", func() {
 			})
 			Required("username", "password")
 		})
-
+		Error("bad_request")
+		Error("unauthorized")
 		HTTP(func() {
 			POST("/signin")
 			// Use Authorization header to provide basic auth value.
 			Response(StatusNoContent)
+			Response("bad_request", StatusBadRequest)
+			Response("unauthorized", StatusUnauthorized)
 		})
 	})
 
@@ -89,10 +86,12 @@ var _ = Service("secured_service", func() {
 		Result(String, func() {
 			Example("JWT secured data")
 		})
+		Error("forbidden", String, "Authentication failed")
 		HTTP(func() {
 			GET("/secure")
 			Param("fail")
 			Response(StatusOK)
+			Response("forbidden", StatusForbidden)
 		})
 	})
 
@@ -115,10 +114,12 @@ var _ = Service("secured_service", func() {
 		Result(String, func() {
 			Example("JWT secured data")
 		})
+		Error("unauthorized")
 		HTTP(func() {
 			PUT("/secure")
 			Param("key:k")
 			Response(StatusOK)
+			Response("unauthorized", StatusUnauthorized)
 		})
 	})
 
@@ -152,12 +153,14 @@ var _ = Service("secured_service", func() {
 		Result(String, func() {
 			Example("JWT secured data")
 		})
+		Error("unauthorized")
 		HTTP(func() {
 			POST("/secure")
 			Header("token:Authorization")
 			Param("key:k")
 			Param("oauth_token:oauth")
 			Response(StatusOK)
+			Response("unauthorized", StatusUnauthorized)
 		})
 	})
 })

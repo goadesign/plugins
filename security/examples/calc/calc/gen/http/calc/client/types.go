@@ -8,6 +8,7 @@
 package client
 
 import (
+	goa "goa.design/goa"
 	calcsvc "goa.design/plugins/security/examples/calc/calc/gen/calc"
 )
 
@@ -15,8 +16,56 @@ import (
 // endpoint HTTP response body for the "unauthorized" error.
 type LoginUnauthorizedResponseBody string
 
+// AddForbiddenResponseBody is the type of the "calc" service "add" endpoint
+// HTTP response body for the "forbidden" error.
+type AddForbiddenResponseBody struct {
+	// Name is the name of this class of errors.
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+	// ID is a unique identifier for this particular occurrence of the problem.
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+}
+
 // NewLoginUnauthorized builds a calc service login endpoint unauthorized error.
 func NewLoginUnauthorized(body LoginUnauthorizedResponseBody) calcsvc.Unauthorized {
 	v := calcsvc.Unauthorized(body)
 	return v
+}
+
+// NewAddForbidden builds a calc service add endpoint forbidden error.
+func NewAddForbidden(body *AddForbiddenResponseBody) *goa.ServiceError {
+	v := &goa.ServiceError{
+		Name:      *body.Name,
+		ID:        *body.ID,
+		Message:   *body.Message,
+		Temporary: *body.Temporary,
+		Timeout:   *body.Timeout,
+	}
+	return v
+}
+
+// Validate runs the validations defined on AddForbiddenResponseBody
+func (body *AddForbiddenResponseBody) Validate() (err error) {
+	if body.Name == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
+	}
+	if body.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
+	}
+	if body.Message == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
+	}
+	if body.Temporary == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("temporary", "body"))
+	}
+	if body.Timeout == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("timeout", "body"))
+	}
+	return
 }
