@@ -33,6 +33,7 @@ func NewClient(signin, secure, doublySecure, alsoDoublySecure goa.Endpoint) *Cli
 
 // Signin calls the "signin" endpoint of the "secured_service" service.
 // Signin may return the following errors:
+//	- "bad_request" (type *goa.ServiceError)
 //	- "unauthorized" (type *goa.ServiceError)
 //	- error: internal error
 func (c *Client) Signin(ctx context.Context, p *SigninPayload) (err error) {
@@ -42,7 +43,7 @@ func (c *Client) Signin(ctx context.Context, p *SigninPayload) (err error) {
 
 // Secure calls the "secure" endpoint of the "secured_service" service.
 // Secure may return the following errors:
-//	- "unauthorized" (type *goa.ServiceError)
+//	- "forbidden" (type Forbidden)
 //	- error: internal error
 func (c *Client) Secure(ctx context.Context, p *SecurePayload) (res string, err error) {
 	var ires interface{}
@@ -55,6 +56,9 @@ func (c *Client) Secure(ctx context.Context, p *SecurePayload) (res string, err 
 
 // DoublySecure calls the "doubly_secure" endpoint of the "secured_service"
 // service.
+// DoublySecure may return the following errors:
+//	- "unauthorized" (type *goa.ServiceError)
+//	- error: internal error
 func (c *Client) DoublySecure(ctx context.Context, p *DoublySecurePayload) (res string, err error) {
 	var ires interface{}
 	ires, err = c.DoublySecureEndpoint(ctx, p)
@@ -66,6 +70,9 @@ func (c *Client) DoublySecure(ctx context.Context, p *DoublySecurePayload) (res 
 
 // AlsoDoublySecure calls the "also_doubly_secure" endpoint of the
 // "secured_service" service.
+// AlsoDoublySecure may return the following errors:
+//	- "unauthorized" (type *goa.ServiceError)
+//	- error: internal error
 func (c *Client) AlsoDoublySecure(ctx context.Context, p *AlsoDoublySecurePayload) (res string, err error) {
 	var ires interface{}
 	ires, err = c.AlsoDoublySecureEndpoint(ctx, p)

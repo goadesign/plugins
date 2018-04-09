@@ -49,28 +49,41 @@ func (s *securedServiceSvc) AlsoDoublySecure(ctx context.Context, p *securedserv
 	return res, nil
 }
 
-// secured_serviceAuthBasicAuthFn implements the authorization logic for
-// BasicAuth scheme.
+// SecuredServiceAuthBasicAuthFn implements the authorization logic for
+// BasicAuth scheme. It must return one of the following errors
+// * securedservice.MakeUnauthorized
+// * securedservice.Forbidden
+// * error
 func SecuredServiceAuthBasicAuthFn(ctx context.Context, user, pass string, s *security.BasicAuthScheme) (context.Context, error) {
 	// Add authorization logic
 	return ctx, fmt.Errorf("not implemented")
 }
 
-// secured_serviceAuthJWTFn implements the authorization logic for JWT scheme.
+// SecuredServiceAuthJWTFn implements the authorization logic for JWT scheme.
+// It must return one of the following errors
+// * securedservice.MakeUnauthorized
+// * securedservice.Forbidden
+// * error
 func SecuredServiceAuthJWTFn(ctx context.Context, token string, s *security.JWTScheme) (context.Context, error) {
 	// Add authorization logic
 	return ctx, fmt.Errorf("not implemented")
 }
 
-// secured_serviceAuthAPIKeyFn implements the authorization logic for APIKey
-// scheme.
+// SecuredServiceAuthAPIKeyFn implements the authorization logic for APIKey
+// scheme. It must return one of the following errors
+// * securedservice.MakeUnauthorized
+// * securedservice.Forbidden
+// * error
 func SecuredServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
 	return ctx, fmt.Errorf("not implemented")
 }
 
-// secured_serviceAuthOAuth2Fn implements the authorization logic for OAuth2
-// scheme.
+// SecuredServiceAuthOAuth2Fn implements the authorization logic for OAuth2
+// scheme. It must return one of the following errors
+// * securedservice.MakeUnauthorized
+// * securedservice.Forbidden
+// * error
 func SecuredServiceAuthOAuth2Fn(ctx context.Context, token string, s *security.OAuth2Scheme) (context.Context, error) {
 	// Add authorization logic
 	return ctx, fmt.Errorf("not implemented")

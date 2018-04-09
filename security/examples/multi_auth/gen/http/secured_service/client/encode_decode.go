@@ -39,7 +39,8 @@ func (c *Client) BuildSigninRequest(ctx context.Context, v interface{}) (*http.R
 // secured_service signin endpoint. restoreBody controls whether the response
 // body should be restored after having been read.
 // DecodeSigninResponse may return the following errors:
-//	- "unauthorized" (type securedservice.Unauthorized): http.StatusUnauthorized
+//	- "bad_request" (type *goa.ServiceError): http.StatusBadRequest
+//	- "unauthorized" (type *goa.ServiceError): http.StatusUnauthorized
 //	- error: internal error
 func DecodeSigninResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
@@ -58,6 +59,21 @@ func DecodeSigninResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 		switch resp.StatusCode {
 		case http.StatusNoContent:
 			return nil, nil
+		case http.StatusBadRequest:
+			var (
+				body SigninBadRequestResponseBody
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("secured_service", "signin", err)
+			}
+			err = body.Validate()
+			if err != nil {
+				return nil, fmt.Errorf("invalid response: %s", err)
+			}
+
+			return nil, NewSigninBadRequest(&body)
 		case http.StatusUnauthorized:
 			var (
 				body SigninUnauthorizedResponseBody
@@ -67,8 +83,12 @@ func DecodeSigninResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("secured_service", "signin", err)
 			}
+			err = body.Validate()
+			if err != nil {
+				return nil, fmt.Errorf("invalid response: %s", err)
+			}
 
-			return nil, NewSigninUnauthorized(body)
+			return nil, NewSigninUnauthorized(&body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))
@@ -115,7 +135,7 @@ func EncodeSecureRequest(encoder func(*http.Request) goahttp.Encoder) func(*http
 // secured_service secure endpoint. restoreBody controls whether the response
 // body should be restored after having been read.
 // DecodeSecureResponse may return the following errors:
-//	- "unauthorized" (type securedservice.Unauthorized): http.StatusUnauthorized
+//	- "forbidden" (type securedservice.Forbidden): http.StatusForbidden
 //	- error: internal error
 func DecodeSecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
@@ -143,9 +163,9 @@ func DecodeSecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 			}
 
 			return body, nil
-		case http.StatusUnauthorized:
+		case http.StatusForbidden:
 			var (
-				body SecureUnauthorizedResponseBody
+				body SecureForbiddenResponseBody
 				err  error
 			)
 			err = decoder(resp).Decode(&body)
@@ -153,7 +173,7 @@ func DecodeSecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 				return nil, goahttp.ErrDecodingError("secured_service", "secure", err)
 			}
 
-			return nil, NewSecureUnauthorized(body)
+			return nil, NewSecureForbidden(body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))
@@ -200,7 +220,7 @@ func EncodeDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) func
 // secured_service doubly_secure endpoint. restoreBody controls whether the
 // response body should be restored after having been read.
 // DecodeDoublySecureResponse may return the following errors:
-//	- "unauthorized" (type securedservice.Unauthorized): http.StatusUnauthorized
+//	- "unauthorized" (type *goa.ServiceError): http.StatusUnauthorized
 //	- error: internal error
 func DecodeDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
@@ -237,8 +257,12 @@ func DecodeDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder, re
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("secured_service", "doubly_secure", err)
 			}
+			err = body.Validate()
+			if err != nil {
+				return nil, fmt.Errorf("invalid response: %s", err)
+			}
 
-			return nil, NewDoublySecureUnauthorized(body)
+			return nil, NewDoublySecureUnauthorized(&body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))
@@ -289,7 +313,7 @@ func EncodeAlsoDoublySecureRequest(encoder func(*http.Request) goahttp.Encoder) 
 // the secured_service also_doubly_secure endpoint. restoreBody controls
 // whether the response body should be restored after having been read.
 // DecodeAlsoDoublySecureResponse may return the following errors:
-//	- "unauthorized" (type securedservice.Unauthorized): http.StatusUnauthorized
+//	- "unauthorized" (type *goa.ServiceError): http.StatusUnauthorized
 //	- error: internal error
 func DecodeAlsoDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
@@ -326,8 +350,12 @@ func DecodeAlsoDoublySecureResponse(decoder func(*http.Response) goahttp.Decoder
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("secured_service", "also_doubly_secure", err)
 			}
+			err = body.Validate()
+			if err != nil {
+				return nil, fmt.Errorf("invalid response: %s", err)
+			}
 
-			return nil, NewAlsoDoublySecureUnauthorized(body)
+			return nil, NewAlsoDoublySecureUnauthorized(&body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))

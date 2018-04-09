@@ -1,7 +1,7 @@
 package testdata
 
 import (
-	. "goa.design/goa/design"
+	. "goa.design/goa/http/design"
 	. "goa.design/plugins/security/dsl"
 )
 
@@ -145,8 +145,50 @@ var SingleServiceDSL = func() {
 			Payload(func() {
 				APIKey("api_key", "key", String)
 			})
+			Error("unauthorized")
+			Error("forbidden", String)
 			HTTP(func() {
 				GET("/")
+				Response("unauthorized", StatusUnauthorized)
+				Response("forbidden", StatusForbidden)
+			})
+		})
+	})
+}
+
+var ServiceWithNoAuthErrorResponseDSL = func() {
+	Service("ServiceNoAuthError", func() {
+		Method("Method", func() {
+			Security(APIKeyAuth)
+			Payload(func() {
+				APIKey("api_key", "key", String)
+			})
+			Error("bad_request")
+			HTTP(func() {
+				GET("/")
+				Response("bad_request", StatusBadRequest)
+			})
+		})
+	})
+}
+
+var ServiceWithUserTypeErrorDSL = func() {
+	var CustomError = Type("CustomError", func() {
+		Attribute("id", String)
+		Attribute("error", String, func() {
+			Metadata("struct:error:name")
+		})
+	})
+	Service("ServiceUserTypeError", func() {
+		Method("Method", func() {
+			Security(APIKeyAuth)
+			Payload(func() {
+				APIKey("api_key", "key", String)
+			})
+			Error("unauthorized", CustomError)
+			HTTP(func() {
+				GET("/")
+				Response("unauthorized", StatusUnauthorized)
 			})
 		})
 	})
@@ -159,8 +201,10 @@ var MultipleServicesDSL = func() {
 			Payload(func() {
 				APIKey("api_key", "key", String)
 			})
+			Error("forbidden")
 			HTTP(func() {
 				GET("/")
+				Response("forbidden", StatusForbidden)
 			})
 		})
 	})
@@ -171,8 +215,10 @@ var MultipleServicesDSL = func() {
 				APIKey("api_key", "key", String)
 				Token("token", String)
 			})
+			Error("unauthorized", String)
 			HTTP(func() {
 				GET("/")
+				Response("unauthorized", StatusUnauthorized)
 			})
 		})
 	})

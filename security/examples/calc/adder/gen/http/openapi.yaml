@@ -161,37 +161,6 @@ paths:
           headers: {}
           ref: ""
           extensions: {}
-        "403":
-          description: Forbidden response.
-          schema:
-            schema: ""
-            id: ""
-            title: ""
-            type: ""
-            items: null
-            properties: {}
-            definitions: {}
-            description: ""
-            defaultvalue: null
-            example: null
-            media: null
-            readonly: false
-            pathstart: ""
-            links: []
-            ref: '#/definitions/AddInvalidScopesResponseBody'
-            enum: []
-            format: ""
-            pattern: ""
-            minimum: null
-            maximum: null
-            minlength: null
-            maxlength: null
-            required: []
-            additionalproperties: false
-            anyof: []
-          headers: {}
-          ref: ""
-          extensions: {}
       schemes:
       - http
       deprecated: false
@@ -207,32 +176,6 @@ paths:
     parameters: []
     extensions: {}
 definitions:
-  AddInvalidScopesResponseBody:
-    schema: ""
-    id: ""
-    title: AddInvalidScopesResponseBody
-    type: string
-    items: null
-    properties: {}
-    definitions: {}
-    description: ""
-    defaultvalue: null
-    example: Qui dolorem et adipisci.
-    media: null
-    readonly: false
-    pathstart: ""
-    links: []
-    ref: ""
-    enum: []
-    format: ""
-    pattern: ""
-    minimum: null
-    maximum: null
-    minlength: null
-    maxlength: null
-    required: []
-    additionalproperties: false
-    anyof: []
   AddUnauthorizedResponseBody:
     schema: ""
     id: ""
@@ -243,7 +186,7 @@ definitions:
     definitions: {}
     description: ""
     defaultvalue: null
-    example: Soluta possimus quod.
+    example: Voluptatum blanditiis doloribus quidem aliquid.
     media: null
     readonly: false
     pathstart: ""

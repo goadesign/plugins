@@ -32,7 +32,7 @@ func SecureSignin(ep goa.Endpoint, authBasicAuthFn security.AuthBasicAuthFunc) g
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*SigninPayload)
 		var err error
-		ctx, err = authBasicAuthFn(ctx, *p.Username, *p.Password, &security.BasicAuthScheme{
+		ctx, err = authBasicAuthFn(ctx, p.Username, p.Password, &security.BasicAuthScheme{
 			Name: "basic",
 		})
 		if err != nil {

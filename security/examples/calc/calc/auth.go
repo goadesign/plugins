@@ -2,25 +2,29 @@ package calc
 
 import (
 	"context"
+	"fmt"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"goa.design/plugins/security"
-	adder "goa.design/plugins/security/examples/calc/adder/gen/adder"
 	"goa.design/plugins/security/examples/calc/calc/gen/calc"
 )
 
 var (
-	// ErrUnauthorized is the error returned by Login when the request credentials
+	// ErrLoginFailed is the error returned by Login when the request credentials
 	// are invalid.
-	ErrUnauthorized error = calcsvc.Unauthorized("invalid username and password combination")
+	ErrLoginFailed error = calcsvc.Unauthorized("invalid username and password combination")
+
+	// ErrForbidden is the error returned by Add when the JWT token doesn't contain
+	// the required scopes.
+	ErrForbidden error = calcsvc.MakeForbidden(fmt.Errorf("forbidden, requires 'calc:add'"))
 
 	// ErrInvalidToken is the error returned by Login when the request credentials
 	// are invalid.
-	ErrInvalidToken error = adder.Unauthorized("invalid token")
+	ErrInvalidToken error = calcsvc.Unauthorized("invalid token")
 
-	// ErrInvalidScopes is the error returned by Login when the scopes provided in
+	// ErrInvalidScopes is the error returned by Add when the scopes provided in
 	// the JWT token claims are invalid.
-	ErrInvalidScopes error = adder.InvalidScopes("invalid scopes, requires 'calc:add'")
+	ErrInvalidScopes error = calcsvc.Unauthorized("invalid scopes")
 
 	// Key is the key used in JWT authentication
 	Key = []byte("secret")
@@ -29,10 +33,10 @@ var (
 // BasicAuthFunc implements the basic auth scheme.
 func BasicAuthFunc(ctx context.Context, username, password string, s *security.BasicAuthScheme) (context.Context, error) {
 	if username != "goa" {
-		return ctx, ErrUnauthorized
+		return ctx, ErrLoginFailed
 	}
 	if password != "rocks" {
-		return ctx, ErrUnauthorized
+		return ctx, ErrLoginFailed
 	}
 	return ctx, nil
 }
@@ -64,7 +68,7 @@ func JWTAuthFunc(ctx context.Context, token string, s *security.JWTScheme) (cont
 		}
 	}
 	if !hasAddScope {
-		return ctx, ErrInvalidScopes
+		return ctx, ErrForbidden
 	}
 
 	return ctx, nil

@@ -44,7 +44,6 @@ var _ = Service("adder", func() {
 			Example(5)
 		})
 		Error("unauthorized", String)
-		Error("invalid-scopes", String)
 		HTTP(func() {
 			GET("/add/{a}/{b}")
 
@@ -52,7 +51,6 @@ var _ = Service("adder", func() {
 
 			Response(StatusOK)
 			Response("unauthorized", StatusUnauthorized)
-			Response("invalid-scopes", StatusForbidden)
 		})
 	})
 })

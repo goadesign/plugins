@@ -85,8 +85,8 @@ paths:
           headers: {}
           ref: ""
           extensions: {}
-        "401":
-          description: Unauthorized response.
+        "403":
+          description: Forbidden response.
           schema:
             schema: ""
             id: ""
@@ -102,7 +102,7 @@ paths:
             readonly: false
             pathstart: ""
             links: []
-            ref: '#/definitions/SecureUnauthorizedResponseBody'
+            ref: '#/definitions/SecureForbiddenResponseBody'
             enum: []
             format: ""
             pattern: ""
@@ -395,6 +395,37 @@ paths:
           headers: {}
           ref: ""
           extensions: {}
+        "400":
+          description: Bad Request response.
+          schema:
+            schema: ""
+            id: ""
+            title: ""
+            type: ""
+            items: null
+            properties: {}
+            definitions: {}
+            description: ""
+            defaultvalue: null
+            example: null
+            media: null
+            readonly: false
+            pathstart: ""
+            links: []
+            ref: '#/definitions/SigninBadRequestResponseBody'
+            enum: []
+            format: ""
+            pattern: ""
+            minimum: null
+            maximum: null
+            minlength: null
+            maxlength: null
+            required: []
+            additionalproperties: false
+            anyof: []
+          headers: {}
+          ref: ""
+          extensions: {}
         "401":
           description: Unauthorized response.
           schema:
@@ -442,14 +473,151 @@ definitions:
   AlsoDoublySecureUnauthorizedResponseBody:
     schema: ""
     id: ""
-    title: AlsoDoublySecureUnauthorizedResponseBody
-    type: string
+    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+    type: object
     items: null
-    properties: {}
+    properties:
+      id:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: ID is a unique identifier for this particular occurrence of the
+          problem.
+        defaultvalue: null
+        example: 123abc
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      message:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Message is a human-readable explanation specific to this occurrence
+          of the problem.
+        defaultvalue: null
+        example: parameter 'p' must be an integer
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      name:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Name is the name of this class of errors.
+        defaultvalue: null
+        example: bad_request
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      temporary:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error temporary?
+        defaultvalue: null
+        example: true
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      timeout:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error a timeout?
+        defaultvalue: null
+        example: false
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
     definitions: {}
-    description: Credentials are invalid
+    description: AlsoDoublySecureUnauthorizedResponseBody result type (default view)
     defaultvalue: null
-    example: Maxime ipsam esse et.
+    example:
+      id: 123abc
+      message: parameter 'p' must be an integer
+      name: bad_request
+      temporary: true
+      timeout: false
     media: null
     readonly: false
     pathstart: ""
@@ -462,20 +630,193 @@ definitions:
     maximum: null
     minlength: null
     maxlength: null
-    required: []
+    required:
+    - name
+    - id
+    - message
+    - temporary
+    - timeout
     additionalproperties: false
     anyof: []
   DoublySecureUnauthorizedResponseBody:
     schema: ""
     id: ""
-    title: DoublySecureUnauthorizedResponseBody
+    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+    type: object
+    items: null
+    properties:
+      id:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: ID is a unique identifier for this particular occurrence of the
+          problem.
+        defaultvalue: null
+        example: 123abc
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      message:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Message is a human-readable explanation specific to this occurrence
+          of the problem.
+        defaultvalue: null
+        example: parameter 'p' must be an integer
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      name:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Name is the name of this class of errors.
+        defaultvalue: null
+        example: bad_request
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      temporary:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error temporary?
+        defaultvalue: null
+        example: true
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      timeout:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error a timeout?
+        defaultvalue: null
+        example: true
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+    definitions: {}
+    description: DoublySecureUnauthorizedResponseBody result type (default view)
+    defaultvalue: null
+    example:
+      id: 123abc
+      message: parameter 'p' must be an integer
+      name: bad_request
+      temporary: true
+      timeout: false
+    media: null
+    readonly: false
+    pathstart: ""
+    links: []
+    ref: ""
+    enum: []
+    format: ""
+    pattern: ""
+    minimum: null
+    maximum: null
+    minlength: null
+    maxlength: null
+    required:
+    - name
+    - id
+    - message
+    - temporary
+    - timeout
+    additionalproperties: false
+    anyof: []
+  SecureForbiddenResponseBody:
+    schema: ""
+    id: ""
+    title: SecureForbiddenResponseBody
     type: string
     items: null
     properties: {}
     definitions: {}
-    description: Credentials are invalid
+    description: Authentication failed
     defaultvalue: null
-    example: Itaque accusamus enim.
+    example: Voluptatem alias.
     media: null
     readonly: false
     pathstart: ""
@@ -491,17 +832,154 @@ definitions:
     required: []
     additionalproperties: false
     anyof: []
-  SecureUnauthorizedResponseBody:
+  SigninBadRequestResponseBody:
     schema: ""
     id: ""
-    title: SecureUnauthorizedResponseBody
-    type: string
+    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+    type: object
     items: null
-    properties: {}
+    properties:
+      id:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: ID is a unique identifier for this particular occurrence of the
+          problem.
+        defaultvalue: null
+        example: 123abc
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      message:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Message is a human-readable explanation specific to this occurrence
+          of the problem.
+        defaultvalue: null
+        example: parameter 'p' must be an integer
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      name:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Name is the name of this class of errors.
+        defaultvalue: null
+        example: bad_request
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      temporary:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error temporary?
+        defaultvalue: null
+        example: true
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      timeout:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error a timeout?
+        defaultvalue: null
+        example: true
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
     definitions: {}
-    description: Credentials are invalid
+    description: SigninBadRequestResponseBody result type (default view)
     defaultvalue: null
-    example: Accusantium voluptatem alias corrupti voluptates a.
+    example:
+      id: 123abc
+      message: parameter 'p' must be an integer
+      name: bad_request
+      temporary: true
+      timeout: true
     media: null
     readonly: false
     pathstart: ""
@@ -514,20 +992,162 @@ definitions:
     maximum: null
     minlength: null
     maxlength: null
-    required: []
+    required:
+    - name
+    - id
+    - message
+    - temporary
+    - timeout
     additionalproperties: false
     anyof: []
   SigninUnauthorizedResponseBody:
     schema: ""
     id: ""
-    title: SigninUnauthorizedResponseBody
-    type: string
+    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+    type: object
     items: null
-    properties: {}
+    properties:
+      id:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: ID is a unique identifier for this particular occurrence of the
+          problem.
+        defaultvalue: null
+        example: 123abc
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      message:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Message is a human-readable explanation specific to this occurrence
+          of the problem.
+        defaultvalue: null
+        example: parameter 'p' must be an integer
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      name:
+        schema: ""
+        id: ""
+        title: ""
+        type: string
+        items: null
+        properties: {}
+        definitions: {}
+        description: Name is the name of this class of errors.
+        defaultvalue: null
+        example: bad_request
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      temporary:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error temporary?
+        defaultvalue: null
+        example: true
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
+      timeout:
+        schema: ""
+        id: ""
+        title: ""
+        type: boolean
+        items: null
+        properties: {}
+        definitions: {}
+        description: Is the error a timeout?
+        defaultvalue: null
+        example: true
+        media: null
+        readonly: false
+        pathstart: ""
+        links: []
+        ref: ""
+        enum: []
+        format: ""
+        pattern: ""
+        minimum: null
+        maximum: null
+        minlength: null
+        maxlength: null
+        required: []
+        additionalproperties: false
+        anyof: []
     definitions: {}
-    description: Credentials are invalid
+    description: SigninUnauthorizedResponseBody result type (default view)
     defaultvalue: null
-    example: Tenetur est et.
+    example:
+      id: 123abc
+      message: parameter 'p' must be an integer
+      name: bad_request
+      temporary: true
+      timeout: true
     media: null
     readonly: false
     pathstart: ""
@@ -540,7 +1160,12 @@ definitions:
     maximum: null
     minlength: null
     maxlength: null
-    required: []
+    required:
+    - name
+    - id
+    - message
+    - temporary
+    - timeout
     additionalproperties: false
     anyof: []
 parameters: {}

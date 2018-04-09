@@ -91,11 +91,12 @@ var _ = Service("calc", func() {
 			Description("Result of addition")
 			Example(3)
 		})
+		Error("forbidden")
 		HTTP(func() {
 			GET("/add/{a}/{b}")
 
 			Response(StatusOK)
-			Response(StatusUnauthorized)
+			Response("forbidden", StatusForbidden)
 		})
 	})
 })

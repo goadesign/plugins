@@ -133,16 +133,18 @@ func TestExample(t *testing.T) {
 		Code []string
 	}{
 		{"single-service", testdata.SingleServiceDSL, []string{testdata.SingleServiceAuthFuncsCode}},
+		{"service-with-no-auth-error", testdata.ServiceWithNoAuthErrorResponseDSL, []string{testdata.ServiceWithNoAuthErrorAuthFuncsCode}},
+		{"service-with-user-type-error", testdata.ServiceWithUserTypeErrorDSL, []string{testdata.ServiceWithUserTypeErrorAuthFuncsCode}},
 		{"multiple-services", testdata.MultipleServicesDSL, []string{testdata.MultipleServicesAuth1FuncsCode, testdata.MultipleServicesAuth2FuncsCode, ""}},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
-			if len(goadesign.Root.Services) == 0 {
+			if len(httpdesign.Root.HTTPServices) == 0 {
 				t.Fatalf("expected at least 1 service")
 			}
 			fs := httpcodegen.ExampleServerFiles("", httpdesign.Root)
-			Example("", []eval.Root{goadesign.Root}, fs)
+			Example("", []eval.Root{goadesign.Root, httpdesign.Root}, fs)
 			for i, f := range fs {
 				if filepath.Base(f.Path) == "main.go" {
 					continue

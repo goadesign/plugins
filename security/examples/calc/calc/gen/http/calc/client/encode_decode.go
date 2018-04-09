@@ -10,6 +10,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -126,6 +127,9 @@ func EncodeAddRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Re
 // DecodeAddResponse returns a decoder for responses returned by the calc add
 // endpoint. restoreBody controls whether the response body should be restored
 // after having been read.
+// DecodeAddResponse may return the following errors:
+//	- "forbidden" (type *goa.ServiceError): http.StatusForbidden
+//	- error: internal error
 func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (interface{}, error) {
 	return func(resp *http.Response) (interface{}, error) {
 		if restoreBody {
@@ -152,6 +156,21 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 			}
 
 			return body, nil
+		case http.StatusForbidden:
+			var (
+				body AddForbiddenResponseBody
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("calc", "add", err)
+			}
+			err = body.Validate()
+			if err != nil {
+				return nil, fmt.Errorf("invalid response: %s", err)
+			}
+
+			return nil, NewAddForbidden(&body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))

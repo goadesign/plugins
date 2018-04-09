@@ -41,6 +41,9 @@ func (c *Client) Login(ctx context.Context, p *LoginPayload) (res string, err er
 }
 
 // Add calls the "add" endpoint of the "calc" service.
+// Add may return the following errors:
+//	- "forbidden" (type *goa.ServiceError)
+//	- error: internal error
 func (c *Client) Add(ctx context.Context, p *AddPayload) (res int, err error) {
 	var ires interface{}
 	ires, err = c.AddEndpoint(ctx, p)

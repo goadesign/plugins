@@ -105,15 +105,39 @@ func SecureSecureWithOAuth2(ep goa.Endpoint, authOAuth2Fn security.AuthOAuth2Fun
 `
 
 var SingleServiceAuthFuncsCode = `// SingleServiceAuthAPIKeyFn implements the authorization logic for APIKey
-// scheme.
+// scheme. It must return one of the following errors
+// * singleservice.MakeUnauthorized
+// * singleservice.Forbidden
+// * error
 func SingleServiceAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
 	return ctx, fmt.Errorf("not implemented")
 }
 `
 
+var ServiceWithNoAuthErrorAuthFuncsCode = `// ServiceNoAuthErrorAuthAPIKeyFn implements the authorization logic for APIKey
+// scheme. It must return one of the following errors
+// * error
+func ServiceNoAuthErrorAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
+	// Add authorization logic
+	return ctx, fmt.Errorf("not implemented")
+}
+`
+
+var ServiceWithUserTypeErrorAuthFuncsCode = `// ServiceUserTypeErrorAuthAPIKeyFn implements the authorization logic for
+// APIKey scheme. It must return one of the following errors
+// * *serviceusertypeerror.CustomError
+// * error
+func ServiceUserTypeErrorAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
+	// Add authorization logic
+	return ctx, fmt.Errorf("not implemented")
+}
+`
+
 var MultipleServicesAuth1FuncsCode = `// ServiceWithAPIKeyAuthAuthAPIKeyFn implements the authorization logic for
-// APIKey scheme.
+// APIKey scheme. It must return one of the following errors
+// * servicewithapikeyauth.MakeForbidden
+// * error
 func ServiceWithAPIKeyAuthAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
 	return ctx, fmt.Errorf("not implemented")
@@ -121,14 +145,18 @@ func ServiceWithAPIKeyAuthAuthAPIKeyFn(ctx context.Context, key string, s *secur
 `
 
 var MultipleServicesAuth2FuncsCode = `// ServiceWithJWTAndAPIKeyAuthAPIKeyFn implements the authorization logic for
-// APIKey scheme.
+// APIKey scheme. It must return one of the following errors
+// * servicewithjwtandapikey.Unauthorized
+// * error
 func ServiceWithJWTAndAPIKeyAuthAPIKeyFn(ctx context.Context, key string, s *security.APIKeyScheme) (context.Context, error) {
 	// Add authorization logic
 	return ctx, fmt.Errorf("not implemented")
 }
 
 // ServiceWithJWTAndAPIKeyAuthJWTFn implements the authorization logic for JWT
-// scheme.
+// scheme. It must return one of the following errors
+// * servicewithjwtandapikey.Unauthorized
+// * error
 func ServiceWithJWTAndAPIKeyAuthJWTFn(ctx context.Context, token string, s *security.JWTScheme) (context.Context, error) {
 	// Add authorization logic
 	return ctx, fmt.Errorf("not implemented")

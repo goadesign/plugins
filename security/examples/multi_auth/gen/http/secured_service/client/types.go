@@ -8,51 +8,216 @@
 package client
 
 import (
+	goa "goa.design/goa"
 	securedservice "goa.design/plugins/security/examples/multi_auth/gen/secured_service"
 )
 
+// SigninBadRequestResponseBody is the type of the "secured_service" service
+// "signin" endpoint HTTP response body for the "bad_request" error.
+type SigninBadRequestResponseBody struct {
+	// Name is the name of this class of errors.
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+	// ID is a unique identifier for this particular occurrence of the problem.
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+}
+
 // SigninUnauthorizedResponseBody is the type of the "secured_service" service
 // "signin" endpoint HTTP response body for the "unauthorized" error.
-type SigninUnauthorizedResponseBody string
+type SigninUnauthorizedResponseBody struct {
+	// Name is the name of this class of errors.
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+	// ID is a unique identifier for this particular occurrence of the problem.
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+}
 
-// SecureUnauthorizedResponseBody is the type of the "secured_service" service
-// "secure" endpoint HTTP response body for the "unauthorized" error.
-type SecureUnauthorizedResponseBody string
+// SecureForbiddenResponseBody is the type of the "secured_service" service
+// "secure" endpoint HTTP response body for the "forbidden" error.
+type SecureForbiddenResponseBody string
 
 // DoublySecureUnauthorizedResponseBody is the type of the "secured_service"
 // service "doubly_secure" endpoint HTTP response body for the "unauthorized"
 // error.
-type DoublySecureUnauthorizedResponseBody string
+type DoublySecureUnauthorizedResponseBody struct {
+	// Name is the name of this class of errors.
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+	// ID is a unique identifier for this particular occurrence of the problem.
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+}
 
 // AlsoDoublySecureUnauthorizedResponseBody is the type of the
 // "secured_service" service "also_doubly_secure" endpoint HTTP response body
 // for the "unauthorized" error.
-type AlsoDoublySecureUnauthorizedResponseBody string
+type AlsoDoublySecureUnauthorizedResponseBody struct {
+	// Name is the name of this class of errors.
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
+	// ID is a unique identifier for this particular occurrence of the problem.
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	// Message is a human-readable explanation specific to this occurrence of the
+	// problem.
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
+	// Is the error temporary?
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
+	// Is the error a timeout?
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+}
 
-// NewSigninUnauthorized builds a secured_service service signin endpoint
-// unauthorized error.
-func NewSigninUnauthorized(body SigninUnauthorizedResponseBody) securedservice.Unauthorized {
-	v := securedservice.Unauthorized(body)
+// NewSigninBadRequest builds a secured_service service signin endpoint
+// bad_request error.
+func NewSigninBadRequest(body *SigninBadRequestResponseBody) *goa.ServiceError {
+	v := &goa.ServiceError{
+		Name:      *body.Name,
+		ID:        *body.ID,
+		Message:   *body.Message,
+		Temporary: *body.Temporary,
+		Timeout:   *body.Timeout,
+	}
 	return v
 }
 
-// NewSecureUnauthorized builds a secured_service service secure endpoint
+// NewSigninUnauthorized builds a secured_service service signin endpoint
 // unauthorized error.
-func NewSecureUnauthorized(body SecureUnauthorizedResponseBody) securedservice.Unauthorized {
-	v := securedservice.Unauthorized(body)
+func NewSigninUnauthorized(body *SigninUnauthorizedResponseBody) *goa.ServiceError {
+	v := &goa.ServiceError{
+		Name:      *body.Name,
+		ID:        *body.ID,
+		Message:   *body.Message,
+		Temporary: *body.Temporary,
+		Timeout:   *body.Timeout,
+	}
+	return v
+}
+
+// NewSecureForbidden builds a secured_service service secure endpoint
+// forbidden error.
+func NewSecureForbidden(body SecureForbiddenResponseBody) securedservice.Forbidden {
+	v := securedservice.Forbidden(body)
 	return v
 }
 
 // NewDoublySecureUnauthorized builds a secured_service service doubly_secure
 // endpoint unauthorized error.
-func NewDoublySecureUnauthorized(body DoublySecureUnauthorizedResponseBody) securedservice.Unauthorized {
-	v := securedservice.Unauthorized(body)
+func NewDoublySecureUnauthorized(body *DoublySecureUnauthorizedResponseBody) *goa.ServiceError {
+	v := &goa.ServiceError{
+		Name:      *body.Name,
+		ID:        *body.ID,
+		Message:   *body.Message,
+		Temporary: *body.Temporary,
+		Timeout:   *body.Timeout,
+	}
 	return v
 }
 
 // NewAlsoDoublySecureUnauthorized builds a secured_service service
 // also_doubly_secure endpoint unauthorized error.
-func NewAlsoDoublySecureUnauthorized(body AlsoDoublySecureUnauthorizedResponseBody) securedservice.Unauthorized {
-	v := securedservice.Unauthorized(body)
+func NewAlsoDoublySecureUnauthorized(body *AlsoDoublySecureUnauthorizedResponseBody) *goa.ServiceError {
+	v := &goa.ServiceError{
+		Name:      *body.Name,
+		ID:        *body.ID,
+		Message:   *body.Message,
+		Temporary: *body.Temporary,
+		Timeout:   *body.Timeout,
+	}
 	return v
+}
+
+// Validate runs the validations defined on SigninBadRequestResponseBody
+func (body *SigninBadRequestResponseBody) Validate() (err error) {
+	if body.Name == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
+	}
+	if body.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
+	}
+	if body.Message == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
+	}
+	if body.Temporary == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("temporary", "body"))
+	}
+	if body.Timeout == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("timeout", "body"))
+	}
+	return
+}
+
+// Validate runs the validations defined on SigninUnauthorizedResponseBody
+func (body *SigninUnauthorizedResponseBody) Validate() (err error) {
+	if body.Name == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
+	}
+	if body.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
+	}
+	if body.Message == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
+	}
+	if body.Temporary == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("temporary", "body"))
+	}
+	if body.Timeout == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("timeout", "body"))
+	}
+	return
+}
+
+// Validate runs the validations defined on DoublySecureUnauthorizedResponseBody
+func (body *DoublySecureUnauthorizedResponseBody) Validate() (err error) {
+	if body.Name == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
+	}
+	if body.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
+	}
+	if body.Message == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
+	}
+	if body.Temporary == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("temporary", "body"))
+	}
+	if body.Timeout == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("timeout", "body"))
+	}
+	return
+}
+
+// Validate runs the validations defined on
+// AlsoDoublySecureUnauthorizedResponseBody
+func (body *AlsoDoublySecureUnauthorizedResponseBody) Validate() (err error) {
+	if body.Name == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
+	}
+	if body.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
+	}
+	if body.Message == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
+	}
+	if body.Temporary == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("temporary", "body"))
+	}
+	if body.Timeout == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("timeout", "body"))
+	}
+	return
 }
