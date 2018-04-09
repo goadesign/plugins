@@ -104,5 +104,5 @@ func validateScopes(reqdScopes, scopes []string) error {
 	if len(missing) == 0 {
 		return nil
 	}
-	return fmt.Errorf("missing sopes: %s", strings.Join(missing, ", "))
+	return fmt.Errorf("missing scopes: %s", strings.Join(missing, ", "))
 }
