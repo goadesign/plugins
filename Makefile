@@ -4,7 +4,11 @@
 
 PLUGINS=$(shell find . -mindepth 1 -maxdepth 1 -not -path "*/\.*" -type d)
 
-all: test-plugins test-aliaser
+all: depend test-plugins test-aliaser
+
+depend:
+	@mkdir -p $(GOPATH)/src/golang.org/x
+	@git clone https://github.com/golang/lint.git $(GOPATH)/src/golang.org/x/lint
 
 gen:
 	@for p in $(PLUGINS) ; do \
