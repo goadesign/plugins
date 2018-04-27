@@ -715,6 +715,24 @@ func Extend(t design.DataType) {
 	dsl.Extend(t)
 }
 
+// Fault qualifies an error type as describing errors due to a server-side
+// fault.
+//
+// Fault must appear in a Error expression.
+//
+// Fault takes no argument.
+//
+// Example:
+//
+//    var _ = Service("divider", func() {
+//         Error("internal_error", func() {
+//                 Fault()
+//         })
+//    })
+func Fault() {
+	dsl.Fault()
+}
+
 // Field is syntactic sugar to define an attribute with the "rpc:tag" metadata
 // set with the value of the first argument.
 //
@@ -1495,9 +1513,9 @@ func Produces(args ...string) {
 //		Attributes(func() {
 //			Attribute("id", UInt64, "ID is the bottle identifier")
 //
-//                      // The type and validation of "name" and "vintage" are
-//                      // inherited from the Bottle type "name" and "vintage"
-//                      // attributes.
+//			// The type and validation of "name" and "vintage" are
+//			// inherited from the Bottle type "name" and "vintage"
+//			// attributes.
 //			Attribute("name")
 //			Attribute("vintage")
 //		})
@@ -1956,11 +1974,11 @@ func Tag(name, value string) {
 //
 // Example:
 //
-// var _ = Service("divider", func() {
-//      Error("request_timeout", func() {
-//              Temporary()
-//      })
-// })
+//    var _ = Service("divider", func() {
+//         Error("request_timeout", func() {
+//                 Temporary()
+//         })
+//    })
 func Temporary() {
 	dsl.Temporary()
 }
@@ -1978,11 +1996,11 @@ func TermsOfService(terms string) {
 //
 // Example:
 //
-// var _ = Service("divider", func() {
-//	Error("request_timeout", func() {
-//		Timeout()
-//	})
-// })
+//    var _ = Service("divider", func() {
+//	   Error("request_timeout", func() {
+//		   Timeout()
+//	   })
+//    })
 func Timeout() {
 	dsl.Timeout()
 }
@@ -2154,7 +2172,7 @@ func Version(ver string) {
 // Examples:
 //
 //	View("default", func() {
-//              // "id" and "name" must be result type attributes
+//		// "id" and "name" must be result type attributes
 //		Attribute("id")
 //		Attribute("name")
 //	})
