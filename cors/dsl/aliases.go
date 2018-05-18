@@ -1513,9 +1513,9 @@ func Produces(args ...string) {
 //		Attributes(func() {
 //			Attribute("id", UInt64, "ID is the bottle identifier")
 //
-//                      // The type and validation of "name" and "vintage" are
-//                      // inherited from the Bottle type "name" and "vintage"
-//                      // attributes.
+//			// The type and validation of "name" and "vintage" are
+//			// inherited from the Bottle type "name" and "vintage"
+//			// attributes.
 //			Attribute("name")
 //			Attribute("vintage")
 //		})
@@ -2172,7 +2172,7 @@ func Version(ver string) {
 // Examples:
 //
 //	View("default", func() {
-//              // "id" and "name" must be result type attributes
+//		// "id" and "name" must be result type attributes
 //		Attribute("id")
 //		Attribute("name")
 //	})
