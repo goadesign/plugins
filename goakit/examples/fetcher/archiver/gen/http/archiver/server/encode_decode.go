@@ -15,16 +15,16 @@ import (
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiversvcviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // EncodeArchiveResponse returns an encoder for responses returned by the
 // archiver archive endpoint.
 func EncodeArchiveResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(*archiversvc.ArchiveMedia)
+		res := v.(*archiversvcviews.ArchiveMedia)
 		enc := encoder(ctx, w)
-		body := NewArchiveResponseBody(res)
+		body := NewArchiveResponseBody(res.Projected)
 		w.WriteHeader(http.StatusOK)
 		return enc.Encode(body)
 	}
@@ -49,8 +49,9 @@ func DecodeArchiveRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp
 		if err != nil {
 			return nil, err
 		}
+		payload := NewArchiveArchivePayload(&body)
 
-		return NewArchiveArchivePayload(&body), nil
+		return payload, nil
 	}
 }
 
@@ -58,9 +59,9 @@ func DecodeArchiveRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp
 // read endpoint.
 func EncodeReadResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(*archiversvc.ArchiveMedia)
+		res := v.(*archiversvcviews.ArchiveMedia)
 		enc := encoder(ctx, w)
-		body := NewReadResponseBody(res)
+		body := NewReadResponseBody(res.Projected)
 		w.WriteHeader(http.StatusOK)
 		return enc.Encode(body)
 	}
@@ -90,8 +91,9 @@ func DecodeReadRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.De
 		if err != nil {
 			return nil, err
 		}
+		payload := NewReadReadPayload(id)
 
-		return NewReadReadPayload(id), nil
+		return payload, nil
 	}
 }
 
@@ -109,12 +111,14 @@ func EncodeReadError(encoder func(context.Context, http.ResponseWriter) goahttp.
 			res := v.(*goa.ServiceError)
 			enc := encoder(ctx, w)
 			body := NewReadNotFoundResponseBody(res)
+			w.Header().Set("goa-error", "not_found")
 			w.WriteHeader(http.StatusNotFound)
 			return enc.Encode(body)
 		case "bad_request":
 			res := v.(*goa.ServiceError)
 			enc := encoder(ctx, w)
 			body := NewReadBadRequestResponseBody(res)
+			w.Header().Set("goa-error", "bad_request")
 			w.WriteHeader(http.StatusBadRequest)
 			return enc.Encode(body)
 		default:

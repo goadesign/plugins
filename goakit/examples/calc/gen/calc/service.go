@@ -14,7 +14,7 @@ import (
 // The calc service exposes public endpoints that uses go-kit.
 type Service interface {
 	// Add adds up the two integer parameters and returns the results.
-	Add(context.Context, *AddPayload) (int, error)
+	Add(context.Context, *AddPayload) (res int, err error)
 }
 
 // ServiceName is the name of the service as defined in the design. This is the

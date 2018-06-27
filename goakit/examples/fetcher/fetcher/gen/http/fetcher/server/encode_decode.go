@@ -13,16 +13,16 @@ import (
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetchersvcviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
 // EncodeFetchResponse returns an encoder for responses returned by the fetcher
 // fetch endpoint.
 func EncodeFetchResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(*fetchersvc.FetchMedia)
+		res := v.(*fetchersvcviews.FetchMedia)
 		enc := encoder(ctx, w)
-		body := NewFetchResponseBody(res)
+		body := NewFetchResponseBody(res.Projected)
 		w.WriteHeader(http.StatusOK)
 		return enc.Encode(body)
 	}
@@ -44,8 +44,9 @@ func DecodeFetchRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.D
 		if err != nil {
 			return nil, err
 		}
+		payload := NewFetchFetchPayload(url_)
 
-		return NewFetchFetchPayload(url_), nil
+		return payload, nil
 	}
 }
 
@@ -63,12 +64,14 @@ func EncodeFetchError(encoder func(context.Context, http.ResponseWriter) goahttp
 			res := v.(*goa.ServiceError)
 			enc := encoder(ctx, w)
 			body := NewFetchBadRequestResponseBody(res)
+			w.Header().Set("goa-error", "bad_request")
 			w.WriteHeader(http.StatusBadRequest)
 			return enc.Encode(body)
 		case "internal_error":
 			res := v.(*goa.ServiceError)
 			enc := encoder(ctx, w)
 			body := NewFetchInternalErrorResponseBody(res)
+			w.Header().Set("goa-error", "internal_error")
 			w.WriteHeader(http.StatusInternalServerError)
 			return enc.Encode(body)
 		default:

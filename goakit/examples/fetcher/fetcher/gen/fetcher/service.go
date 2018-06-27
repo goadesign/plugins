@@ -11,13 +11,14 @@ import (
 	"context"
 
 	"goa.design/goa"
+	fetchersvcviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
 // Service is the fetcher service interface.
 type Service interface {
 	// Fetch makes a GET request to the given URL and stores the results in the
 	// archiver service which must be running or the request fails
-	Fetch(context.Context, *FetchPayload) (*FetchMedia, error)
+	Fetch(context.Context, *FetchPayload) (res *FetchMedia, err error)
 }
 
 // ServiceName is the name of the service as defined in the design. This is the
@@ -60,4 +61,49 @@ func MakeInternalError(err error) *goa.ServiceError {
 		ID:      goa.NewErrorID(),
 		Message: err.Error(),
 	}
+}
+
+// NewFetchMedia initializes result type FetchMedia from viewed result type
+// FetchMedia.
+func NewFetchMedia(vres *fetchersvcviews.FetchMedia) *FetchMedia {
+	var res *FetchMedia
+	switch vres.View {
+	case "default", "":
+		res = newFetchMedia(vres.Projected)
+	}
+	return res
+}
+
+// NewViewedFetchMedia initializes viewed result type FetchMedia from result
+// type FetchMedia using the given view.
+func NewViewedFetchMedia(res *FetchMedia, view string) *fetchersvcviews.FetchMedia {
+	var vres *fetchersvcviews.FetchMedia
+	switch view {
+	case "default", "":
+		p := newFetchMediaView(res)
+		vres = &fetchersvcviews.FetchMedia{p, "default"}
+	}
+	return vres
+}
+
+// newFetchMedia converts projected type FetchMedia to service type FetchMedia.
+func newFetchMedia(vres *fetchersvcviews.FetchMediaView) *FetchMedia {
+	res := &FetchMedia{}
+	if vres.Status != nil {
+		res.Status = *vres.Status
+	}
+	if vres.ArchiveHref != nil {
+		res.ArchiveHref = *vres.ArchiveHref
+	}
+	return res
+}
+
+// newFetchMediaView projects result type FetchMedia into projected type
+// FetchMediaView using the "default" view.
+func newFetchMediaView(res *FetchMedia) *fetchersvcviews.FetchMediaView {
+	vres := &fetchersvcviews.FetchMediaView{
+		Status:      &res.Status,
+		ArchiveHref: &res.ArchiveHref,
+	}
+	return vres
 }

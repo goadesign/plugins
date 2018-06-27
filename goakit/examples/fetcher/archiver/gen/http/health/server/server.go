@@ -98,6 +98,7 @@ func NewShowHandler(
 		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
 		ctx = context.WithValue(ctx, goa.MethodKey, "show")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "health")
+
 		res, err := endpoint(ctx, nil)
 
 		if err != nil {

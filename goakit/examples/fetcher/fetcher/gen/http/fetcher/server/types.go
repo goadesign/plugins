@@ -10,52 +10,57 @@ package server
 import (
 	goa "goa.design/goa"
 	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetchersvcviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
 // FetchResponseBody is the type of the "fetcher" service "fetch" endpoint HTTP
 // response body.
 type FetchResponseBody struct {
 	// HTTP status code returned by fetched service
-	Status int `form:"status" json:"status" xml:"status"`
+	Status *int `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
 	// The href to the corresponding archive in the archiver service
-	ArchiveHref string `form:"archive_href" json:"archive_href" xml:"archive_href"`
+	ArchiveHref *string `form:"archive_href,omitempty" json:"archive_href,omitempty" xml:"archive_href,omitempty"`
 }
 
 // FetchBadRequestResponseBody is the type of the "fetcher" service "fetch"
 // endpoint HTTP response body for the "bad_request" error.
 type FetchBadRequestResponseBody struct {
 	// Name is the name of this class of errors.
-	Name string `form:"name" json:"name" xml:"name"`
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
 	// ID is a unique identifier for this particular occurrence of the problem.
-	ID string `form:"id" json:"id" xml:"id"`
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 	// Message is a human-readable explanation specific to this occurrence of the
 	// problem.
-	Message string `form:"message" json:"message" xml:"message"`
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
 	// Is the error temporary?
-	Temporary bool `form:"temporary" json:"temporary" xml:"temporary"`
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
 	// Is the error a timeout?
-	Timeout bool `form:"timeout" json:"timeout" xml:"timeout"`
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+	// Is the error a server-side fault?
+	Fault *bool `form:"fault,omitempty" json:"fault,omitempty" xml:"fault,omitempty"`
 }
 
 // FetchInternalErrorResponseBody is the type of the "fetcher" service "fetch"
 // endpoint HTTP response body for the "internal_error" error.
 type FetchInternalErrorResponseBody struct {
 	// Name is the name of this class of errors.
-	Name string `form:"name" json:"name" xml:"name"`
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
 	// ID is a unique identifier for this particular occurrence of the problem.
-	ID string `form:"id" json:"id" xml:"id"`
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 	// Message is a human-readable explanation specific to this occurrence of the
 	// problem.
-	Message string `form:"message" json:"message" xml:"message"`
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
 	// Is the error temporary?
-	Temporary bool `form:"temporary" json:"temporary" xml:"temporary"`
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
 	// Is the error a timeout?
-	Timeout bool `form:"timeout" json:"timeout" xml:"timeout"`
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+	// Is the error a server-side fault?
+	Fault *bool `form:"fault,omitempty" json:"fault,omitempty" xml:"fault,omitempty"`
 }
 
 // NewFetchResponseBody builds the HTTP response body from the result of the
 // "fetch" endpoint of the "fetcher" service.
-func NewFetchResponseBody(res *fetchersvc.FetchMedia) *FetchResponseBody {
+func NewFetchResponseBody(res *fetchersvcviews.FetchMediaView) *FetchResponseBody {
 	body := &FetchResponseBody{
 		Status:      res.Status,
 		ArchiveHref: res.ArchiveHref,
@@ -67,11 +72,12 @@ func NewFetchResponseBody(res *fetchersvc.FetchMedia) *FetchResponseBody {
 // of the "fetch" endpoint of the "fetcher" service.
 func NewFetchBadRequestResponseBody(res *goa.ServiceError) *FetchBadRequestResponseBody {
 	body := &FetchBadRequestResponseBody{
-		Name:      res.Name,
-		ID:        res.ID,
-		Message:   res.Message,
-		Temporary: res.Temporary,
-		Timeout:   res.Timeout,
+		Name:      &res.Name,
+		ID:        &res.ID,
+		Message:   &res.Message,
+		Temporary: &res.Temporary,
+		Timeout:   &res.Timeout,
+		Fault:     &res.Fault,
 	}
 	return body
 }
@@ -80,11 +86,12 @@ func NewFetchBadRequestResponseBody(res *goa.ServiceError) *FetchBadRequestRespo
 // result of the "fetch" endpoint of the "fetcher" service.
 func NewFetchInternalErrorResponseBody(res *goa.ServiceError) *FetchInternalErrorResponseBody {
 	body := &FetchInternalErrorResponseBody{
-		Name:      res.Name,
-		ID:        res.ID,
-		Message:   res.Message,
-		Temporary: res.Temporary,
-		Timeout:   res.Timeout,
+		Name:      &res.Name,
+		ID:        &res.ID,
+		Message:   &res.Message,
+		Temporary: &res.Temporary,
+		Timeout:   &res.Timeout,
+		Fault:     &res.Fault,
 	}
 	return body
 }

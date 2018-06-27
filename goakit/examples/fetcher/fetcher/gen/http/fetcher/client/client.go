@@ -60,7 +60,6 @@ func (c *Client) Fetch() endpoint.Endpoint {
 		if err != nil {
 			return nil, err
 		}
-
 		resp, err := c.FetchDoer.Do(req)
 
 		if err != nil {

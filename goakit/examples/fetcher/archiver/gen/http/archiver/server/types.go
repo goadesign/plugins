@@ -10,6 +10,7 @@ package server
 import (
 	goa "goa.design/goa"
 	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiversvcviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // ArchiveRequestBody is the type of the "archiver" service "archive" endpoint
@@ -25,59 +26,63 @@ type ArchiveRequestBody struct {
 // HTTP response body.
 type ArchiveResponseBody struct {
 	// The archive resouce href
-	Href string `form:"href" json:"href" xml:"href"`
+	Href *string `form:"href,omitempty" json:"href,omitempty" xml:"href,omitempty"`
 	// HTTP status
-	Status int `form:"status" json:"status" xml:"status"`
+	Status *int `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
 	// HTTP response body content
-	Body string `form:"body" json:"body" xml:"body"`
+	Body *string `form:"body,omitempty" json:"body,omitempty" xml:"body,omitempty"`
 }
 
 // ReadResponseBody is the type of the "archiver" service "read" endpoint HTTP
 // response body.
 type ReadResponseBody struct {
 	// The archive resouce href
-	Href string `form:"href" json:"href" xml:"href"`
+	Href *string `form:"href,omitempty" json:"href,omitempty" xml:"href,omitempty"`
 	// HTTP status
-	Status int `form:"status" json:"status" xml:"status"`
+	Status *int `form:"status,omitempty" json:"status,omitempty" xml:"status,omitempty"`
 	// HTTP response body content
-	Body string `form:"body" json:"body" xml:"body"`
+	Body *string `form:"body,omitempty" json:"body,omitempty" xml:"body,omitempty"`
 }
 
 // ReadNotFoundResponseBody is the type of the "archiver" service "read"
 // endpoint HTTP response body for the "not_found" error.
 type ReadNotFoundResponseBody struct {
 	// Name is the name of this class of errors.
-	Name string `form:"name" json:"name" xml:"name"`
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
 	// ID is a unique identifier for this particular occurrence of the problem.
-	ID string `form:"id" json:"id" xml:"id"`
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 	// Message is a human-readable explanation specific to this occurrence of the
 	// problem.
-	Message string `form:"message" json:"message" xml:"message"`
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
 	// Is the error temporary?
-	Temporary bool `form:"temporary" json:"temporary" xml:"temporary"`
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
 	// Is the error a timeout?
-	Timeout bool `form:"timeout" json:"timeout" xml:"timeout"`
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+	// Is the error a server-side fault?
+	Fault *bool `form:"fault,omitempty" json:"fault,omitempty" xml:"fault,omitempty"`
 }
 
 // ReadBadRequestResponseBody is the type of the "archiver" service "read"
 // endpoint HTTP response body for the "bad_request" error.
 type ReadBadRequestResponseBody struct {
 	// Name is the name of this class of errors.
-	Name string `form:"name" json:"name" xml:"name"`
+	Name *string `form:"name,omitempty" json:"name,omitempty" xml:"name,omitempty"`
 	// ID is a unique identifier for this particular occurrence of the problem.
-	ID string `form:"id" json:"id" xml:"id"`
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 	// Message is a human-readable explanation specific to this occurrence of the
 	// problem.
-	Message string `form:"message" json:"message" xml:"message"`
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
 	// Is the error temporary?
-	Temporary bool `form:"temporary" json:"temporary" xml:"temporary"`
+	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
 	// Is the error a timeout?
-	Timeout bool `form:"timeout" json:"timeout" xml:"timeout"`
+	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+	// Is the error a server-side fault?
+	Fault *bool `form:"fault,omitempty" json:"fault,omitempty" xml:"fault,omitempty"`
 }
 
 // NewArchiveResponseBody builds the HTTP response body from the result of the
 // "archive" endpoint of the "archiver" service.
-func NewArchiveResponseBody(res *archiversvc.ArchiveMedia) *ArchiveResponseBody {
+func NewArchiveResponseBody(res *archiversvcviews.ArchiveMediaView) *ArchiveResponseBody {
 	body := &ArchiveResponseBody{
 		Href:   res.Href,
 		Status: res.Status,
@@ -88,7 +93,7 @@ func NewArchiveResponseBody(res *archiversvc.ArchiveMedia) *ArchiveResponseBody 
 
 // NewReadResponseBody builds the HTTP response body from the result of the
 // "read" endpoint of the "archiver" service.
-func NewReadResponseBody(res *archiversvc.ArchiveMedia) *ReadResponseBody {
+func NewReadResponseBody(res *archiversvcviews.ArchiveMediaView) *ReadResponseBody {
 	body := &ReadResponseBody{
 		Href:   res.Href,
 		Status: res.Status,
@@ -101,11 +106,12 @@ func NewReadResponseBody(res *archiversvc.ArchiveMedia) *ReadResponseBody {
 // the "read" endpoint of the "archiver" service.
 func NewReadNotFoundResponseBody(res *goa.ServiceError) *ReadNotFoundResponseBody {
 	body := &ReadNotFoundResponseBody{
-		Name:      res.Name,
-		ID:        res.ID,
-		Message:   res.Message,
-		Temporary: res.Temporary,
-		Timeout:   res.Timeout,
+		Name:      &res.Name,
+		ID:        &res.ID,
+		Message:   &res.Message,
+		Temporary: &res.Temporary,
+		Timeout:   &res.Timeout,
+		Fault:     &res.Fault,
 	}
 	return body
 }
@@ -114,11 +120,12 @@ func NewReadNotFoundResponseBody(res *goa.ServiceError) *ReadNotFoundResponseBod
 // of the "read" endpoint of the "archiver" service.
 func NewReadBadRequestResponseBody(res *goa.ServiceError) *ReadBadRequestResponseBody {
 	body := &ReadBadRequestResponseBody{
-		Name:      res.Name,
-		ID:        res.ID,
-		Message:   res.Message,
-		Temporary: res.Temporary,
-		Timeout:   res.Timeout,
+		Name:      &res.Name,
+		ID:        &res.ID,
+		Message:   &res.Message,
+		Temporary: &res.Temporary,
+		Timeout:   &res.Timeout,
+		Fault:     &res.Fault,
 	}
 	return body
 }
