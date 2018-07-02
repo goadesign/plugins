@@ -200,7 +200,7 @@ Read HTTP response from archive
     -id INT: ID of archive
 
 Example:
-    `+os.Args[0]+` archiver read --id 7904528753725778865
+    `+os.Args[0]+` archiver read --id 7421807053867881696
 `, os.Args[0])
 }
 

@@ -35,6 +35,11 @@ func (e *Endpoints) Use(m func(endpoint.Endpoint) endpoint.Endpoint) {
 func NewFetchEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*FetchPayload)
-		return s.Fetch(ctx, p)
+		res, err := s.Fetch(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		vres := NewViewedFetchMedia(res, "default")
+		return vres, nil
 	}
 }

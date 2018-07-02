@@ -10,13 +10,13 @@ package client
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 
 	goahttp "goa.design/goa/http"
 	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetchersvcviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
 // BuildFetchRequest instantiates a HTTP request object with method and path
@@ -75,12 +75,13 @@ func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("fetcher", "fetch", err)
 			}
-			err = body.Validate()
-			if err != nil {
-				return nil, fmt.Errorf("invalid response: %s", err)
+			p := NewFetchFetchMediaOK(&body)
+			view := "default"
+			vres := &fetchersvcviews.FetchMedia{p, view}
+			if err = vres.Validate(); err != nil {
+				return nil, goahttp.ErrValidationError("fetcher", "fetch", err)
 			}
-
-			return NewFetchFetchMediaOK(&body), nil
+			return fetchersvc.NewFetchMedia(vres), nil
 		case http.StatusBadRequest:
 			var (
 				body FetchBadRequestResponseBody
@@ -92,9 +93,8 @@ func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 			}
 			err = body.Validate()
 			if err != nil {
-				return nil, fmt.Errorf("invalid response: %s", err)
+				return nil, goahttp.ErrValidationError("fetcher", "fetch", err)
 			}
-
 			return nil, NewFetchBadRequest(&body)
 		case http.StatusInternalServerError:
 			var (
@@ -107,13 +107,12 @@ func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 			}
 			err = body.Validate()
 			if err != nil {
-				return nil, fmt.Errorf("invalid response: %s", err)
+				return nil, goahttp.ErrValidationError("fetcher", "fetch", err)
 			}
-
 			return nil, NewFetchInternalError(&body)
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
-			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))
+			return nil, goahttp.ErrInvalidResponse("fetcher", "fetch", resp.StatusCode, string(body))
 		}
 	}
 }

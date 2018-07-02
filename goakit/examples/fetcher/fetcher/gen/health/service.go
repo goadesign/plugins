@@ -14,7 +14,7 @@ import (
 // Service is the health service interface.
 type Service interface {
 	// Health check endpoint
-	Show(context.Context) (string, error)
+	Show(context.Context) (res string, err error)
 }
 
 // ServiceName is the name of the service as defined in the design. This is the

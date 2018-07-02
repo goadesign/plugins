@@ -10,6 +10,7 @@ package client
 import (
 	goa "goa.design/goa"
 	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiversvcviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // ArchiveRequestBody is the type of the "archiver" service "archive" endpoint
@@ -57,6 +58,8 @@ type ReadNotFoundResponseBody struct {
 	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
 	// Is the error a timeout?
 	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+	// Is the error a server-side fault?
+	Fault *bool `form:"fault,omitempty" json:"fault,omitempty" xml:"fault,omitempty"`
 }
 
 // ReadBadRequestResponseBody is the type of the "archiver" service "read"
@@ -73,6 +76,8 @@ type ReadBadRequestResponseBody struct {
 	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
 	// Is the error a timeout?
 	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+	// Is the error a server-side fault?
+	Fault *bool `form:"fault,omitempty" json:"fault,omitempty" xml:"fault,omitempty"`
 }
 
 // NewArchiveRequestBody builds the HTTP request body from the payload of the
@@ -87,22 +92,22 @@ func NewArchiveRequestBody(p *archiversvc.ArchivePayload) *ArchiveRequestBody {
 
 // NewArchiveArchiveMediaOK builds a "archiver" service "archive" endpoint
 // result from a HTTP "OK" response.
-func NewArchiveArchiveMediaOK(body *ArchiveResponseBody) *archiversvc.ArchiveMedia {
-	v := &archiversvc.ArchiveMedia{
-		Href:   *body.Href,
-		Status: *body.Status,
-		Body:   *body.Body,
+func NewArchiveArchiveMediaOK(body *ArchiveResponseBody) *archiversvcviews.ArchiveMediaView {
+	v := &archiversvcviews.ArchiveMediaView{
+		Href:   body.Href,
+		Status: body.Status,
+		Body:   body.Body,
 	}
 	return v
 }
 
 // NewReadArchiveMediaOK builds a "archiver" service "read" endpoint result
 // from a HTTP "OK" response.
-func NewReadArchiveMediaOK(body *ReadResponseBody) *archiversvc.ArchiveMedia {
-	v := &archiversvc.ArchiveMedia{
-		Href:   *body.Href,
-		Status: *body.Status,
-		Body:   *body.Body,
+func NewReadArchiveMediaOK(body *ReadResponseBody) *archiversvcviews.ArchiveMediaView {
+	v := &archiversvcviews.ArchiveMediaView{
+		Href:   body.Href,
+		Status: body.Status,
+		Body:   body.Body,
 	}
 	return v
 }
@@ -115,6 +120,7 @@ func NewReadNotFound(body *ReadNotFoundResponseBody) *goa.ServiceError {
 		Message:   *body.Message,
 		Temporary: *body.Temporary,
 		Timeout:   *body.Timeout,
+		Fault:     *body.Fault,
 	}
 	return v
 }
@@ -127,52 +133,9 @@ func NewReadBadRequest(body *ReadBadRequestResponseBody) *goa.ServiceError {
 		Message:   *body.Message,
 		Temporary: *body.Temporary,
 		Timeout:   *body.Timeout,
+		Fault:     *body.Fault,
 	}
 	return v
-}
-
-// Validate runs the validations defined on ArchiveResponseBody
-func (body *ArchiveResponseBody) Validate() (err error) {
-	if body.Href == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("href", "body"))
-	}
-	if body.Status == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
-	}
-	if body.Body == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("body", "body"))
-	}
-	if body.Href != nil {
-		err = goa.MergeErrors(err, goa.ValidatePattern("body.href", *body.Href, "^/archive/[0-9]+$"))
-	}
-	if body.Status != nil {
-		if *body.Status < 0 {
-			err = goa.MergeErrors(err, goa.InvalidRangeError("body.status", *body.Status, 0, true))
-		}
-	}
-	return
-}
-
-// Validate runs the validations defined on ReadResponseBody
-func (body *ReadResponseBody) Validate() (err error) {
-	if body.Href == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("href", "body"))
-	}
-	if body.Status == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
-	}
-	if body.Body == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("body", "body"))
-	}
-	if body.Href != nil {
-		err = goa.MergeErrors(err, goa.ValidatePattern("body.href", *body.Href, "^/archive/[0-9]+$"))
-	}
-	if body.Status != nil {
-		if *body.Status < 0 {
-			err = goa.MergeErrors(err, goa.InvalidRangeError("body.status", *body.Status, 0, true))
-		}
-	}
-	return
 }
 
 // Validate runs the validations defined on ReadNotFoundResponseBody
@@ -191,6 +154,9 @@ func (body *ReadNotFoundResponseBody) Validate() (err error) {
 	}
 	if body.Timeout == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("timeout", "body"))
+	}
+	if body.Fault == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("fault", "body"))
 	}
 	return
 }
@@ -211,6 +177,9 @@ func (body *ReadBadRequestResponseBody) Validate() (err error) {
 	}
 	if body.Timeout == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("timeout", "body"))
+	}
+	if body.Fault == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("fault", "body"))
 	}
 	return
 }

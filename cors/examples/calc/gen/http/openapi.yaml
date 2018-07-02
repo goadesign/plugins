@@ -2,125 +2,32 @@ swagger: "2.0"
 info:
   title: CORS Example Calc API
   description: This API demonstrates the use of the goa CORS plugin
-  termsofservice: ""
-  contact: null
-  license: null
   version: ""
-  extensions: {}
 host: localhost:8080
-basepath: ""
-schemes: []
-consumes: []
-produces: []
 paths:
   /add/{a}/{b}:
-    ref: ""
     get:
       tags:
       - calc
       summary: add calc
       description: Add adds up the two integer parameters and returns the results.
-      externaldocs: null
-      operationid: calc#add
-      consumes: []
-      produces: []
+      operationId: calc#add
       parameters:
       - name: a
         in: path
         description: Left operand
         required: true
-        schema: null
         type: integer
-        format: ""
-        allowemptyvalue: false
-        items: null
-        collectionformat: ""
-        default: null
-        maximum: null
-        exclusivemaximum: false
-        minimum: null
-        exclusiveminimum: false
-        maxlength: null
-        minlength: null
-        pattern: ""
-        maxitems: null
-        minitems: null
-        uniqueitems: false
-        enum: []
-        multipleof: 0
-        extensions: {}
       - name: b
         in: path
         description: Right operand
         required: true
-        schema: null
         type: integer
-        format: ""
-        allowemptyvalue: false
-        items: null
-        collectionformat: ""
-        default: null
-        maximum: null
-        exclusivemaximum: false
-        minimum: null
-        exclusiveminimum: false
-        maxlength: null
-        minlength: null
-        pattern: ""
-        maxitems: null
-        minitems: null
-        uniqueitems: false
-        enum: []
-        multipleof: 0
-        extensions: {}
       responses:
         "200":
           description: OK response.
           schema:
-            schema: ""
-            id: ""
-            title: ""
             type: integer
-            items: null
-            properties: {}
-            definitions: {}
-            description: ""
-            defaultvalue: null
-            example: null
-            media: null
-            readonly: false
-            pathstart: ""
-            links: []
-            ref: ""
-            enum: []
             format: int64
-            pattern: ""
-            minimum: null
-            maximum: null
-            minlength: null
-            maxlength: null
-            required: []
-            additionalproperties: false
-            anyof: []
-          headers: {}
-          ref: ""
-          extensions: {}
       schemes:
       - http
-      deprecated: false
-      security: []
-      extensions: {}
-    put: null
-    post: null
-    delete: null
-    options: null
-    head: null
-    patch: null
-    parameters: []
-    extensions: {}
-definitions: {}
-parameters: {}
-responses: {}
-securitydefinitions: {}
-tags: []
-externaldocs: null

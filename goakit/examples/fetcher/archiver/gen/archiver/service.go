@@ -11,14 +11,15 @@ import (
 	"context"
 
 	"goa.design/goa"
+	archiversvcviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // Service is the archiver service interface.
 type Service interface {
 	// Archive HTTP response
-	Archive(context.Context, *ArchivePayload) (*ArchiveMedia, error)
+	Archive(context.Context, *ArchivePayload) (res *ArchiveMedia, err error)
 	// Read HTTP response from archive
-	Read(context.Context, *ReadPayload) (*ArchiveMedia, error)
+	Read(context.Context, *ReadPayload) (res *ArchiveMedia, err error)
 }
 
 // ServiceName is the name of the service as defined in the design. This is the
@@ -71,4 +72,54 @@ func MakeBadRequest(err error) *goa.ServiceError {
 		ID:      goa.NewErrorID(),
 		Message: err.Error(),
 	}
+}
+
+// NewArchiveMedia initializes result type ArchiveMedia from viewed result type
+// ArchiveMedia.
+func NewArchiveMedia(vres *archiversvcviews.ArchiveMedia) *ArchiveMedia {
+	var res *ArchiveMedia
+	switch vres.View {
+	case "default", "":
+		res = newArchiveMedia(vres.Projected)
+	}
+	return res
+}
+
+// NewViewedArchiveMedia initializes viewed result type ArchiveMedia from
+// result type ArchiveMedia using the given view.
+func NewViewedArchiveMedia(res *ArchiveMedia, view string) *archiversvcviews.ArchiveMedia {
+	var vres *archiversvcviews.ArchiveMedia
+	switch view {
+	case "default", "":
+		p := newArchiveMediaView(res)
+		vres = &archiversvcviews.ArchiveMedia{p, "default"}
+	}
+	return vres
+}
+
+// newArchiveMedia converts projected type ArchiveMedia to service type
+// ArchiveMedia.
+func newArchiveMedia(vres *archiversvcviews.ArchiveMediaView) *ArchiveMedia {
+	res := &ArchiveMedia{}
+	if vres.Href != nil {
+		res.Href = *vres.Href
+	}
+	if vres.Status != nil {
+		res.Status = *vres.Status
+	}
+	if vres.Body != nil {
+		res.Body = *vres.Body
+	}
+	return res
+}
+
+// newArchiveMediaView projects result type ArchiveMedia into projected type
+// ArchiveMediaView using the "default" view.
+func newArchiveMediaView(res *ArchiveMedia) *archiversvcviews.ArchiveMediaView {
+	vres := &archiversvcviews.ArchiveMediaView{
+		Href:   &res.Href,
+		Status: &res.Status,
+		Body:   &res.Body,
+	}
+	return vres
 }

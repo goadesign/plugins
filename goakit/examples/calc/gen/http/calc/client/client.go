@@ -60,7 +60,6 @@ func (c *Client) Add() endpoint.Endpoint {
 		if err != nil {
 			return nil, err
 		}
-
 		resp, err := c.AddDoer.Do(req)
 
 		if err != nil {

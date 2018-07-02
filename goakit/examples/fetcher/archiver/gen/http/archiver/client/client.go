@@ -70,7 +70,6 @@ func (c *Client) Archive() endpoint.Endpoint {
 		if err != nil {
 			return nil, err
 		}
-
 		resp, err := c.ArchiveDoer.Do(req)
 
 		if err != nil {
@@ -91,7 +90,6 @@ func (c *Client) Read() endpoint.Endpoint {
 		if err != nil {
 			return nil, err
 		}
-
 		resp, err := c.ReadDoer.Do(req)
 
 		if err != nil {

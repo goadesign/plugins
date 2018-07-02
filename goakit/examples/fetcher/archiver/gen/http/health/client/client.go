@@ -60,7 +60,6 @@ func (c *Client) Show() endpoint.Endpoint {
 		if err != nil {
 			return nil, err
 		}
-
 		resp, err := c.ShowDoer.Do(req)
 
 		if err != nil {

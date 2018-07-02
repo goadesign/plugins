@@ -72,11 +72,10 @@ func DecodeAddResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("calc", "add", err)
 			}
-
 			return body, nil
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
-			return nil, goahttp.ErrInvalidResponse("account", "create", resp.StatusCode, string(body))
+			return nil, goahttp.ErrInvalidResponse("calc", "add", resp.StatusCode, string(body))
 		}
 	}
 }

@@ -38,7 +38,12 @@ func (e *Endpoints) Use(m func(endpoint.Endpoint) endpoint.Endpoint) {
 func NewArchiveEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*ArchivePayload)
-		return s.Archive(ctx, p)
+		res, err := s.Archive(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		vres := NewViewedArchiveMedia(res, "default")
+		return vres, nil
 	}
 }
 
@@ -47,6 +52,11 @@ func NewArchiveEndpoint(s Service) endpoint.Endpoint {
 func NewReadEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*ReadPayload)
-		return s.Read(ctx, p)
+		res, err := s.Read(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		vres := NewViewedArchiveMedia(res, "default")
+		return vres, nil
 	}
 }

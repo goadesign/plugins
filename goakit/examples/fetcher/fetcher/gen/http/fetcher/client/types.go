@@ -9,7 +9,7 @@ package client
 
 import (
 	goa "goa.design/goa"
-	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetchersvcviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
 // FetchResponseBody is the type of the "fetcher" service "fetch" endpoint HTTP
@@ -35,6 +35,8 @@ type FetchBadRequestResponseBody struct {
 	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
 	// Is the error a timeout?
 	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+	// Is the error a server-side fault?
+	Fault *bool `form:"fault,omitempty" json:"fault,omitempty" xml:"fault,omitempty"`
 }
 
 // FetchInternalErrorResponseBody is the type of the "fetcher" service "fetch"
@@ -51,14 +53,16 @@ type FetchInternalErrorResponseBody struct {
 	Temporary *bool `form:"temporary,omitempty" json:"temporary,omitempty" xml:"temporary,omitempty"`
 	// Is the error a timeout?
 	Timeout *bool `form:"timeout,omitempty" json:"timeout,omitempty" xml:"timeout,omitempty"`
+	// Is the error a server-side fault?
+	Fault *bool `form:"fault,omitempty" json:"fault,omitempty" xml:"fault,omitempty"`
 }
 
 // NewFetchFetchMediaOK builds a "fetcher" service "fetch" endpoint result from
 // a HTTP "OK" response.
-func NewFetchFetchMediaOK(body *FetchResponseBody) *fetchersvc.FetchMedia {
-	v := &fetchersvc.FetchMedia{
-		Status:      *body.Status,
-		ArchiveHref: *body.ArchiveHref,
+func NewFetchFetchMediaOK(body *FetchResponseBody) *fetchersvcviews.FetchMediaView {
+	v := &fetchersvcviews.FetchMediaView{
+		Status:      body.Status,
+		ArchiveHref: body.ArchiveHref,
 	}
 	return v
 }
@@ -71,6 +75,7 @@ func NewFetchBadRequest(body *FetchBadRequestResponseBody) *goa.ServiceError {
 		Message:   *body.Message,
 		Temporary: *body.Temporary,
 		Timeout:   *body.Timeout,
+		Fault:     *body.Fault,
 	}
 	return v
 }
@@ -84,27 +89,9 @@ func NewFetchInternalError(body *FetchInternalErrorResponseBody) *goa.ServiceErr
 		Message:   *body.Message,
 		Temporary: *body.Temporary,
 		Timeout:   *body.Timeout,
+		Fault:     *body.Fault,
 	}
 	return v
-}
-
-// Validate runs the validations defined on FetchResponseBody
-func (body *FetchResponseBody) Validate() (err error) {
-	if body.Status == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
-	}
-	if body.ArchiveHref == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("archive_href", "body"))
-	}
-	if body.Status != nil {
-		if *body.Status < 0 {
-			err = goa.MergeErrors(err, goa.InvalidRangeError("body.status", *body.Status, 0, true))
-		}
-	}
-	if body.ArchiveHref != nil {
-		err = goa.MergeErrors(err, goa.ValidatePattern("body.archive_href", *body.ArchiveHref, "^/archive/[0-9]+$"))
-	}
-	return
 }
 
 // Validate runs the validations defined on FetchBadRequestResponseBody
@@ -123,6 +110,9 @@ func (body *FetchBadRequestResponseBody) Validate() (err error) {
 	}
 	if body.Timeout == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("timeout", "body"))
+	}
+	if body.Fault == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("fault", "body"))
 	}
 	return
 }
@@ -143,6 +133,9 @@ func (body *FetchInternalErrorResponseBody) Validate() (err error) {
 	}
 	if body.Timeout == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("timeout", "body"))
+	}
+	if body.Fault == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("fault", "body"))
 	}
 	return
 }
