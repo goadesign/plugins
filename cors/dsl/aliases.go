@@ -12,11 +12,15 @@ import (
 	dsl "goa.design/goa/http/dsl"
 )
 
-// API defines a network service API. It provides the API name, description and other global
-// properties. There may only be one API declaration in a given design package.
+// API provides the API name, description and other properties. API also lists
+// the servers that expose the services describe in the design. There may only
+// be one API declaration in a given design package.
 //
-// API is a top level DSL.
-// API takes two arguments: the name of the API and the defining DSL.
+// API is a top level DSL. API takes two arguments: the name of the API and the
+// defining DSL.
+//
+// The API properties are leveraged by the OpenAPI specification. The server
+// expressions are also used by the server and the client tool code generators.
 //
 // Example:
 //
@@ -402,7 +406,7 @@ func CollectionOf(v interface{}, adsl ...func()) *design.ResultTypeExpr {
 	return dsl.CollectionOf(v, adsl...)
 }
 
-// Consumes adds a MIME type to the list of MIME types the APIs supports when
+// Consumes adds a MIME type to the list of MIME types the API supports when
 // accepting requests. While the DSL supports any MIME type, the code generator
 // only knows to generate the code for "application/json", "application/xml" and
 // "application/gob". The service code must provide the decoders for other MIME
@@ -414,7 +418,7 @@ func CollectionOf(v interface{}, adsl ...func()) *design.ResultTypeExpr {
 //
 // Example:
 //
-//    API("cellar", func() {
+//    var _ = API("cellar", func() {
 //        // ...
 //        HTTP(func() {
 //            Consumes("application/json", "application/xml")
@@ -426,7 +430,23 @@ func Consumes(args ...string) {
 	dsl.Consumes(args...)
 }
 
-// Contact sets the API contact information.
+// Contact sets the API contact information. It is used by the generated OpenAPI
+// specification.
+//
+// Contact must appear in a API expression.
+//
+// Contact takes a single argument which is the defining DSL.
+//
+// Example:
+//
+//    var _ = API("divider", func() {
+//        Contact(func() {
+//            Name("support")
+//            Email("support@goa.design")
+//            URL("https://goa.design")
+//        })
+//    })
+//
 func Contact(fn func()) {
 	dsl.Contact(fn)
 }
@@ -623,6 +643,19 @@ func Elem(fn func()) {
 }
 
 // Email sets the contact email.
+//
+// Email must appear in a Contact expression.
+//
+// Email takes a single argument which is the email address.
+//
+// Example:
+//
+//    var _ = API("divider", func() {
+//        Contact(func() {
+//            Email("support@goa.design")
+//        })
+//    })
+//
 func Email(email string) {
 	dsl.Email(email)
 }
@@ -877,22 +910,15 @@ func HEAD(path string) *httpdesign.RouteExpr {
 // code. HTTP also defines HTTP specific properties such as the method endpoint
 // URLs and HTTP methods.
 //
-// As a special case HTTP may be used to define the response generated for
-// invalid requests and internal errors (errors returned by the service
-// methods that don't match any of the error responses defined in the design).
-// This is the only use of HTTP allowed in the API expression. The attributes of
-// the built in invalid request error are "id", "status", "code", "detail" and
-// "meta", see ErrorResult.
-//
 // The functions that appear in HTTP such as Header, Param or Body may take
 // advantage of the request or response types (depending on whether they appear
 // when describing the HTTP request or response). The properties of the header,
-// parameter or body attributes inherit the properties of the attributes with the
-// same names that appear in the request or response types. The functions may
-// also define new attributes or override the existing request or response type
-// attributes.
+// parameter or body attributes inherit the properties of the attributes with
+// the same names that appear in the request or response types. The functions
+// may also define new attributes or override the existing request or response
+// type attributes.
 //
-// HTTP must appear in API, a Service or an Method expression.
+// HTTP must appear in API, Service or Method.
 //
 // HTTP accepts a single argument which is the defining DSL function.
 //
@@ -954,11 +980,11 @@ func HTTP(fn func()) {
 // validation etc.) of a header are inherited from the request or response type
 // attribute with the same name by default.
 //
-// Header must appear in the API HTTP expression (to define request headers
-// common to all the API endpoints), a specific method HTTP expression (to
-// define request headers), a Result expression (to define the response
-// headers) or an Error expression (to define the error response headers). Header
-// may also appear in a Headers expression.
+// Header may appear in a service HTTP expression (to define request headers
+// that apply to all the service endpoints), specific method HTTP expression (to
+// define request headers), a Result expression (to define the response headers)
+// or an Error expression (to define the error response headers). Header may
+// also appear in a Headers expression.
 //
 // Header accepts the same arguments as the Attribute function. The header name
 // may define a mapping between the attribute name and the HTTP header name when
@@ -984,6 +1010,30 @@ func HTTP(fn func()) {
 //
 func Header(name string, args ...interface{}) {
 	dsl.Header(name, args...)
+}
+
+// Host defines a server host. A single server may define multiple hosts. Each
+// host lists the set of URIs that identify it.
+//
+// The Host expression is leveraged by the example generator to produce the
+// service and client commands. It is also consumed by the OpenAPI specification
+// generator to initialize the server objects.
+//
+// Host must appear in a Server expression.
+//
+// Host takes two arguments: a name and a DSL function.
+//
+// Example:
+//
+//    var _ = Server("calcsvc", func() {
+//        Host("development", func() {
+//            URI("http://localhost:80/calc")
+//            URI("grpc://localhost:8080")
+//        })
+//    })
+//
+func Host(name string, fn func()) {
+	dsl.Host(name, fn)
 }
 
 // ImplicitFlow defines an implicit OAuth2 flow as described in section 1.3.2
@@ -1027,7 +1077,22 @@ func Key(fn func()) {
 	dsl.Key(fn)
 }
 
-// License sets the API license information.
+// License sets the API license. It is used by the generated OpenAPI
+// specification.
+//
+// License must appear in a API expression.
+//
+// License takes a single argument which is the defining DSL.
+//
+// Example:
+//
+//    var _ = API("divider", func() {
+//        License(func() {
+//            Name("MIT")
+//            URL("https://github.com/goadesign/goa/blob/master/LICENSE")
+//        })
+//    })
+//
 func License(fn func()) {
 	dsl.License(fn)
 }
@@ -1216,6 +1281,20 @@ func MultipartRequest() {
 }
 
 // Name sets the contact or license name.
+//
+// Name must appear in a Contact or License expression.
+//
+// Name takes a single argument which is the contact or license name.
+//
+// Example:
+//
+//    var _ = API("divider", func() {
+//        License(func() {
+//            Name("MIT")
+//            URL("https://github.com/goadesign/goa/blob/master/LICENSE")
+//        })
+//    })
+//
 func Name(name string) {
 	dsl.Name(name)
 }
@@ -1272,10 +1351,9 @@ func PUT(path string) *httpdesign.RouteExpr {
 
 // Param describes a single HTTP request path or query string parameter.
 //
-// Param must appear in the API HTTP expression (to define request parameters
-// common to all the API endpoints), a service HTTP expression to define common
-// parameters to all the service methods or a specific method HTTP
-// expression. Param may also appear in a Params expression.
+// Param may appear in a service HTTP expression to define common parameters to
+// all the service methods or a specific method HTTP expression. Param may also
+// appear in a Params expression.
 //
 // Param accepts the same arguments as the Function Attribute.
 //
@@ -1324,17 +1402,16 @@ func Param(name string, args ...interface{}) {
 // Params groups a set of Param expressions. It makes it possible to list
 // required parameters using the Required function.
 //
-// Params must appear in an API or Service HTTP expression to define the API or
-// service base path and query string parameters. Params may also appear in an
-// method HTTP expression to define the HTTP endpoint path and query string
-// parameters.
+// Params must appear in a Service HTTP expression to define the service base
+// path and query string parameters. Params may also appear in an method HTTP
+// expression to define the HTTP endpoint path and query string parameters.
 //
 // Params accepts one argument: Either a function listing the parameters or a
 // user type which must be an object and whose attributes define the parameters.
 //
 // Example:
 //
-//     var _ = API("cellar", func() {
+//     var _ = Service("cellar", func() {
 //         HTTP(func() {
 //             Params(func() {
 //                 Param("version", String, "API version", func() {
@@ -1392,10 +1469,10 @@ func PasswordFlow(tokenURL, refreshURL string) {
 	dsl.PasswordFlow(tokenURL, refreshURL)
 }
 
-// Path defines an API or service base path, i.e. a common path prefix to all
-// the API or service methods. The path may define wildcards (see GET for a
-// description of the wildcard syntax). The corresponding parameters must be
-// described using Params. Multiple base paths may be defined for services.
+// Path defines a service base path, i.e. a common path prefix to all the
+// service methods. The path may define wildcards (see GET for a description of
+// the wildcard syntax). The corresponding parameters must be described using
+// Params. Multiple base paths may be defined for services.
 func Path(val string) {
 	dsl.Path(val)
 }
@@ -1474,7 +1551,7 @@ func Payload(val interface{}, args ...interface{}) {
 	dsl.Payload(val, args...)
 }
 
-// Produces adds a MIME type to the list of MIME types the APIs supports when
+// Produces adds a MIME type to the list of MIME types the API supports when
 // writing responses. While the DSL supports any MIME type, the code generator
 // only knows to generate the code for "application/json", "application/xml" and
 // "application/gob". The service code must provide the encoders for other MIME
@@ -1486,7 +1563,7 @@ func Payload(val interface{}, args ...interface{}) {
 //
 // Example:
 //
-//    API("cellar", func() {
+//    var _ = API("cellar", func() {
 //        // ...
 //        HTTP(func() {
 //            Produces("application/json", "application/xml")
@@ -1545,23 +1622,23 @@ func Required(names ...string) {
 	dsl.Required(names...)
 }
 
-// Response describes a single HTTP response. Response describes both success and
-// error responses. When describing an error response the first argument is the
-// name of the error.
+// Response describes a single HTTP response. Response describes both success
+// and error responses. When describing an error response the first argument is
+// the name of the error.
 //
 // While a service method may only define a single result type Response may be
 // called multiple times to define multiple success HTTP responses. In this case
 // the Tag expression makes it possible to specify the name of a field in the
-// method result type and a value that the field must have for the
-// corresponding response to be sent. The tag field must be of type String.
+// method result type and a value that the field must have for the corresponding
+// response to be sent. The tag field must be of type String.
 //
 // Response allows specifying the response status code as an argument or via the
 // Code expression, headers via the Header and ContentType expressions and body
 // via the Body expression.
 //
-// By default success HTTP responses use status code 200 and error HTTP responses
-// use status code 400. Also by default the responses use the method result
-// type (success responses) or error type (error responses) to define the
+// By default success HTTP responses use status code 200 and error HTTP
+// responses use status code 400. Also by default the responses use the method
+// result type (success responses) or error type (error responses) to define the
 // response body shape.
 //
 // Additionally if the response type is a result type then the "Content-Type"
@@ -1584,13 +1661,13 @@ func Required(names ...string) {
 // the following:
 //
 //     Method("show", func() {
-//         Response(AccountResult)
+//         Result(AccountResult)
 //     })
 //
 // is equivalent to:
 //
 //     Method("show", func() {
-//         Response(AccountResult)
+//         Result(AccountResult)
 //         HTTP(func() {
 //             Response(func() {
 //                 Code(StatusOK)
@@ -1606,22 +1683,19 @@ func Required(names ...string) {
 // The following:
 //
 //     Method("show", func() {
-//         Response(ShowResponse)
+//         Result(AccountResult)
 //         HTTP(func() {
-//             Response(func() {
-//                 Header("href")
-//             })
+//             Response(func() { Header("href") })
 //         })
 //     })
 //
 // is thus equivalent to:
 //
 //     Method("show", func() {
-//         Response(ShowResponse)
+//         Result(AccountResult)
 //         HTTP(func() {
 //             Response(func() {
 //                 Code(StatusOK)
-//                 ContentType("application/vnd.goa.account")
 //                 Header("href", String, "Account API href")
 //                 Body(func() {
 //                     Attribute("name", String, "Account name")
@@ -1630,10 +1704,10 @@ func Required(names ...string) {
 //         })
 //     })
 //
-// Response must appear in a API or service HTTP expression to define error
-// responses common to all the API or service methods. Response may also appear
-// in an method HTTP expression to define both the success and error responses
-// specific to the method.
+// Response must appear in a API, a service or a method HTTP expression. When
+// defined in a API or service, Response describes the default HTTP mapping for
+// the corresponding error. When defined in a method expression Response may
+// define the mapping to HTTP for the method result or for an error.
 //
 // Response takes one to three arguments. Success responses accept a status code
 // or a function as first argument. If the first argument is a status code then
@@ -1836,8 +1910,8 @@ func Scope(name string, desc ...string) {
 	dsl.Scope(name, desc...)
 }
 
-// Security defines authentication requirements to access an API, a service or a
-// service method.
+// Security defines authentication requirements to access a service or a service
+// method.
 //
 // The requirement refers to one or more OAuth2Security, BasicAuthSecurity,
 // APIKeySecurity or JWTSecurity security scheme. If the schemes include a
@@ -1847,18 +1921,13 @@ func Scope(name string, desc ...string) {
 // in the same scope in which case the client may validate any one of the
 // requirements for the request to be authorized.
 //
-// Security must appear in a API, Service or Method expression.
+// Security must appear in a Service or Method expression.
 //
 // Security accepts an arbitrary number of security schemes as argument
 // specified by name or by reference and an optional DSL function as last
 // argument.
 //
 // Examples:
-//
-//    var _ = API("calc", func() {
-//        // All API endpoints are secured via basic auth by default.
-//        Security(BasicAuth)
-//    })
 //
 //    var _ = Service("calculator", func() {
 //        // Override default API security requirements. Accept either basic
@@ -1897,46 +1966,127 @@ func Security(args ...interface{}) {
 	dsl.Security(args...)
 }
 
-// Server defines an API host.
-func Server(url string, fn ...func()) {
-	dsl.Server(url, fn...)
+// Server describes a single process listening for client requests. The DSL
+// defines the set of services that the server exposes as well as host details.
+// Not defining a server in a design has the same effect as defining a single
+// server that exposes all of the services defined in the design in a single
+// host listening on "locahost" and using port 80 for HTTP endpoints and 8080
+// for GRPC endpoints.
+//
+// The Server expression is leveraged by the example generator to produce the
+// service and client commands. It is also consumed by the OpenAPI specification
+// generator. There is one specification generated per server. The first URI of
+// the first host is used to set the OpenAPI v2 specification 'host' and
+// 'basePath' values.
+//
+// Server is a top level expression.
+//
+// Server takes two arguments: the name of the server and the defining DSL.
+//
+// Example:
+//
+//    var _ = Server("calcsvr", func() {
+//        Description("calcsvr hosts the Calculator Service.")
+//
+//        // List the services hosted by this server.
+//        Services("calc")
+//
+//        // List the Hosts and their transport URLs.
+//        Host("production", func() {
+//            Description("Production host.")
+//            // URIs can be parameterized using {param} notation.
+//            URI("https://{version}.goa.design/calc")
+//            URI("grpcs://{version}.goa.design")
+//
+//            // Variable describes a URI variable.
+//            Variable("version", String, "API version", func() {
+//                // URI parameters must have a default value and/or an
+//                // enum validation.
+//                Default("v1")
+//            })
+//        })
+//
+//        Host("development", func() {
+//            Description("Development hosts.")
+//            // Transport specific URLs, supported schemes are:
+//            // 'http', 'https', 'grpc' and 'grpcs' with the respective default
+//            // ports: 80, 443, 8080, 8443.
+//            URI("http://localhost:80/calc")
+//            URI("grpc://localhost:8080")
+//        })
+//    })
+//
+func Server(name string, fn ...func()) *design.ServerExpr {
+	return dsl.Server(name, fn...)
 }
 
-// Service defines a group of related methods. Refer to the transport specific
-// DSLs to learn how to provide transport specific information.
+// Service defines a group of remotely accessible methods that are hosted
+// together. The service DSL makes it possible to define the methods, their
+// input and output as well as the errors they may return independently of the
+// underlying transport (HTTP or gRPC). The transport specific DSLs defined by
+// the HTTP and GRPC functions define the mapping between the input, output and
+// error type attributes and the transport data (e.g. HTTP headers, HTTP bodies
+// or gRPC messages).
+//
+// The Service expression is leveraged by the code generators to define the
+// business layer service interface, the endpoint layer as well as the transport
+// layer including input validation, marshalling and unmarshalling. It also
+// affects the generated OpenAPI specification.
 //
 // Service is as a top level expression.
-// Service accepts two arguments: the name of the service (which must be unique
-// in the design package) and its defining DSL.
+//
+// Service accepts two arguments: the name of the service - which must be unique
+// in the design package - and its defining DSL.
 //
 // Example:
 //
 //    var _ = Service("divider", func() {
-//        Description("divider service") // Optional description
+//        Title("divider service") // optional
 //
-//        DefaultType(DivideResult) // Default response type for the service
-//                                  // methods. Also defines default
-//                                  // properties (type, description and
-//                                  // validations) for attributes with
-//                                  // identical names in request types.
+//        Error("Unauthorized") // error that apply to all the service methods
+//        HTTP(func() {         // HTTP mapping for error responses
+//            // Use HTTP status 401 for 'Unauthorized' errors.
+//            Response("Unauthorized", StatusUnauthorized)
+//        })
 //
-//        Error("Unauthorized", Unauthorized) // Error response that applies to
-//                                            // all methods
+//        Method("divide", func() {   // Defines a service method.
+//            Description("Divide divides two value.") // optional
+//            Payload(DividePayload)                   // input type
+//            Result(Float64)                          // output type
+//            Error("DivisionByZero")                  // method specific error
+//            // No HTTP mapping for "DivisionByZero" means default of status
+//            // 400 and error struct serialized in HTTP response body.
 //
-//        Method("divide", func() {     // Defines a single method
-//            Description("The divide method returns the division of A and B")
-//            Request(DivideRequest)    // Request type listing all request
-//                                      // parameters in its attributes.
-//            Response(DivideResponse)  // Response type.
-//            Error("DivisionByZero", DivByZero) // Error, has a name and
-//                                               // optionally a type
-//                                               // (DivByZero) describes the
-//                                               // error response.
+//            HTTP(func() {      // Defines HTTP transport mapping.
+//                GET("/div")    // HTTP verb and path
+//                Param("a")     // query string parameter
+//                Param("b")     // 'a' and 'b' are attributes of DividePayload.
+//                // No 'Response' DSL means default of status 200 and result
+//                // marshaled in HTTP response body.
+//            })
 //        })
 //    })
 //
 func Service(name string, fn func()) *design.ServiceExpr {
 	return dsl.Service(name, fn)
+}
+
+// Services sets the list of services implemented by a server.
+//
+// Services must appear in a Server expression
+//
+// Services takes one or more strings as argument corresponding to service
+// names.
+//
+// Example:
+//
+//    var _ = Server("calcsvr", func() {
+//        Services("calc", "adder")
+//        Services("other") // Multiple calls to Services are OK
+//    })
+//
+func Services(svcs ...string) {
+	dsl.Services(svcs...)
 }
 
 // StreamingPayload defines a method that accepts a stream of instances of the
@@ -2094,7 +2244,19 @@ func Temporary() {
 	dsl.Temporary()
 }
 
-// TermsOfService describes the API terms of services or links to them.
+// TermsOfService sets the terms of service of the API. It is used by the
+// generated OpenAPI specification.
+//
+// TermsOfService must appear in a API expression.
+//
+// TermsOfService takes a single argument which is the TOS text or URL.
+//
+// Example:
+//
+//    var _ = API("github", func() {
+//        TermsOfService("https://help.github.com/articles/github-terms-of-API/"
+//    })
+//
 func TermsOfService(terms string) {
 	dsl.TermsOfService(terms)
 }
@@ -2116,7 +2278,18 @@ func Timeout() {
 	dsl.Timeout()
 }
 
-// Title sets the API title used by the generated documentation and code comments.
+// Title sets the API title. It is used by the generated OpenAPI specification.
+//
+// Title must appear in a API expression.
+//
+// Title accepts a single string argument.
+//
+// Example:
+//
+//    var _ = API("divider", func() {
+//        Title("divider API")
+//    })
+//
 func Title(val string) {
 	dsl.Title(val)
 }
@@ -2203,16 +2376,44 @@ func TypeName(name string) {
 	dsl.TypeName(name)
 }
 
+// URI defines a server host URI. A single host may define multiple URIs. The
+// supported schemes are 'http', 'https', 'grpc' and 'grpcs' where 'grpcs'
+// indicates gRPC using client-side SSL/TLS. gRPC URIs may only define the
+// authority component (in particular no path). URIs may be parameterized using
+// the {param} notation. Note that the variables appearing in a URI must be
+// provided when the service is initialized and in particular their values
+// cannot defer between requests.
+//
+// The URI expression is leveraged by the example generator to produce the
+// service and client commands. It is also consumed by the OpenAPI specification
+// generator to initialize the server objects.
+//
+// URI must appear in a Host expression.
+//
+// URI takes one argument: a string representing the URI value.
+//
+// Example:
+//
+//    var _ = Server("calcsvc", func() {
+//        Host("development", func() {
+//            URI("http://localhost:80/{version}/calc")
+//            URI("grpc://localhost:8080")
+//        })
+//    })
+//
+func URI(uri string) {
+	dsl.URI(uri)
+}
+
 // URL sets the contact, license or external documentation URL.
 //
-// URL must appear in Contact, License or Docs
+// URL must appear in Contact, License or Docs.
 //
 // URL accepts a single argument which is the URL.
 //
 // Example:
 //
 //    Docs(func() {
-//        Description("Additional information")
 //        URL("https://goa.design")
 //    })
 //
@@ -2264,7 +2465,50 @@ func Value(val interface{}) {
 	dsl.Value(val)
 }
 
-// Version specifies the API version. One design describes one version.
+// Variable defines a server host URI variable.
+//
+// The URI expression is leveraged by the example generator to produce the
+// service and client commands. It is also consumed by the OpenAPI specification
+// generator to initialize the server objects.
+//
+// Variable must appear in a Host expression.
+//
+// The Variable DSL is the same as the Attribute DSL with the following two
+// restrictions:
+//
+//    1. The type used to define the variable must be a primitive.
+//    2. The variable must have a default value and/or a enum validation.
+//
+// Example:
+//
+//    var _ = Server("calcsvr", func() {
+//        Host("production", func() {
+//            URI("https://{version}.goa.design/calc")
+//            URI("grpcs://{version}.goa.design")
+//
+//            Variable("version", String, "API version", func() {
+//                Enum("v1", "v2")
+//            })
+//        })
+//    })
+//
+func Variable(name string, args ...interface{}) {
+	dsl.Variable(name, args...)
+}
+
+// Version sets the API version. It is used by the generated OpenAPI
+// specification.
+//
+// Version must appear in a API expression.
+//
+// Version accepts a single string argument.
+//
+// Example:
+//
+//    var _ = API("divider", func() {
+//        Version("1.0")
+//    })
+//
 func Version(ver string) {
 	dsl.Version(ver)
 }
