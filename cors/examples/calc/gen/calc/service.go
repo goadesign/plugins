@@ -9,10 +9,13 @@ package calcsvc
 
 import (
 	"context"
+
+	goalog "goa.design/goa/logging"
 )
 
 // The calc service exposes public endpoints that defines CORS policy.
 type Service interface {
+	GetLogger() goalog.Logger
 	// Add adds up the two integer parameters and returns the results.
 	Add(context.Context, *AddPayload) (res int, err error)
 }
