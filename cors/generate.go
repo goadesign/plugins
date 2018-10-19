@@ -7,9 +7,9 @@ import (
 	"goa.design/goa/codegen"
 	"goa.design/goa/codegen/service"
 	"goa.design/goa/eval"
+	goaexpr "goa.design/goa/expr"
 	httpcodegen "goa.design/goa/http/codegen"
-	httpdesign "goa.design/goa/http/design"
-	"goa.design/plugins/cors/design"
+	"goa.design/plugins/cors/expr"
 )
 
 // ServicesData holds the all the ServiceData indexed by service name.
@@ -21,7 +21,7 @@ type (
 		// Name is the name of the service.
 		Name string
 		// Origins is a list of origin expressions defined in API and service levels.
-		Origins []*design.OriginExpr
+		Origins []*expr.OriginExpr
 		// OriginHandler is the name of the handler function that sets CORS headers.
 		OriginHandler string
 		// PreflightPaths is the list of paths that should handle OPTIONS requests.
@@ -44,8 +44,8 @@ func init() {
 func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	for _, root := range roots {
 		switch r := root.(type) {
-		case *httpdesign.RootExpr:
-			for _, s := range r.HTTPServices {
+		case *goaexpr.RootExpr:
+			for _, s := range r.API.HTTP.Services {
 				name := s.Name()
 				ServicesData[name] = BuildServiceData(name)
 			}
@@ -62,8 +62,8 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	for _, root := range roots {
 		switch r := root.(type) {
-		case *httpdesign.RootExpr:
-			for _, s := range r.HTTPServices {
+		case *goaexpr.RootExpr:
+			for _, s := range r.API.HTTP.Services {
 				name := s.Name()
 				ServicesData[name] = BuildServiceData(name)
 			}
@@ -83,11 +83,11 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 
 // BuildServiceData builds the data needed to render the CORS handlers.
 func BuildServiceData(name string) *ServiceData {
-	preflights := design.PreflightPaths(name)
+	preflights := expr.PreflightPaths(name)
 	data := ServiceData{
 		Name:           name,
-		Origins:        design.Origins(name),
-		PreflightPaths: design.PreflightPaths(name),
+		Origins:        expr.Origins(name),
+		PreflightPaths: expr.PreflightPaths(name),
 		OriginHandler:  "handle" + codegen.Goify(name, true) + "Origin",
 		Endpoint: &httpcodegen.EndpointData{
 			Method: &service.MethodData{

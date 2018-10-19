@@ -1,13 +1,13 @@
 package testdata
 
 import (
-	. "goa.design/goa/design"
-	. "goa.design/plugins/cors/dsl"
+	. "goa.design/goa/dsl"
+	cors "goa.design/plugins/cors/dsl"
 )
 
 var SimpleOriginDSL = func() {
 	Service("SimpleOrigin", func() {
-		Origin("SimpleOrigin")
+		cors.Origin("SimpleOrigin")
 		Method("SimpleOriginMethod", func() {
 			HTTP(func() {
 				GET("/")
@@ -18,7 +18,7 @@ var SimpleOriginDSL = func() {
 
 var RegexpOriginDSL = func() {
 	Service("RegexpOrigin", func() {
-		Origin("/.*RegexpOrigin.*/")
+		cors.Origin("/.*RegexpOrigin.*/")
 		Method("RegexpOriginMethod", func() {
 			HTTP(func() {
 				GET("/")
@@ -29,17 +29,17 @@ var RegexpOriginDSL = func() {
 
 var MultiOriginDSL = func() {
 	Service("MultiOrigin", func() {
-		Origin("MultiOrigin1", func() {
-			Headers("X-Shared-Secret")
-			Methods("GET", "POST")
-			Expose("X-Time")
-			MaxAge(600)
-			Credentials()
+		cors.Origin("MultiOrigin1", func() {
+			cors.Headers("X-Shared-Secret")
+			cors.Methods("GET", "POST")
+			cors.Expose("X-Time")
+			cors.MaxAge(600)
+			cors.Credentials()
 		})
-		Origin("/.*MultiOrigin2.*/", func() {
-			Methods("GET", "POST")
-			Expose("X-Time", "X-Api-Version")
-			MaxAge(100)
+		cors.Origin("/.*MultiOrigin2.*/", func() {
+			cors.Methods("GET", "POST")
+			cors.Expose("X-Time", "X-Api-Version")
+			cors.MaxAge(100)
 		})
 		Method("MultiOriginMethod", func() {
 			HTTP(func() {
@@ -51,14 +51,14 @@ var MultiOriginDSL = func() {
 
 var OriginFileServerDSL = func() {
 	Service("OriginFileServer", func() {
-		Origin("OriginFileServer")
+		cors.Origin("OriginFileServer")
 		Files("/file.json", "./file.json")
 	})
 }
 
 var OriginMultiEndpointDSL = func() {
 	Service("OriginMultiEndpoint", func() {
-		Origin("OriginMultiEndpoint")
+		cors.Origin("OriginMultiEndpoint")
 		Method("OriginMultiEndpointGet", func() {
 			HTTP(func() {
 				GET("/{:id}")

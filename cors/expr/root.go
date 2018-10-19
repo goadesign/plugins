@@ -1,8 +1,8 @@
-package design
+package expr
 
 import (
 	"goa.design/goa/eval"
-	httpdesign "goa.design/goa/http/design"
+	"goa.design/goa/expr"
 )
 
 // Root is the design root expression.
@@ -49,7 +49,7 @@ func (r *RootExpr) WalkSets(walk eval.SetWalker) {
 
 // DependsOn tells the eval engine to run the goa DSL first.
 func (r *RootExpr) DependsOn() []eval.Root {
-	return []eval.Root{httpdesign.Root}
+	return []eval.Root{expr.Root}
 }
 
 // Packages returns the import path to the Go packages that make

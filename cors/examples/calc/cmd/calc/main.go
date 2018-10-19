@@ -21,14 +21,13 @@ func main() {
 	// Define command line flags, add any other flag required to configure
 	// the service.
 	var (
-		addr = flag.String("listen", ":8080", "HTTP listen `address`")
+		addr = flag.String("listen", "localhost:80", "HTTP listen `address`")
 		dbg  = flag.Bool("debug", false, "Log request and response bodies")
 	)
 	flag.Parse()
 
 	// Setup logger and goa log adapter. Replace logger with your own using
-	// your log package of choice. The goa.design/middleware/logging/...
-	// packages define log adapters for common log packages.
+	// your log package of choice.
 	var (
 		adapter middleware.Logger
 		logger  *log.Logger
@@ -49,10 +48,10 @@ func main() {
 	// Wrap the services in endpoints that can be invoked from other
 	// services potentially running in different processes.
 	var (
-		calcsvcEndpoints *calcsvc.Endpoints
+		calcEndpoints *calcsvc.Endpoints
 	)
 	{
-		calcsvcEndpoints = calcsvc.NewEndpoints(calcSvc)
+		calcEndpoints = calcsvc.NewEndpoints(calcSvc)
 	}
 
 	// Provide the transport specific request decoder and response encoder.
@@ -63,28 +62,25 @@ func main() {
 		dec = goahttp.RequestDecoder
 		enc = goahttp.ResponseEncoder
 	)
-
 	// Build the service HTTP request multiplexer and configure it to serve
 	// HTTP requests to the service endpoints.
 	var mux goahttp.Muxer
 	{
 		mux = goahttp.NewMuxer()
 	}
-
 	// Wrap the endpoints with the transport specific layers. The generated
 	// server packages contains code generated from the design which maps
 	// the service input and output data structures to HTTP requests and
 	// responses.
 	var (
-		calcsvcServer *calcsvcsvr.Server
+		calcServer *calcsvcsvr.Server
 	)
 	{
 		eh := ErrorHandler(logger)
-		calcsvcServer = calcsvcsvr.New(calcsvcEndpoints, mux, dec, enc, eh)
+		calcServer = calcsvcsvr.New(calcEndpoints, mux, dec, enc, eh)
 	}
-
 	// Configure the mux.
-	calcsvcsvr.Mount(mux, calcsvcServer)
+	calcsvcsvr.Mount(mux, calcServer)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
 	// here apply to all the service endpoints.
@@ -100,7 +96,6 @@ func main() {
 	// Create channel used by both the signal handler and server goroutines
 	// to notify the main goroutine when to stop the server.
 	errc := make(chan error)
-
 	// Setup interrupt handler. This optional step configures the process so
 	// that SIGINT and SIGTERM signals cause the service to stop gracefully.
 	go func() {
@@ -108,12 +103,11 @@ func main() {
 		signal.Notify(c, os.Interrupt)
 		errc <- fmt.Errorf("%s", <-c)
 	}()
-
 	// Start HTTP server using default configuration, change the code to
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: *addr, Handler: handler}
 	go func() {
-		for _, m := range calcsvcServer.Mounts {
+		for _, m := range calcServer.Mounts {
 			logger.Printf("method %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 		}
 		logger.Printf("listening on %s", *addr)
@@ -122,12 +116,10 @@ func main() {
 
 	// Wait for signal.
 	logger.Printf("exiting (%v)", <-errc)
-
 	// Shutdown gracefully with a 30s timeout.
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	srv.Shutdown(ctx)
-
 	logger.Println("exited")
 }
 

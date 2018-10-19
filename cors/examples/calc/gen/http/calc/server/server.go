@@ -3,7 +3,8 @@
 // calc HTTP server
 //
 // Command:
-// $ goa gen goa.design/plugins/cors/examples/calc/design
+// $ goa gen goa.design/plugins/cors/examples/calc/design -o
+// $(GOPATH)/src/goa.design/plugins/cors/examples/calc
 
 package server
 
