@@ -5,9 +5,6 @@
 # Targets:
 # - "gen" generates the goa files for the example services
 
-PLUGIN_NAME=goakit
-ALIASER_SRC=goa.design/goa/http/dsl
-
 # include common Makefile content for plugins
 include $(GOPATH)/src/goa.design/plugins/plugins.mk
 
@@ -18,8 +15,3 @@ gen:
 	goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
 	@cd examples/fetcher/archiver && \
 	goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
-
-aliases:
-	@echo "Nothing to alias"
-
-test-aliaser: aliases
