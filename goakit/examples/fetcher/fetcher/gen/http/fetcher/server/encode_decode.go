@@ -3,7 +3,8 @@
 // fetcher HTTP server encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 
 package server
 
@@ -44,7 +45,7 @@ func DecodeFetchRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.D
 		if err != nil {
 			return nil, err
 		}
-		payload := NewFetchFetchPayload(url_)
+		payload := NewFetchPayload(url_)
 
 		return payload, nil
 	}

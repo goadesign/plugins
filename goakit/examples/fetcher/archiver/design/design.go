@@ -1,15 +1,13 @@
 package design
 
 import (
-	. "goa.design/goa/http/design"
-	. "goa.design/goa/http/dsl"
+	. "goa.design/goa/dsl"
 	_ "goa.design/plugins/goakit"
 )
 
 var _ = API("archiver", func() {
 	Title("The goakit example downstream service")
 	Description("Archiver is a service that manages the content of HTTP responses")
-	Server("http://localhost:8080")
 })
 
 var _ = Service("archiver", func() {

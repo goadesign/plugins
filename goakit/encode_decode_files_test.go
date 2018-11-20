@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"goa.design/goa/codegen"
+	"goa.design/goa/expr"
 	httpcodegen "goa.design/goa/http/codegen"
-	httpdesign "goa.design/goa/http/design"
 	"goa.design/plugins/goakit/testdata"
 )
 
@@ -51,7 +51,7 @@ func TestServerEncodeDecode(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
-			fs := EncodeDecodeFiles("", httpdesign.Root)
+			fs := EncodeDecodeFiles("", expr.Root)
 			if len(fs) != 2 {
 				t.Fatalf("got %d files, expected 2", len(fs))
 			}
@@ -108,7 +108,7 @@ func TestClientEncodeDecode(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
-			fs := EncodeDecodeFiles("", httpdesign.Root)
+			fs := EncodeDecodeFiles("", expr.Root)
 			if len(fs) != 2 {
 				t.Fatalf("got %d files, expected 2", len(fs))
 			}

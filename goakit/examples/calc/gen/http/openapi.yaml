@@ -3,7 +3,7 @@ info:
   title: Goakit example Calc API
   description: This API demonstrates the use of the goa goakit plugin
   version: ""
-host: localhost:8080
+host: localhost:80
 paths:
   /add/{a}/{b}:
     get:
@@ -30,4 +30,5 @@ paths:
             type: integer
             format: int64
       schemes:
+      - grpc
       - http

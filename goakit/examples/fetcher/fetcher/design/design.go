@@ -1,15 +1,13 @@
 package design
 
 import (
-	. "goa.design/goa/http/design"
-	. "goa.design/goa/http/dsl"
+	. "goa.design/goa/dsl"
 	_ "goa.design/plugins/goakit"
 )
 
 var _ = API("fetcher", func() {
 	Title("The goakit example upstream service")
 	Description("Fetcher is a service that makes GET requests to arbitrary URLs and stores the results in the downstream 'archiver' service.")
-	Server("http://localhost:8081")
 })
 
 var _ = Service("fetcher", func() {

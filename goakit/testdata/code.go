@@ -219,3 +219,88 @@ func MountMixedFileJSON(mux goahttp.Muxer) {
 	}))
 }
 `
+
+var MixedMainLoggerCode = `func example() {
+	// Setup gokit logger.
+	var (
+		logger log.Logger
+	)
+	{
+		logger = log.NewLogfmtLogger(os.Stderr)
+		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
+		logger = log.With(logger, "caller", log.DefaultCaller)
+	}
+}
+`
+
+var MixedMainServerInitCode = `func example() {
+	// Wrap the endpoints with the transport specific layers. The generated
+	// server packages contains code generated from the design which maps
+	// the service input and output data structures to HTTP requests and
+	// responses.
+	var (
+		mixedServiceMixedMethodHandler *kithttp.Server
+		mixedServiceServer             *mixedservicesvr.Server
+	)
+	{
+		eh := ErrorHandler(logger)
+		mixedServiceMixedMethodHandler = kithttp.NewServer(
+			endpoint.Endpoint(mixedServiceEndpoints.MixedMethod),
+			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
+			mixedservicekitsvr.EncodeMixedMethodResponse(enc),
+		)
+		mixedServiceServer = mixedservicesvr.New(mixedServiceEndpoints, mux, dec, enc, eh)
+	}
+
+	// Configure the mux.
+	mixedservicekitsvr.MountMixedMethodHandler(mux, mixedServiceMixedMethodHandler)
+	mixedservicekitsvr.MountMixedFileJSON(mux)
+}
+`
+
+var MixedMainMiddlewareCode = `func example() {
+	// Wrap the multiplexer with additional middlewares. Middlewares mounted
+	// here apply to all the service endpoints.
+	var handler http.Handler = mux
+	{
+		if *dbg {
+			handler = middleware.Debug(mux, os.Stdout)(handler)
+		}
+		handler = middleware.Log(logger)(handler)
+		handler = middleware.RequestID()(handler)
+	}
+}
+`
+
+var MultiServicesServerInitCode = `func example() {
+	// Wrap the endpoints with the transport specific layers. The generated
+	// server packages contains code generated from the design which maps
+	// the service input and output data structures to HTTP requests and
+	// responses.
+	var (
+		service1MethodHandler *kithttp.Server
+		service1Server        *service1svr.Server
+		service2MethodHandler *kithttp.Server
+		service2Server        *service2svr.Server
+	)
+	{
+		eh := ErrorHandler(logger)
+		service1MethodHandler = kithttp.NewServer(
+			endpoint.Endpoint(service1Endpoints.Method),
+			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
+			service1kitsvr.EncodeMethodResponse(enc),
+		)
+		service1Server = service1svr.New(service1Endpoints, mux, dec, enc, eh)
+		service2MethodHandler = kithttp.NewServer(
+			endpoint.Endpoint(service2Endpoints.Method),
+			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
+			service2kitsvr.EncodeMethodResponse(enc),
+		)
+		service2Server = service2svr.New(service2Endpoints, mux, dec, enc, eh)
+	}
+
+	// Configure the mux.
+	service1kitsvr.MountMethodHandler(mux, service1MethodHandler)
+	service2kitsvr.MountMethodHandler(mux, service2MethodHandler)
+}
+`

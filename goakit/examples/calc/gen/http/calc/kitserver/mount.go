@@ -3,7 +3,8 @@
 // calc go-kit HTTP server encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/calc/design
+// $ goa gen goa.design/plugins/goakit/examples/calc/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
 
 package server
 

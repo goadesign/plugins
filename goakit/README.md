@@ -17,8 +17,7 @@ package name:
 ```go
 package design
 
-import . "goa.design/goa/http/design"
-import . "goa.design/goa/http/dsl"
+import . "goa.design/goa/dsl"
 import _ "goa.design/plugins/goakit" # Enables goakit
 
 var _ = API("...

@@ -27,11 +27,12 @@ func main() {
 	// Define command line flags, add any other flag required to configure
 	// the service.
 	var (
-		addr = flag.String("listen", ":8081", "HTTP listen `address`")
+		addr = flag.String("listen", "localhost:80", "HTTP listen `address`")
+		dbg  = flag.Bool("debug", false, "Log request and response bodies")
 	)
 	flag.Parse()
 
-	// Setup logger.
+	// Setup gokit logger.
 	var (
 		logger log.Logger
 	)
@@ -43,23 +44,23 @@ func main() {
 
 	// Create the structs that implement the services.
 	var (
-		archiversvcs archiversvc.Service
-		healths      health.Service
+		archiverSvc archiversvc.Service
+		healthSvc   health.Service
 	)
 	{
-		archiversvcs = archiver.NewArchiver(logger)
-		healths = archiver.NewHealth(logger)
+		archiverSvc = archiver.NewArchiver(logger)
+		healthSvc = archiver.NewHealth(logger)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other
 	// services potentially running in different processes.
 	var (
-		archiversvce *archiversvc.Endpoints
-		healthe      *health.Endpoints
+		archiverEndpoints *archiversvc.Endpoints
+		healthEndpoints   *health.Endpoints
 	)
 	{
-		archiversvce = archiversvc.NewEndpoints(archiversvcs)
-		healthe = health.NewEndpoints(healths)
+		archiverEndpoints = archiversvc.NewEndpoints(archiverSvc)
+		healthEndpoints = health.NewEndpoints(healthSvc)
 	}
 
 	// Provide the transport specific request decoder and response encoder.
@@ -71,50 +72,64 @@ func main() {
 		enc = goahttp.ResponseEncoder
 	)
 
-	// Build the service HTTP request router (a.k.a. mux).
+	// Build the service HTTP request multiplexer and configure it to serve
+	// HTTP requests to the service endpoints.
 	var mux goahttp.Muxer
 	{
 		mux = goahttp.NewMuxer()
 	}
 
-	// Wrap the endpoints with the transport specific layer.
+	// Wrap the endpoints with the transport specific layers. The generated
+	// server packages contains code generated from the design which maps
+	// the service input and output data structures to HTTP requests and
+	// responses.
 	var (
-		archiversvcArchiveHandler *kithttp.Server
-		archiversvcReadHandler    *kithttp.Server
-		archiversvcServer         *archiversvcsvr.Server
-		healthShowHandler         *kithttp.Server
-		healthServer              *healthsvr.Server
+		archiverArchiveHandler *kithttp.Server
+		archiverReadHandler    *kithttp.Server
+		archiverServer         *archiversvcsvr.Server
+		healthShowHandler      *kithttp.Server
+		healthServer           *healthsvr.Server
 	)
 	{
 		eh := ErrorHandler(logger)
-		archiversvcArchiveHandler = kithttp.NewServer(
-			endpoint.Endpoint(archiversvce.Archive),
+		archiverArchiveHandler = kithttp.NewServer(
+			endpoint.Endpoint(archiverEndpoints.Archive),
 			archiversvckitsvr.DecodeArchiveRequest(mux, dec),
 			archiversvckitsvr.EncodeArchiveResponse(enc),
 		)
-		archiversvcReadHandler = kithttp.NewServer(
-			endpoint.Endpoint(archiversvce.Read),
+		archiverReadHandler = kithttp.NewServer(
+			endpoint.Endpoint(archiverEndpoints.Read),
 			archiversvckitsvr.DecodeReadRequest(mux, dec),
 			archiversvckitsvr.EncodeReadResponse(enc),
 		)
-		archiversvcServer = archiversvcsvr.New(archiversvce, mux, dec, enc, eh)
+		archiverServer = archiversvcsvr.New(archiverEndpoints, mux, dec, enc, eh)
 		healthShowHandler = kithttp.NewServer(
-			endpoint.Endpoint(healthe.Show),
+			endpoint.Endpoint(healthEndpoints.Show),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			healthkitsvr.EncodeShowResponse(enc),
 		)
-		healthServer = healthsvr.New(healthe, mux, dec, enc, eh)
+		healthServer = healthsvr.New(healthEndpoints, mux, dec, enc, eh)
 	}
 
 	// Configure the mux.
-	archiversvckitsvr.MountArchiveHandler(mux, archiversvcArchiveHandler)
-	archiversvckitsvr.MountReadHandler(mux, archiversvcReadHandler)
+	archiversvckitsvr.MountArchiveHandler(mux, archiverArchiveHandler)
+	archiversvckitsvr.MountReadHandler(mux, archiverReadHandler)
 	healthkitsvr.MountShowHandler(mux, healthShowHandler)
+
+	// Wrap the multiplexer with additional middlewares. Middlewares mounted
+	// here apply to all the service endpoints.
+	var handler http.Handler = mux
+	{
+		if *dbg {
+			handler = middleware.Debug(mux, os.Stdout)(handler)
+		}
+		handler = middleware.Log(logger)(handler)
+		handler = middleware.RequestID()(handler)
+	}
 
 	// Create channel used by both the signal handler and server goroutines
 	// to notify the main goroutine when to stop the server.
 	errc := make(chan error)
-
 	// Setup interrupt handler. This optional step configures the process so
 	// that SIGINT and SIGTERM signals cause the service to stop gracefully.
 	go func() {
@@ -122,30 +137,27 @@ func main() {
 		signal.Notify(c, os.Interrupt)
 		errc <- fmt.Errorf("%s", <-c)
 	}()
-
 	// Start HTTP server using default configuration, change the code to
 	// configure the server as required by your service.
-	srv := &http.Server{Addr: *addr, Handler: mux}
+	srv := &http.Server{Addr: *addr, Handler: handler}
 	go func() {
-		for _, m := range archiversvcServer.Mounts {
-			logger.Log("info", fmt.Sprintf("method %s mounted on %s %s", m.Method, m.Verb, m.Pattern))
+		for _, m := range archiverServer.Mounts {
+			logger.Log("info", fmt.Sprintf("method %q mounted on %s %s", m.Method, m.Verb, m.Pattern))
 		}
 		for _, m := range healthServer.Mounts {
-			logger.Log("info", fmt.Sprintf("method %s mounted on %s %s", m.Method, m.Verb, m.Pattern))
+			logger.Log("info", fmt.Sprintf("method %q mounted on %s %s", m.Method, m.Verb, m.Pattern))
 		}
-		logger.Log("listening", *addr)
+		logger.Log("info", fmt.Sprintf("listening on %s", *addr))
 		errc <- srv.ListenAndServe()
 	}()
 
 	// Wait for signal.
-	logger.Log("exiting", <-errc)
-
+	logger.Log("info", fmt.Sprintf("exiting (%v)", <-errc))
 	// Shutdown gracefully with a 30s timeout.
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	srv.Shutdown(ctx)
-
-	logger.Log("server", "exited")
+	logger.Log("info", fmt.Sprintf("exited"))
 }
 
 // ErrorHandler returns a function that writes and logs the given error.
@@ -155,6 +167,6 @@ func ErrorHandler(logger log.Logger) func(context.Context, http.ResponseWriter, 
 	return func(ctx context.Context, w http.ResponseWriter, err error) {
 		id := ctx.Value(middleware.RequestIDKey).(string)
 		w.Write([]byte("[" + id + "] encoding: " + err.Error()))
-		logger.Log("error", fmt.Sprintf("[%s] ERROR: %s", id, err.Error()))
+		logger.Log("info", fmt.Sprintf("[%s] ERROR: %s", id, err.Error()))
 	}
 }

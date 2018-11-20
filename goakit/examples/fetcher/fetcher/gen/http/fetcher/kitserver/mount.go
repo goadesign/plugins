@@ -3,7 +3,8 @@
 // fetcher go-kit HTTP server encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 
 package server
 

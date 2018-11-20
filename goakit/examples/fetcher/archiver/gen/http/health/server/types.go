@@ -3,6 +3,7 @@
 // health HTTP server types
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
 
 package server

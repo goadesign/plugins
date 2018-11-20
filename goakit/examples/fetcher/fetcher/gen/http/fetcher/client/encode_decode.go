@@ -3,7 +3,8 @@
 // fetcher HTTP client encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 
 package client
 
@@ -75,13 +76,14 @@ func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("fetcher", "fetch", err)
 			}
-			p := NewFetchFetchMediaOK(&body)
+			p := NewFetchMediaViewOK(&body)
 			view := "default"
 			vres := &fetchersvcviews.FetchMedia{p, view}
 			if err = vres.Validate(); err != nil {
 				return nil, goahttp.ErrValidationError("fetcher", "fetch", err)
 			}
-			return fetchersvc.NewFetchMedia(vres), nil
+			res := fetchersvc.NewFetchMedia(vres)
+			return res, nil
 		case http.StatusBadRequest:
 			var (
 				body FetchBadRequestResponseBody

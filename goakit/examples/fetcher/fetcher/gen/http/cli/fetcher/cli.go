@@ -3,7 +3,8 @@
 // fetcher HTTP client CLI support package
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 
 package cli
 
@@ -32,7 +33,7 @@ fetcher fetch
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
 	return os.Args[0] + ` health show` + "\n" +
-		os.Args[0] + ` fetcher fetch --url "http://brekke.biz/mylene.keebler"` + "\n" +
+		os.Args[0] + ` fetcher fetch --url "http://keeblerherman.name/jazlyn.ruecker"` + "\n" +
 		""
 }
 
@@ -195,6 +196,6 @@ Fetch makes a GET request to the given URL and stores the results in the archive
     -url STRING: URL to be fetched
 
 Example:
-    `+os.Args[0]+` fetcher fetch --url "http://brekke.biz/mylene.keebler"
+    `+os.Args[0]+` fetcher fetch --url "http://keeblerherman.name/jazlyn.ruecker"
 `, os.Args[0])
 }

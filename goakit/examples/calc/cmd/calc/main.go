@@ -24,11 +24,12 @@ func main() {
 	// Define command line flags, add any other flag required to configure
 	// the service.
 	var (
-		addr = flag.String("listen", ":8080", "HTTP listen `address`")
+		addr = flag.String("listen", "localhost:80", "HTTP listen `address`")
+		dbg  = flag.Bool("debug", false, "Log request and response bodies")
 	)
 	flag.Parse()
 
-	// Setup logger.
+	// Setup gokit logger.
 	var (
 		logger log.Logger
 	)
@@ -64,13 +65,17 @@ func main() {
 		enc = goahttp.ResponseEncoder
 	)
 
-	// Build the service HTTP request router (a.k.a. mux).
+	// Build the service HTTP request multiplexer and configure it to serve
+	// HTTP requests to the service endpoints.
 	var mux goahttp.Muxer
 	{
 		mux = goahttp.NewMuxer()
 	}
 
-	// Wrap the endpoints with the transport specific layer.
+	// Wrap the endpoints with the transport specific layers. The generated
+	// server packages contains code generated from the design which maps
+	// the service input and output data structures to HTTP requests and
+	// responses.
 	var (
 		calcAddHandler *kithttp.Server
 		calcServer     *calcsvcsvr.Server
@@ -88,10 +93,20 @@ func main() {
 	// Configure the mux.
 	calcsvckitsvr.MountAddHandler(mux, calcAddHandler)
 
+	// Wrap the multiplexer with additional middlewares. Middlewares mounted
+	// here apply to all the service endpoints.
+	var handler http.Handler = mux
+	{
+		if *dbg {
+			handler = middleware.Debug(mux, os.Stdout)(handler)
+		}
+		handler = middleware.Log(logger)(handler)
+		handler = middleware.RequestID()(handler)
+	}
+
 	// Create channel used by both the signal handler and server goroutines
 	// to notify the main goroutine when to stop the server.
 	errc := make(chan error)
-
 	// Setup interrupt handler. This optional step configures the process so
 	// that SIGINT and SIGTERM signals cause the service to stop gracefully.
 	go func() {
@@ -99,27 +114,24 @@ func main() {
 		signal.Notify(c, os.Interrupt)
 		errc <- fmt.Errorf("%s", <-c)
 	}()
-
 	// Start HTTP server using default configuration, change the code to
 	// configure the server as required by your service.
-	srv := &http.Server{Addr: *addr, Handler: mux}
+	srv := &http.Server{Addr: *addr, Handler: handler}
 	go func() {
 		for _, m := range calcServer.Mounts {
-			logger.Log("info", fmt.Sprintf("service %s method %s mounted on %s %s", calcServer.Service(), m.Method, m.Verb, m.Pattern))
+			logger.Log("info", fmt.Sprintf("method %q mounted on %s %s", m.Method, m.Verb, m.Pattern))
 		}
-		logger.Log("listening", *addr)
+		logger.Log("info", fmt.Sprintf("listening on %s", *addr))
 		errc <- srv.ListenAndServe()
 	}()
 
 	// Wait for signal.
-	logger.Log("exiting", <-errc)
-
+	logger.Log("info", fmt.Sprintf("exiting (%v)", <-errc))
 	// Shutdown gracefully with a 30s timeout.
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	srv.Shutdown(ctx)
-
-	logger.Log("server", "exited")
+	logger.Log("info", fmt.Sprintf("exited"))
 }
 
 // ErrorHandler returns a function that writes and logs the given error.
@@ -129,6 +141,6 @@ func ErrorHandler(logger log.Logger) func(context.Context, http.ResponseWriter, 
 	return func(ctx context.Context, w http.ResponseWriter, err error) {
 		id := ctx.Value(middleware.RequestIDKey).(string)
 		w.Write([]byte("[" + id + "] encoding: " + err.Error()))
-		logger.Log("error", fmt.Sprintf("[%s] ERROR: %s", id, err.Error()))
+		logger.Log("info", fmt.Sprintf("[%s] ERROR: %s", id, err.Error()))
 	}
 }

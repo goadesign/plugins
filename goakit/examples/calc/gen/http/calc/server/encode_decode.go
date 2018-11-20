@@ -3,7 +3,8 @@
 // calc HTTP server encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/calc/design
+// $ goa gen goa.design/plugins/goakit/examples/calc/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
 
 package server
 
@@ -58,7 +59,7 @@ func DecodeAddRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Dec
 		if err != nil {
 			return nil, err
 		}
-		payload := NewAddAddPayload(a, b)
+		payload := NewAddPayload(a, b)
 
 		return payload, nil
 	}
