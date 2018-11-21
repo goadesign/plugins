@@ -10,7 +10,7 @@
 include $(GOPATH)/src/goa.design/plugins/plugins.mk
 
 gen:
-	@goa gen goa.design/plugins/cors/examples/calc/design -o goa.design/plugins/cors/examples/calc
+	@goa gen goa.design/plugins/cors/examples/calc/design -o $(GOPATH)/src/goa.design/plugins/cors/examples/calc
 
 example:
-	@goa example goa.design/plugins/cors/examples/calc/design -o goa.design/plugins/cors/examples/calc
+	@goa example goa.design/plugins/cors/examples/calc/design -o $(GOPATH)/src/goa.design/plugins/cors/examples/calc

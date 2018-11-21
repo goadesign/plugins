@@ -7,7 +7,6 @@ import (
 	"goa.design/goa/codegen"
 	"goa.design/goa/codegen/service"
 	"goa.design/goa/eval"
-	goaexpr "goa.design/goa/expr"
 	httpcodegen "goa.design/goa/http/codegen"
 	"goa.design/plugins/cors/expr"
 )
@@ -31,81 +30,47 @@ type (
 	}
 )
 
-const pluginName = "cors"
-
 // Register the plugin Generator functions.
 func init() {
-	codegen.RegisterPlugin(pluginName, "gen", nil, Generate)
-	codegen.RegisterPlugin(pluginName, "example", nil, Example)
+	codegen.RegisterPlugin("cors", "gen", nil, Generate)
 }
 
 // Generate produces server code that handle preflight requests and updates
 // the HTTP responses with the appropriate CORS headers.
 func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
-	for _, root := range roots {
-		switch r := root.(type) {
-		case *goaexpr.RootExpr:
-			for _, s := range r.API.HTTP.Services {
-				name := s.Name()
-				ServicesData[name] = BuildServiceData(name)
-			}
-			for _, f := range files {
-				ServerCORS(f)
-			}
-		}
-	}
-	return files, nil
-}
-
-// Example modifies the generated main function so that the services are
-// created to handle CORS.
-func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
-	for _, root := range roots {
-		switch r := root.(type) {
-		case *goaexpr.RootExpr:
-			for _, s := range r.API.HTTP.Services {
-				name := s.Name()
-				ServicesData[name] = BuildServiceData(name)
-			}
-		}
-	}
 	for _, f := range files {
-		for _, s := range f.Section("service-main-start") {
-			data := s.Data.(map[string]interface{})
-			svcs := data["Services"].([]*httpcodegen.ServiceData)
-			for _, sdata := range svcs {
-				sdata.Endpoints = append(sdata.Endpoints, ServicesData[sdata.Service.Name].Endpoint)
-			}
-		}
+		serverCORS(f)
 	}
 	return files, nil
 }
 
-// BuildServiceData builds the data needed to render the CORS handlers.
-func BuildServiceData(name string) *ServiceData {
-	preflights := expr.PreflightPaths(name)
-	data := ServiceData{
-		Name:           name,
-		Origins:        expr.Origins(name),
-		PreflightPaths: expr.PreflightPaths(name),
-		OriginHandler:  "handle" + codegen.Goify(name, true) + "Origin",
+// buildServiceData builds the data needed to render the CORS handlers.
+func buildServiceData(svc string) *ServiceData {
+	preflights := expr.PreflightPaths(svc)
+	routes := make([]*httpcodegen.RouteData, len(preflights))
+	for i, p := range preflights {
+		routes[i] = &httpcodegen.RouteData{Verb: "OPTIONS", Path: p}
+	}
+
+	return &ServiceData{
+		Name:           svc,
+		Origins:        expr.Origins(svc),
+		PreflightPaths: preflights,
+		OriginHandler:  "handle" + codegen.Goify(svc, true) + "Origin",
 		Endpoint: &httpcodegen.EndpointData{
 			Method: &service.MethodData{
 				VarName: "CORS",
 			},
 			MountHandler: "MountCORSHandler",
 			HandlerInit:  "NewCORSHandler",
+			Routes:       routes,
 		},
 	}
-	for _, p := range preflights {
-		data.Endpoint.Routes = append(data.Endpoint.Routes, &httpcodegen.RouteData{Verb: "OPTIONS", Path: p})
-	}
-	return &data
 }
 
-// ServerCORS updates the HTTP server file to handle preflight paths and
+// serverCORS updates the HTTP server file to handle preflight paths and
 // adds the required CORS headers to the response.
-func ServerCORS(f *codegen.File) {
+func serverCORS(f *codegen.File) {
 	if filepath.Base(f.Path) != "server.go" {
 		return
 	}
@@ -116,7 +81,12 @@ func ServerCORS(f *codegen.File) {
 			&codegen.ImportSpec{Path: "goa.design/plugins/cors"})
 
 		data := s.Data.(*httpcodegen.ServiceData)
-		svcData = ServicesData[data.Service.Name]
+		if d, ok := ServicesData[data.Service.Name]; !ok {
+			svcData = buildServiceData(data.Service.Name)
+			ServicesData[data.Service.Name] = svcData
+		} else {
+			svcData = d
+		}
 		for _, o := range svcData.Origins {
 			if o.Regexp {
 				codegen.AddImport(f.SectionTemplates[0],

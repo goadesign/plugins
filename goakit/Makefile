@@ -9,9 +9,11 @@
 include $(GOPATH)/src/goa.design/plugins/plugins.mk
 
 gen:
-	@cd examples/calc && \
-	goa gen goa.design/plugins/goakit/examples/calc/design
-	@cd examples/fetcher/fetcher && \
-	goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
-	@cd examples/fetcher/archiver && \
-	goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
+	@goa gen goa.design/plugins/goakit/examples/calc/design -o $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
+	@goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
+	@goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
+
+example:
+	@goa example goa.design/plugins/goakit/examples/calc/design -o $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
+	@goa example goa.design/plugins/goakit/examples/fetcher/fetcher/design -o $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
+	@goa example goa.design/plugins/goakit/examples/fetcher/archiver/design -o $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
