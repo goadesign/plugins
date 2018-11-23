@@ -5,34 +5,38 @@ new artifacts and modify the output of existing generators.
 
 There are currently two plugins in the directory:
 
-	* The [goakit](https://godoc.org/goa.design/plugins/goakit) plugin generates
-	 code that integrates with the [go-kit](https://github.com/go-kit/kit) library.
+  * The [goakit](https://godoc.org/goa.design/plugins/goakit) plugin generates
+    code that integrates with the [go-kit](https://github.com/go-kit/kit)
+    library.
 
-	* The [security](https://godoc.org/goa.design/plugins/security) plugin
-	  adds new DSL to define security schemes and identify endpoints that require
-	  auth. The plugin generates HTTP server code that implement the security schemes.
-	  The supported schemes are basic auth, API key, OAuth2 and JWT.
+  * The [cors](https://godoc.org/goa.design/plugins/cors) plugin adds new DSL to
+    define CORS policies. The plugin generates HTTP server code that respond to
+    CORS requests in compliance with the policies defined in the design.
 
 Writing a Plugin
 
 Writing a plugin consists of two steps:
 
-1. Writing one or two functions that gets called by the goa tool during code generation
+1. Writing the functions that gets called by the goa tool during code generation.
 
-2. Registering the functions with the goa tool
+2. Registering the functions with the goa tool.
 
-There are two possible functions a plugin may implement. A plugin may implement
-either or both functions depending on its needs. The first function is called
-when the "gen" command runs while the second is called with the "example"
-command runs. The signature for both functions is:
+A plugin may implement the "gen" goa command, the "example" goa command or both.
+In each case a plugin may register one or two functions: the first function
+called "Prepare" gets called prior to any code generation actually happening.
+The function can modify the design data structures before goa uses them to
+generate code. The second function called "Generate" does the actual code
+generation.
 
-	func (genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error)
+The signature of the Generate function is:
+
+    func (genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error)
 
 where:
 
-	"genpkg" is the Go import path to the top level generated package ("gen")
-	"roots" is the set of design roots created by the DSL.
-	"files" is the set of generated files.
+    "genpkg" is the Go import path to the top level generated package ("gen")
+    "roots" is the set of design roots created by the DSL.
+    "files" is the current set of generated files.
 
 The function must return the entire set of generated files (even the files that
 the plugin does not modify).
@@ -41,14 +45,16 @@ The functions must then be registered with the goa code generator tool using the
 "RegisterPlugin" function of the "codegen" package. This is typically done in a
 package "init" function, for example:
 
-	// Register the plugin Generator functions.
+	// Register the plugin.
 	func init() {
-		codegen.RegisterPlugin("gen", Generate)
-		codegen.RegisterPlugin("example", Example)
+		codegen.RegisterPlugin("gen", Prepare, Generate)
+		codegen.RegisterPlugin("example", Prepare, Example)
 	}
 
 The first argument of RegisterPlugin must be one of "gen" or "example" and
-specifies the "goa" command that triggers the call to the plugin function.
+specifies the "goa" command that triggers the call to the plugin functions. The
+second argument is the Prepare function if any, nil otherwise. The last argument
+is the code generator function if any, nil otherwise.
 
 Extending The DSL
 
