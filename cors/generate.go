@@ -35,8 +35,8 @@ const pluginName = "cors"
 
 // Register the plugin Generator functions.
 func init() {
-	codegen.RegisterPlugin(pluginName, "gen", Generate)
-	codegen.RegisterPlugin(pluginName, "example", Example)
+	codegen.RegisterPlugin(pluginName, "gen", nil, Generate)
+	codegen.RegisterPlugin(pluginName, "example", nil, Example)
 }
 
 // Generate produces server code that handle preflight requests and updates
