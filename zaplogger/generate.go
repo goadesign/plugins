@@ -19,8 +19,8 @@ type fileToModify struct {
 
 // Register the plugin Generator functions.
 func init() {
-	codegen.RegisterPluginFirst("zaplogger", "gen", Generate)
-	codegen.RegisterPluginLast("zaplogger-updater", "example", UpdateExample)
+	codegen.RegisterPluginFirst("zaplogger", "gen", nil, Generate)
+	codegen.RegisterPluginLast("zaplogger-updater", "example", nil, UpdateExample)
 }
 
 // Generate generates zap logger specific files.
