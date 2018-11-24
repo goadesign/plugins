@@ -11,9 +11,9 @@ import (
 
 // Register the plugin Generator functions.
 func init() {
-	codegen.RegisterPluginFirst("goakit", "gen", Generate)
-	codegen.RegisterPluginFirst("goakit", "example", Example)
-	codegen.RegisterPluginLast("goakit-goakitify", "gen", Goakitify)
+	codegen.RegisterPluginFirst("goakit", "gen", nil, Generate)
+	codegen.RegisterPluginFirst("goakit", "example", nil, Example)
+	codegen.RegisterPluginLast("goakit-goakitify", "gen", nil, Goakitify)
 }
 
 // Generate generates go-kit specific decoders and encoders.

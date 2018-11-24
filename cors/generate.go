@@ -35,8 +35,8 @@ const pluginName = "cors"
 
 // Register the plugin Generator functions.
 func init() {
-	codegen.RegisterPlugin(pluginName, "gen", Generate)
-	codegen.RegisterPlugin(pluginName, "example", Example)
+	codegen.RegisterPlugin(pluginName, "gen", nil, Generate)
+	codegen.RegisterPlugin(pluginName, "example", nil, Example)
 }
 
 // Generate produces server code that handle preflight requests and updates
@@ -70,7 +70,7 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 		}
 	}
 	for _, f := range files {
-		for _, s := range f.Section("service-main") {
+		for _, s := range f.Section("service-main-start") {
 			data := s.Data.(map[string]interface{})
 			svcs := data["Services"].([]*httpcodegen.ServiceData)
 			for _, sdata := range svcs {
