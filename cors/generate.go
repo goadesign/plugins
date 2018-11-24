@@ -70,7 +70,7 @@ func Example(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codege
 		}
 	}
 	for _, f := range files {
-		for _, s := range f.Section("service-main") {
+		for _, s := range f.Section("service-main-start") {
 			data := s.Data.(map[string]interface{})
 			svcs := data["Services"].([]*httpcodegen.ServiceData)
 			for _, sdata := range svcs {
