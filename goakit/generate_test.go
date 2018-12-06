@@ -7,10 +7,9 @@ import (
 
 	"goa.design/goa/codegen"
 	"goa.design/goa/codegen/generator"
-	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
+	"goa.design/goa/expr"
 	httpcodegen "goa.design/goa/http/codegen"
-	httpdesign "goa.design/goa/http/design"
 	"goa.design/plugins/goakit/testdata"
 )
 
@@ -25,7 +24,7 @@ func TestGenerate(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
-			roots := []eval.Root{goadesign.Root, httpdesign.Root}
+			roots := []eval.Root{expr.Root}
 			files := generateFiles(t, roots)
 			newFiles, err := Generate("", roots, files)
 			if err != nil {
@@ -49,7 +48,7 @@ func TestGoakitify(t *testing.T) {
 	for name, dsl := range cases {
 		t.Run(name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, dsl)
-			roots := []eval.Root{goadesign.Root, httpdesign.Root}
+			roots := []eval.Root{expr.Root}
 			files := generateFiles(t, roots)
 			newFiles, err := Goakitify("", roots, files)
 			if err != nil {
@@ -79,26 +78,52 @@ func TestGoakitify(t *testing.T) {
 	}
 }
 
-func TestExample(t *testing.T) {
+func TestGoakitifyExample(t *testing.T) {
 	cases := map[string]struct {
-		DSL      func()
-		ExpFiles int
+		DSL  func()
+		Code map[string]string
 	}{
-		"mixed":          {testdata.MixedDSL, 2},
-		"multi-services": {testdata.MultiServiceDSL, 3},
+		"mixed": {
+			DSL: testdata.MixedDSL,
+			Code: map[string]string{
+				"service-main-logger":      testdata.MixedMainLoggerCode,
+				"service-main-middleware":  testdata.MixedMainMiddlewareCode,
+				"service-main-server-init": testdata.MixedMainServerInitCode,
+			},
+		},
+		"multi-services": {
+			DSL: testdata.MultiServiceDSL,
+			Code: map[string]string{
+				"service-main-server-init": testdata.MultiServicesServerInitCode,
+			},
+		},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
-			roots := []eval.Root{goadesign.Root, httpdesign.Root}
-			files := generateFiles(t, roots)
-			newFiles, err := Example("", roots, files)
+			roots := []eval.Root{expr.Root}
+			files := generateExamples(t, roots)
+			files, err := GoakitifyExample("", roots, files)
 			if err != nil {
 				t.Fatalf("examples generate error: %v", err)
 			}
-			newFileCount := len(newFiles) - len(files)
-			if newFileCount != c.ExpFiles {
-				t.Errorf("invalid code, number of new files expected %d, got %d", c.ExpFiles, newFileCount)
+			for _, f := range files {
+				if containsStdlibLogger(f) {
+					t.Errorf("file %s still has stdlib logger instances", f.Path)
+				}
+				for _, s := range f.SectionTemplates {
+					if expCode, ok := c.Code[s.Name]; ok {
+						buf := new(bytes.Buffer)
+						if err := s.Write(buf); err != nil {
+							t.Fatalf("error writing section in file %s", f.Path)
+						}
+						code := buf.String()
+						code = codegen.FormatTestCode(t, "package foo\nfunc example(){"+code+"}")
+						if code != expCode {
+							t.Errorf("invalid code for %s, got:\n%s\ngot vs. expected:\n%s", s.Name, code, codegen.Diff(t, code, expCode))
+						}
+					}
+				}
 			}
 		})
 	}
@@ -117,9 +142,26 @@ func generateFiles(t *testing.T, roots []eval.Root) []*codegen.File {
 	return files
 }
 
+func generateExamples(t *testing.T, roots []eval.Root) []*codegen.File {
+	files, err := generator.Example("", roots)
+	if err != nil {
+		t.Fatalf("error in code generation: %v", err)
+	}
+	return files
+}
+
 func containsGoaEndpoint(f *codegen.File) bool {
 	for _, s := range f.SectionTemplates {
 		if goaEndpointRegexp.MatchString(s.Source) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsStdlibLogger(f *codegen.File) bool {
+	for _, s := range f.SectionTemplates {
+		if strings.Contains(s.Source, "*log.Logger") {
 			return true
 		}
 	}

@@ -3,7 +3,8 @@
 // archiver HTTP client types
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
 
 package client
 
@@ -90,9 +91,9 @@ func NewArchiveRequestBody(p *archiversvc.ArchivePayload) *ArchiveRequestBody {
 	return body
 }
 
-// NewArchiveArchiveMediaOK builds a "archiver" service "archive" endpoint
-// result from a HTTP "OK" response.
-func NewArchiveArchiveMediaOK(body *ArchiveResponseBody) *archiversvcviews.ArchiveMediaView {
+// NewArchiveMediaViewOK builds a "archiver" service "archive" endpoint result
+// from a HTTP "OK" response.
+func NewArchiveMediaViewOK(body *ArchiveResponseBody) *archiversvcviews.ArchiveMediaView {
 	v := &archiversvcviews.ArchiveMediaView{
 		Href:   body.Href,
 		Status: body.Status,
@@ -138,7 +139,7 @@ func NewReadBadRequest(body *ReadBadRequestResponseBody) *goa.ServiceError {
 	return v
 }
 
-// Validate runs the validations defined on ReadNotFoundResponseBody
+// Validate runs the validations defined on read_not_foundResponseBody
 func (body *ReadNotFoundResponseBody) Validate() (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
@@ -161,7 +162,7 @@ func (body *ReadNotFoundResponseBody) Validate() (err error) {
 	return
 }
 
-// Validate runs the validations defined on ReadBadRequestResponseBody
+// Validate runs the validations defined on read_bad_requestResponseBody
 func (body *ReadBadRequestResponseBody) Validate() (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))

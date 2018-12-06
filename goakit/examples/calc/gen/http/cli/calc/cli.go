@@ -3,7 +3,8 @@
 // calc HTTP client CLI support package
 //
 // Command:
-// $ goa gen goa.design/plugins/cors/examples/calc/design
+// $ goa gen goa.design/plugins/goakit/examples/calc/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
 
 package cli
 
@@ -13,9 +14,9 @@ import (
 	"net/http"
 	"os"
 
-	goa "goa.design/goa"
+	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/http"
-	calcsvcc "goa.design/plugins/cors/examples/calc/gen/http/calc/client"
+	calcsvcc "goa.design/plugins/goakit/examples/calc/gen/http/calc/client"
 )
 
 // UsageCommands returns the set of commands and sub-commands using the format
@@ -41,7 +42,7 @@ func ParseEndpoint(
 	enc func(*http.Request) goahttp.Encoder,
 	dec func(*http.Response) goahttp.Decoder,
 	restore bool,
-) (goa.Endpoint, interface{}, error) {
+) (endpoint.Endpoint, interface{}, error) {
 	var (
 		calcFlags = flag.NewFlagSet("calc", flag.ContinueOnError)
 
@@ -106,7 +107,7 @@ func ParseEndpoint(
 
 	var (
 		data     interface{}
-		endpoint goa.Endpoint
+		endpoint endpoint.Endpoint
 		err      error
 	)
 	{
@@ -129,7 +130,7 @@ func ParseEndpoint(
 
 // calcUsage displays the usage of the calc command and its subcommands.
 func calcUsage() {
-	fmt.Fprintf(os.Stderr, `The calc service exposes public endpoints that defines CORS policy.
+	fmt.Fprintf(os.Stderr, `The calc service exposes public endpoints that uses go-kit.
 Usage:
     %s [globalflags] calc COMMAND [flags]
 

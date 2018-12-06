@@ -1,29 +1,28 @@
 package design
 
 import (
-	. "goa.design/goa/http/design"
-	_ "goa.design/plugins/cors"
-	. "goa.design/plugins/cors/dsl"
+	. "goa.design/goa/dsl"
+	cors "goa.design/plugins/cors/dsl"
 )
 
 var _ = API("calc", func() {
 	Title("CORS Example Calc API")
 	Description("This API demonstrates the use of the goa CORS plugin")
-	Origin("http://127.0.0.1", func() {
-		Headers("X-Shared-Secret")
-		Methods("GET", "POST")
-		Expose("X-Time")
-		MaxAge(600)
-		Credentials()
+	cors.Origin("http://127.0.0.1", func() {
+		cors.Headers("X-Shared-Secret")
+		cors.Methods("GET", "POST")
+		cors.Expose("X-Time")
+		cors.MaxAge(600)
+		cors.Credentials()
 	})
 })
 
 var _ = Service("calc", func() {
 	Description("The calc service exposes public endpoints that defines CORS policy.")
-	Origin("/.*localhost.*/", func() {
-		Methods("GET", "POST")
-		Expose("X-Time", "X-Api-Version")
-		MaxAge(100)
+	cors.Origin("/.*localhost.*/", func() {
+		cors.Methods("GET", "POST")
+		cors.Expose("X-Time", "X-Api-Version")
+		cors.MaxAge(100)
 	})
 
 	Method("add", func() {

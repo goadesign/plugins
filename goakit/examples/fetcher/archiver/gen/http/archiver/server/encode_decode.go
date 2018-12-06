@@ -3,7 +3,8 @@
 // archiver HTTP server encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
 
 package server
 
@@ -49,7 +50,7 @@ func DecodeArchiveRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp
 		if err != nil {
 			return nil, err
 		}
-		payload := NewArchiveArchivePayload(&body)
+		payload := NewArchivePayload(&body)
 
 		return payload, nil
 	}
@@ -91,7 +92,7 @@ func DecodeReadRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.De
 		if err != nil {
 			return nil, err
 		}
-		payload := NewReadReadPayload(id)
+		payload := NewReadPayload(id)
 
 		return payload, nil
 	}

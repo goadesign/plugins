@@ -5,26 +5,26 @@ import (
 	"path/filepath"
 
 	"goa.design/goa/codegen"
+	"goa.design/goa/expr"
 	httpcodegen "goa.design/goa/http/codegen"
-	httpdesign "goa.design/goa/http/design"
 )
 
 // EncodeDecodeFiles produces a set of go-kit transport encoders and decoders
 // that wrap the corresponding generated goa functions.
-func EncodeDecodeFiles(genpkg string, root *httpdesign.RootExpr) []*codegen.File {
-	fw := make([]*codegen.File, 2*len(root.HTTPServices))
-	for i, r := range root.HTTPServices {
+func EncodeDecodeFiles(genpkg string, root *expr.RootExpr) []*codegen.File {
+	fw := make([]*codegen.File, 2*len(root.API.HTTP.Services))
+	for i, r := range root.API.HTTP.Services {
 		fw[i] = serverEncodeDecode(genpkg, r)
 	}
-	for i, r := range root.HTTPServices {
-		fw[i+len(root.HTTPServices)] = clientEncodeDecode(genpkg, r)
+	for i, r := range root.API.HTTP.Services {
+		fw[i+len(root.API.HTTP.Services)] = clientEncodeDecode(genpkg, r)
 	}
 	return fw
 }
 
 // serverEncodeDecode returns the file defining the go-kit HTTP server encoding
 // and decoding logic.
-func serverEncodeDecode(genpkg string, svc *httpdesign.ServiceExpr) *codegen.File {
+func serverEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr) *codegen.File {
 	path := filepath.Join(codegen.Gendir, "http", codegen.SnakeCase(svc.Name()), "kitserver", "encode_decode.go")
 	data := httpcodegen.HTTPServices.Get(svc.Name())
 	title := fmt.Sprintf("%s go-kit HTTP server encoders and decoders", svc.Name())
@@ -69,7 +69,7 @@ func serverEncodeDecode(genpkg string, svc *httpdesign.ServiceExpr) *codegen.Fil
 
 // clientEncodeDecode returns the file defining the go-kit HTTP client encoding
 // and decoding logic.
-func clientEncodeDecode(genpkg string, svc *httpdesign.ServiceExpr) *codegen.File {
+func clientEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr) *codegen.File {
 	path := filepath.Join(codegen.Gendir, "http", codegen.SnakeCase(svc.Name()), "kitclient", "encode_decode.go")
 	title := fmt.Sprintf("%s go-kit HTTP client encoders and decoders", svc.Name())
 	data := httpcodegen.HTTPServices.Get(svc.Name())

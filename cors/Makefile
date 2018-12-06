@@ -4,23 +4,13 @@
 #
 # Targets:
 # - "gen" generates the goa files for the example services
-
-PLUGIN_NAME=cors
-ALIASER_SRC=goa.design/goa/http/dsl
+# - "example" generates the example files for the example services
 
 # include common Makefile content for plugins
 include $(GOPATH)/src/goa.design/plugins/plugins.mk
 
 gen:
-	@cd examples/calc && \
-	goa gen goa.design/plugins/cors/examples/calc/design
+	@goa gen goa.design/plugins/cors/examples/calc/design -o $(GOPATH)/src/goa.design/plugins/cors/examples/calc
 
-aliases:
-	@aliaser -dsl -src goa.design/goa/http/dsl -dest $(PLUGIN_DIR)/$(PLUGIN_NAME)/dsl > /dev/null
-
-test-aliaser: aliases
-	@if [ "`git diff */aliases.go | tee /dev/stderr`" ]; then \
-		echo "^ - Aliaser tool output not identical!" && echo && exit 1; \
-	else \
-		echo "Aliaser tool output identical"; \
-	fi
+example:
+	@goa example goa.design/plugins/cors/examples/calc/design -o $(GOPATH)/src/goa.design/plugins/cors/examples/calc

@@ -1,4 +1,4 @@
-package cors
+package cors_test
 
 import (
 	"path/filepath"
@@ -7,8 +7,9 @@ import (
 
 	"goa.design/goa/codegen"
 	"goa.design/goa/eval"
+	"goa.design/goa/expr"
 	httpcodegen "goa.design/goa/http/codegen"
-	httpdesign "goa.design/goa/http/design"
+	"goa.design/plugins/cors"
 	"goa.design/plugins/cors/testdata"
 )
 
@@ -36,11 +37,11 @@ func NewCORSHandler() http.Handler {
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
-			fs := httpcodegen.ServerFiles("", httpdesign.Root)
+			fs := httpcodegen.ServerFiles("", expr.Root)
 			if len(fs) != 2 {
 				t.Fatalf("got %d files, expected two", len(fs))
 			}
-			Generate("", []eval.Root{httpdesign.Root}, fs)
+			cors.Generate("", []eval.Root{expr.Root}, fs)
 			for _, f := range fs {
 				if filepath.Base(f.Path) != "server.go" {
 					continue
@@ -51,7 +52,7 @@ func NewCORSHandler() http.Handler {
 				testCode(t, f, "server-init", c.ServerInitCode)
 				var originHndlr string
 				for _, s := range f.Section("handle-cors") {
-					data := s.Data.(*ServiceData)
+					data := s.Data.(*cors.ServiceData)
 					originHndlr = data.OriginHandler
 				}
 				for _, s := range f.Section("server-handler") {

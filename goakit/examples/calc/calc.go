@@ -2,6 +2,7 @@ package calc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-kit/kit/log"
 	calcsvc "goa.design/plugins/goakit/examples/calc/gen/calc"
@@ -19,8 +20,7 @@ func NewCalc(logger log.Logger) calcsvc.Service {
 }
 
 // Add adds up the two integer parameters and returns the results.
-func (s *calcSvc) Add(ctx context.Context, p *calcsvc.AddPayload) (int, error) {
-	var res int
-	s.logger.Log("msg", "calc.add")
-	return res, nil
+func (s *calcSvc) Add(ctx context.Context, p *calcsvc.AddPayload) (res int, err error) {
+	s.logger.Log("info", fmt.Sprintf("calc.add"))
+	return
 }

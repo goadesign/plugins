@@ -29,7 +29,7 @@ func New(serviceName string, production bool) *Logger {
 }
 
 // Log is called by the log middleware to log HTTP requests key values
-func (logger *Logger) Log(keyvals ...interface{}) {
-
+func (logger *Logger) Log(keyvals ...interface{}) error {
 	logger.Infow("HTTP Request", keyvals...)
+	return nil
 }

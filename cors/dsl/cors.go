@@ -3,9 +3,12 @@ package dsl
 import (
 	"strings"
 
-	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
-	"goa.design/plugins/cors/design"
+	goaexpr "goa.design/goa/expr"
+	"goa.design/plugins/cors/expr"
+
+	// Register code generators for the CORS plugin
+	_ "goa.design/plugins/cors"
 )
 
 // Origin defines the CORS policy for a given origin. The origin can use a wildcard prefix
@@ -20,18 +23,20 @@ import (
 //
 // Example:
 //
+//    import cors "goa.design/plugins/cors"
+//
 //    var _ = API("calc", func() {
-//        Origin("http://swagger.goa.design", func() { // Define CORS policy, may be prefixed with "*" wildcard
-//            Headers("X-Shared-Secret")           // One or more authorized headers, use "*" to authorize all
-//            Methods("GET", "POST")               // One or more authorized HTTP methods
-//            Expose("X-Time")                     // One or more headers exposed to clients
-//            MaxAge(600)                          // How long to cache a preflight request response
-//            Credentials()                        // Sets Access-Control-Allow-Credentials header
+//        cors.Origin("http://swagger.goa.design", func() { // Define CORS policy, may be prefixed with "*" wildcard
+//            cors.Headers("X-Shared-Secret")  // One or more authorized headers, use "*" to authorize all
+//            cors.Methods("GET", "POST")      // One or more authorized HTTP methods
+//            cors.Expose("X-Time")            // One or more headers exposed to clients
+//            cors.MaxAge(600)                 // How long to cache a preflight request response
+//            cors.Credentials()               // Sets Access-Control-Allow-Credentials header
 //        })
 //    })
 //
 //    var _ = Service("calculator", func() {
-//        Origin("/(api|swagger)[.]goa[.]design/") // Define CORS policy with a regular expression
+//        cors.Origin("/(api|swagger)[.]goa[.]design/") // Define CORS policy with a regular expression
 //
 //        Method("add", func() {
 //            Description("Add two operands")
@@ -41,7 +46,7 @@ import (
 //    })
 //
 func Origin(origin string, args ...interface{}) {
-	o := &design.OriginExpr{Origin: origin}
+	o := &expr.OriginExpr{Origin: origin}
 	if strings.HasPrefix(origin, "/") && strings.HasSuffix(origin, "/") {
 		o.Regexp = true
 		o.Origin = strings.Trim(origin, "/")
@@ -64,10 +69,10 @@ func Origin(origin string, args ...interface{}) {
 
 	current := eval.Current()
 	switch current.(type) {
-	case *goadesign.APIExpr:
-		design.Root.APIOrigins[origin] = o
-	case *goadesign.ServiceExpr:
-		design.Root.ServiceOrigins[origin] = o
+	case *goaexpr.APIExpr:
+		expr.Root.APIOrigins[origin] = o
+	case *goaexpr.ServiceExpr:
+		expr.Root.ServiceOrigins[origin] = o
 	default:
 		eval.IncompatibleDSL()
 		return
@@ -87,7 +92,7 @@ func Origin(origin string, args ...interface{}) {
 //
 func Methods(vals ...string) {
 	switch o := eval.Current().(type) {
-	case *design.OriginExpr:
+	case *expr.OriginExpr:
 		o.Methods = append(o.Methods, vals...)
 	default:
 		eval.IncompatibleDSL()
@@ -106,7 +111,7 @@ func Methods(vals ...string) {
 //
 func Expose(vals ...string) {
 	switch o := eval.Current().(type) {
-	case *design.OriginExpr:
+	case *expr.OriginExpr:
 		o.Exposed = append(o.Exposed, vals...)
 	default:
 		eval.IncompatibleDSL()
@@ -129,7 +134,7 @@ func Expose(vals ...string) {
 //
 func Headers(vals ...string) {
 	switch o := eval.Current().(type) {
-	case *design.OriginExpr:
+	case *expr.OriginExpr:
 		o.Headers = append(o.Headers, vals...)
 	default:
 		eval.IncompatibleDSL()
@@ -148,7 +153,7 @@ func Headers(vals ...string) {
 //
 func MaxAge(val uint) {
 	switch o := eval.Current().(type) {
-	case *design.OriginExpr:
+	case *expr.OriginExpr:
 		o.MaxAge = val
 	default:
 		eval.IncompatibleDSL()
@@ -167,7 +172,7 @@ func MaxAge(val uint) {
 //
 func Credentials() {
 	switch o := eval.Current().(type) {
-	case *design.OriginExpr:
+	case *expr.OriginExpr:
 		o.Credentials = true
 	default:
 		eval.IncompatibleDSL()

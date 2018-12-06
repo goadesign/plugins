@@ -1,4 +1,4 @@
-package design
+package expr
 
 import (
 	"fmt"
@@ -6,9 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	goadesign "goa.design/goa/design"
 	"goa.design/goa/eval"
-	httpdesign "goa.design/goa/http/design"
+	"goa.design/goa/expr"
 )
 
 type (
@@ -39,7 +38,7 @@ type (
 func Origins(svc string) []*OriginExpr {
 	origins := make(map[string]*OriginExpr)
 	for n, o := range Root.ServiceOrigins {
-		s, ok := o.Parent.(*goadesign.ServiceExpr)
+		s, ok := o.Parent.(*expr.ServiceExpr)
 		if ok && s.Name == svc {
 			origins[n] = o
 		}
@@ -66,7 +65,7 @@ func Origins(svc string) []*OriginExpr {
 // for the given service.
 func PreflightPaths(svc string) []string {
 	var paths []string
-	s := httpdesign.Root.Service(svc)
+	s := expr.Root.API.HTTP.Service(svc)
 	if s == nil {
 		return paths
 	}

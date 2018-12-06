@@ -3,7 +3,7 @@ info:
   title: The goakit example downstream service
   description: Archiver is a service that manages the content of HTTP responses
   version: ""
-host: localhost:8080
+host: localhost:80
 paths:
   /archive:
     post:
@@ -13,17 +13,21 @@ paths:
       description: Archive HTTP response
       operationId: archiver#archive
       parameters:
-      - name: ArchiveRequestBody
+      - name: archiveRequestBody
         in: body
         required: true
         schema:
-          $ref: '#/definitions/ArchiveRequestBody'
+          $ref: '#/definitions/ArchiverarchiveRequestBody'
+          required:
+          - status
+          - body
       responses:
         "200":
           description: OK response.
           schema:
-            $ref: '#/definitions/ArchiveResponseBody'
+            $ref: '#/definitions/ArchiverarchiveResponseBody'
       schemes:
+      - grpc
       - http
   /archive/{id}:
     get:
@@ -43,16 +47,17 @@ paths:
         "200":
           description: OK response.
           schema:
-            $ref: '#/definitions/ReadResponseBody'
+            $ref: '#/definitions/ArchiverreadResponseBody'
         "400":
           description: Bad Request response.
           schema:
-            $ref: '#/definitions/ReadBadRequestResponseBody'
+            $ref: '#/definitions/Archiverread_bad_requestResponseBody'
         "404":
           description: Not Found response.
           schema:
-            $ref: '#/definitions/ReadNotFoundResponseBody'
+            $ref: '#/definitions/Archiverread_not_foundResponseBody'
       schemes:
+      - grpc
       - http
   /health:
     get:
@@ -67,10 +72,11 @@ paths:
           schema:
             type: string
       schemes:
+      - grpc
       - http
 definitions:
-  ArchiveRequestBody:
-    title: ArchiveRequestBody
+  ArchiverarchiveRequestBody:
+    title: ArchiverarchiveRequestBody
     type: object
     properties:
       body:
@@ -88,7 +94,7 @@ definitions:
     required:
     - status
     - body
-  ArchiveResponseBody:
+  ArchiverarchiveResponseBody:
     title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
     type: object
     properties:
@@ -106,7 +112,7 @@ definitions:
         description: HTTP status
         example: 200
         minimum: 0
-    description: ArchiveResponseBody result type (default view)
+    description: archiveResponseBody result type (default view)
     example:
       body: Alias ipsa eum laborum ut quod.
       href: /archive1/
@@ -115,7 +121,7 @@ definitions:
     - href
     - status
     - body
-  ReadBadRequestResponseBody:
+  Archiverread_bad_requestResponseBody:
     title: 'Mediatype identifier: application/vnd.goa.error; view=default'
     type: object
     properties:
@@ -145,7 +151,7 @@ definitions:
         type: boolean
         description: Is the error a timeout?
         example: false
-    description: ReadBadRequestResponseBody result type (default view)
+    description: read_bad_requestResponseBody result type (default view)
     example:
       fault: false
       id: 123abc
@@ -160,7 +166,7 @@ definitions:
     - temporary
     - timeout
     - fault
-  ReadNotFoundResponseBody:
+  Archiverread_not_foundResponseBody:
     title: 'Mediatype identifier: application/vnd.goa.error; view=default'
     type: object
     properties:
@@ -190,7 +196,7 @@ definitions:
         type: boolean
         description: Is the error a timeout?
         example: true
-    description: ReadNotFoundResponseBody result type (default view)
+    description: read_not_foundResponseBody result type (default view)
     example:
       fault: false
       id: 123abc
@@ -205,7 +211,7 @@ definitions:
     - temporary
     - timeout
     - fault
-  ReadResponseBody:
+  ArchiverreadResponseBody:
     title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
     type: object
     properties:
@@ -223,7 +229,7 @@ definitions:
         description: HTTP status
         example: 200
         minimum: 0
-    description: ReadResponseBody result type (default view)
+    description: readResponseBody result type (default view)
     example:
       body: Ad beatae incidunt consequuntur aperiam aliquid.
       href: /archive1/

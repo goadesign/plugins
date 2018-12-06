@@ -3,7 +3,8 @@
 // calc HTTP client CLI support package
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/calc/design
+// $ goa gen goa.design/plugins/goakit/examples/calc/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
 
 package client
 

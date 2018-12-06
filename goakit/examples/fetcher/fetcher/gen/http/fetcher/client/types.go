@@ -3,7 +3,8 @@
 // fetcher HTTP client types
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 
 package client
 
@@ -57,9 +58,9 @@ type FetchInternalErrorResponseBody struct {
 	Fault *bool `form:"fault,omitempty" json:"fault,omitempty" xml:"fault,omitempty"`
 }
 
-// NewFetchFetchMediaOK builds a "fetcher" service "fetch" endpoint result from
+// NewFetchMediaViewOK builds a "fetcher" service "fetch" endpoint result from
 // a HTTP "OK" response.
-func NewFetchFetchMediaOK(body *FetchResponseBody) *fetchersvcviews.FetchMediaView {
+func NewFetchMediaViewOK(body *FetchResponseBody) *fetchersvcviews.FetchMediaView {
 	v := &fetchersvcviews.FetchMediaView{
 		Status:      body.Status,
 		ArchiveHref: body.ArchiveHref,
@@ -94,7 +95,7 @@ func NewFetchInternalError(body *FetchInternalErrorResponseBody) *goa.ServiceErr
 	return v
 }
 
-// Validate runs the validations defined on FetchBadRequestResponseBody
+// Validate runs the validations defined on fetch_bad_requestResponseBody
 func (body *FetchBadRequestResponseBody) Validate() (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
@@ -117,7 +118,7 @@ func (body *FetchBadRequestResponseBody) Validate() (err error) {
 	return
 }
 
-// Validate runs the validations defined on FetchInternalErrorResponseBody
+// Validate runs the validations defined on fetch_internal_errorResponseBody
 func (body *FetchInternalErrorResponseBody) Validate() (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))

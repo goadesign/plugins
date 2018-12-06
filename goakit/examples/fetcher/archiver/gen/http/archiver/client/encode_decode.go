@@ -3,7 +3,8 @@
 // archiver HTTP client encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design
+// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o
+// $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
 
 package client
 
@@ -77,13 +78,14 @@ func DecodeArchiveResponse(decoder func(*http.Response) goahttp.Decoder, restore
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("archiver", "archive", err)
 			}
-			p := NewArchiveArchiveMediaOK(&body)
+			p := NewArchiveMediaViewOK(&body)
 			view := "default"
 			vres := &archiversvcviews.ArchiveMedia{p, view}
 			if err = vres.Validate(); err != nil {
 				return nil, goahttp.ErrValidationError("archiver", "archive", err)
 			}
-			return archiversvc.NewArchiveMedia(vres), nil
+			res := archiversvc.NewArchiveMedia(vres)
+			return res, nil
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("archiver", "archive", resp.StatusCode, string(body))
@@ -153,7 +155,8 @@ func DecodeReadResponse(decoder func(*http.Response) goahttp.Decoder, restoreBod
 			if err = vres.Validate(); err != nil {
 				return nil, goahttp.ErrValidationError("archiver", "read", err)
 			}
-			return archiversvc.NewArchiveMedia(vres), nil
+			res := archiversvc.NewArchiveMedia(vres)
+			return res, nil
 		case http.StatusNotFound:
 			var (
 				body ReadNotFoundResponseBody
