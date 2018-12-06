@@ -7,7 +7,7 @@ import (
 
 	"goa.design/goa/codegen"
 	"goa.design/goa/eval"
-	httpdesign "goa.design/goa/http/design"
+	"goa.design/goa/expr"
 )
 
 type fileToModify struct {
@@ -26,7 +26,7 @@ func init() {
 // Generate generates zap logger specific files.
 func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	for _, root := range roots {
-		if r, ok := root.(*httpdesign.RootExpr); ok {
+		if r, ok := root.(*expr.RootExpr); ok {
 			files = append(files, GenerateFiles(genpkg, r)...)
 		}
 	}
@@ -41,17 +41,17 @@ func UpdateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([]*
 	filesToModify := []*fileToModify{}
 
 	for _, root := range roots {
-		if r, ok := root.(*httpdesign.RootExpr); ok {
+		if r, ok := root.(*expr.RootExpr); ok {
 
 			// Add the generated main files
-			for _, svr := range r.Design.API.Servers {
+			for _, svr := range r.API.Servers {
 				pkg := codegen.SnakeCase(codegen.Goify(svr.Name, true))
 				mainPath := filepath.Join("cmd", pkg, "main.go")
 				filesToModify = append(filesToModify, &fileToModify{path: mainPath, serviceName: svr.Name, isMain: true})
 			}
 
 			// Add the generated service files
-			for _, svc := range r.HTTPServices {
+			for _, svc := range r.API.HTTP.Services {
 				servicePath := codegen.SnakeCase(svc.Name()) + ".go"
 				filesToModify = append(filesToModify, &fileToModify{path: servicePath, serviceName: svc.Name(), isMain: false})
 			}
@@ -73,7 +73,7 @@ func UpdateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([]*
 }
 
 // GenerateFiles create log specific files
-func GenerateFiles(genpkg string, root *httpdesign.RootExpr) []*codegen.File {
+func GenerateFiles(genpkg string, root *expr.RootExpr) []*codegen.File {
 	fw := make([]*codegen.File, 1)
 	fw[0] = GenerateLoggerFile(genpkg)
 	return fw
@@ -98,7 +98,7 @@ func GenerateLoggerFile(genpkg string) *codegen.File {
 	return &codegen.File{Path: path, SectionTemplates: sections}
 }
 
-func updateExampleFile(genpkg string, root *httpdesign.RootExpr, f *fileToModify) {
+func updateExampleFile(genpkg string, root *expr.RootExpr, f *fileToModify) {
 
 	header := f.file.SectionTemplates[0]
 	logPath := filepath.Join(genpkg, "log")
@@ -157,7 +157,8 @@ func New(serviceName string, production bool) *Logger {
 }
 
 // Log is called by the log middleware to log HTTP requests key values
-func (logger *Logger) Log(keyvals ...interface{}) {
+func (logger *Logger) Log(keyvals ...interface{}) error {
 	logger.Infow("HTTP Request", keyvals...)
+	return nil
 }
 `

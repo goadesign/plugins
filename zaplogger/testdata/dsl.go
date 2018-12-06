@@ -1,7 +1,7 @@
 package testdata
 
 import (
-	. "goa.design/goa/http/dsl"
+	. "goa.design/goa/dsl"
 )
 
 var SimpleServiceDSL = func() {
