@@ -13,7 +13,8 @@ import (
 	"github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
-	"goa.design/goa/http/middleware"
+	httpmiddleware "goa.design/goa/http/middleware"
+	"goa.design/goa/middleware"
 	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher"
 	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 	health "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
@@ -117,8 +118,8 @@ func main() {
 	// here apply to all the service endpoints.
 	var handler http.Handler = mux
 	{
-		handler = middleware.Log(logger)(handler)
-		handler = middleware.RequestID()(handler)
+		handler = httpmiddleware.Log(logger)(handler)
+		handler = httpmiddleware.RequestID()(handler)
 	}
 
 	// Create channel used by both the signal handler and server goroutines

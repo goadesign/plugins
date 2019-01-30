@@ -11,7 +11,8 @@ import (
 
 	"go.uber.org/zap"
 	goahttp "goa.design/goa/http"
-	"goa.design/goa/http/middleware"
+	httpmiddleware "goa.design/goa/http/middleware"
+	"goa.design/goa/middleware"
 	calc "goa.design/plugins/zaplogger/examples/calc"
 	calcsvc "goa.design/plugins/zaplogger/examples/calc/gen/calc"
 	calcsvcsvr "goa.design/plugins/zaplogger/examples/calc/gen/http/calc/server"
@@ -92,11 +93,11 @@ func main() {
 	var handler http.Handler = mux
 	{
 		if *dbg {
-			handler = middleware.Debug(mux, os.Stdout)(handler)
+			handler = httpmiddleware.Debug(mux, os.Stdout)(handler)
 		}
-		handler = middleware.Log(adapter)(handler)
-		handler = middleware.PopulateRequestContext()(handler)
-		handler = middleware.RequestID(middleware.UseXRequestIDHeaderOption(true))(handler)
+		handler = httpmiddleware.Log(adapter)(handler)
+		handler = httpmiddleware.PopulateRequestContext()(handler)
+		handler = httpmiddleware.RequestID(httpmiddleware.UseXRequestIDHeaderOption(true))(handler)
 	}
 
 	// Create channel used by both the signal handler and server goroutines
