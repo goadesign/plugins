@@ -13,7 +13,8 @@ import (
 	"github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
-	"goa.design/goa/http/middleware"
+	httpmiddleware "goa.design/goa/http/middleware"
+	"goa.design/goa/middleware"
 	archiver "goa.design/plugins/goakit/examples/fetcher/archiver"
 	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 	health "goa.design/plugins/goakit/examples/fetcher/archiver/gen/health"
@@ -121,10 +122,10 @@ func main() {
 	var handler http.Handler = mux
 	{
 		if *dbg {
-			handler = middleware.Debug(mux, os.Stdout)(handler)
+			handler = httpmiddleware.Debug(mux, os.Stdout)(handler)
 		}
-		handler = middleware.Log(logger)(handler)
-		handler = middleware.RequestID()(handler)
+		handler = httpmiddleware.Log(logger)(handler)
+		handler = httpmiddleware.RequestID()(handler)
 	}
 
 	// Create channel used by both the signal handler and server goroutines
