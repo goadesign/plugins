@@ -13,6 +13,9 @@ all: depend test-plugins
 
 depend:
 	@go get -v golang.org/x/lint/golint
+	@for p in $(PLUGINS) ; do \
+		make -C $$p depend || exit 1; \
+	done
 
 gen:
 	@for p in $(PLUGINS) ; do \
