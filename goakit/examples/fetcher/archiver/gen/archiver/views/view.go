@@ -30,20 +30,33 @@ type ArchiveMediaView struct {
 	Body *string
 }
 
-// Validate runs the validations defined on the viewed result type ArchiveMedia.
-func (result *ArchiveMedia) Validate() (err error) {
+var (
+	// ArchiveMediaMap is a map of attribute names in result type ArchiveMedia
+	// indexed by view name.
+	ArchiveMediaMap = map[string][]string{
+		"default": []string{
+			"href",
+			"status",
+			"body",
+		},
+	}
+)
+
+// ValidateArchiveMedia runs the validations defined on the viewed result type
+// ArchiveMedia.
+func ValidateArchiveMedia(result *ArchiveMedia) (err error) {
 	switch result.View {
 	case "default", "":
-		err = result.Projected.Validate()
+		err = ValidateArchiveMediaView(result.Projected)
 	default:
 		err = goa.InvalidEnumValueError("view", result.View, []interface{}{"default"})
 	}
 	return
 }
 
-// Validate runs the validations defined on ArchiveMediaView using the
-// "default" view.
-func (result *ArchiveMediaView) Validate() (err error) {
+// ValidateArchiveMediaView runs the validations defined on ArchiveMediaView
+// using the "default" view.
+func ValidateArchiveMediaView(result *ArchiveMediaView) (err error) {
 	if result.Href == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("href", "result"))
 	}

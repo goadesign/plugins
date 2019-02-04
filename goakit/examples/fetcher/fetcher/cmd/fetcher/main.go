@@ -4,61 +4,50 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
-	"time"
+	"strings"
+	"sync"
 
-	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
-	kithttp "github.com/go-kit/kit/transport/http"
-	goahttp "goa.design/goa/http"
-	httpmiddleware "goa.design/goa/http/middleware"
-	"goa.design/goa/middleware"
 	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher"
 	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 	health "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
-	fetchersvckitsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/kitserver"
-	fetchersvcsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/server"
-	healthkitsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/health/kitserver"
-	healthsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/health/server"
 )
 
 func main() {
-	// Define command line flags, add any other flag required to configure
-	// the service.
+	// Define command line flags, add any other flag required to configure the
+	// service.
 	var (
-		addr         = flag.String("listen", "localhost:80", "HTTP listen `address`")
-		archiverHost = flag.String("archiver", "localhost:8081", "archiver service `host:port`")
+		hostF     = flag.String("host", "localhost", "Server host (valid values: localhost)")
+		domainF   = flag.String("domain", "", "Host domain name (overrides host domain specified in service design)")
+		httpPortF = flag.String("http-port", "", "HTTP port (overrides host HTTP port specified in service design)")
+		secureF   = flag.Bool("secure", false, "Use secure scheme (https or grpcs)")
+		dbgF      = flag.Bool("debug", false, "Log request and response bodies")
 	)
 	flag.Parse()
-	if *archiverHost == "" {
-		fmt.Fprintf(os.Stderr, "missing required flag --archiver")
-		os.Exit(1)
-	}
 
-	// Setup gokit logger.
+	// Setup logger. Replace logger with your own log package of choice.
 	var (
 		logger log.Logger
 	)
 	{
-		logger = log.NewLogfmtLogger(os.Stderr)
-		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
-		logger = log.With(logger, "caller", log.DefaultCaller)
+		logger = log.New(os.Stderr, "[fetcher] ", log.Ltime)
 	}
 
-	// Create the structs that implement the services.
+	// Initialize the services.
 	var (
 		fetcherSvc fetchersvc.Service
 		healthSvc  health.Service
 	)
 	{
-		fetcherSvc = fetcher.NewFetcher(logger, *archiverHost)
+		fetcherSvc = fetcher.NewFetcher(logger)
 		healthSvc = fetcher.NewHealth(logger)
 	}
 
-	// Wrap the services in endpoints that can be invoked from other
-	// services potentially running in different processes.
+	// Wrap the services in endpoints that can be invoked from other services
+	// potentially running in different processes.
 	var (
 		fetcherEndpoints *fetchersvc.Endpoints
 		healthEndpoints  *health.Endpoints
@@ -68,100 +57,56 @@ func main() {
 		healthEndpoints = health.NewEndpoints(healthSvc)
 	}
 
-	// Provide the transport specific request decoder and response encoder.
-	// The goa http package has built-in support for JSON, XML and gob.
-	// Other encodings can be used by providing the corresponding functions,
-	// see goa.design/encoding.
-	var (
-		dec = goahttp.RequestDecoder
-		enc = goahttp.ResponseEncoder
-	)
-
-	// Build the service HTTP request multiplexer and configure it to serve
-	// HTTP requests to the service endpoints.
-	var mux goahttp.Muxer
-	{
-		mux = goahttp.NewMuxer()
-	}
-
-	// Wrap the endpoints with the transport specific layers. The generated
-	// server packages contains code generated from the design which maps
-	// the service input and output data structures to HTTP requests and
-	// responses.
-	var (
-		fetcherFetchHandler *kithttp.Server
-		fetcherServer       *fetchersvcsvr.Server
-		healthShowHandler   *kithttp.Server
-		healthServer        *healthsvr.Server
-	)
-	{
-		eh := ErrorHandler(logger)
-		fetcherFetchHandler = kithttp.NewServer(
-			endpoint.Endpoint(fetcherEndpoints.Fetch),
-			fetchersvckitsvr.DecodeFetchRequest(mux, dec),
-			fetchersvckitsvr.EncodeFetchResponse(enc),
-		)
-		fetcherServer = fetchersvcsvr.New(fetcherEndpoints, mux, dec, enc, eh)
-		healthShowHandler = kithttp.NewServer(
-			endpoint.Endpoint(healthEndpoints.Show),
-			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
-			healthkitsvr.EncodeShowResponse(enc),
-		)
-		healthServer = healthsvr.New(healthEndpoints, mux, dec, enc, eh)
-	}
-
-	// Configure the mux.
-	fetchersvckitsvr.MountFetchHandler(mux, fetcherFetchHandler)
-	healthkitsvr.MountShowHandler(mux, healthShowHandler)
-
-	// Wrap the multiplexer with additional middlewares. Middlewares mounted
-	// here apply to all the service endpoints.
-	var handler http.Handler = mux
-	{
-		handler = httpmiddleware.Log(logger)(handler)
-		handler = httpmiddleware.RequestID()(handler)
-	}
-
 	// Create channel used by both the signal handler and server goroutines
 	// to notify the main goroutine when to stop the server.
 	errc := make(chan error)
+
 	// Setup interrupt handler. This optional step configures the process so
-	// that SIGINT and SIGTERM signals cause the service to stop gracefully.
+	// that SIGINT and SIGTERM signals cause the services to stop gracefully.
 	go func() {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		errc <- fmt.Errorf("%s", <-c)
 	}()
-	// Start HTTP server using default configuration, change the code to
-	// configure the server as required by your service.
-	srv := &http.Server{Addr: *addr, Handler: handler}
-	go func() {
-		for _, m := range fetcherServer.Mounts {
-			logger.Log("info", fmt.Sprintf("method %q mounted on %s %s", m.Method, m.Verb, m.Pattern))
+
+	var wg sync.WaitGroup
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// Start the servers and send errors (if any) to the error channel.
+	switch *hostF {
+	case "localhost":
+		{
+			addr := "http://localhost:80"
+			u, err := url.Parse(addr)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "invalid URL %#v: %s", addr, err)
+				os.Exit(1)
+			}
+			if *secureF {
+				u.Scheme = "https"
+			}
+			if *domainF != "" {
+				u.Host = *domainF
+			}
+			if *httpPortF != "" {
+				h := strings.Split(u.Host, ":")[0]
+				u.Host = h + ":" + *httpPortF
+			} else if u.Port() == "" {
+				u.Host += ":80"
+			}
+			handleHTTPServer(ctx, u, fetcherEndpoints, healthEndpoints, &wg, errc, logger, *dbgF)
 		}
-		for _, m := range healthServer.Mounts {
-			logger.Log("info", fmt.Sprintf("method %q mounted on %s %s", m.Method, m.Verb, m.Pattern))
-		}
-		logger.Log("info", fmt.Sprintf("listening on %s", *addr))
-		errc <- srv.ListenAndServe()
-	}()
+
+	default:
+		fmt.Fprintf(os.Stderr, "invalid host argument: %q (valid hosts: localhost)", *hostF)
+	}
 
 	// Wait for signal.
 	logger.Log("info", fmt.Sprintf("exiting (%v)", <-errc))
-	// Shutdown gracefully with a 30s timeout.
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	srv.Shutdown(ctx)
-	logger.Log("info", fmt.Sprintf("exited"))
-}
 
-// ErrorHandler returns a function that writes and logs the given error.
-// The function also writes and logs the error unique ID so that it's possible
-// to correlate.
-func ErrorHandler(logger log.Logger) func(context.Context, http.ResponseWriter, error) {
-	return func(ctx context.Context, w http.ResponseWriter, err error) {
-		id := ctx.Value(middleware.RequestIDKey).(string)
-		w.Write([]byte("[" + id + "] encoding: " + err.Error()))
-		logger.Log("info", fmt.Sprintf("[%s] ERROR: %s", id, err.Error()))
-	}
+	// Send cancellation signal to the goroutines.
+	cancel()
+
+	wg.Wait()
+	logger.Log("info", fmt.Sprintf("exited"))
 }

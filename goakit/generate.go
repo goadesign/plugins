@@ -1,7 +1,7 @@
 package goakit
 
 import (
-	"path/filepath"
+	"path"
 	"regexp"
 	"strings"
 
@@ -102,7 +102,7 @@ func gokitifyExampleServer(genpkg string, file *codegen.File) {
 			for _, svc := range svcs {
 				pkgName := httpcodegen.HTTPServices.Get(svc.Service.Name).Service.PkgName
 				codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{
-					Path: filepath.Join(genpkg, "http", svc.Service.Name, "kitserver"),
+					Path: path.Join(genpkg, "http", svc.Service.Name, "kitserver"),
 					Name: pkgName + "kitsvr",
 				})
 			}

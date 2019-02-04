@@ -2,6 +2,7 @@ package zaplogger
 
 import (
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -101,7 +102,7 @@ func GenerateLoggerFile(genpkg string) *codegen.File {
 func updateExampleFile(genpkg string, root *expr.RootExpr, f *fileToModify) {
 
 	header := f.file.SectionTemplates[0]
-	logPath := filepath.Join(genpkg, "log")
+	logPath := path.Join(genpkg, "log")
 
 	data := header.Data.(map[string]interface{})
 	specs := data["Imports"].([]*codegen.ImportSpec)

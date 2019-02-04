@@ -12,8 +12,12 @@ gen:
 	@goa gen goa.design/plugins/goakit/examples/calc/design -o $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
 	@goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 	@goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
+	@make example
 
 example:
+	@rm -rf $(GOPATH)/src/goa.design/plugins/goakit/examples/calc/cmd && \
+	rm -rf $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher/cmd && \
+	rm -rf $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver/cmd
 	@goa example goa.design/plugins/goakit/examples/calc/design -o $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
 	@goa example goa.design/plugins/goakit/examples/fetcher/fetcher/design -o $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 	@goa example goa.design/plugins/goakit/examples/fetcher/archiver/design -o $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver

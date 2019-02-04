@@ -79,7 +79,7 @@ func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 			p := NewFetchMediaViewOK(&body)
 			view := "default"
 			vres := &fetchersvcviews.FetchMedia{p, view}
-			if err = vres.Validate(); err != nil {
+			if err = fetchersvcviews.ValidateFetchMedia(vres); err != nil {
 				return nil, goahttp.ErrValidationError("fetcher", "fetch", err)
 			}
 			res := fetchersvc.NewFetchMedia(vres)
@@ -93,7 +93,7 @@ func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("fetcher", "fetch", err)
 			}
-			err = body.Validate()
+			err = ValidateFetchBadRequestResponseBody(&body)
 			if err != nil {
 				return nil, goahttp.ErrValidationError("fetcher", "fetch", err)
 			}
@@ -107,7 +107,7 @@ func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("fetcher", "fetch", err)
 			}
-			err = body.Validate()
+			err = ValidateFetchInternalErrorResponseBody(&body)
 			if err != nil {
 				return nil, goahttp.ErrValidationError("fetcher", "fetch", err)
 			}

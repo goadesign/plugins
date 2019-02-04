@@ -147,8 +147,8 @@ func NewReadPayload(id int) *archiversvc.ReadPayload {
 	}
 }
 
-// Validate runs the validations defined on archiveRequestBody
-func (body *ArchiveRequestBody) Validate() (err error) {
+// ValidateArchiveRequestBody runs the validations defined on ArchiveRequestBody
+func ValidateArchiveRequestBody(body *ArchiveRequestBody) (err error) {
 	if body.Status == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
 	}
