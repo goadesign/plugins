@@ -20,20 +20,23 @@ func main() {
 	// Define command line flags, add any other flag required to configure the
 	// service.
 	var (
-		hostF     = flag.String("host", "localhost", "Server host (valid values: localhost)")
-		domainF   = flag.String("domain", "", "Host domain name (overrides host domain specified in service design)")
-		httpPortF = flag.String("http-port", "", "HTTP port (overrides host HTTP port specified in service design)")
-		secureF   = flag.Bool("secure", false, "Use secure scheme (https or grpcs)")
-		dbgF      = flag.Bool("debug", false, "Log request and response bodies")
+		hostF        = flag.String("host", "localhost", "Server host (valid values: localhost)")
+		domainF      = flag.String("domain", "", "Host domain name (overrides host domain specified in service design)")
+		httpPortF    = flag.String("http-port", "", "HTTP port (overrides host HTTP port specified in service design)")
+		secureF      = flag.Bool("secure", false, "Use secure scheme (https or grpcs)")
+		dbgF         = flag.Bool("debug", false, "Log request and response bodies")
+		archiverHost = flag.String("archiver", "localhost:8081", "archiver service `host:port`")
 	)
 	flag.Parse()
 
-	// Setup logger. Replace logger with your own log package of choice.
+	// Setup gokit logger.
 	var (
 		logger log.Logger
 	)
 	{
-		logger = log.New(os.Stderr, "[fetcher] ", log.Ltime)
+		logger = log.NewLogfmtLogger(os.Stderr)
+		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
+		logger = log.With(logger, "caller", log.DefaultCaller)
 	}
 
 	// Initialize the services.
@@ -42,7 +45,7 @@ func main() {
 		healthSvc  health.Service
 	)
 	{
-		fetcherSvc = fetcher.NewFetcher(logger)
+		fetcherSvc = fetcher.NewFetcher(logger, *archiverHost)
 		healthSvc = fetcher.NewHealth(logger)
 	}
 

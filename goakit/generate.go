@@ -79,6 +79,7 @@ var goaLoggerRegexp = regexp.MustCompile(`logger\.\w+\((.*)\)`)
 // packages in the example server implementation. It also replaces every stdlib
 // logger with gokit logger.
 func gokitifyExampleServer(genpkg string, file *codegen.File) {
+	goakitify(file)
 	var hasLogger bool
 	for _, s := range file.SectionTemplates {
 		if !hasLogger {
@@ -89,12 +90,14 @@ func gokitifyExampleServer(genpkg string, file *codegen.File) {
 		s.Source = goaLoggerRegexp.ReplaceAllString(s.Source, "logger.Log(\"info\", fmt.Sprintf(${1}))")
 
 		switch s.Name {
-		case "service-main-logger":
+		case "server-main-logger":
 			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/kit/log"})
 			s.Source = gokitLoggerT
-		case "service-main-middleware":
+		case "server-http-logger":
+			s.Source = ""
+		case "server-http-middleware":
 			s.Source = strings.Replace(s.Source, "adapter", "logger", -1)
-		case "service-main-server-init":
+		case "server-http-init":
 			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/kit/transport/http", Name: "kithttp"})
 			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/kit/endpoint"})
 			data := s.Data.(map[string]interface{})
@@ -150,7 +153,7 @@ const gokitServerInitT = `
   {{- end }}
   )
   {
-    eh := ErrorHandler(logger)
+    eh := errorHandler(logger)
     {{- if needStream .Services }}
       upgrader := &websocket.Upgrader{}
     {{- end }}

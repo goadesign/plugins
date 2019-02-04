@@ -9,25 +9,20 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
+	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
 	httpmdlwr "goa.design/goa/http/middleware"
 	"goa.design/goa/middleware"
 	calcsvc "goa.design/plugins/goakit/examples/calc/gen/calc"
+	calcsvckitsvr "goa.design/plugins/goakit/examples/calc/gen/http/calc/kitserver"
 	calcsvcsvr "goa.design/plugins/goakit/examples/calc/gen/http/calc/server"
 )
 
 // handleHTTPServer starts configures and starts a HTTP server on the given
 // URL. It shuts down the server if any error is received in the error channel.
 func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calcsvc.Endpoints, wg *sync.WaitGroup, errc chan error, logger log.Logger, debug bool) {
-
-	// Setup goa log adapter.
-	var (
-		adapter middleware.Logger
-	)
-	{
-		adapter = middleware.NewLogger(logger)
-	}
 
 	// Provide the transport specific request decoder and response encoder.
 	// The goa http package has built-in support for JSON, XML and gob.
@@ -50,14 +45,21 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calcsvc.En
 	// the service input and output data structures to HTTP requests and
 	// responses.
 	var (
-		calcServer *calcsvcsvr.Server
+		calcAddHandler *kithttp.Server
+		calcServer     *calcsvcsvr.Server
 	)
 	{
 		eh := errorHandler(logger)
+		calcAddHandler = kithttp.NewServer(
+			endpoint.Endpoint(calcEndpoints.Add),
+			calcsvckitsvr.DecodeAddRequest(mux, dec),
+			calcsvckitsvr.EncodeAddResponse(enc),
+		)
 		calcServer = calcsvcsvr.New(calcEndpoints, mux, dec, enc, eh)
 	}
+
 	// Configure the mux.
-	calcsvcsvr.Mount(mux, calcServer)
+	calcsvckitsvr.MountAddHandler(mux, calcAddHandler)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
 	// here apply to all the service endpoints.
@@ -66,7 +68,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calcsvc.En
 		if debug {
 			handler = httpmdlwr.Debug(mux, os.Stdout)(handler)
 		}
-		handler = httpmdlwr.Log(adapter)(handler)
+		handler = httpmdlwr.Log(logger)(handler)
 		handler = httpmdlwr.RequestID()(handler)
 	}
 

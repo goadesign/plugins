@@ -47,8 +47,12 @@ func UpdateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([]*
 			// Add the generated main files
 			for _, svr := range r.API.Servers {
 				pkg := codegen.SnakeCase(codegen.Goify(svr.Name, true))
-				mainPath := filepath.Join("cmd", pkg, "main.go")
-				filesToModify = append(filesToModify, &fileToModify{path: mainPath, serviceName: svr.Name, isMain: true})
+				filesToModify = append(filesToModify,
+					&fileToModify{path: filepath.Join("cmd", pkg, "main.go"), serviceName: svr.Name, isMain: true})
+				filesToModify = append(filesToModify,
+					&fileToModify{path: filepath.Join("cmd", pkg, "http.go"), serviceName: svr.Name, isMain: true})
+				filesToModify = append(filesToModify,
+					&fileToModify{path: filepath.Join("cmd", pkg, "grpc.go"), serviceName: svr.Name, isMain: true})
 			}
 
 			// Add the generated service files

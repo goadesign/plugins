@@ -5,12 +5,12 @@ import (
 	"os"
 	"time"
 
-	"goa.design/goa"
+	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/http"
 	cli "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/cli/fetcher"
 )
 
-func doHTTP(scheme, host string, timeout int, debug bool) (goa.Endpoint, interface{}, error) {
+func doHTTP(scheme, host string, timeout int, debug bool) (endpoint.Endpoint, interface{}, error) {
 	var (
 		doer goahttp.Doer
 	)

@@ -17,7 +17,7 @@ DEPEND=\
   golang.org/x/tools/cmd/goimports \
 	goa.design/goa/...
 
-all: depend test lint
+all: depend test lint build-examples clean
 
 depend:
 	@go get -t -v ./...

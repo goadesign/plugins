@@ -9,27 +9,23 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
+	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/http"
 	httpmdlwr "goa.design/goa/http/middleware"
 	"goa.design/goa/middleware"
 	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 	health "goa.design/plugins/goakit/examples/fetcher/archiver/gen/health"
+	archiversvckitsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitserver"
 	archiversvcsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"
+	healthkitsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/kitserver"
 	healthsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/server"
 )
 
 // handleHTTPServer starts configures and starts a HTTP server on the given
 // URL. It shuts down the server if any error is received in the error channel.
 func handleHTTPServer(ctx context.Context, u *url.URL, archiverEndpoints *archiversvc.Endpoints, healthEndpoints *health.Endpoints, wg *sync.WaitGroup, errc chan error, logger log.Logger, debug bool) {
-
-	// Setup goa log adapter.
-	var (
-		adapter middleware.Logger
-	)
-	{
-		adapter = middleware.NewLogger(logger)
-	}
 
 	// Provide the transport specific request decoder and response encoder.
 	// The goa http package has built-in support for JSON, XML and gob.
@@ -52,17 +48,37 @@ func handleHTTPServer(ctx context.Context, u *url.URL, archiverEndpoints *archiv
 	// the service input and output data structures to HTTP requests and
 	// responses.
 	var (
-		archiverServer *archiversvcsvr.Server
-		healthServer   *healthsvr.Server
+		archiverArchiveHandler *kithttp.Server
+		archiverReadHandler    *kithttp.Server
+		archiverServer         *archiversvcsvr.Server
+		healthShowHandler      *kithttp.Server
+		healthServer           *healthsvr.Server
 	)
 	{
 		eh := errorHandler(logger)
+		archiverArchiveHandler = kithttp.NewServer(
+			endpoint.Endpoint(archiverEndpoints.Archive),
+			archiversvckitsvr.DecodeArchiveRequest(mux, dec),
+			archiversvckitsvr.EncodeArchiveResponse(enc),
+		)
+		archiverReadHandler = kithttp.NewServer(
+			endpoint.Endpoint(archiverEndpoints.Read),
+			archiversvckitsvr.DecodeReadRequest(mux, dec),
+			archiversvckitsvr.EncodeReadResponse(enc),
+		)
 		archiverServer = archiversvcsvr.New(archiverEndpoints, mux, dec, enc, eh)
+		healthShowHandler = kithttp.NewServer(
+			endpoint.Endpoint(healthEndpoints.Show),
+			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
+			healthkitsvr.EncodeShowResponse(enc),
+		)
 		healthServer = healthsvr.New(healthEndpoints, mux, dec, enc, eh)
 	}
+
 	// Configure the mux.
-	archiversvcsvr.Mount(mux, archiverServer)
-	healthsvr.Mount(mux, healthServer)
+	archiversvckitsvr.MountArchiveHandler(mux, archiverArchiveHandler)
+	archiversvckitsvr.MountReadHandler(mux, archiverReadHandler)
+	healthkitsvr.MountShowHandler(mux, healthShowHandler)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
 	// here apply to all the service endpoints.
@@ -71,7 +87,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, archiverEndpoints *archiv
 		if debug {
 			handler = httpmdlwr.Debug(mux, os.Stdout)(handler)
 		}
-		handler = httpmdlwr.Log(adapter)(handler)
+		handler = httpmdlwr.Log(logger)(handler)
 		handler = httpmdlwr.RequestID()(handler)
 	}
 

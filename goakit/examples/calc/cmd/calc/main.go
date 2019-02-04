@@ -27,12 +27,14 @@ func main() {
 	)
 	flag.Parse()
 
-	// Setup logger. Replace logger with your own log package of choice.
+	// Setup gokit logger.
 	var (
 		logger log.Logger
 	)
 	{
-		logger = log.New(os.Stderr, "[calc] ", log.Ltime)
+		logger = log.NewLogfmtLogger(os.Stderr)
+		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
+		logger = log.With(logger, "caller", log.DefaultCaller)
 	}
 
 	// Initialize the services.

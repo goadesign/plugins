@@ -16,3 +16,11 @@ gen:
 example:
 	@ rm -rf $(GOPATH)/src/goa.design/plugins/cors/examples/calc/cmd
 	goa example goa.design/plugins/cors/examples/calc/design -o $(GOPATH)/src/goa.design/plugins/cors/examples/calc
+
+build-examples:
+	@cd $(GOPATH)/src/goa.design/plugins/cors/examples/calc && \
+		go build ./cmd/calc && go build ./cmd/calc-cli
+
+clean:
+	@cd $(GOPATH)/src/goa.design/plugins/cors/examples/calc && \
+		rm -f calc calc-cli
