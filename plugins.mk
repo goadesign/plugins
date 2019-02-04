@@ -19,9 +19,16 @@ DEPEND=\
 
 all: depend test lint build-examples clean
 
+GOOS=$(shell go env GOOS)
+ifeq ($(GOOS),windows)
+GOA_PATH="$(GOPATH)\src\goa.design\goa"
+else
+GOA_PATH="$(GOPATH)/src/goa.design/goa"
+endif
 depend:
 	@go get -t -v ./...
 	@go get -v $(DEPEND)
+	@cd $(GOA_PATH)/cmd/goa && go install
 
 test:
 	@go test ./...
