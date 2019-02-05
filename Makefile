@@ -2,12 +2,11 @@
 #
 # Makefile for goa v2 plugins
 
-GOOS=$(shell go env GOOS)
-ifeq ($(GOOS),windows)
-PLUGINS=$(shell /usr/bin/find $GOPATH/src/goa.design/plugins -mindepth 1 -maxdepth 1 -not -path "*[\/]\.*" -type d)
-else
-PLUGINS=$(shell find . -mindepth 1 -maxdepth 1 -not -path "*/\.*" -type d)
-endif
+# Add new plugins here to enable make
+PLUGINS=\
+	cors \
+	goakit \
+	zaplogger
 
 all: depend gen test-plugins
 
