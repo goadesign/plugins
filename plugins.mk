@@ -13,7 +13,7 @@ PLUGIN_DIR=goa.design/plugins
 
 DEPEND=\
   github.com/sergi/go-diff/diffmatchpatch \
-  github.com/golang/lint/golint \
+  golang.org/x/lint/golint \
   golang.org/x/tools/cmd/goimports \
 	goa.design/goa/...
 
