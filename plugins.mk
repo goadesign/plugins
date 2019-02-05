@@ -17,7 +17,7 @@ DEPEND=\
   golang.org/x/tools/cmd/goimports \
 	goa.design/goa/...
 
-all: depend test lint build-examples clean
+all: depend gen test lint build-examples clean
 
 GOOS=$(shell go env GOOS)
 ifeq ($(GOOS),windows)

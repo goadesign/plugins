@@ -4,12 +4,12 @@
 
 GOOS=$(shell go env GOOS)
 ifeq ($(GOOS),windows)
-PLUGINS=$(shell /usr/bin/find . -mindepth 1 -maxdepth 1 -not -path "*[\/]\.*" -type d)
+PLUGINS=$(shell /usr/bin/find . -mindepth 1 -maxdepth 1 -not -path "*[\/](\.*|gopath)" -type d)
 else
 PLUGINS=$(shell find . -mindepth 1 -maxdepth 1 -not -path "*/\.*" -type d)
 endif
 
-all: depend test-plugins
+all: depend gen test-plugins
 
 depend:
 	@go get -v golang.org/x/lint/golint
@@ -22,7 +22,7 @@ gen:
 		make -C $$p gen || exit 1; \
 	done
 
-test-plugins: gen
+test-plugins:
 	@for p in $(PLUGINS) ; do \
 		make -C $$p || exit 1; \
 	done
