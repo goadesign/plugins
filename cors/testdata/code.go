@@ -321,7 +321,7 @@ func New(
 		OriginMultiEndpointGet:     NewOriginMultiEndpointGetHandler(e.OriginMultiEndpointGet, mux, dec, enc, eh),
 		OriginMultiEndpointPost:    NewOriginMultiEndpointPostHandler(e.OriginMultiEndpointPost, mux, dec, enc, eh),
 		OriginMultiEndpointOptions: NewOriginMultiEndpointOptionsHandler(e.OriginMultiEndpointOptions, mux, dec, enc, eh),
-		CORS: NewCORSHandler(),
+		CORS:                       NewCORSHandler(),
 	}
 }
 `
