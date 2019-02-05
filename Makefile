@@ -4,7 +4,7 @@
 
 GOOS=$(shell go env GOOS)
 ifeq ($(GOOS),windows)
-PLUGINS=$(shell /usr/bin/find . -mindepth 1 -maxdepth 1 -not -path "*[/\]\.*" -type d)
+PLUGINS=$(shell /usr/bin/find . -mindepth 1 -maxdepth 1 -not -path "*[\/]\.*" -type d)
 else
 PLUGINS=$(shell find . -mindepth 1 -maxdepth 1 -not -path "*/\.*" -type d)
 endif
