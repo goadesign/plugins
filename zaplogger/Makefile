@@ -12,10 +12,17 @@ ALIASER_SRC=goa.design/goa/http/dsl
 include $(GOPATH)/src/goa.design/plugins/plugins.mk
 
 gen:
-	@cd examples/calc && \
-	goa gen goa.design/plugins/zaplogger/examples/calc/design
+	goa gen goa.design/plugins/zaplogger/examples/calc/design -o $(GOPATH)/src/goa.design/plugins/zaplogger/examples/calc && \
+	make example
 
-aliases:
-	@echo "Nothing to alias"
+example:
+	@ rm -rf $(GOPATH)/src/goa.design/plugins/zaplogger/examples/calc/cmd && \
+	goa example goa.design/plugins/zaplogger/examples/calc/design -o $(GOPATH)/src/goa.design/plugins/zaplogger/examples/calc
 
-test-aliaser: aliases
+build-examples:
+	@cd $(GOPATH)/src/goa.design/plugins/zaplogger/examples/calc && \
+		go build ./cmd/calc && go build ./cmd/calc-cli
+
+clean:
+	@cd $(GOPATH)/src/goa.design/plugins/zaplogger/examples/calc && \
+		rm -f calc calc-cli

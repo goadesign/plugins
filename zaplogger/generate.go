@@ -2,6 +2,7 @@ package zaplogger
 
 import (
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -46,8 +47,12 @@ func UpdateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([]*
 			// Add the generated main files
 			for _, svr := range r.API.Servers {
 				pkg := codegen.SnakeCase(codegen.Goify(svr.Name, true))
-				mainPath := filepath.Join("cmd", pkg, "main.go")
-				filesToModify = append(filesToModify, &fileToModify{path: mainPath, serviceName: svr.Name, isMain: true})
+				filesToModify = append(filesToModify,
+					&fileToModify{path: filepath.Join("cmd", pkg, "main.go"), serviceName: svr.Name, isMain: true})
+				filesToModify = append(filesToModify,
+					&fileToModify{path: filepath.Join("cmd", pkg, "http.go"), serviceName: svr.Name, isMain: true})
+				filesToModify = append(filesToModify,
+					&fileToModify{path: filepath.Join("cmd", pkg, "grpc.go"), serviceName: svr.Name, isMain: true})
 			}
 
 			// Add the generated service files
@@ -101,7 +106,7 @@ func GenerateLoggerFile(genpkg string) *codegen.File {
 func updateExampleFile(genpkg string, root *expr.RootExpr, f *fileToModify) {
 
 	header := f.file.SectionTemplates[0]
-	logPath := filepath.Join(genpkg, "log")
+	logPath := path.Join(genpkg, "log")
 
 	data := header.Data.(map[string]interface{})
 	specs := data["Imports"].([]*codegen.ImportSpec)

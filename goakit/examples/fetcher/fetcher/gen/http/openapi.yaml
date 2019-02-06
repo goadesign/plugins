@@ -5,6 +5,14 @@ info:
     stores the results in the downstream 'archiver' service.
   version: ""
 host: localhost:80
+consumes:
+- application/json
+- application/xml
+- application/gob
+produces:
+- application/json
+- application/xml
+- application/gob
 paths:
   /fetch/{*url}:
     get:
@@ -25,17 +33,16 @@ paths:
         "200":
           description: OK response.
           schema:
-            $ref: '#/definitions/FetcherfetchResponseBody'
+            $ref: '#/definitions/FetcherFetchResponseBody'
         "400":
           description: Bad Request response.
           schema:
-            $ref: '#/definitions/Fetcherfetch_bad_requestResponseBody'
+            $ref: '#/definitions/Fetcherfetch_bad_request_response_body'
         "500":
           description: Internal Server Error response.
           schema:
-            $ref: '#/definitions/Fetcherfetch_internal_errorResponseBody'
+            $ref: '#/definitions/Fetcherfetch_internal_error_response_body'
       schemes:
-      - grpc
       - http
   /health:
     get:
@@ -44,16 +51,38 @@ paths:
       summary: show health
       description: Health check endpoint
       operationId: health#show
+      produces:
+      - text/plain
       responses:
         "200":
           description: OK response.
           schema:
             type: string
       schemes:
-      - grpc
       - http
 definitions:
-  Fetcherfetch_bad_requestResponseBody:
+  FetcherFetchResponseBody:
+    title: 'Mediatype identifier: application/vnd.goa.fetch; view=default'
+    type: object
+    properties:
+      archive_href:
+        type: string
+        description: The href to the corresponding archive in the archiver service
+        example: /archive/1
+        pattern: ^/archive/[0-9]+$
+      status:
+        type: integer
+        description: HTTP status code returned by fetched service
+        example: 200
+        minimum: 0
+    description: FetchResponseBody result type (default view)
+    example:
+      archive_href: /archive/1
+      status: 200
+    required:
+    - status
+    - archive_href
+  Fetcherfetch_bad_request_response_body:
     title: 'Mediatype identifier: application/vnd.goa.error; view=default'
     type: object
     properties:
@@ -83,7 +112,7 @@ definitions:
         type: boolean
         description: Is the error a timeout?
         example: false
-    description: fetch_bad_requestResponseBody result type (default view)
+    description: fetch_bad_request_response_body result type (default view)
     example:
       fault: true
       id: 123abc
@@ -98,7 +127,7 @@ definitions:
     - temporary
     - timeout
     - fault
-  Fetcherfetch_internal_errorResponseBody:
+  Fetcherfetch_internal_error_response_body:
     title: 'Mediatype identifier: application/vnd.goa.error; view=default'
     type: object
     properties:
@@ -128,7 +157,7 @@ definitions:
         type: boolean
         description: Is the error a timeout?
         example: false
-    description: fetch_internal_errorResponseBody result type (default view)
+    description: fetch_internal_error_response_body result type (default view)
     example:
       fault: true
       id: 123abc
@@ -143,24 +172,3 @@ definitions:
     - temporary
     - timeout
     - fault
-  FetcherfetchResponseBody:
-    title: 'Mediatype identifier: application/vnd.goa.fetch; view=default'
-    type: object
-    properties:
-      archive_href:
-        type: string
-        description: The href to the corresponding archive in the archiver service
-        example: /archive/1
-        pattern: ^/archive/[0-9]+$
-      status:
-        type: integer
-        description: HTTP status code returned by fetched service
-        example: 200
-        minimum: 0
-    description: fetchResponseBody result type (default view)
-    example:
-      archive_href: /archive/1
-      status: 200
-    required:
-    - status
-    - archive_href

@@ -102,7 +102,9 @@ func NewFetchHandler(
 		ctx = context.WithValue(ctx, goa.ServiceKey, "fetcher")
 		payload, err := decodeRequest(r)
 		if err != nil {
-			eh(ctx, w, err)
+			if err := encodeError(ctx, w, err); err != nil {
+				eh(ctx, w, err)
+			}
 			return
 		}
 

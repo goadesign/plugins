@@ -2,12 +2,19 @@
 #
 # Makefile for goa v2 plugins
 
-PLUGINS=$(shell find . -mindepth 1 -maxdepth 1 -not -path "*/\.*" -type d)
+# Add new plugins here to enable make
+PLUGINS=\
+	cors \
+	goakit \
+	zaplogger
 
-all: depend test-plugins
+all: depend gen test-plugins
 
 depend:
 	@go get -v golang.org/x/lint/golint
+	@for p in $(PLUGINS) ; do \
+		make -C $$p depend || exit 1; \
+	done
 
 gen:
 	@for p in $(PLUGINS) ; do \

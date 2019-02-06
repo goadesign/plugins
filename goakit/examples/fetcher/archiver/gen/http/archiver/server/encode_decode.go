@@ -46,7 +46,7 @@ func DecodeArchiveRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp
 			}
 			return nil, goa.DecodePayloadError(err.Error())
 		}
-		err = body.Validate()
+		err = ValidateArchiveRequestBody(&body)
 		if err != nil {
 			return nil, err
 		}

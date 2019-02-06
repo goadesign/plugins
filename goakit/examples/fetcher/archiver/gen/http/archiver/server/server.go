@@ -107,7 +107,9 @@ func NewArchiveHandler(
 		ctx = context.WithValue(ctx, goa.ServiceKey, "archiver")
 		payload, err := decodeRequest(r)
 		if err != nil {
-			eh(ctx, w, err)
+			if err := encodeError(ctx, w, err); err != nil {
+				eh(ctx, w, err)
+			}
 			return
 		}
 
@@ -157,7 +159,9 @@ func NewReadHandler(
 		ctx = context.WithValue(ctx, goa.ServiceKey, "archiver")
 		payload, err := decodeRequest(r)
 		if err != nil {
-			eh(ctx, w, err)
+			if err := encodeError(ctx, w, err); err != nil {
+				eh(ctx, w, err)
+			}
 			return
 		}
 

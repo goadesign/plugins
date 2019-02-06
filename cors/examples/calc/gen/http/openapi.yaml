@@ -4,6 +4,14 @@ info:
   description: This API demonstrates the use of the goa CORS plugin
   version: ""
 host: localhost:80
+consumes:
+- application/json
+- application/xml
+- application/gob
+produces:
+- application/json
+- application/xml
+- application/gob
 paths:
   /add/{a}/{b}:
     get:
@@ -30,5 +38,4 @@ paths:
             type: integer
             format: int64
       schemes:
-      - grpc
       - http

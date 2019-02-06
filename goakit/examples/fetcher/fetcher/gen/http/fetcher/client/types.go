@@ -95,8 +95,9 @@ func NewFetchInternalError(body *FetchInternalErrorResponseBody) *goa.ServiceErr
 	return v
 }
 
-// Validate runs the validations defined on fetch_bad_requestResponseBody
-func (body *FetchBadRequestResponseBody) Validate() (err error) {
+// ValidateFetchBadRequestResponseBody runs the validations defined on
+// fetch_bad_request_response_body
+func ValidateFetchBadRequestResponseBody(body *FetchBadRequestResponseBody) (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
 	}
@@ -118,8 +119,9 @@ func (body *FetchBadRequestResponseBody) Validate() (err error) {
 	return
 }
 
-// Validate runs the validations defined on fetch_internal_errorResponseBody
-func (body *FetchInternalErrorResponseBody) Validate() (err error) {
+// ValidateFetchInternalErrorResponseBody runs the validations defined on
+// fetch_internal_error_response_body
+func ValidateFetchInternalErrorResponseBody(body *FetchInternalErrorResponseBody) (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
 	}

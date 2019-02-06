@@ -4,6 +4,14 @@ info:
   description: Archiver is a service that manages the content of HTTP responses
   version: ""
 host: localhost:80
+consumes:
+- application/json
+- application/xml
+- application/gob
+produces:
+- application/json
+- application/xml
+- application/gob
 paths:
   /archive:
     post:
@@ -13,11 +21,11 @@ paths:
       description: Archive HTTP response
       operationId: archiver#archive
       parameters:
-      - name: archiveRequestBody
+      - name: ArchiveRequestBody
         in: body
         required: true
         schema:
-          $ref: '#/definitions/ArchiverarchiveRequestBody'
+          $ref: '#/definitions/ArchiverArchiveRequestBody'
           required:
           - status
           - body
@@ -25,9 +33,8 @@ paths:
         "200":
           description: OK response.
           schema:
-            $ref: '#/definitions/ArchiverarchiveResponseBody'
+            $ref: '#/definitions/ArchiverArchiveResponseBody'
       schemes:
-      - grpc
       - http
   /archive/{id}:
     get:
@@ -47,17 +54,16 @@ paths:
         "200":
           description: OK response.
           schema:
-            $ref: '#/definitions/ArchiverreadResponseBody'
+            $ref: '#/definitions/ArchiverReadResponseBody'
         "400":
           description: Bad Request response.
           schema:
-            $ref: '#/definitions/Archiverread_bad_requestResponseBody'
+            $ref: '#/definitions/Archiverread_bad_request_response_body'
         "404":
           description: Not Found response.
           schema:
-            $ref: '#/definitions/Archiverread_not_foundResponseBody'
+            $ref: '#/definitions/Archiverread_not_found_response_body'
       schemes:
-      - grpc
       - http
   /health:
     get:
@@ -66,17 +72,18 @@ paths:
       summary: show health
       description: Health check endpoint
       operationId: health#show
+      produces:
+      - text/plain
       responses:
         "200":
           description: OK response.
           schema:
             type: string
       schemes:
-      - grpc
       - http
 definitions:
-  ArchiverarchiveRequestBody:
-    title: ArchiverarchiveRequestBody
+  ArchiverArchiveRequestBody:
+    title: ArchiverArchiveRequestBody
     type: object
     properties:
       body:
@@ -94,7 +101,7 @@ definitions:
     required:
     - status
     - body
-  ArchiverarchiveResponseBody:
+  ArchiverArchiveResponseBody:
     title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
     type: object
     properties:
@@ -112,7 +119,7 @@ definitions:
         description: HTTP status
         example: 200
         minimum: 0
-    description: archiveResponseBody result type (default view)
+    description: ArchiveResponseBody result type (default view)
     example:
       body: Alias ipsa eum laborum ut quod.
       href: /archive1/
@@ -121,97 +128,7 @@ definitions:
     - href
     - status
     - body
-  Archiverread_bad_requestResponseBody:
-    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
-    type: object
-    properties:
-      fault:
-        type: boolean
-        description: Is the error a server-side fault?
-        example: false
-      id:
-        type: string
-        description: ID is a unique identifier for this particular occurrence of the
-          problem.
-        example: 123abc
-      message:
-        type: string
-        description: Message is a human-readable explanation specific to this occurrence
-          of the problem.
-        example: parameter 'p' must be an integer
-      name:
-        type: string
-        description: Name is the name of this class of errors.
-        example: bad_request
-      temporary:
-        type: boolean
-        description: Is the error temporary?
-        example: true
-      timeout:
-        type: boolean
-        description: Is the error a timeout?
-        example: false
-    description: read_bad_requestResponseBody result type (default view)
-    example:
-      fault: false
-      id: 123abc
-      message: parameter 'p' must be an integer
-      name: bad_request
-      temporary: true
-      timeout: false
-    required:
-    - name
-    - id
-    - message
-    - temporary
-    - timeout
-    - fault
-  Archiverread_not_foundResponseBody:
-    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
-    type: object
-    properties:
-      fault:
-        type: boolean
-        description: Is the error a server-side fault?
-        example: true
-      id:
-        type: string
-        description: ID is a unique identifier for this particular occurrence of the
-          problem.
-        example: 123abc
-      message:
-        type: string
-        description: Message is a human-readable explanation specific to this occurrence
-          of the problem.
-        example: parameter 'p' must be an integer
-      name:
-        type: string
-        description: Name is the name of this class of errors.
-        example: bad_request
-      temporary:
-        type: boolean
-        description: Is the error temporary?
-        example: true
-      timeout:
-        type: boolean
-        description: Is the error a timeout?
-        example: true
-    description: read_not_foundResponseBody result type (default view)
-    example:
-      fault: false
-      id: 123abc
-      message: parameter 'p' must be an integer
-      name: bad_request
-      temporary: true
-      timeout: false
-    required:
-    - name
-    - id
-    - message
-    - temporary
-    - timeout
-    - fault
-  ArchiverreadResponseBody:
+  ArchiverReadResponseBody:
     title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
     type: object
     properties:
@@ -229,7 +146,7 @@ definitions:
         description: HTTP status
         example: 200
         minimum: 0
-    description: readResponseBody result type (default view)
+    description: ReadResponseBody result type (default view)
     example:
       body: Ad beatae incidunt consequuntur aperiam aliquid.
       href: /archive1/
@@ -238,3 +155,93 @@ definitions:
     - href
     - status
     - body
+  Archiverread_bad_request_response_body:
+    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+    type: object
+    properties:
+      fault:
+        type: boolean
+        description: Is the error a server-side fault?
+        example: false
+      id:
+        type: string
+        description: ID is a unique identifier for this particular occurrence of the
+          problem.
+        example: 123abc
+      message:
+        type: string
+        description: Message is a human-readable explanation specific to this occurrence
+          of the problem.
+        example: parameter 'p' must be an integer
+      name:
+        type: string
+        description: Name is the name of this class of errors.
+        example: bad_request
+      temporary:
+        type: boolean
+        description: Is the error temporary?
+        example: true
+      timeout:
+        type: boolean
+        description: Is the error a timeout?
+        example: false
+    description: read_bad_request_response_body result type (default view)
+    example:
+      fault: false
+      id: 123abc
+      message: parameter 'p' must be an integer
+      name: bad_request
+      temporary: true
+      timeout: false
+    required:
+    - name
+    - id
+    - message
+    - temporary
+    - timeout
+    - fault
+  Archiverread_not_found_response_body:
+    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+    type: object
+    properties:
+      fault:
+        type: boolean
+        description: Is the error a server-side fault?
+        example: true
+      id:
+        type: string
+        description: ID is a unique identifier for this particular occurrence of the
+          problem.
+        example: 123abc
+      message:
+        type: string
+        description: Message is a human-readable explanation specific to this occurrence
+          of the problem.
+        example: parameter 'p' must be an integer
+      name:
+        type: string
+        description: Name is the name of this class of errors.
+        example: bad_request
+      temporary:
+        type: boolean
+        description: Is the error temporary?
+        example: true
+      timeout:
+        type: boolean
+        description: Is the error a timeout?
+        example: true
+    description: read_not_found_response_body result type (default view)
+    example:
+      fault: false
+      id: 123abc
+      message: parameter 'p' must be an integer
+      name: bad_request
+      temporary: true
+      timeout: false
+    required:
+    - name
+    - id
+    - message
+    - temporary
+    - timeout
+    - fault

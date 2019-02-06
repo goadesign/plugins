@@ -28,20 +28,32 @@ type FetchMediaView struct {
 	ArchiveHref *string
 }
 
-// Validate runs the validations defined on the viewed result type FetchMedia.
-func (result *FetchMedia) Validate() (err error) {
+var (
+	// FetchMediaMap is a map of attribute names in result type FetchMedia indexed
+	// by view name.
+	FetchMediaMap = map[string][]string{
+		"default": []string{
+			"status",
+			"archive_href",
+		},
+	}
+)
+
+// ValidateFetchMedia runs the validations defined on the viewed result type
+// FetchMedia.
+func ValidateFetchMedia(result *FetchMedia) (err error) {
 	switch result.View {
 	case "default", "":
-		err = result.Projected.Validate()
+		err = ValidateFetchMediaView(result.Projected)
 	default:
 		err = goa.InvalidEnumValueError("view", result.View, []interface{}{"default"})
 	}
 	return
 }
 
-// Validate runs the validations defined on FetchMediaView using the "default"
-// view.
-func (result *FetchMediaView) Validate() (err error) {
+// ValidateFetchMediaView runs the validations defined on FetchMediaView using
+// the "default" view.
+func ValidateFetchMediaView(result *FetchMediaView) (err error) {
 	if result.Status == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("status", "result"))
 	}
