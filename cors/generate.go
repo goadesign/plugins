@@ -75,6 +75,10 @@ func serverCORS(f *codegen.File) {
 		return
 	}
 
+	if f.Section("server-grpc-interface") != nil {
+		return
+	}
+
 	var svcData *ServiceData
 	for _, s := range f.Section("server-struct") {
 		codegen.AddImport(f.SectionTemplates[0],
