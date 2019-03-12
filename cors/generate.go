@@ -75,16 +75,17 @@ func serverCORS(f *codegen.File) {
 		return
 	}
 
-	if f.Section("server-grpc-interface") != nil {
-		return
-	}
-
 	var svcData *ServiceData
 	for _, s := range f.Section("server-struct") {
+
+		data, ok := s.Data.(*httpcodegen.ServiceData)
+		if !ok { // other transport, e.g. gRPC
+			continue
+		}
+
 		codegen.AddImport(f.SectionTemplates[0],
 			&codegen.ImportSpec{Path: "goa.design/plugins/cors"})
 
-		data := s.Data.(*httpcodegen.ServiceData)
 		if d, ok := ServicesData[data.Service.Name]; !ok {
 			svcData = buildServiceData(data.Service.Name)
 			ServicesData[data.Service.Name] = svcData
