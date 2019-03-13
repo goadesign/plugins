@@ -8,7 +8,7 @@ PLUGINS=\
 	goakit \
 	zaplogger
 
-all: depend gen test-plugins
+all: depend gen lint test-plugins
 
 depend:
 	@go get -v golang.org/x/lint/golint
@@ -19,6 +19,11 @@ depend:
 gen:
 	@for p in $(PLUGINS) ; do \
 		make -C $$p gen || exit 1; \
+	done
+
+lint:
+	@for p in $(PLUGINS) ; do \
+		make -C $$p lint || exit 1; \
 	done
 
 test-plugins:
