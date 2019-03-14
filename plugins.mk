@@ -34,12 +34,10 @@ test:
 	@go test ./...
 
 lint:
-	$(eval DIRS := $(shell go list -f {{.Dir}} ./...))
-	@for d in $(DIRS) ; do \
-		if [ "`goimports -l $$d/*.go | tee /dev/stderr`" ]; then \
-			echo "^ - Repo contains improperly formatted go files" && echo && exit 1; \
-		fi \
-	done
+	$(eval GO_FILES := $(shell find . -type f -name '*.go'))
+	@if [ "`goimports -l $(GO_FILES) | tee /dev/stderr`" ]; then \
+		echo "^ - Repo contains improperly formatted go files" && echo && exit 1; \
+	fi
 	@if [ "`golint ./... | grep -vf .golint_exclude | tee /dev/stderr`" ]; then \
 		echo "^ - Lint errors!" && echo && exit 1; \
 	fi
