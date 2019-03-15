@@ -11,7 +11,7 @@ the `dsl` packages as follows:
 
 ```go
 import (
-  . "goa.design/plugins/cors/dsl"
+  _ "goa.design/plugins/cors/dsl"
   . "goa.design/goa/dsl"
 )
 ```
