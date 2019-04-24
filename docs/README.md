@@ -4,7 +4,7 @@ The `docs` plugin is a [Goa](https://github.com/goadesign/goa/tree/v2) plugin
 that generates documentation from Goa designs. The plugin generates transport
 agnostic documentation in the form of a JSON document structured as follows:
 
-```json
+```
 {
   "api": {
     "name": "API A",
@@ -112,5 +112,5 @@ as the package is imported solely for its side-effects (initialization).
 ## Effects on Code Generation
 
 Enabling the plugin changes the behavior of the `gen` command of the `goa` tool.
-The command generates an additional `doc.json` at the top level containing the 
+The command generates an additional `docs.json` at the top level containing the 
 documentation.
