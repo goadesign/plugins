@@ -19,13 +19,13 @@ func init() {
 }
 
 // Generate produces the documentation JSON file.
-func Generate(_ string, roots []eval.Root, _ []*codegen.File) ([]*codegen.File, error) {
+func Generate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	for _, root := range roots {
 		if r, ok := root.(*expr.RootExpr); ok {
-			return []*codegen.File{docsFile(r)}, nil
+			files = append(files, docsFile(r))
 		}
 	}
-	return nil, nil
+	return files, nil
 }
 
 func docsFile(r *expr.RootExpr) *codegen.File {

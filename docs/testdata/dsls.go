@@ -8,13 +8,11 @@ import (
 var APIOnly = func() {
 	API("API", func() {
 		Server("Host1", func() {
-			Services("Service")
 			Host("dev", func() {
 				URI("http://example:8090")
 			})
 		})
 		Server("Host2", func() {
-			Services("Service")
 			Host("dev", func() {
 				URI("http://example:8090")
 			})
