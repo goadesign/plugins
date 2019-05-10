@@ -34,7 +34,7 @@ agnostic documentation in the form of a JSON document structured as follows:
       "name": "MIT",
     },
     "docs": {
-      "url": "https://goa.design/goa"
+      "url": "https://goa.design/goa/v3"
     },
     "requirements": [{
       "schemes": [{
@@ -103,7 +103,7 @@ To enable the plugin simply import both the `docs` package as follows:
 ```go
 import (
   _ "goa.design/plugins/docs"
-  . "goa.design/goa/dsl"
+  . "goa.design/goa/v3/dsl"
 )
 ```
 Note the use of blank identifier to import the `docs` package which is necessary
@@ -112,5 +112,5 @@ as the package is imported solely for its side-effects (initialization).
 ## Effects on Code Generation
 
 Enabling the plugin changes the behavior of the `gen` command of the `goa` tool.
-The command generates an additional `docs.json` at the top level containing the 
+The command generates an additional `docs.json` at the top level containing the
 documentation.

@@ -1,6 +1,6 @@
 package design
 
-import . "goa.design/goa/dsl"
+import . "goa.design/goa/v3/dsl"
 import _ "goa.design/plugins/zaplogger"
 
 // API describes the global properties of the API server.

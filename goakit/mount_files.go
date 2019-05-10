@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"goa.design/goa/codegen"
-	"goa.design/goa/expr"
-	httpcodegen "goa.design/goa/http/codegen"
+	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/expr"
+	httpcodegen "goa.design/goa/v3/http/codegen"
 )
 
 // MountFiles produces the files containing the HTTP handler mount functions
@@ -29,7 +29,7 @@ func mountFile(svc *expr.HTTPServiceExpr) *codegen.File {
 	sections := []*codegen.SectionTemplate{
 		codegen.Header(title, "server", []*codegen.ImportSpec{
 			{Path: "net/http"},
-			{Path: "goa.design/goa/http", Name: "goahttp"},
+			{Path: "goa.design/goa/v3/http", Name: "goahttp"},
 		}),
 	}
 	for _, e := range data.Endpoints {

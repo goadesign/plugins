@@ -3,11 +3,11 @@ package zaplogger
 import (
 	"testing"
 
-	"goa.design/goa/codegen"
-	"goa.design/goa/codegen/generator"
-	"goa.design/goa/eval"
-	"goa.design/goa/expr"
-	httpcodegen "goa.design/goa/http/codegen"
+	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/codegen/generator"
+	"goa.design/goa/v3/eval"
+	"goa.design/goa/v3/expr"
+	httpcodegen "goa.design/goa/v3/http/codegen"
 	"goa.design/plugins/zaplogger/testdata"
 )
 

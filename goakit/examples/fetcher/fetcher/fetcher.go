@@ -10,7 +10,7 @@ import (
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
-	goahttp "goa.design/goa/http"
+	goahttp "goa.design/goa/v3/http"
 	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 	archiverkc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitclient"
 	archiverks "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"

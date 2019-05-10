@@ -11,8 +11,8 @@ To enable the plugin import it in your design.go file using the blank identifier
 
 package design
 
-import . "goa.design/goa/http/design"
-import . "goa.design/goa/http/dsl"
+import . "goa.design/goa/v3/http/design"
+import . "goa.design/goa/v3/http/dsl"
 import _ "goa.design/plugins/zaplogger" # Enables the plugin
 
 var _ = API("...

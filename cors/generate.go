@@ -4,10 +4,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"goa.design/goa/codegen"
-	"goa.design/goa/codegen/service"
-	"goa.design/goa/eval"
-	httpcodegen "goa.design/goa/http/codegen"
+	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/codegen/service"
+	"goa.design/goa/v3/eval"
+	httpcodegen "goa.design/goa/v3/http/codegen"
 	"goa.design/plugins/cors/expr"
 )
 

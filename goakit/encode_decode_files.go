@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"goa.design/goa/codegen"
-	"goa.design/goa/expr"
-	httpcodegen "goa.design/goa/http/codegen"
+	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/expr"
+	httpcodegen "goa.design/goa/v3/http/codegen"
 )
 
 // EncodeDecodeFiles produces a set of go-kit transport encoders and decoders
@@ -34,8 +34,8 @@ func serverEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr) *codegen.File 
 			{Path: "net/http"},
 			{Path: "strings"},
 			{Path: "github.com/go-kit/kit/transport/http", Name: "kithttp"},
-			{Path: "goa.design/goa", Name: "goa"},
-			{Path: "goa.design/goa/http", Name: "goahttp"},
+			{Path: "goa.design/goa/v3", Name: "goa"},
+			{Path: "goa.design/goa/v3/http", Name: "goahttp"},
 			{Path: genpkg + "/http/" + data.Service.Name + "/server"},
 		}),
 	}
@@ -79,8 +79,8 @@ func clientEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr) *codegen.File 
 			{Path: "net/http"},
 			{Path: "strings"},
 			{Path: "github.com/go-kit/kit/transport/http", Name: "kithttp"},
-			{Path: "goa.design/goa", Name: "goa"},
-			{Path: "goa.design/goa/http", Name: "goahttp"},
+			{Path: "goa.design/goa/v3", Name: "goa"},
+			{Path: "goa.design/goa/v3/http", Name: "goahttp"},
 			{Path: genpkg + "/http/" + data.Service.Name + "/client"},
 		}),
 	}

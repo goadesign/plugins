@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"goa.design/goa/eval"
-	"goa.design/goa/expr"
+	"goa.design/goa/v3/eval"
+	"goa.design/goa/v3/expr"
 )
 
 type (

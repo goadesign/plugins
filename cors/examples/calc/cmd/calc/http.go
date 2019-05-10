@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	goahttp "goa.design/goa/http"
-	httpmdlwr "goa.design/goa/http/middleware"
-	"goa.design/goa/middleware"
+	goahttp "goa.design/goa/v3/http"
+	httpmdlwr "goa.design/goa/v3/http/middleware"
+	"goa.design/goa/v3/middleware"
 	calc "goa.design/plugins/cors/examples/calc/gen/calc"
 	calcsvr "goa.design/plugins/cors/examples/calc/gen/http/calc/server"
 )

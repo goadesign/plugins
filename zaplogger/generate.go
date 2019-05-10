@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"goa.design/goa/codegen"
-	"goa.design/goa/eval"
-	"goa.design/goa/expr"
+	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/eval"
+	"goa.design/goa/v3/expr"
 )
 
 type fileToModify struct {
@@ -91,7 +91,7 @@ func GenerateLoggerFile(genpkg string) *codegen.File {
 	sections := []*codegen.SectionTemplate{
 		codegen.Header(title, "log", []*codegen.ImportSpec{
 			{Path: "go.uber.org/zap"},
-			{Path: "goa.design/goa/http/middleware"},
+			{Path: "goa.design/goa/v3/http/middleware"},
 		}),
 	}
 

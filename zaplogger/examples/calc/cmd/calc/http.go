@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	goahttp "goa.design/goa/http"
-	httpmdlwr "goa.design/goa/http/middleware"
-	"goa.design/goa/middleware"
+	goahttp "goa.design/goa/v3/http"
+	httpmdlwr "goa.design/goa/v3/http/middleware"
+	"goa.design/goa/v3/middleware"
 	calc "goa.design/plugins/zaplogger/examples/calc/gen/calc"
 	calcsvr "goa.design/plugins/zaplogger/examples/calc/gen/http/calc/server"
 	log "goa.design/plugins/zaplogger/examples/calc/gen/log"

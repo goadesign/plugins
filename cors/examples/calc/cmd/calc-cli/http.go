@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"goa.design/goa"
-	goahttp "goa.design/goa/http"
+	goahttp "goa.design/goa/v3/http"
+	goa "goa.design/goa/v3/pkg"
 	cli "goa.design/plugins/cors/examples/calc/gen/http/cli/calc"
 )
 

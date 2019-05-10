@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"goa.design/goa/codegen"
-	"goa.design/goa/eval"
+	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/eval"
 	"goa.design/plugins/docs"
 	"goa.design/plugins/docs/testdata"
 )

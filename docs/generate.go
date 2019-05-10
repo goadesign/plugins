@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"goa.design/goa/codegen"
-	"goa.design/goa/codegen/service"
-	"goa.design/goa/eval"
-	"goa.design/goa/expr"
-	"goa.design/goa/http/codegen/openapi"
+	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/codegen/service"
+	"goa.design/goa/v3/eval"
+	"goa.design/goa/v3/expr"
+	"goa.design/goa/v3/http/codegen/openapi"
 )
 
 // init registers the plugin generator function.

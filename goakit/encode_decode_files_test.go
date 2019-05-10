@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"goa.design/goa/codegen"
-	"goa.design/goa/expr"
-	httpcodegen "goa.design/goa/http/codegen"
+	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/expr"
+	httpcodegen "goa.design/goa/v3/http/codegen"
 	"goa.design/plugins/goakit/testdata"
 )
 

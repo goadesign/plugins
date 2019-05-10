@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/endpoint"
-	goahttp "goa.design/goa/http"
+	goahttp "goa.design/goa/v3/http"
 	cli "goa.design/plugins/goakit/examples/calc/gen/http/cli/calc"
 )
 

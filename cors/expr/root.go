@@ -1,8 +1,8 @@
 package expr
 
 import (
-	"goa.design/goa/eval"
-	"goa.design/goa/expr"
+	"goa.design/goa/v3/eval"
+	"goa.design/goa/v3/expr"
 )
 
 // Root is the design root expression.

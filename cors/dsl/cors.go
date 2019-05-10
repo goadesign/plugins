@@ -3,8 +3,8 @@ package dsl
 import (
 	"strings"
 
-	"goa.design/goa/eval"
-	goaexpr "goa.design/goa/expr"
+	"goa.design/goa/v3/eval"
+	goaexpr "goa.design/goa/v3/expr"
 	"goa.design/plugins/cors/expr"
 
 	// Register code generators for the CORS plugin

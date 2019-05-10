@@ -8,14 +8,12 @@
 # - "depend" retrieves the Go packages needed to run the linter and tests
 # - "lint" runs the linter and checks the code format using goimports
 # - "test" runs the tests
-
-PLUGIN_DIR=goa.design/plugins
+export GO111MODULE=on
 
 DEPEND=\
   github.com/sergi/go-diff/diffmatchpatch \
   golang.org/x/lint/golint \
-  golang.org/x/tools/cmd/goimports \
-	goa.design/goa/...
+  golang.org/x/tools/cmd/goimports
 
 all: depend gen test lint build-examples clean
 
@@ -26,8 +24,8 @@ else
 GOA_PATH="$(GOPATH)/src/goa.design/goa"
 endif
 depend:
-	@go get -t -v ./...
-	@go get -v $(DEPEND)
+	@env GO111MODULE=off go get $(DEPEND)
+	@go get -v ./...
 	@cd $(GOA_PATH)/cmd/goa && go install
 
 test:

@@ -1,6 +1,6 @@
 package docs
 
-import "goa.design/goa/http/codegen/openapi"
+import "goa.design/goa/v3/http/codegen/openapi"
 
 type (
 	// data is the data structure that is serialized to create the docs.

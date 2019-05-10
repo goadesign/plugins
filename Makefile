@@ -5,16 +5,18 @@
 # Add new plugins here to enable make
 PLUGINS=\
 	cors \
+	docs \
 	goakit \
 	zaplogger
 
-all: depend gen lint test-plugins
+export GO111MODULE=on
+
+all: gen lint test-plugins
+
+travis: depend all check-freshness
 
 depend:
-	@go get -v golang.org/x/lint/golint
-	@for p in $(PLUGINS) ; do \
-		make -C $$p depend || exit 1; \
-	done
+	@env GO111MODULE=off go get -v golang.org/x/lint/golint
 
 gen:
 	@for p in $(PLUGINS) ; do \
@@ -30,3 +32,13 @@ test-plugins:
 	@for p in $(PLUGINS) ; do \
 		make -C $$p || exit 1; \
 	done
+
+check-freshness:
+	@if [ "`git diff | wc -l`" -gt "0" ]; then \
+	        echo "[ERROR] generated code not in-sync with design:"; \
+	        echo; \
+	        git status -s; \
+	        git --no-pager diff; \
+	        echo; \
+	        exit 1; \
+	fi

@@ -1,6 +1,6 @@
 /*
 Packages in the Plugin directory contain plugins for [goa
-v2](https://godoc.org/goa.design/goa). Plugins can extend the goa DSL, generate
+v2](https://godoc.org/goa.design/goa/v3). Plugins can extend the goa DSL, generate
 new artifacts and modify the output of existing generators.
 
 There are currently two plugins in the directory:
@@ -77,7 +77,7 @@ implements the "eval.Root" interface), for example:
 		design.Root.Exprs = append(design.Root.Exprs, expr)
 	}
 
-The [eval](https://godoc.org/goa.design/goa/codegen/eval) package contains a
+The [eval](https://godoc.org/goa.design/goa/v3/codegen/eval) package contains a
 number of functions that can be leveraged to implement the DSL such as error
 reporting functions.
 

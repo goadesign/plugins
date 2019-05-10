@@ -8,7 +8,7 @@ The `goakit` plugin is a [goa](https://github.com/goadesign/goa/tree/v2) plugin 
 goa v2 must be installed:
 
 ```bash
-go get goa.design/goa/...
+go get goa.design/goa/v3/...
 ```
 
 Simply import the plugin in the service design package. Use the blank identifier `_` as explicit
@@ -17,7 +17,7 @@ package name:
 ```go
 package design
 
-import . "goa.design/goa/dsl"
+import . "goa.design/goa/v3/dsl"
 import _ "goa.design/plugins/goakit" # Enables goakit
 
 var _ = API("...
@@ -54,6 +54,5 @@ The [cellar](https://github.com/goadesign/plugins/tree/master/goakit/examples/ce
 example
 [design](https://github.com/goa.design/plugins/tree/master/goakit/examples/cellar/design/design.go)
 illustrates the usage by importing both the official [cellar example design
-package](https://github.com/goa.design/goa/tree/v2/examples/cellar/design) and
+package](https://github.com/goa.design/goa/v3/tree/v2/examples/cellar/design) and
 the goakit plugin.
-
