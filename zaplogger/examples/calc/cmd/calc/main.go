@@ -10,8 +10,8 @@ import (
 	"strings"
 	"sync"
 
-	calc "goa.design/plugins/zaplogger/examples/calc"
-	calcsvc "goa.design/plugins/zaplogger/examples/calc/gen/calc"
+	calcapi "goa.design/plugins/zaplogger/examples/calc"
+	calc "goa.design/plugins/zaplogger/examples/calc/gen/calc"
 	log "goa.design/plugins/zaplogger/examples/calc/gen/log"
 )
 
@@ -33,24 +33,24 @@ func main() {
 		logger *log.Logger
 	)
 	{
-		logger = log.New("calc", false)
+		logger = log.New("calcapi", false)
 	}
 
 	// Initialize the services.
 	var (
-		calcSvc calcsvc.Service
+		calcSvc calc.Service
 	)
 	{
-		calcSvc = calc.NewCalc(logger)
+		calcSvc = calcapi.NewCalc(logger)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other services
 	// potentially running in different processes.
 	var (
-		calcEndpoints *calcsvc.Endpoints
+		calcEndpoints *calc.Endpoints
 	)
 	{
-		calcEndpoints = calcsvc.NewEndpoints(calcSvc)
+		calcEndpoints = calc.NewEndpoints(calcSvc)
 	}
 
 	// Create channel used by both the signal handler and server goroutines

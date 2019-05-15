@@ -16,8 +16,8 @@ import (
 	"net/url"
 
 	goahttp "goa.design/goa/http"
-	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
-	fetchersvcviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
+	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetcherviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
 // BuildFetchRequest instantiates a HTTP request object with method and path
@@ -27,9 +27,9 @@ func (c *Client) BuildFetchRequest(ctx context.Context, v interface{}) (*http.Re
 		url_ string
 	)
 	{
-		p, ok := v.(*fetchersvc.FetchPayload)
+		p, ok := v.(*fetcher.FetchPayload)
 		if !ok {
-			return nil, goahttp.ErrInvalidType("fetcher", "fetch", "*fetchersvc.FetchPayload", v)
+			return nil, goahttp.ErrInvalidType("fetcher", "fetch", "*fetcher.FetchPayload", v)
 		}
 		url_ = p.URL
 	}
@@ -78,11 +78,11 @@ func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 			}
 			p := NewFetchMediaViewOK(&body)
 			view := "default"
-			vres := &fetchersvcviews.FetchMedia{p, view}
-			if err = fetchersvcviews.ValidateFetchMedia(vres); err != nil {
+			vres := &fetcherviews.FetchMedia{p, view}
+			if err = fetcherviews.ValidateFetchMedia(vres); err != nil {
 				return nil, goahttp.ErrValidationError("fetcher", "fetch", err)
 			}
-			res := fetchersvc.NewFetchMedia(vres)
+			res := fetcher.NewFetchMedia(vres)
 			return res, nil
 		case http.StatusBadRequest:
 			var (

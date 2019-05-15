@@ -10,8 +10,8 @@ package client
 
 import (
 	goa "goa.design/goa"
-	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
-	archiversvcviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
+	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiverviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // ArchiveRequestBody is the type of the "archiver" service "archive" endpoint
@@ -83,7 +83,7 @@ type ReadBadRequestResponseBody struct {
 
 // NewArchiveRequestBody builds the HTTP request body from the payload of the
 // "archive" endpoint of the "archiver" service.
-func NewArchiveRequestBody(p *archiversvc.ArchivePayload) *ArchiveRequestBody {
+func NewArchiveRequestBody(p *archiver.ArchivePayload) *ArchiveRequestBody {
 	body := &ArchiveRequestBody{
 		Status: p.Status,
 		Body:   p.Body,
@@ -93,8 +93,8 @@ func NewArchiveRequestBody(p *archiversvc.ArchivePayload) *ArchiveRequestBody {
 
 // NewArchiveMediaViewOK builds a "archiver" service "archive" endpoint result
 // from a HTTP "OK" response.
-func NewArchiveMediaViewOK(body *ArchiveResponseBody) *archiversvcviews.ArchiveMediaView {
-	v := &archiversvcviews.ArchiveMediaView{
+func NewArchiveMediaViewOK(body *ArchiveResponseBody) *archiverviews.ArchiveMediaView {
+	v := &archiverviews.ArchiveMediaView{
 		Href:   body.Href,
 		Status: body.Status,
 		Body:   body.Body,
@@ -104,8 +104,8 @@ func NewArchiveMediaViewOK(body *ArchiveResponseBody) *archiversvcviews.ArchiveM
 
 // NewReadArchiveMediaOK builds a "archiver" service "read" endpoint result
 // from a HTTP "OK" response.
-func NewReadArchiveMediaOK(body *ReadResponseBody) *archiversvcviews.ArchiveMediaView {
-	v := &archiversvcviews.ArchiveMediaView{
+func NewReadArchiveMediaOK(body *ReadResponseBody) *archiverviews.ArchiveMediaView {
+	v := &archiverviews.ArchiveMediaView{
 		Href:   body.Href,
 		Status: body.Status,
 		Body:   body.Body,

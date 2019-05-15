@@ -16,14 +16,14 @@ import (
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	archiversvcviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
+	archiverviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // EncodeArchiveResponse returns an encoder for responses returned by the
 // archiver archive endpoint.
 func EncodeArchiveResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(*archiversvcviews.ArchiveMedia)
+		res := v.(*archiverviews.ArchiveMedia)
 		enc := encoder(ctx, w)
 		body := NewArchiveResponseBody(res.Projected)
 		w.WriteHeader(http.StatusOK)
@@ -60,7 +60,7 @@ func DecodeArchiveRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp
 // read endpoint.
 func EncodeReadResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(*archiversvcviews.ArchiveMedia)
+		res := v.(*archiverviews.ArchiveMedia)
 		enc := encoder(ctx, w)
 		body := NewReadResponseBody(res.Projected)
 		w.WriteHeader(http.StatusOK)

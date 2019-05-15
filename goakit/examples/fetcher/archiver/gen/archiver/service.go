@@ -6,13 +6,13 @@
 // $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
 
-package archiversvc
+package archiver
 
 import (
 	"context"
 
 	"goa.design/goa"
-	archiversvcviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
+	archiverviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // Service is the archiver service interface.
@@ -77,7 +77,7 @@ func MakeBadRequest(err error) *goa.ServiceError {
 
 // NewArchiveMedia initializes result type ArchiveMedia from viewed result type
 // ArchiveMedia.
-func NewArchiveMedia(vres *archiversvcviews.ArchiveMedia) *ArchiveMedia {
+func NewArchiveMedia(vres *archiverviews.ArchiveMedia) *ArchiveMedia {
 	var res *ArchiveMedia
 	switch vres.View {
 	case "default", "":
@@ -88,19 +88,19 @@ func NewArchiveMedia(vres *archiversvcviews.ArchiveMedia) *ArchiveMedia {
 
 // NewViewedArchiveMedia initializes viewed result type ArchiveMedia from
 // result type ArchiveMedia using the given view.
-func NewViewedArchiveMedia(res *ArchiveMedia, view string) *archiversvcviews.ArchiveMedia {
-	var vres *archiversvcviews.ArchiveMedia
+func NewViewedArchiveMedia(res *ArchiveMedia, view string) *archiverviews.ArchiveMedia {
+	var vres *archiverviews.ArchiveMedia
 	switch view {
 	case "default", "":
 		p := newArchiveMediaView(res)
-		vres = &archiversvcviews.ArchiveMedia{p, "default"}
+		vres = &archiverviews.ArchiveMedia{p, "default"}
 	}
 	return vres
 }
 
 // newArchiveMedia converts projected type ArchiveMedia to service type
 // ArchiveMedia.
-func newArchiveMedia(vres *archiversvcviews.ArchiveMediaView) *ArchiveMedia {
+func newArchiveMedia(vres *archiverviews.ArchiveMediaView) *ArchiveMedia {
 	res := &ArchiveMedia{}
 	if vres.Href != nil {
 		res.Href = *vres.Href
@@ -114,10 +114,10 @@ func newArchiveMedia(vres *archiversvcviews.ArchiveMediaView) *ArchiveMedia {
 	return res
 }
 
-// newArchiveMediaView projects result type ArchiveMedia into projected type
+// newArchiveMediaView projects result type ArchiveMedia to projected type
 // ArchiveMediaView using the "default" view.
-func newArchiveMediaView(res *ArchiveMedia) *archiversvcviews.ArchiveMediaView {
-	vres := &archiversvcviews.ArchiveMediaView{
+func newArchiveMediaView(res *ArchiveMedia) *archiverviews.ArchiveMediaView {
+	vres := &archiverviews.ArchiveMediaView{
 		Href:   &res.Href,
 		Status: &res.Status,
 		Body:   &res.Body,

@@ -10,8 +10,8 @@ package server
 
 import (
 	goa "goa.design/goa"
-	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
-	fetchersvcviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
+	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetcherviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
 // FetchResponseBody is the type of the "fetcher" service "fetch" endpoint HTTP
@@ -61,7 +61,7 @@ type FetchInternalErrorResponseBody struct {
 
 // NewFetchResponseBody builds the HTTP response body from the result of the
 // "fetch" endpoint of the "fetcher" service.
-func NewFetchResponseBody(res *fetchersvcviews.FetchMediaView) *FetchResponseBody {
+func NewFetchResponseBody(res *fetcherviews.FetchMediaView) *FetchResponseBody {
 	body := &FetchResponseBody{
 		Status:      *res.Status,
 		ArchiveHref: *res.ArchiveHref,
@@ -98,8 +98,8 @@ func NewFetchInternalErrorResponseBody(res *goa.ServiceError) *FetchInternalErro
 }
 
 // NewFetchPayload builds a fetcher service fetch endpoint payload.
-func NewFetchPayload(url_ string) *fetchersvc.FetchPayload {
-	return &fetchersvc.FetchPayload{
+func NewFetchPayload(url_ string) *fetcher.FetchPayload {
+	return &fetcher.FetchPayload{
 		URL: url_,
 	}
 }

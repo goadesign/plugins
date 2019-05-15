@@ -16,7 +16,7 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/http"
-	archiversvcc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/client"
+	archiverc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/client"
 	healthc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/client"
 )
 
@@ -73,7 +73,7 @@ func ParseEndpoint(
 		return nil, nil, err
 	}
 
-	if len(os.Args) < flag.NFlag()+3 {
+	if flag.NArg() < 2 { // two non flag args are required: SERVICE and ENDPOINT (aka COMMAND)
 		return nil, nil, fmt.Errorf("not enough arguments")
 	}
 
@@ -82,7 +82,7 @@ func ParseEndpoint(
 		svcf *flag.FlagSet
 	)
 	{
-		svcn = os.Args[1+flag.NFlag()]
+		svcn = flag.Arg(0)
 		switch svcn {
 		case "archiver":
 			svcf = archiverFlags
@@ -92,7 +92,7 @@ func ParseEndpoint(
 			return nil, nil, fmt.Errorf("unknown service %q", svcn)
 		}
 	}
-	if err := svcf.Parse(os.Args[2+flag.NFlag():]); err != nil {
+	if err := svcf.Parse(flag.Args()[1:]); err != nil {
 		return nil, nil, err
 	}
 
@@ -101,7 +101,7 @@ func ParseEndpoint(
 		epf *flag.FlagSet
 	)
 	{
-		epn = os.Args[2+flag.NFlag()+svcf.NFlag()]
+		epn = svcf.Arg(0)
 		switch svcn {
 		case "archiver":
 			switch epn {
@@ -127,8 +127,8 @@ func ParseEndpoint(
 	}
 
 	// Parse endpoint flags if any
-	if len(os.Args) > 2+flag.NFlag()+svcf.NFlag() {
-		if err := epf.Parse(os.Args[3+flag.NFlag()+svcf.NFlag():]); err != nil {
+	if svcf.NArg() > 1 {
+		if err := epf.Parse(svcf.Args()[1:]); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -141,14 +141,14 @@ func ParseEndpoint(
 	{
 		switch svcn {
 		case "archiver":
-			c := archiversvcc.NewClient(scheme, host, doer, enc, dec, restore)
+			c := archiverc.NewClient(scheme, host, doer, enc, dec, restore)
 			switch epn {
 			case "archive":
 				endpoint = c.Archive()
-				data, err = archiversvcc.BuildArchivePayload(*archiverArchiveBodyFlag)
+				data, err = archiverc.BuildArchivePayload(*archiverArchiveBodyFlag)
 			case "read":
 				endpoint = c.Read()
-				data, err = archiversvcc.BuildReadPayload(*archiverReadIDFlag)
+				data, err = archiverc.BuildReadPayload(*archiverReadIDFlag)
 			}
 		case "health":
 			c := healthc.NewClient(scheme, host, doer, enc, dec, restore)

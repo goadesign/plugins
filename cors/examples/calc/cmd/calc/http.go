@@ -12,13 +12,13 @@ import (
 	goahttp "goa.design/goa/http"
 	httpmdlwr "goa.design/goa/http/middleware"
 	"goa.design/goa/middleware"
-	calcsvc "goa.design/plugins/cors/examples/calc/gen/calc"
-	calcsvcsvr "goa.design/plugins/cors/examples/calc/gen/http/calc/server"
+	calc "goa.design/plugins/cors/examples/calc/gen/calc"
+	calcsvr "goa.design/plugins/cors/examples/calc/gen/http/calc/server"
 )
 
 // handleHTTPServer starts configures and starts a HTTP server on the given
 // URL. It shuts down the server if any error is received in the error channel.
-func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calcsvc.Endpoints, wg *sync.WaitGroup, errc chan error, logger *log.Logger, debug bool) {
+func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpoints, wg *sync.WaitGroup, errc chan error, logger *log.Logger, debug bool) {
 
 	// Setup goa log adapter.
 	var (
@@ -49,14 +49,14 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calcsvc.En
 	// the service input and output data structures to HTTP requests and
 	// responses.
 	var (
-		calcServer *calcsvcsvr.Server
+		calcServer *calcsvr.Server
 	)
 	{
 		eh := errorHandler(logger)
-		calcServer = calcsvcsvr.New(calcEndpoints, mux, dec, enc, eh)
+		calcServer = calcsvr.New(calcEndpoints, mux, dec, enc, eh)
 	}
 	// Configure the mux.
-	calcsvcsvr.Mount(mux, calcServer)
+	calcsvr.Mount(mux, calcServer)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
 	// here apply to all the service endpoints.
@@ -86,17 +86,14 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calcsvc.En
 			errc <- srv.ListenAndServe()
 		}()
 
-		select {
-		case <-ctx.Done():
-			logger.Printf("shutting down HTTP server at %q", u.Host)
+		<-ctx.Done()
+		logger.Printf("shutting down HTTP server at %q", u.Host)
 
-			// Shutdown gracefully with a 30s timeout.
-			ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-			defer cancel()
+		// Shutdown gracefully with a 30s timeout.
+		ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		defer cancel()
 
-			srv.Shutdown(ctx)
-			return
-		}
+		srv.Shutdown(ctx)
 	}()
 }
 

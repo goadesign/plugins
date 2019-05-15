@@ -6,7 +6,7 @@
 // $ goa gen goa.design/plugins/zaplogger/examples/calc/design -o
 // $(GOPATH)/src/goa.design/plugins/zaplogger/examples/calc
 
-package calcsvc
+package calc
 
 import (
 	"context"

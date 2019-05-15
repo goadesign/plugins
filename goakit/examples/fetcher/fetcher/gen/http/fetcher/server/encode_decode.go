@@ -14,14 +14,14 @@ import (
 
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	fetchersvcviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
+	fetcherviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
 // EncodeFetchResponse returns an encoder for responses returned by the fetcher
 // fetch endpoint.
 func EncodeFetchResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(*fetchersvcviews.FetchMedia)
+		res := v.(*fetcherviews.FetchMedia)
 		enc := encoder(ctx, w)
 		body := NewFetchResponseBody(res.Projected)
 		w.WriteHeader(http.StatusOK)

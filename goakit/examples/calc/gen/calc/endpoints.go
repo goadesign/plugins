@@ -6,7 +6,7 @@
 // $ goa gen goa.design/plugins/goakit/examples/calc/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
 
-package calcsvc
+package calc
 
 import (
 	"context"

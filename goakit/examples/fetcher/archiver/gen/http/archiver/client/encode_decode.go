@@ -16,8 +16,8 @@ import (
 	"net/url"
 
 	goahttp "goa.design/goa/http"
-	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
-	archiversvcviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
+	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiverviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // BuildArchiveRequest instantiates a HTTP request object with method and path
@@ -39,9 +39,9 @@ func (c *Client) BuildArchiveRequest(ctx context.Context, v interface{}) (*http.
 // archive server.
 func EncodeArchiveRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
 	return func(req *http.Request, v interface{}) error {
-		p, ok := v.(*archiversvc.ArchivePayload)
+		p, ok := v.(*archiver.ArchivePayload)
 		if !ok {
-			return goahttp.ErrInvalidType("archiver", "archive", "*archiversvc.ArchivePayload", v)
+			return goahttp.ErrInvalidType("archiver", "archive", "*archiver.ArchivePayload", v)
 		}
 		body := NewArchiveRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
@@ -80,11 +80,11 @@ func DecodeArchiveResponse(decoder func(*http.Response) goahttp.Decoder, restore
 			}
 			p := NewArchiveMediaViewOK(&body)
 			view := "default"
-			vres := &archiversvcviews.ArchiveMedia{p, view}
-			if err = archiversvcviews.ValidateArchiveMedia(vres); err != nil {
+			vres := &archiverviews.ArchiveMedia{p, view}
+			if err = archiverviews.ValidateArchiveMedia(vres); err != nil {
 				return nil, goahttp.ErrValidationError("archiver", "archive", err)
 			}
-			res := archiversvc.NewArchiveMedia(vres)
+			res := archiver.NewArchiveMedia(vres)
 			return res, nil
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
@@ -100,9 +100,9 @@ func (c *Client) BuildReadRequest(ctx context.Context, v interface{}) (*http.Req
 		id int
 	)
 	{
-		p, ok := v.(*archiversvc.ReadPayload)
+		p, ok := v.(*archiver.ReadPayload)
 		if !ok {
-			return nil, goahttp.ErrInvalidType("archiver", "read", "*archiversvc.ReadPayload", v)
+			return nil, goahttp.ErrInvalidType("archiver", "read", "*archiver.ReadPayload", v)
 		}
 		id = p.ID
 	}
@@ -151,11 +151,11 @@ func DecodeReadResponse(decoder func(*http.Response) goahttp.Decoder, restoreBod
 			}
 			p := NewReadArchiveMediaOK(&body)
 			view := "default"
-			vres := &archiversvcviews.ArchiveMedia{p, view}
-			if err = archiversvcviews.ValidateArchiveMedia(vres); err != nil {
+			vres := &archiverviews.ArchiveMedia{p, view}
+			if err = archiverviews.ValidateArchiveMedia(vres); err != nil {
 				return nil, goahttp.ErrValidationError("archiver", "read", err)
 			}
-			res := archiversvc.NewArchiveMedia(vres)
+			res := archiver.NewArchiveMedia(vres)
 			return res, nil
 		case http.StatusNotFound:
 			var (

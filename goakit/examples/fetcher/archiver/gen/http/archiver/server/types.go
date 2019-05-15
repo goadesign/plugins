@@ -10,8 +10,8 @@ package server
 
 import (
 	goa "goa.design/goa"
-	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
-	archiversvcviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
+	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiverviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // ArchiveRequestBody is the type of the "archiver" service "archive" endpoint
@@ -83,7 +83,7 @@ type ReadBadRequestResponseBody struct {
 
 // NewArchiveResponseBody builds the HTTP response body from the result of the
 // "archive" endpoint of the "archiver" service.
-func NewArchiveResponseBody(res *archiversvcviews.ArchiveMediaView) *ArchiveResponseBody {
+func NewArchiveResponseBody(res *archiverviews.ArchiveMediaView) *ArchiveResponseBody {
 	body := &ArchiveResponseBody{
 		Href:   *res.Href,
 		Status: *res.Status,
@@ -94,7 +94,7 @@ func NewArchiveResponseBody(res *archiversvcviews.ArchiveMediaView) *ArchiveResp
 
 // NewReadResponseBody builds the HTTP response body from the result of the
 // "read" endpoint of the "archiver" service.
-func NewReadResponseBody(res *archiversvcviews.ArchiveMediaView) *ReadResponseBody {
+func NewReadResponseBody(res *archiverviews.ArchiveMediaView) *ReadResponseBody {
 	body := &ReadResponseBody{
 		Href:   *res.Href,
 		Status: *res.Status,
@@ -132,8 +132,8 @@ func NewReadBadRequestResponseBody(res *goa.ServiceError) *ReadBadRequestRespons
 }
 
 // NewArchivePayload builds a archiver service archive endpoint payload.
-func NewArchivePayload(body *ArchiveRequestBody) *archiversvc.ArchivePayload {
-	v := &archiversvc.ArchivePayload{
+func NewArchivePayload(body *ArchiveRequestBody) *archiver.ArchivePayload {
+	v := &archiver.ArchivePayload{
 		Status: *body.Status,
 		Body:   *body.Body,
 	}
@@ -141,8 +141,8 @@ func NewArchivePayload(body *ArchiveRequestBody) *archiversvc.ArchivePayload {
 }
 
 // NewReadPayload builds a archiver service read endpoint payload.
-func NewReadPayload(id int) *archiversvc.ReadPayload {
-	return &archiversvc.ReadPayload{
+func NewReadPayload(id int) *archiver.ReadPayload {
+	return &archiver.ReadPayload{
 		ID: id,
 	}
 }

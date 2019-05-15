@@ -15,7 +15,7 @@ import (
 	"github.com/go-kit/kit/endpoint"
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // Server lists the fetcher service endpoint HTTP handlers.
@@ -43,7 +43,7 @@ type MountPoint struct {
 
 // New instantiates HTTP handlers for all the fetcher service endpoints.
 func New(
-	e *fetchersvc.Endpoints,
+	e *fetcher.Endpoints,
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,

@@ -15,7 +15,7 @@ import (
 	"github.com/go-kit/kit/endpoint"
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
-	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 )
 
 // Server lists the archiver service endpoint HTTP handlers.
@@ -44,7 +44,7 @@ type MountPoint struct {
 
 // New instantiates HTTP handlers for all the archiver service endpoints.
 func New(
-	e *archiversvc.Endpoints,
+	e *archiver.Endpoints,
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,

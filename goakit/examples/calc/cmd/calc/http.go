@@ -15,14 +15,14 @@ import (
 	goahttp "goa.design/goa/http"
 	httpmdlwr "goa.design/goa/http/middleware"
 	"goa.design/goa/middleware"
-	calcsvc "goa.design/plugins/goakit/examples/calc/gen/calc"
-	calcsvckitsvr "goa.design/plugins/goakit/examples/calc/gen/http/calc/kitserver"
-	calcsvcsvr "goa.design/plugins/goakit/examples/calc/gen/http/calc/server"
+	calc "goa.design/plugins/goakit/examples/calc/gen/calc"
+	calckitsvr "goa.design/plugins/goakit/examples/calc/gen/http/calc/kitserver"
+	calcsvr "goa.design/plugins/goakit/examples/calc/gen/http/calc/server"
 )
 
 // handleHTTPServer starts configures and starts a HTTP server on the given
 // URL. It shuts down the server if any error is received in the error channel.
-func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calcsvc.Endpoints, wg *sync.WaitGroup, errc chan error, logger log.Logger, debug bool) {
+func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpoints, wg *sync.WaitGroup, errc chan error, logger log.Logger, debug bool) {
 
 	// Provide the transport specific request decoder and response encoder.
 	// The goa http package has built-in support for JSON, XML and gob.
@@ -46,20 +46,20 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calcsvc.En
 	// responses.
 	var (
 		calcAddHandler *kithttp.Server
-		calcServer     *calcsvcsvr.Server
+		calcServer     *calcsvr.Server
 	)
 	{
 		eh := errorHandler(logger)
 		calcAddHandler = kithttp.NewServer(
 			endpoint.Endpoint(calcEndpoints.Add),
-			calcsvckitsvr.DecodeAddRequest(mux, dec),
-			calcsvckitsvr.EncodeAddResponse(enc),
+			calckitsvr.DecodeAddRequest(mux, dec),
+			calckitsvr.EncodeAddResponse(enc),
 		)
-		calcServer = calcsvcsvr.New(calcEndpoints, mux, dec, enc, eh)
+		calcServer = calcsvr.New(calcEndpoints, mux, dec, enc, eh)
 	}
 
 	// Configure the mux.
-	calcsvckitsvr.MountAddHandler(mux, calcAddHandler)
+	calckitsvr.MountAddHandler(mux, calcAddHandler)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
 	// here apply to all the service endpoints.
@@ -89,17 +89,14 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calcsvc.En
 			errc <- srv.ListenAndServe()
 		}()
 
-		select {
-		case <-ctx.Done():
-			logger.Log("info", fmt.Sprintf("shutting down HTTP server at %q", u.Host))
+		<-ctx.Done()
+		logger.Log("info", fmt.Sprintf("shutting down HTTP server at %q", u.Host))
 
-			// Shutdown gracefully with a 30s timeout.
-			ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-			defer cancel()
+		// Shutdown gracefully with a 30s timeout.
+		ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		defer cancel()
 
-			srv.Shutdown(ctx)
-			return
-		}
+		srv.Shutdown(ctx)
 	}()
 }
 

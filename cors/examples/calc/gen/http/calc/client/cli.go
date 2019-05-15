@@ -12,11 +12,11 @@ import (
 	"fmt"
 	"strconv"
 
-	calcsvc "goa.design/plugins/cors/examples/calc/gen/calc"
+	calc "goa.design/plugins/cors/examples/calc/gen/calc"
 )
 
 // BuildAddPayload builds the payload for the calc add endpoint from CLI flags.
-func BuildAddPayload(calcAddA string, calcAddB string) (*calcsvc.AddPayload, error) {
+func BuildAddPayload(calcAddA string, calcAddB string) (*calc.AddPayload, error) {
 	var err error
 	var a int
 	{
@@ -24,7 +24,7 @@ func BuildAddPayload(calcAddA string, calcAddB string) (*calcsvc.AddPayload, err
 		v, err = strconv.ParseInt(calcAddA, 10, 64)
 		a = int(v)
 		if err != nil {
-			err = fmt.Errorf("invalid value for a, must be INT")
+			return nil, fmt.Errorf("invalid value for a, must be INT")
 		}
 	}
 	var b int
@@ -33,13 +33,10 @@ func BuildAddPayload(calcAddA string, calcAddB string) (*calcsvc.AddPayload, err
 		v, err = strconv.ParseInt(calcAddB, 10, 64)
 		b = int(v)
 		if err != nil {
-			err = fmt.Errorf("invalid value for b, must be INT")
+			return nil, fmt.Errorf("invalid value for b, must be INT")
 		}
 	}
-	if err != nil {
-		return nil, err
-	}
-	payload := &calcsvc.AddPayload{
+	payload := &calc.AddPayload{
 		A: a,
 		B: b,
 	}

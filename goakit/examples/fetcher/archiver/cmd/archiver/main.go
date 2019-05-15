@@ -11,8 +11,8 @@ import (
 	"sync"
 
 	"github.com/go-kit/kit/log"
-	archiver "goa.design/plugins/goakit/examples/fetcher/archiver"
-	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiverapi "goa.design/plugins/goakit/examples/fetcher/archiver"
+	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 	health "goa.design/plugins/goakit/examples/fetcher/archiver/gen/health"
 )
 
@@ -40,22 +40,22 @@ func main() {
 
 	// Initialize the services.
 	var (
-		archiverSvc archiversvc.Service
+		archiverSvc archiver.Service
 		healthSvc   health.Service
 	)
 	{
-		archiverSvc = archiver.NewArchiver(logger)
-		healthSvc = archiver.NewHealth(logger)
+		archiverSvc = archiverapi.NewArchiver(logger)
+		healthSvc = archiverapi.NewHealth(logger)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other services
 	// potentially running in different processes.
 	var (
-		archiverEndpoints *archiversvc.Endpoints
+		archiverEndpoints *archiver.Endpoints
 		healthEndpoints   *health.Endpoints
 	)
 	{
-		archiverEndpoints = archiversvc.NewEndpoints(archiverSvc)
+		archiverEndpoints = archiver.NewEndpoints(archiverSvc)
 		healthEndpoints = health.NewEndpoints(healthSvc)
 	}
 

@@ -9,17 +9,17 @@
 package client
 
 import (
-	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // BuildFetchPayload builds the payload for the fetcher fetch endpoint from CLI
 // flags.
-func BuildFetchPayload(fetcherFetchURL string) (*fetchersvc.FetchPayload, error) {
+func BuildFetchPayload(fetcherFetchURL string) (*fetcher.FetchPayload, error) {
 	var url_ string
 	{
 		url_ = fetcherFetchURL
 	}
-	payload := &fetchersvc.FetchPayload{
+	payload := &fetcher.FetchPayload{
 		URL: url_,
 	}
 	return payload, nil

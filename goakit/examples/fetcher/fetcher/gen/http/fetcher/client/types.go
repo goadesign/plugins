@@ -10,7 +10,7 @@ package client
 
 import (
 	goa "goa.design/goa"
-	fetchersvcviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
+	fetcherviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
 // FetchResponseBody is the type of the "fetcher" service "fetch" endpoint HTTP
@@ -60,8 +60,8 @@ type FetchInternalErrorResponseBody struct {
 
 // NewFetchMediaViewOK builds a "fetcher" service "fetch" endpoint result from
 // a HTTP "OK" response.
-func NewFetchMediaViewOK(body *FetchResponseBody) *fetchersvcviews.FetchMediaView {
-	v := &fetchersvcviews.FetchMediaView{
+func NewFetchMediaViewOK(body *FetchResponseBody) *fetcherviews.FetchMediaView {
+	v := &fetcherviews.FetchMediaView{
 		Status:      body.Status,
 		ArchiveHref: body.ArchiveHref,
 	}

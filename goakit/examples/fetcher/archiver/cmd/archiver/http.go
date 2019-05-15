@@ -15,17 +15,17 @@ import (
 	goahttp "goa.design/goa/http"
 	httpmdlwr "goa.design/goa/http/middleware"
 	"goa.design/goa/middleware"
-	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
 	health "goa.design/plugins/goakit/examples/fetcher/archiver/gen/health"
-	archiversvckitsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitserver"
-	archiversvcsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"
+	archiverkitsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitserver"
+	archiversvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"
 	healthkitsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/kitserver"
 	healthsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/server"
 )
 
 // handleHTTPServer starts configures and starts a HTTP server on the given
 // URL. It shuts down the server if any error is received in the error channel.
-func handleHTTPServer(ctx context.Context, u *url.URL, archiverEndpoints *archiversvc.Endpoints, healthEndpoints *health.Endpoints, wg *sync.WaitGroup, errc chan error, logger log.Logger, debug bool) {
+func handleHTTPServer(ctx context.Context, u *url.URL, archiverEndpoints *archiver.Endpoints, healthEndpoints *health.Endpoints, wg *sync.WaitGroup, errc chan error, logger log.Logger, debug bool) {
 
 	// Provide the transport specific request decoder and response encoder.
 	// The goa http package has built-in support for JSON, XML and gob.
@@ -50,7 +50,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, archiverEndpoints *archiv
 	var (
 		archiverArchiveHandler *kithttp.Server
 		archiverReadHandler    *kithttp.Server
-		archiverServer         *archiversvcsvr.Server
+		archiverServer         *archiversvr.Server
 		healthShowHandler      *kithttp.Server
 		healthServer           *healthsvr.Server
 	)
@@ -58,15 +58,15 @@ func handleHTTPServer(ctx context.Context, u *url.URL, archiverEndpoints *archiv
 		eh := errorHandler(logger)
 		archiverArchiveHandler = kithttp.NewServer(
 			endpoint.Endpoint(archiverEndpoints.Archive),
-			archiversvckitsvr.DecodeArchiveRequest(mux, dec),
-			archiversvckitsvr.EncodeArchiveResponse(enc),
+			archiverkitsvr.DecodeArchiveRequest(mux, dec),
+			archiverkitsvr.EncodeArchiveResponse(enc),
 		)
 		archiverReadHandler = kithttp.NewServer(
 			endpoint.Endpoint(archiverEndpoints.Read),
-			archiversvckitsvr.DecodeReadRequest(mux, dec),
-			archiversvckitsvr.EncodeReadResponse(enc),
+			archiverkitsvr.DecodeReadRequest(mux, dec),
+			archiverkitsvr.EncodeReadResponse(enc),
 		)
-		archiverServer = archiversvcsvr.New(archiverEndpoints, mux, dec, enc, eh)
+		archiverServer = archiversvr.New(archiverEndpoints, mux, dec, enc, eh)
 		healthShowHandler = kithttp.NewServer(
 			endpoint.Endpoint(healthEndpoints.Show),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
@@ -76,8 +76,8 @@ func handleHTTPServer(ctx context.Context, u *url.URL, archiverEndpoints *archiv
 	}
 
 	// Configure the mux.
-	archiversvckitsvr.MountArchiveHandler(mux, archiverArchiveHandler)
-	archiversvckitsvr.MountReadHandler(mux, archiverReadHandler)
+	archiverkitsvr.MountArchiveHandler(mux, archiverArchiveHandler)
+	archiverkitsvr.MountReadHandler(mux, archiverReadHandler)
 	healthkitsvr.MountShowHandler(mux, healthShowHandler)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
@@ -111,17 +111,14 @@ func handleHTTPServer(ctx context.Context, u *url.URL, archiverEndpoints *archiv
 			errc <- srv.ListenAndServe()
 		}()
 
-		select {
-		case <-ctx.Done():
-			logger.Log("info", fmt.Sprintf("shutting down HTTP server at %q", u.Host))
+		<-ctx.Done()
+		logger.Log("info", fmt.Sprintf("shutting down HTTP server at %q", u.Host))
 
-			// Shutdown gracefully with a 30s timeout.
-			ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-			defer cancel()
+		// Shutdown gracefully with a 30s timeout.
+		ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		defer cancel()
 
-			srv.Shutdown(ctx)
-			return
-		}
+		srv.Shutdown(ctx)
 	}()
 }
 

@@ -6,13 +6,13 @@
 // $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 
-package fetchersvc
+package fetcher
 
 import (
 	"context"
 
 	"goa.design/goa"
-	fetchersvcviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
+	fetcherviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
 // Service is the fetcher service interface.
@@ -66,7 +66,7 @@ func MakeInternalError(err error) *goa.ServiceError {
 
 // NewFetchMedia initializes result type FetchMedia from viewed result type
 // FetchMedia.
-func NewFetchMedia(vres *fetchersvcviews.FetchMedia) *FetchMedia {
+func NewFetchMedia(vres *fetcherviews.FetchMedia) *FetchMedia {
 	var res *FetchMedia
 	switch vres.View {
 	case "default", "":
@@ -77,18 +77,18 @@ func NewFetchMedia(vres *fetchersvcviews.FetchMedia) *FetchMedia {
 
 // NewViewedFetchMedia initializes viewed result type FetchMedia from result
 // type FetchMedia using the given view.
-func NewViewedFetchMedia(res *FetchMedia, view string) *fetchersvcviews.FetchMedia {
-	var vres *fetchersvcviews.FetchMedia
+func NewViewedFetchMedia(res *FetchMedia, view string) *fetcherviews.FetchMedia {
+	var vres *fetcherviews.FetchMedia
 	switch view {
 	case "default", "":
 		p := newFetchMediaView(res)
-		vres = &fetchersvcviews.FetchMedia{p, "default"}
+		vres = &fetcherviews.FetchMedia{p, "default"}
 	}
 	return vres
 }
 
 // newFetchMedia converts projected type FetchMedia to service type FetchMedia.
-func newFetchMedia(vres *fetchersvcviews.FetchMediaView) *FetchMedia {
+func newFetchMedia(vres *fetcherviews.FetchMediaView) *FetchMedia {
 	res := &FetchMedia{}
 	if vres.Status != nil {
 		res.Status = *vres.Status
@@ -99,10 +99,10 @@ func newFetchMedia(vres *fetchersvcviews.FetchMediaView) *FetchMedia {
 	return res
 }
 
-// newFetchMediaView projects result type FetchMedia into projected type
+// newFetchMediaView projects result type FetchMedia to projected type
 // FetchMediaView using the "default" view.
-func newFetchMediaView(res *FetchMedia) *fetchersvcviews.FetchMediaView {
-	vres := &fetchersvcviews.FetchMediaView{
+func newFetchMediaView(res *FetchMedia) *fetcherviews.FetchMediaView {
+	vres := &fetcherviews.FetchMediaView{
 		Status:      &res.Status,
 		ArchiveHref: &res.ArchiveHref,
 	}

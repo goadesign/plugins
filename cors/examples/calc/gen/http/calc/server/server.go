@@ -16,7 +16,7 @@ import (
 	goa "goa.design/goa"
 	goahttp "goa.design/goa/http"
 	"goa.design/plugins/cors"
-	calcsvc "goa.design/plugins/cors/examples/calc/gen/calc"
+	calc "goa.design/plugins/cors/examples/calc/gen/calc"
 )
 
 // Server lists the calc service endpoint HTTP handlers.
@@ -45,7 +45,7 @@ type MountPoint struct {
 
 // New instantiates HTTP handlers for all the calc service endpoints.
 func New(
-	e *calcsvc.Endpoints,
+	e *calc.Endpoints,
 	mux goahttp.Muxer,
 	dec func(*http.Request) goahttp.Decoder,
 	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,

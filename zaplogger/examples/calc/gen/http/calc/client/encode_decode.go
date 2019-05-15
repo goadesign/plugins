@@ -16,7 +16,7 @@ import (
 	"net/url"
 
 	goahttp "goa.design/goa/http"
-	calcsvc "goa.design/plugins/zaplogger/examples/calc/gen/calc"
+	calc "goa.design/plugins/zaplogger/examples/calc/gen/calc"
 )
 
 // BuildAddRequest instantiates a HTTP request object with method and path set
@@ -27,9 +27,9 @@ func (c *Client) BuildAddRequest(ctx context.Context, v interface{}) (*http.Requ
 		b int
 	)
 	{
-		p, ok := v.(*calcsvc.AddPayload)
+		p, ok := v.(*calc.AddPayload)
 		if !ok {
-			return nil, goahttp.ErrInvalidType("calc", "add", "*calcsvc.AddPayload", v)
+			return nil, goahttp.ErrInvalidType("calc", "add", "*calc.AddPayload", v)
 		}
 		a = p.A
 		b = p.B
