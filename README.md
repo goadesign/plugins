@@ -1,4 +1,4 @@
-# goa v2 Plugins
+# Goa Plugins
 
 This repository contains plugins for 
 [Goa v3](https://github.com/goadesign/goa/tree/v3).
