@@ -3,7 +3,7 @@
 // calc client
 //
 // Command:
-// $ goa gen goa.design/plugins/cors/examples/calc/design -o
+// $ goa gen goa.design/plugins/v3/cors/examples/calc/design -o
 // $(GOPATH)/src/goa.design/plugins/cors/examples/calc
 
 package calc

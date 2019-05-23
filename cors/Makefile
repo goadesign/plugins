@@ -1,6 +1,6 @@
 #! /usr/bin/make
 #
-# Makefile for goa v2 CORS plugin
+# Makefile for goa v3 CORS plugin
 #
 # Targets:
 # - "gen" generates the goa files for the example services
@@ -10,12 +10,12 @@
 include $(GOPATH)/src/goa.design/plugins/plugins.mk
 
 gen:
-	@goa gen goa.design/plugins/cors/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/cors/examples/calc" && \
+	@goa gen goa.design/plugins/v3/cors/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/cors/examples/calc" && \
 	make example
 
 example:
 	@ rm -rf "$(GOPATH)/src/goa.design/plugins/cors/examples/calc/cmd"
-	goa example goa.design/plugins/cors/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/cors/examples/calc"
+	goa example goa.design/plugins/v3/cors/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/cors/examples/calc"
 
 build-examples:
 	@cd "$(GOPATH)/src/goa.design/plugins/cors/examples/calc" && \

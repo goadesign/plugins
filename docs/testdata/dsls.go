@@ -2,7 +2,7 @@ package testdata
 
 import (
 	. "goa.design/goa/v3/dsl"
-	_ "goa.design/plugins/docs"
+	_ "goa.design/plugins/v3/docs"
 )
 
 var APIOnly = func() {

@@ -3,7 +3,7 @@
 // archiver HTTP client CLI support package
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/fetcher/archiver/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
 
 package client
@@ -14,7 +14,7 @@ import (
 	"strconv"
 
 	goa "goa.design/goa/v3/pkg"
-	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiver "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver"
 )
 
 // BuildArchivePayload builds the payload for the archiver archive endpoint

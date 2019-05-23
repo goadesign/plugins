@@ -8,7 +8,7 @@ import (
 	"goa.design/goa/v3/eval"
 	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
-	"goa.design/plugins/zaplogger/testdata"
+	"goa.design/plugins/v3/zaplogger/testdata"
 )
 
 func TestGenerate(t *testing.T) {

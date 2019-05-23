@@ -3,7 +3,7 @@
 // archiver HTTP server encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/fetcher/archiver/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
 
 package server
@@ -16,7 +16,7 @@ import (
 
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
-	archiverviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
+	archiverviews "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // EncodeArchiveResponse returns an encoder for responses returned by the

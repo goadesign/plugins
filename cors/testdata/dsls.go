@@ -2,7 +2,7 @@ package testdata
 
 import (
 	. "goa.design/goa/v3/dsl"
-	cors "goa.design/plugins/cors/dsl"
+	cors "goa.design/plugins/v3/cors/dsl"
 )
 
 var SimpleOriginDSL = func() {

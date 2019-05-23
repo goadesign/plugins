@@ -10,8 +10,8 @@ import (
 
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/eval"
-	"goa.design/plugins/docs"
-	"goa.design/plugins/docs/testdata"
+	"goa.design/plugins/v3/docs"
+	"goa.design/plugins/v3/docs/testdata"
 )
 
 var update = flag.Bool("update", false, "update golden files")

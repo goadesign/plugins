@@ -3,7 +3,7 @@
 // calc HTTP client types
 //
 // Command:
-// $ goa gen goa.design/plugins/zaplogger/examples/calc/design -o
+// $ goa gen goa.design/plugins/v3/zaplogger/examples/calc/design -o
 // $(GOPATH)/src/goa.design/plugins/zaplogger/examples/calc
 
 package client

@@ -10,9 +10,9 @@ import (
 	"strings"
 	"sync"
 
-	calcapi "goa.design/plugins/zaplogger/examples/calc"
-	calc "goa.design/plugins/zaplogger/examples/calc/gen/calc"
-	log "goa.design/plugins/zaplogger/examples/calc/gen/log"
+	calcapi "goa.design/plugins/v3/zaplogger/examples/calc"
+	calc "goa.design/plugins/v3/zaplogger/examples/calc/gen/calc"
+	log "goa.design/plugins/v3/zaplogger/examples/calc/gen/log"
 )
 
 func main() {

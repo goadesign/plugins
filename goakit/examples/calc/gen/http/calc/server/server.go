@@ -3,7 +3,7 @@
 // calc HTTP server
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/calc/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/calc/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
 
 package server
@@ -15,7 +15,7 @@ import (
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
-	calc "goa.design/plugins/goakit/examples/calc/gen/calc"
+	calc "goa.design/plugins/v3/goakit/examples/calc/gen/calc"
 )
 
 // Server lists the calc service endpoint HTTP handlers.

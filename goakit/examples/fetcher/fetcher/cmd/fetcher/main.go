@@ -11,9 +11,9 @@ import (
 	"sync"
 
 	"github.com/go-kit/kit/log"
-	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher"
-	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
-	health "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
+	fetcher "goa.design/plugins/v3/goakit/examples/fetcher/fetcher"
+	fetchersvc "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/fetcher"
+	health "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/health"
 )
 
 func main() {

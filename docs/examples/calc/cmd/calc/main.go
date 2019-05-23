@@ -11,8 +11,8 @@ import (
 	"strings"
 	"sync"
 
-	calcapi "goa.design/plugins/docs/examples/calc"
-	calc "goa.design/plugins/docs/examples/calc/gen/calc"
+	calcapi "goa.design/plugins/v3/docs/examples/calc"
+	calc "goa.design/plugins/v3/docs/examples/calc/gen/calc"
 )
 
 func main() {

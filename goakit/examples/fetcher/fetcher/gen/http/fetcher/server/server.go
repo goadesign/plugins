@@ -3,7 +3,7 @@
 // fetcher HTTP server
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/fetcher/fetcher/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 
 package server
@@ -15,7 +15,7 @@ import (
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
-	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetcher "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // Server lists the fetcher service endpoint HTTP handlers.

@@ -3,7 +3,7 @@
 // calc HTTP client CLI support package
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/calc/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/calc/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
 
 package client
@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"strconv"
 
-	calc "goa.design/plugins/goakit/examples/calc/gen/calc"
+	calc "goa.design/plugins/v3/goakit/examples/calc/gen/calc"
 )
 
 // BuildAddPayload builds the payload for the calc add endpoint from CLI flags.

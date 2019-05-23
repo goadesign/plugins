@@ -3,7 +3,7 @@
 // calc HTTP client CLI support package
 //
 // Command:
-// $ goa gen goa.design/plugins/cors/examples/calc/design -o
+// $ goa gen goa.design/plugins/v3/cors/examples/calc/design -o
 // $(GOPATH)/src/goa.design/plugins/cors/examples/calc
 
 package cli
@@ -16,7 +16,7 @@ import (
 
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
-	calcc "goa.design/plugins/cors/examples/calc/gen/http/calc/client"
+	calcc "goa.design/plugins/v3/cors/examples/calc/gen/http/calc/client"
 )
 
 // UsageCommands returns the set of commands and sub-commands using the format

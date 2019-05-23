@@ -12,8 +12,8 @@ import (
 	goahttp "goa.design/goa/v3/http"
 	httpmdlwr "goa.design/goa/v3/http/middleware"
 	"goa.design/goa/v3/middleware"
-	calc "goa.design/plugins/cors/examples/calc/gen/calc"
-	calcsvr "goa.design/plugins/cors/examples/calc/gen/http/calc/server"
+	calc "goa.design/plugins/v3/cors/examples/calc/gen/calc"
+	calcsvr "goa.design/plugins/v3/cors/examples/calc/gen/http/calc/server"
 )
 
 // handleHTTPServer starts configures and starts a HTTP server on the given

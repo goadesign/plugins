@@ -11,8 +11,8 @@ import (
 	"sync"
 
 	"github.com/go-kit/kit/log"
-	calcapi "goa.design/plugins/goakit/examples/calc"
-	calc "goa.design/plugins/goakit/examples/calc/gen/calc"
+	calcapi "goa.design/plugins/v3/goakit/examples/calc"
+	calc "goa.design/plugins/v3/goakit/examples/calc/gen/calc"
 )
 
 func main() {

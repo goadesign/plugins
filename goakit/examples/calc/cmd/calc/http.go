@@ -15,9 +15,9 @@ import (
 	goahttp "goa.design/goa/v3/http"
 	httpmdlwr "goa.design/goa/v3/http/middleware"
 	"goa.design/goa/v3/middleware"
-	calc "goa.design/plugins/goakit/examples/calc/gen/calc"
-	calckitsvr "goa.design/plugins/goakit/examples/calc/gen/http/calc/kitserver"
-	calcsvr "goa.design/plugins/goakit/examples/calc/gen/http/calc/server"
+	calc "goa.design/plugins/v3/goakit/examples/calc/gen/calc"
+	calckitsvr "goa.design/plugins/v3/goakit/examples/calc/gen/http/calc/kitserver"
+	calcsvr "goa.design/plugins/v3/goakit/examples/calc/gen/http/calc/server"
 )
 
 // handleHTTPServer starts configures and starts a HTTP server on the given

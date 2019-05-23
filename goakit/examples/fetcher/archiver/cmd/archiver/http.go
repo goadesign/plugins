@@ -15,12 +15,12 @@ import (
 	goahttp "goa.design/goa/v3/http"
 	httpmdlwr "goa.design/goa/v3/http/middleware"
 	"goa.design/goa/v3/middleware"
-	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
-	health "goa.design/plugins/goakit/examples/fetcher/archiver/gen/health"
-	archiverkitsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitserver"
-	archiversvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"
-	healthkitsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/kitserver"
-	healthsvr "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/server"
+	archiver "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver"
+	health "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/health"
+	archiverkitsvr "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/archiver/kitserver"
+	archiversvr "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/archiver/server"
+	healthkitsvr "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/health/kitserver"
+	healthsvr "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/health/server"
 )
 
 // handleHTTPServer starts configures and starts a HTTP server on the given

@@ -7,7 +7,7 @@ import (
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
-	"goa.design/plugins/goakit/testdata"
+	"goa.design/plugins/v3/goakit/testdata"
 )
 
 func TestServerEncodeDecode(t *testing.T) {

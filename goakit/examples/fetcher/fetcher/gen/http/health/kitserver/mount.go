@@ -3,7 +3,7 @@
 // health go-kit HTTP server encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/fetcher/fetcher/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 
 package server

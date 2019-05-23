@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	"github.com/go-kit/kit/log"
-	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
-	"goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"
+	archiversvc "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver"
+	"goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/archiver/server"
 )
 
 // archiver service example implementation.

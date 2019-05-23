@@ -9,8 +9,8 @@ import (
 	"goa.design/goa/v3/eval"
 	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
-	"goa.design/plugins/cors"
-	"goa.design/plugins/cors/testdata"
+	"goa.design/plugins/v3/cors"
+	"goa.design/plugins/v3/cors/testdata"
 )
 
 func TestGenerate(t *testing.T) {

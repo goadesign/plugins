@@ -3,14 +3,14 @@
 // fetcher HTTP client types
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/fetcher/fetcher/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 
 package client
 
 import (
 	goa "goa.design/goa/v3/pkg"
-	fetcherviews "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher/views"
+	fetcherviews "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
 // FetchResponseBody is the type of the "fetcher" service "fetch" endpoint HTTP

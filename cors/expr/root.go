@@ -56,5 +56,5 @@ func (r *RootExpr) DependsOn() []eval.Root {
 // up the DSL. This is used to skip frames that point to files
 // in these packages when computing the location of errors.
 func (r *RootExpr) Packages() []string {
-	return []string{"goa.design/plugins/cors/dsl"}
+	return []string{"goa.design/plugins/v3/cors/dsl"}
 }
