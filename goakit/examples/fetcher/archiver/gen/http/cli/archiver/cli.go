@@ -3,7 +3,7 @@
 // archiver HTTP client CLI support package
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/fetcher/archiver/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
 
 package cli
@@ -16,8 +16,8 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/v3/http"
-	archiverc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/client"
-	healthc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/health/client"
+	archiverc "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/archiver/client"
+	healthc "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/health/client"
 )
 
 // UsageCommands returns the set of commands and sub-commands using the format

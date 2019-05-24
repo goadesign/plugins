@@ -5,10 +5,10 @@ import (
 
 	"goa.design/goa/v3/eval"
 	goaexpr "goa.design/goa/v3/expr"
-	"goa.design/plugins/cors/expr"
+	"goa.design/plugins/v3/cors/expr"
 
 	// Register code generators for the CORS plugin
-	_ "goa.design/plugins/cors"
+	_ "goa.design/plugins/v3/cors"
 )
 
 // Origin defines the CORS policy for a given origin. The origin can use a wildcard prefix
@@ -23,7 +23,7 @@ import (
 //
 // Example:
 //
-//    import cors "goa.design/plugins/cors"
+//    import cors "goa.design/plugins/v3/cors"
 //
 //    var _ = API("calc", func() {
 //        cors.Origin("http://swagger.goa.design", func() { // Define CORS policy, may be prefixed with "*" wildcard

@@ -3,13 +3,13 @@
 // fetcher HTTP client CLI support package
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/fetcher/fetcher/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 
 package client
 
 import (
-	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetcher "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // BuildFetchPayload builds the payload for the fetcher fetch endpoint from CLI

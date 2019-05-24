@@ -12,9 +12,9 @@ import (
 	goahttp "goa.design/goa/v3/http"
 	httpmdlwr "goa.design/goa/v3/http/middleware"
 	"goa.design/goa/v3/middleware"
-	calc "goa.design/plugins/zaplogger/examples/calc/gen/calc"
-	calcsvr "goa.design/plugins/zaplogger/examples/calc/gen/http/calc/server"
-	log "goa.design/plugins/zaplogger/examples/calc/gen/log"
+	calc "goa.design/plugins/v3/zaplogger/examples/calc/gen/calc"
+	calcsvr "goa.design/plugins/v3/zaplogger/examples/calc/gen/http/calc/server"
+	log "goa.design/plugins/v3/zaplogger/examples/calc/gen/log"
 )
 
 // handleHTTPServer starts configures and starts a HTTP server on the given

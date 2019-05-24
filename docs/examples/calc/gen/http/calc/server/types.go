@@ -3,13 +3,13 @@
 // calc HTTP server types
 //
 // Command:
-// $ goa gen goa.design/plugins/docs/examples/calc/design -o
+// $ goa gen goa.design/plugins/v3/docs/examples/calc/design -o
 // $(GOPATH)/src/goa.design/plugins/docs/examples/calc
 
 package server
 
 import (
-	calc "goa.design/plugins/docs/examples/calc/gen/calc"
+	calc "goa.design/plugins/v3/docs/examples/calc/gen/calc"
 )
 
 // NewAddPayload builds a calc service add endpoint payload.

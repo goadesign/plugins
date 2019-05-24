@@ -11,9 +11,9 @@ import (
 	"sync"
 
 	"github.com/go-kit/kit/log"
-	archiverapi "goa.design/plugins/goakit/examples/fetcher/archiver"
-	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
-	health "goa.design/plugins/goakit/examples/fetcher/archiver/gen/health"
+	archiverapi "goa.design/plugins/v3/goakit/examples/fetcher/archiver"
+	archiver "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver"
+	health "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/health"
 )
 
 func main() {

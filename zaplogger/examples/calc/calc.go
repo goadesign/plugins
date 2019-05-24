@@ -3,8 +3,8 @@ package calc
 import (
 	"context"
 
-	calcsvc "goa.design/plugins/zaplogger/examples/calc/gen/calc"
-	log "goa.design/plugins/zaplogger/examples/calc/gen/log"
+	calcsvc "goa.design/plugins/v3/zaplogger/examples/calc/gen/calc"
+	log "goa.design/plugins/v3/zaplogger/examples/calc/gen/log"
 )
 
 // calc service example implementation.

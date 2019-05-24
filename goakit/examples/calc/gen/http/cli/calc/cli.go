@@ -3,7 +3,7 @@
 // calc HTTP client CLI support package
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/calc/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/calc/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
 
 package cli
@@ -16,7 +16,7 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/v3/http"
-	calcc "goa.design/plugins/goakit/examples/calc/gen/http/calc/client"
+	calcc "goa.design/plugins/v3/goakit/examples/calc/gen/http/calc/client"
 )
 
 // UsageCommands returns the set of commands and sub-commands using the format

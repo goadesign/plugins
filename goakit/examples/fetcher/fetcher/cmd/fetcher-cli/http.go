@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/v3/http"
-	cli "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/cli/fetcher"
+	cli "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/http/cli/fetcher"
 )
 
 func doHTTP(scheme, host string, timeout int, debug bool) (endpoint.Endpoint, interface{}, error) {

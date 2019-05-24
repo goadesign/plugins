@@ -10,7 +10,7 @@ import (
 	"goa.design/goa/v3/eval"
 	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
-	"goa.design/plugins/goakit/testdata"
+	"goa.design/plugins/v3/goakit/testdata"
 )
 
 func TestGenerate(t *testing.T) {

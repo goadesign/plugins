@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-kit/kit/log"
-	calcsvc "goa.design/plugins/goakit/examples/calc/gen/calc"
+	calcsvc "goa.design/plugins/v3/goakit/examples/calc/gen/calc"
 )
 
 // calc service example implementation.

@@ -1,6 +1,6 @@
 #! /usr/bin/make
 #
-# Makefile for goa v2 goakit plugin
+# Makefile for goa v3 goakit plugin
 #
 # Targets:
 # - "gen" generates the goa files for the example services
@@ -9,17 +9,17 @@
 include $(GOPATH)/src/goa.design/plugins/plugins.mk
 
 gen:
-	@goa gen goa.design/plugins/goakit/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/calc"
-	@goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher"
-	@goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver"
+	@goa gen goa.design/plugins/v3/goakit/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/calc"
+	@goa gen goa.design/plugins/v3/goakit/examples/fetcher/fetcher/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher"
+	@goa gen goa.design/plugins/v3/goakit/examples/fetcher/archiver/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver"
 	@make example
 
 example:
 	@rm -rf "$(GOPATH)/src/goa.design/plugins/goakit/examples/calc/cmd" && \
 	rm -rf "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver/cmd"
-	@goa example goa.design/plugins/goakit/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/calc"
-	@goa example goa.design/plugins/goakit/examples/fetcher/fetcher/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher"
-	@goa example goa.design/plugins/goakit/examples/fetcher/archiver/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver"
+	@goa example goa.design/plugins/v3/goakit/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/calc"
+	@goa example goa.design/plugins/v3/goakit/examples/fetcher/fetcher/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher"
+	@goa example goa.design/plugins/v3/goakit/examples/fetcher/archiver/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver"
 
 build-examples:
 	@cd "$(GOPATH)/src/goa.design/plugins/goakit/examples/calc" && \

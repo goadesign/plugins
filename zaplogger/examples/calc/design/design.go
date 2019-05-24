@@ -1,7 +1,7 @@
 package design
 
 import . "goa.design/goa/v3/dsl"
-import _ "goa.design/plugins/zaplogger"
+import _ "goa.design/plugins/v3/zaplogger"
 
 // API describes the global properties of the API server.
 var _ = API("calc", func() {

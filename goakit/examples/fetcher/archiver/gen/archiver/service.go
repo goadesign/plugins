@@ -3,7 +3,7 @@
 // archiver service
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/fetcher/archiver/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
 
 package archiver
@@ -12,7 +12,7 @@ import (
 	"context"
 
 	goa "goa.design/goa/v3/pkg"
-	archiverviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
+	archiverviews "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // Service is the archiver service interface.

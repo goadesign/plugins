@@ -3,7 +3,7 @@
 // archiver HTTP server
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/fetcher/archiver/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
 
 package server
@@ -15,7 +15,7 @@ import (
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
-	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
+	archiver "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver"
 )
 
 // Server lists the archiver service endpoint HTTP handlers.

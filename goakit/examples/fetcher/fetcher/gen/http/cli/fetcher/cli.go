@@ -3,7 +3,7 @@
 // fetcher HTTP client CLI support package
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/fetcher/fetcher/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 
 package cli
@@ -16,8 +16,8 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/v3/http"
-	fetcherc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/client"
-	healthc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/health/client"
+	fetcherc "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/http/fetcher/client"
+	healthc "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/http/health/client"
 )
 
 // UsageCommands returns the set of commands and sub-commands using the format

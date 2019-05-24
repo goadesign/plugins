@@ -8,7 +8,7 @@ import (
 	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
 	httpcodegen "goa.design/goa/v3/http/codegen"
-	"goa.design/plugins/cors/expr"
+	"goa.design/plugins/v3/cors/expr"
 )
 
 // ServicesData holds the all the ServiceData indexed by service name.
@@ -84,7 +84,7 @@ func serverCORS(f *codegen.File) {
 		}
 
 		codegen.AddImport(f.SectionTemplates[0],
-			&codegen.ImportSpec{Path: "goa.design/plugins/cors"})
+			&codegen.ImportSpec{Path: "goa.design/plugins/v3/cors"})
 
 		if d, ok := ServicesData[data.Service.Name]; !ok {
 			svcData = buildServiceData(data.Service.Name)

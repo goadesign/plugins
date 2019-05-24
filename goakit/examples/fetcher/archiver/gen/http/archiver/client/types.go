@@ -3,15 +3,15 @@
 // archiver HTTP client types
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/archiver/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/fetcher/archiver/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver
 
 package client
 
 import (
 	goa "goa.design/goa/v3/pkg"
-	archiver "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
-	archiverviews "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver/views"
+	archiver "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver"
+	archiverviews "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // ArchiveRequestBody is the type of the "archiver" service "archive" endpoint

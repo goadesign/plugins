@@ -3,7 +3,7 @@
 // calc HTTP server
 //
 // Command:
-// $ goa gen goa.design/plugins/cors/examples/calc/design -o
+// $ goa gen goa.design/plugins/v3/cors/examples/calc/design -o
 // $(GOPATH)/src/goa.design/plugins/cors/examples/calc
 
 package server
@@ -15,8 +15,8 @@ import (
 
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
-	"goa.design/plugins/cors"
-	calc "goa.design/plugins/cors/examples/calc/gen/calc"
+	"goa.design/plugins/v3/cors"
+	calc "goa.design/plugins/v3/cors/examples/calc/gen/calc"
 )
 
 // Server lists the calc service endpoint HTTP handlers.

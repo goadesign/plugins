@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/v3/http"
-	cli "goa.design/plugins/goakit/examples/calc/gen/http/cli/calc"
+	cli "goa.design/plugins/v3/goakit/examples/calc/gen/http/cli/calc"
 )
 
 func doHTTP(scheme, host string, timeout int, debug bool) (endpoint.Endpoint, interface{}, error) {

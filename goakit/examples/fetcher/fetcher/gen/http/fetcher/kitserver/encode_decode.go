@@ -3,7 +3,7 @@
 // fetcher go-kit HTTP server encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/fetcher/fetcher/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/fetcher/fetcher/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher
 
 package server
@@ -14,7 +14,7 @@ import (
 
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/v3/http"
-	"goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/server"
+	"goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/http/fetcher/server"
 )
 
 // EncodeFetchResponse returns a go-kit EncodeResponseFunc suitable for

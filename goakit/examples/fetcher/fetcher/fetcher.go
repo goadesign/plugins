@@ -11,10 +11,10 @@ import (
 	"github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/v3/http"
-	archiversvc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/archiver"
-	archiverkc "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/kitclient"
-	archiverks "goa.design/plugins/goakit/examples/fetcher/archiver/gen/http/archiver/server"
-	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	archiversvc "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver"
+	archiverkc "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/archiver/kitclient"
+	archiverks "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/archiver/server"
+	fetchersvc "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // fetcher service example implementation.

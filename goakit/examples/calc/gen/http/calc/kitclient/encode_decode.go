@@ -3,7 +3,7 @@
 // calc go-kit HTTP client encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/calc/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/calc/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
 
 package client
@@ -14,7 +14,7 @@ import (
 
 	kithttp "github.com/go-kit/kit/transport/http"
 	goahttp "goa.design/goa/v3/http"
-	"goa.design/plugins/goakit/examples/calc/gen/http/calc/client"
+	"goa.design/plugins/v3/goakit/examples/calc/gen/http/calc/client"
 )
 
 // DecodeAddResponse returns a go-kit DecodeResponseFunc suitable for decoding

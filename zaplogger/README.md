@@ -13,7 +13,7 @@ package design
 
 import . "goa.design/goa/v3/http/design"
 import . "goa.design/goa/v3/http/dsl"
-import _ "goa.design/plugins/zaplogger" # Enables the plugin
+import _ "goa.design/plugins/v3/zaplogger" # Enables the plugin
 
 var _ = API("...
 

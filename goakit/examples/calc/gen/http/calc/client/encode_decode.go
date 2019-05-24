@@ -3,7 +3,7 @@
 // calc HTTP client encoders and decoders
 //
 // Command:
-// $ goa gen goa.design/plugins/goakit/examples/calc/design -o
+// $ goa gen goa.design/plugins/v3/goakit/examples/calc/design -o
 // $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
 
 package client
@@ -16,7 +16,7 @@ import (
 	"net/url"
 
 	goahttp "goa.design/goa/v3/http"
-	calc "goa.design/plugins/goakit/examples/calc/gen/calc"
+	calc "goa.design/plugins/v3/goakit/examples/calc/gen/calc"
 )
 
 // BuildAddRequest instantiates a HTTP request object with method and path set
