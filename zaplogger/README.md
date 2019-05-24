@@ -1,6 +1,6 @@
 # ZapLogger Plugin
 
-The `ZapLogger` plugin is a [goa v2](https://github.com/goadesign/goa/tree/v2) plugin
+The `ZapLogger` plugin is a [Goa v3](https://github.com/goadesign/goa/tree/v3) plugin
 that adapt the basic logger to use the [zap](https://github.com/uber-go/zap) library.
 
 ## Enabling the Plugin
