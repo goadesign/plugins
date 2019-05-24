@@ -11,7 +11,7 @@ the `dsl` packages as follows:
 
 ```go
 import (
-  _ "goa.design/plugins/v3/cors/dsl"
+  cors "goa.design/plugins/v3/cors/dsl"
   . "goa.design/goa/v3/dsl"
 )
 ```
@@ -55,20 +55,20 @@ Here is an example defining a CORS policy at a service level.
 ```go
 var _ = Service("calc", func() {
   // Sets CORS response headers for requests with Origin header matching the string "localhost"
-  Origin("localhost")
+  cors.Origin("localhost")
 
   // Sets CORS response headers for requests with Origin header matching strings ending with ".domain.com" (e.g. "my.domain.com")
-  Origin("*.domain.com", func() {
+  cors.Origin("*.domain.com", func() {
     Headers("X-Shared-Secret", "X-Api-Version")
     MaxAge(100)
     Credentials()
   })
 
   // Sets CORS response headers for requests with any Origin header
-  Origin("*")
+  cors.Origin("*")
 
   // Sets CORS response headers for requests with Origin header matching the regular expression ".*domain.*"
-  Origin("/.*domain.*/", func() {
+  cors.Origin("/.*domain.*/", func() {
     Headers("*")
     Methods("GET", "POST")
     Expose("X-Time")
