@@ -102,7 +102,7 @@ To enable the plugin simply import both the `docs` package as follows:
 
 ```go
 import (
-  _ "goa.design/plugins/docs"
+  _ "goa.design/plugins/v3/docs"
   . "goa.design/goa/v3/dsl"
 )
 ```
