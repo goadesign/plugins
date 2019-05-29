@@ -76,3 +76,22 @@ var OriginMultiEndpointDSL = func() {
 		})
 	})
 }
+
+var MultiServiceSameOriginDSL = func() {
+	Service("FirstService", func() {
+		cors.Origin("SimpleOrigin")
+		Method("SimpleOriginMethod", func() {
+			HTTP(func() {
+				GET("/")
+			})
+		})
+	})
+	Service("SecondService", func() {
+		cors.Origin("SimpleOrigin")
+		Method("SimpleOriginMethod", func() {
+			HTTP(func() {
+				GET("/")
+			})
+		})
+	})
+}

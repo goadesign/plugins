@@ -154,6 +154,59 @@ func handleOriginMultiEndpointOrigin(h http.Handler) http.Handler {
 }
 `
 
+var MultiServiceSameOriginFirstServiceHandleCode = `// handleFirstServiceOrigin applies the CORS response headers corresponding to
+// the origin for the service FirstService.
+func handleFirstServiceOrigin(h http.Handler) http.Handler {
+	origHndlr := h.(http.HandlerFunc)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			// Not a CORS request
+			origHndlr(w, r)
+			return
+		}
+		if cors.MatchOrigin(origin, "SimpleOrigin") {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin")
+			w.Header().Set("Access-Control-Allow-Credentials", "false")
+			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
+				// We are handling a preflight request
+			}
+			origHndlr(w, r)
+			return
+		}
+		origHndlr(w, r)
+		return
+	})
+}
+`
+var MultiServiceSameOriginSecondServiceHandleCode = `// handleSecondServiceOrigin applies the CORS response headers corresponding to
+// the origin for the service SecondService.
+func handleSecondServiceOrigin(h http.Handler) http.Handler {
+	origHndlr := h.(http.HandlerFunc)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			// Not a CORS request
+			origHndlr(w, r)
+			return
+		}
+		if cors.MatchOrigin(origin, "SimpleOrigin") {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin")
+			w.Header().Set("Access-Control-Allow-Credentials", "false")
+			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
+				// We are handling a preflight request
+			}
+			origHndlr(w, r)
+			return
+		}
+		origHndlr(w, r)
+		return
+	})
+}
+`
+
 var SimpleOriginMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service SimpleOrigin.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
@@ -221,6 +274,33 @@ func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 		}
 	}
 	mux.Handle("OPTIONS", "/{:id}", f)
+	mux.Handle("OPTIONS", "/", f)
+}
+`
+
+var MultiServiceSameOriginFirstServiceMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
+// service FirstService.
+func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
+	h = handleFirstServiceOrigin(h)
+	f, ok := h.(http.HandlerFunc)
+	if !ok {
+		f = func(w http.ResponseWriter, r *http.Request) {
+			h.ServeHTTP(w, r)
+		}
+	}
+	mux.Handle("OPTIONS", "/", f)
+}
+`
+var MultiServiceSameOriginSecondServiceMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
+// service SecondService.
+func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
+	h = handleSecondServiceOrigin(h)
+	f, ok := h.(http.HandlerFunc)
+	if !ok {
+		f = func(w http.ResponseWriter, r *http.Request) {
+			h.ServeHTTP(w, r)
+		}
+	}
 	mux.Handle("OPTIONS", "/", f)
 }
 `
@@ -322,6 +402,43 @@ func New(
 		OriginMultiEndpointPost:    NewOriginMultiEndpointPostHandler(e.OriginMultiEndpointPost, mux, dec, enc, eh),
 		OriginMultiEndpointOptions: NewOriginMultiEndpointOptionsHandler(e.OriginMultiEndpointOptions, mux, dec, enc, eh),
 		CORS:                       NewCORSHandler(),
+	}
+}
+`
+
+var MultiServiceSameOriginFirstServiceInitCode = `// New instantiates HTTP handlers for all the FirstService service endpoints.
+func New(
+	e *firstservice.Endpoints,
+	mux goahttp.Muxer,
+	dec func(*http.Request) goahttp.Decoder,
+	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
+) *Server {
+	return &Server{
+		Mounts: []*MountPoint{
+			{"SimpleOriginMethod", "GET", "/"},
+			{"CORS", "OPTIONS", "/"},
+		},
+		SimpleOriginMethod: NewSimpleOriginMethodHandler(e.SimpleOriginMethod, mux, dec, enc, eh),
+		CORS:               NewCORSHandler(),
+	}
+}
+`
+var MultiServiceSameOriginSecondServiceInitCode = `// New instantiates HTTP handlers for all the SecondService service endpoints.
+func New(
+	e *secondservice.Endpoints,
+	mux goahttp.Muxer,
+	dec func(*http.Request) goahttp.Decoder,
+	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	eh func(context.Context, http.ResponseWriter, error),
+) *Server {
+	return &Server{
+		Mounts: []*MountPoint{
+			{"SimpleOriginMethod", "GET", "/"},
+			{"CORS", "OPTIONS", "/"},
+		},
+		SimpleOriginMethod: NewSimpleOriginMethodHandler(e.SimpleOriginMethod, mux, dec, enc, eh),
+		CORS:               NewCORSHandler(),
 	}
 }
 `
