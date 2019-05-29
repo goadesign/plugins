@@ -73,7 +73,7 @@ func Origin(origin string, args ...interface{}) {
 		expr.Root.APIOrigins[origin] = o
 	case *goaexpr.ServiceExpr:
 		{
-			s := current.(*goaexpr.ServiceExpr)
+			s := current.(*goaexpr.ServiceExpr).Name
 			if _, ok := expr.Root.ServiceOrigins[s]; !ok {
 				expr.Root.ServiceOrigins[s] = make(map[string]*expr.OriginExpr)
 			}

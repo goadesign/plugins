@@ -38,7 +38,7 @@ type (
 func Origins(svc string) []*OriginExpr {
 	origins := make(map[string]*OriginExpr)
 	for s, no := range Root.ServiceOrigins {
-		if s.Name == svc {
+		if s == svc {
 			for n, o := range no {
 				origins[n] = o
 			}

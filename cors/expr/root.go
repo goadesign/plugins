@@ -8,7 +8,7 @@ import (
 // Root is the design root expression.
 var Root = &RootExpr{
 	APIOrigins:     map[string]*OriginExpr{},
-	ServiceOrigins: map[*expr.ServiceExpr]map[string]*OriginExpr{},
+	ServiceOrigins: map[string]map[string]*OriginExpr{},
 }
 
 type (
@@ -19,7 +19,7 @@ type (
 		APIOrigins map[string]*OriginExpr
 		// ServiceOrigins lists all the CORS definitions indexed by origin string
 		// at the service level.
-		ServiceOrigins map[*expr.ServiceExpr]map[string]*OriginExpr
+		ServiceOrigins map[string]map[string]*OriginExpr
 	}
 )
 
