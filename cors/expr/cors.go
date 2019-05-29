@@ -37,10 +37,11 @@ type (
 // by origin string) for the given service.
 func Origins(svc string) []*OriginExpr {
 	origins := make(map[string]*OriginExpr)
-	for n, o := range Root.ServiceOrigins {
-		s, ok := o.Parent.(*expr.ServiceExpr)
-		if ok && s.Name == svc {
-			origins[n] = o
+	for s, no := range Root.ServiceOrigins {
+		if s.Name == svc {
+			for n, o := range no {
+				origins[n] = o
+			}
 		}
 	}
 	for n, o := range Root.APIOrigins {

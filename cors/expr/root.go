@@ -8,7 +8,7 @@ import (
 // Root is the design root expression.
 var Root = &RootExpr{
 	APIOrigins:     map[string]*OriginExpr{},
-	ServiceOrigins: map[string]*OriginExpr{},
+	ServiceOrigins: map[*expr.ServiceExpr]map[string]*OriginExpr{},
 }
 
 type (
@@ -19,7 +19,7 @@ type (
 		APIOrigins map[string]*OriginExpr
 		// ServiceOrigins lists all the CORS definitions indexed by origin string
 		// at the service level.
-		ServiceOrigins map[string]*OriginExpr
+		ServiceOrigins map[*expr.ServiceExpr]map[string]*OriginExpr
 	}
 )
 
@@ -41,8 +41,10 @@ func (r *RootExpr) WalkSets(walk eval.SetWalker) {
 	}
 	walk(oexps)
 	oexps = make(eval.ExpressionSet, 0, len(r.ServiceOrigins))
-	for _, o := range r.ServiceOrigins {
-		oexps = append(oexps, o)
+	for _, s := range r.ServiceOrigins {
+		for _, o := range s {
+			oexps = append(oexps, o)
+		}
 	}
 	walk(oexps)
 }
