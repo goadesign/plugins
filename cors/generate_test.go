@@ -24,32 +24,36 @@ func NewCORSHandler() http.Handler {
 	cases := []struct {
 		Name             string
 		DSL              func()
-		HandleOriginCode string
-		MountCORSCode    string
-		ServerInitCode   string
+		HandleOriginCode []string
+		MountCORSCode    []string
+		ServerInitCode   []string
+		CodeGenCount     int
 	}{
-		{"simple-origin", testdata.SimpleOriginDSL, testdata.SimpleOriginHandleCode, testdata.SimpleOriginMountCode, testdata.SimpleOriginServerInitCode},
-		{"regexp-origin", testdata.RegexpOriginDSL, testdata.RegexpOriginHandleCode, testdata.RegexpOriginMountCode, testdata.RegexpOriginServerInitCode},
-		{"multi-origin", testdata.MultiOriginDSL, testdata.MultiOriginHandleCode, testdata.MultiOriginMountCode, testdata.MultiOriginServerInitCode},
-		{"origin-file-server", testdata.OriginFileServerDSL, testdata.OriginFileServerHandleCode, testdata.OriginFileServerMountCode, testdata.OriginFileServerServerInitCode},
-		{"origin-multi-endpoint", testdata.OriginMultiEndpointDSL, testdata.OriginMultiEndpointHandleCode, testdata.OriginMultiEndpointMountCode, testdata.OriginMultiEndpointServerInitCode},
+		{"simple-origin", testdata.SimpleOriginDSL, []string{testdata.SimpleOriginHandleCode}, []string{testdata.SimpleOriginMountCode}, []string{testdata.SimpleOriginServerInitCode}, 2},
+		{"regexp-origin", testdata.RegexpOriginDSL, []string{testdata.RegexpOriginHandleCode}, []string{testdata.RegexpOriginMountCode}, []string{testdata.RegexpOriginServerInitCode}, 2},
+		{"multi-origin", testdata.MultiOriginDSL, []string{testdata.MultiOriginHandleCode}, []string{testdata.MultiOriginMountCode}, []string{testdata.MultiOriginServerInitCode}, 2},
+		{"origin-file-server", testdata.OriginFileServerDSL, []string{testdata.OriginFileServerHandleCode}, []string{testdata.OriginFileServerMountCode}, []string{testdata.OriginFileServerServerInitCode}, 2},
+		{"origin-multi-endpoint", testdata.OriginMultiEndpointDSL, []string{testdata.OriginMultiEndpointHandleCode}, []string{testdata.OriginMultiEndpointMountCode}, []string{testdata.OriginMultiEndpointServerInitCode}, 2},
+		{"multiservice-origin", testdata.MultiServiceSameOriginDSL, []string{testdata.MultiServiceSameOriginFirstServiceHandleCode, testdata.MultiServiceSameOriginSecondServiceHandleCode}, []string{testdata.MultiServiceSameOriginFirstServiceMountCode, testdata.MultiServiceSameOriginSecondServiceMountCode}, []string{testdata.MultiServiceSameOriginFirstServiceInitCode, testdata.MultiServiceSameOriginSecondServiceInitCode}, 4},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
 			fs := httpcodegen.ServerFiles("", expr.Root)
-			if len(fs) != 2 {
-				t.Fatalf("got %d files, expected two", len(fs))
+			if len(fs) != c.CodeGenCount {
+				t.Fatalf("got %d files, expected %d", len(fs), c.CodeGenCount)
 			}
 			cors.Generate("", []eval.Root{expr.Root}, fs)
+			expectedCodeIndex := -1
 			for _, f := range fs {
 				if filepath.Base(f.Path) != "server.go" {
 					continue
 				}
-				testCode(t, f, "handle-cors", c.HandleOriginCode)
-				testCode(t, f, "mount-cors", c.MountCORSCode)
+				expectedCodeIndex += 1
+				testCode(t, f, "handle-cors", c.HandleOriginCode[expectedCodeIndex])
+				testCode(t, f, "mount-cors", c.MountCORSCode[expectedCodeIndex])
 				testCode(t, f, "cors-handler-init", corsHandler)
-				testCode(t, f, "server-init", c.ServerInitCode)
+				testCode(t, f, "server-init", c.ServerInitCode[expectedCodeIndex])
 				var originHndlr string
 				for _, s := range f.Section("handle-cors") {
 					data := s.Data.(*cors.ServiceData)

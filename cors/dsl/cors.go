@@ -72,7 +72,13 @@ func Origin(origin string, args ...interface{}) {
 	case *goaexpr.APIExpr:
 		expr.Root.APIOrigins[origin] = o
 	case *goaexpr.ServiceExpr:
-		expr.Root.ServiceOrigins[origin] = o
+		{
+			s := current.(*goaexpr.ServiceExpr).Name
+			if _, ok := expr.Root.ServiceOrigins[s]; !ok {
+				expr.Root.ServiceOrigins[s] = make(map[string]*expr.OriginExpr)
+			}
+			expr.Root.ServiceOrigins[s][origin] = o
+		}
 	default:
 		eval.IncompatibleDSL()
 		return
