@@ -5,7 +5,7 @@ The `goakit` plugin is a [goa](https://github.com/goadesign/goa/tree/v2) plugin 
 
 ## Usage
 
-goa v2 must be installed:
+goa v3 must be installed:
 
 ```bash
 go get goa.design/goa/v3/...
