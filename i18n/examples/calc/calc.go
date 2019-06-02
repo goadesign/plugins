@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	calcsvc "goa.design/plugins/v3/cors/examples/calc/gen/calc"
+	calcsvc "goa.design/plugins/v3/i18n/examples/calc/gen/calc"
 )
 
 // calc service example implementation.
