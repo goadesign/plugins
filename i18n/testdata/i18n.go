@@ -5,15 +5,19 @@ import (
 	"fmt"
 )
 
-// I18nLibrary is a mock library to showcase the functionality
-type I18nLibrary struct {
-	Messages map[string]map[string]string
-}
+// Messages is a nested key value store where
+// localized messages are store in format <locale>:<label>=<translation>
+var messages map[string]map[string]string
+var _ = json.Unmarshal([]byte(`{
+	"en": {
+		"title": "Goa"
+	}
+}`), &messages)
 
 // M returns a translated message for the specified key
-func (i18nlib *I18nLibrary) M(label string) func(lang string) string {
+func M(label string) func(lang string) string {
 	return func(lang string) string {
-		messagesBundle, ok := i18nlib.Messages[lang]
+		messagesBundle, ok := messages[lang]
 
 		if !ok {
 			return fmt.Sprintf("*%s*", label)
@@ -25,10 +29,3 @@ func (i18nlib *I18nLibrary) M(label string) func(lang string) string {
 		return message
 	}
 }
-
-var T = I18nLibrary{}
-var _ = json.Unmarshal([]byte(`{
-	"en": {
-		"title": "Goa"
-	}
-}`), &T.Messages)

@@ -7,11 +7,11 @@ import (
 
 var SimpleI18nDSL = func() {
 	API("calc", func() {
-		i18n.Title(T.M("title"))
+		i18n.Title(M("title"))
 	})
 	Service("SimpleOrigin", func() {
-		i18n.Description(T.M("title"))
-		i18n.Example(T.M("title"))
+		i18n.Description(M("title"))
+		i18n.Example(M("title"))
 
 		Method("SimpleOriginMethod", func() {
 			HTTP(func() {
