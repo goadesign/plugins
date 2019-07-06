@@ -2,6 +2,7 @@ package cors
 
 import (
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"goa.design/goa/codegen"
@@ -33,6 +34,7 @@ type (
 // Register the plugin Generator functions.
 func init() {
 	codegen.RegisterPlugin("cors", "gen", nil, Generate)
+	codegen.RegisterPlugin("cors-example", "example", nil, TweakExample)
 }
 
 // Generate produces server code that handle preflight requests and updates
@@ -40,6 +42,24 @@ func init() {
 func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	for _, f := range files {
 		serverCORS(f)
+	}
+	return files, nil
+}
+
+// TweakExample handles the special case where a service only has file servers
+// and no method in which case the Goa generator generate a Mount method that
+// does not take a second argument but this plugin generates one that does. The
+// second argument is the actual HTTP server which is needed so it can be
+// configured with the CORS endpoint. So this method simply removes the special
+// case from the Goa template generating the example.
+func TweakExample(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
+	re := regexp.MustCompile("{{ if .Endpoints }}(.+){{ end }}")
+	for _, f := range files {
+		for _, t := range f.SectionTemplates {
+			if t.Name == "server-http-init" {
+				t.Source = re.ReplaceAllString(t.Source, "$1")
+			}
+		}
 	}
 	return files, nil
 }
