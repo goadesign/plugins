@@ -7,7 +7,8 @@ PLUGINS=\
 	cors \
 	docs \
 	goakit \
-	zaplogger
+	zaplogger \
+	i18n
 
 export GO111MODULE=on
 
