@@ -37,11 +37,11 @@ paths:
         "400":
           description: Bad Request response.
           schema:
-            $ref: '#/definitions/FetcherFetchBadRequestResponseBody'
+            $ref: '#/definitions/Fetcherfetch_bad_request_response_body'
         "500":
           description: Internal Server Error response.
           schema:
-            $ref: '#/definitions/FetcherFetchInternalErrorResponseBody'
+            $ref: '#/definitions/Fetcherfetch_internal_error_response_body'
       schemes:
       - http
   /health:
@@ -61,7 +61,28 @@ paths:
       schemes:
       - http
 definitions:
-  FetcherFetchBadRequestResponseBody:
+  FetcherFetchResponseBody:
+    title: 'Mediatype identifier: application/vnd.goa.fetch; view=default'
+    type: object
+    properties:
+      archive_href:
+        type: string
+        description: The href to the corresponding archive in the archiver service
+        example: /archive/1
+        pattern: ^/archive/[0-9]+$
+      status:
+        type: integer
+        description: HTTP status code returned by fetched service
+        example: 200
+        minimum: 0
+    description: FetchResponseBody result type (default view)
+    example:
+      archive_href: /archive/1
+      status: 200
+    required:
+    - status
+    - archive_href
+  Fetcherfetch_bad_request_response_body:
     title: 'Mediatype identifier: application/vnd.goa.error; view=default'
     type: object
     properties:
@@ -106,7 +127,7 @@ definitions:
     - temporary
     - timeout
     - fault
-  FetcherFetchInternalErrorResponseBody:
+  Fetcherfetch_internal_error_response_body:
     title: 'Mediatype identifier: application/vnd.goa.error; view=default'
     type: object
     properties:
@@ -151,24 +172,3 @@ definitions:
     - temporary
     - timeout
     - fault
-  FetcherFetchResponseBody:
-    title: 'Mediatype identifier: application/vnd.goa.fetch; view=default'
-    type: object
-    properties:
-      archive_href:
-        type: string
-        description: The href to the corresponding archive in the archiver service
-        example: /archive/1
-        pattern: ^/archive/[0-9]+$
-      status:
-        type: integer
-        description: HTTP status code returned by fetched service
-        example: 200
-        minimum: 0
-    description: FetchResponseBody result type (default view)
-    example:
-      archive_href: /archive/1
-      status: 200
-    required:
-    - status
-    - archive_href

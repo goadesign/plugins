@@ -1,7 +1,9 @@
 package design
 
-import . "goa.design/goa/v3/dsl"
-import _ "goa.design/plugins/v3/docs"
+import (
+	. "goa.design/goa/v3/dsl"
+	_ "goa.design/plugins/v3/docs"
+)
 
 // API describes the global properties of the API server.
 var _ = API("calc", func() {
