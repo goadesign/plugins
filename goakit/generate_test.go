@@ -97,6 +97,12 @@ func TestGoakitifyExample(t *testing.T) {
 				"server-http-init": testdata.MultiServicesServerInitCode,
 			},
 		},
+		"with-error": {
+			DSL: testdata.WithErrorDSL,
+			Code: map[string]string{
+				"server-http-init": testdata.WithErrorServerInitCode,
+			},
+		},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {

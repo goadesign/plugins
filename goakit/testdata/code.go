@@ -289,14 +289,12 @@ var MultiServicesServerInitCode = `func example() {
 			endpoint.Endpoint(service1Endpoints.Method),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			service1kitsvr.EncodeMethodResponse(enc),
-			kithttp.ServerErrorEncoder(service1kitsvr.EncodeMethodError(enc)),
 		)
 		service1Server = service1svr.New(service1Endpoints, mux, dec, enc, eh)
 		service2MethodHandler = kithttp.NewServer(
 			endpoint.Endpoint(service2Endpoints.Method),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			service2kitsvr.EncodeMethodResponse(enc),
-			kithttp.ServerErrorEncoder(service2kitsvr.EncodeMethodError(enc)),
 		)
 		service2Server = service2svr.New(service2Endpoints, mux, dec, enc, eh)
 	}
@@ -304,5 +302,30 @@ var MultiServicesServerInitCode = `func example() {
 	// Configure the mux.
 	service1kitsvr.MountMethodHandler(mux, service1MethodHandler)
 	service2kitsvr.MountMethodHandler(mux, service2MethodHandler)
+}
+`
+
+var WithErrorServerInitCode = `func example() {
+	// Wrap the endpoints with the transport specific layers. The generated
+	// server packages contains code generated from the design which maps
+	// the service input and output data structures to HTTP requests and
+	// responses.
+	var (
+		withErrorServiceWithErrorMethodHandler *kithttp.Server
+		withErrorServiceServer                 *witherrorservicesvr.Server
+	)
+	{
+		eh := errorHandler(logger)
+		withErrorServiceWithErrorMethodHandler = kithttp.NewServer(
+			endpoint.Endpoint(withErrorServiceEndpoints.WithErrorMethod),
+			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
+			witherrorservicekitsvr.EncodeWithErrorMethodResponse(enc),
+			kithttp.ServerErrorEncoder(witherrorservicekitsvr.EncodeWithErrorMethodError(enc)),
+		)
+		withErrorServiceServer = witherrorservicesvr.New(withErrorServiceEndpoints, mux, dec, enc, eh)
+	}
+
+	// Configure the mux.
+	witherrorservicekitsvr.MountWithErrorMethodHandler(mux, withErrorServiceWithErrorMethodHandler)
 }
 `
