@@ -284,17 +284,19 @@ var MultiServicesServerInitCode = `func example() {
 		service2Server        *service2svr.Server
 	)
 	{
-		eh := ErrorHandler(logger)
+		eh := errorHandler(logger)
 		service1MethodHandler = kithttp.NewServer(
 			endpoint.Endpoint(service1Endpoints.Method),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			service1kitsvr.EncodeMethodResponse(enc),
+			kithttp.ServerErrorEncoder(service1kitsvr.EncodeMethodError(enc)),
 		)
 		service1Server = service1svr.New(service1Endpoints, mux, dec, enc, eh)
 		service2MethodHandler = kithttp.NewServer(
 			endpoint.Endpoint(service2Endpoints.Method),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			service2kitsvr.EncodeMethodResponse(enc),
+			kithttp.ServerErrorEncoder(service2kitsvr.EncodeMethodError(enc)),
 		)
 		service2Server = service2svr.New(service2Endpoints, mux, dec, enc, eh)
 	}

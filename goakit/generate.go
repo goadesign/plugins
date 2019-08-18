@@ -168,6 +168,7 @@ const gokitServerInitT = `
             func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
           {{- end }}
           {{ .ServicePkgName}}kitsvr.{{ .ResponseEncoder }}(enc),
+          kithttp.ServerErrorEncoder({{ .ServicePkgName}}kitsvr.{{ .ErrorEncoder }}(enc)),
         )
       {{- end }}
       {{ .Service.VarName }}Server = {{ .Service.PkgName }}svr.New({{ .Service.VarName }}Endpoints, mux, dec, enc, eh{{ if needStream $.Services }}, upgrader, nil{{ end }}{{ range .Endpoints }}{{ if .MultipartRequestDecoder }}, {{ $.APIPkg }}.{{ .MultipartRequestDecoder.FuncName }}{{ end }}{{ end }})
