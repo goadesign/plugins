@@ -65,6 +65,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, archiverEndpoints *archiv
 			endpoint.Endpoint(archiverEndpoints.Read),
 			archiverkitsvr.DecodeReadRequest(mux, dec),
 			archiverkitsvr.EncodeReadResponse(enc),
+			kithttp.ServerErrorEncoder(archiverkitsvr.EncodeReadError(enc)),
 		)
 		archiverServer = archiversvr.New(archiverEndpoints, mux, dec, enc, eh)
 		healthShowHandler = kithttp.NewServer(
