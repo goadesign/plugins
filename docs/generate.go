@@ -3,6 +3,7 @@ package docs
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"text/template"
 
@@ -35,6 +36,15 @@ func docsFile(r *expr.RootExpr) *codegen.File {
 		Definitions: openapi.Definitions,
 	}
 	jsonPath := filepath.Join(codegen.Gendir, "docs.json")
+	if _, err := os.Stat(jsonPath); !os.IsNotExist(err) {
+		// goa does not delete files in the top-level gen folder.
+		// https://github.com/goadesign/goa/pull/2194
+		// The plugin must delete docs.json so that the generator does not append
+		// to the existing docs.json.
+		if err := os.Remove(jsonPath); err != nil {
+			panic(err)
+		}
+	}
 	jsonSection := &codegen.SectionTemplate{
 		Name:    "docs",
 		FuncMap: template.FuncMap{"toJSON": toJSON},
