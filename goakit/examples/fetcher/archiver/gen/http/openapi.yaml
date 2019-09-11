@@ -58,11 +58,11 @@ paths:
         "400":
           description: Bad Request response.
           schema:
-            $ref: '#/definitions/Archiverread_bad_request_response_body'
+            $ref: '#/definitions/ArchiverReadBadRequestResponseBody'
         "404":
           description: Not Found response.
           schema:
-            $ref: '#/definitions/Archiverread_not_found_response_body'
+            $ref: '#/definitions/ArchiverReadNotFoundResponseBody'
       schemes:
       - http
   /health:
@@ -128,34 +128,7 @@ definitions:
     - href
     - status
     - body
-  ArchiverReadResponseBody:
-    title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
-    type: object
-    properties:
-      body:
-        type: string
-        description: HTTP response body content
-        example: Quia cum qui numquam soluta iusto.
-      href:
-        type: string
-        description: The archive resouce href
-        example: /archive1/
-        pattern: ^/archive/[0-9]+$
-      status:
-        type: integer
-        description: HTTP status
-        example: 200
-        minimum: 0
-    description: ReadResponseBody result type (default view)
-    example:
-      body: Ad beatae incidunt consequuntur aperiam aliquid.
-      href: /archive1/
-      status: 200
-    required:
-    - href
-    - status
-    - body
-  Archiverread_bad_request_response_body:
+  ArchiverReadBadRequestResponseBody:
     title: 'Mediatype identifier: application/vnd.goa.error; view=default'
     type: object
     properties:
@@ -200,7 +173,7 @@ definitions:
     - temporary
     - timeout
     - fault
-  Archiverread_not_found_response_body:
+  ArchiverReadNotFoundResponseBody:
     title: 'Mediatype identifier: application/vnd.goa.error; view=default'
     type: object
     properties:
@@ -245,3 +218,30 @@ definitions:
     - temporary
     - timeout
     - fault
+  ArchiverReadResponseBody:
+    title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
+    type: object
+    properties:
+      body:
+        type: string
+        description: HTTP response body content
+        example: Quia cum qui numquam soluta iusto.
+      href:
+        type: string
+        description: The archive resouce href
+        example: /archive1/
+        pattern: ^/archive/[0-9]+$
+      status:
+        type: integer
+        description: HTTP status
+        example: 200
+        minimum: 0
+    description: ReadResponseBody result type (default view)
+    example:
+      body: Ad beatae incidunt consequuntur aperiam aliquid.
+      href: /archive1/
+      status: 200
+    required:
+    - href
+    - status
+    - body
