@@ -80,8 +80,8 @@ var MapPayloadNoReturn = func() {
 
 var UserPayloadNoReturn = func() {
 	var User = Type("User", func() {
-		Attribute("att1", String)
-		Attribute("att2", Int)
+		Field(1, "att1", String)
+		Field(2, "att2", Int)
 	})
 	API("Test API", func() {})
 	Service("Service", func() {
@@ -136,8 +136,8 @@ var NoPayloadMapReturn = func() {
 
 var NoPayloadUserReturn = func() {
 	var User = Type("User", func() {
-		Attribute("att1", String)
-		Attribute("att2", Int)
+		Field(1, "att1", String)
+		Field(2, "att2", Int)
 	})
 	API("Test API", func() {})
 	Service("Service", func() {
