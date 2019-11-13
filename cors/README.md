@@ -1,6 +1,6 @@
 # CORS Plugin
 
-The `cors` plugin is a [goa v2](https://github.com/goadesign/goa/tree/v2) plugin
+The `cors` plugin is a [Goa v3](https://github.com/goadesign/goa/tree/v3) plugin
 that makes it possible to define Cross-Origin Resource Sharing (CORS) policies for
 the server endpoints.
 
