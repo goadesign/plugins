@@ -19,13 +19,13 @@ import (
 ## Setting up the environment
 
 An environment variable `GOA_I18N` needs to be set up before running goa. This environment variable contains 
-a comma separated list of all locales you whish to generate. For example: 
+a comma separated list of all locales you wish to generate. For example: 
 
 ```
-GOA_I18N=en goa calc/design // Handles `en` locale only
-GOA_I18N=en,nl goa calc/design // Handles `en` and `nl` locales
-GOA_I18N=en,nl,de_DE goa calc/design // Handles `en`, `nl` and `de_DE` locales
-goa calc/design // Error, GOA_I18N not defined
+GOA_I18N=en goa gen calc/design // Handles `en` locale only
+GOA_I18N=en,nl goa gen calc/design // Handles `en` and `nl` locales
+GOA_I18N=en,nl,de_DE goa gen calc/design // Handles `en`, `nl` and `de_DE` locales
+goa gen calc/design // Error, GOA_I18N not defined
 ```
 
 The first locale in the list is the `default` locale. 
