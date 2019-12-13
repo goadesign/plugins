@@ -15,17 +15,17 @@ import (
 	goahttp "goa.design/goa/http"
 	httpmdlwr "goa.design/goa/http/middleware"
 	"goa.design/goa/middleware"
-	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 	health "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
-	fetchersvckitsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/kitserver"
-	fetchersvcsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/server"
+	fetcherkitsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/kitserver"
+	fetchersvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/fetcher/server"
 	healthkitsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/health/kitserver"
 	healthsvr "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/http/health/server"
 )
 
 // handleHTTPServer starts configures and starts a HTTP server on the given
 // URL. It shuts down the server if any error is received in the error channel.
-func handleHTTPServer(ctx context.Context, u *url.URL, fetcherEndpoints *fetchersvc.Endpoints, healthEndpoints *health.Endpoints, wg *sync.WaitGroup, errc chan error, logger log.Logger, debug bool) {
+func handleHTTPServer(ctx context.Context, u *url.URL, fetcherEndpoints *fetcher.Endpoints, healthEndpoints *health.Endpoints, wg *sync.WaitGroup, errc chan error, logger log.Logger, debug bool) {
 
 	// Provide the transport specific request decoder and response encoder.
 	// The goa http package has built-in support for JSON, XML and gob.
@@ -49,7 +49,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, fetcherEndpoints *fetcher
 	// responses.
 	var (
 		fetcherFetchHandler *kithttp.Server
-		fetcherServer       *fetchersvcsvr.Server
+		fetcherServer       *fetchersvr.Server
 		healthShowHandler   *kithttp.Server
 		healthServer        *healthsvr.Server
 	)
@@ -57,10 +57,10 @@ func handleHTTPServer(ctx context.Context, u *url.URL, fetcherEndpoints *fetcher
 		eh := errorHandler(logger)
 		fetcherFetchHandler = kithttp.NewServer(
 			endpoint.Endpoint(fetcherEndpoints.Fetch),
-			fetchersvckitsvr.DecodeFetchRequest(mux, dec),
-			fetchersvckitsvr.EncodeFetchResponse(enc),
+			fetcherkitsvr.DecodeFetchRequest(mux, dec),
+			fetcherkitsvr.EncodeFetchResponse(enc),
 		)
-		fetcherServer = fetchersvcsvr.New(fetcherEndpoints, mux, dec, enc, eh)
+		fetcherServer = fetchersvr.New(fetcherEndpoints, mux, dec, enc, eh)
 		healthShowHandler = kithttp.NewServer(
 			endpoint.Endpoint(healthEndpoints.Show),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
@@ -70,7 +70,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, fetcherEndpoints *fetcher
 	}
 
 	// Configure the mux.
-	fetchersvckitsvr.MountFetchHandler(mux, fetcherFetchHandler)
+	fetcherkitsvr.MountFetchHandler(mux, fetcherFetchHandler)
 	healthkitsvr.MountShowHandler(mux, healthShowHandler)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
@@ -104,17 +104,14 @@ func handleHTTPServer(ctx context.Context, u *url.URL, fetcherEndpoints *fetcher
 			errc <- srv.ListenAndServe()
 		}()
 
-		select {
-		case <-ctx.Done():
-			logger.Log("info", fmt.Sprintf("shutting down HTTP server at %q", u.Host))
+		<-ctx.Done()
+		logger.Log("info", fmt.Sprintf("shutting down HTTP server at %q", u.Host))
 
-			// Shutdown gracefully with a 30s timeout.
-			ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-			defer cancel()
+		// Shutdown gracefully with a 30s timeout.
+		ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		defer cancel()
 
-			srv.Shutdown(ctx)
-			return
-		}
+		srv.Shutdown(ctx)
 	}()
 }
 

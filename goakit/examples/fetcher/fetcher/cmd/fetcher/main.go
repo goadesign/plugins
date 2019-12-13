@@ -11,8 +11,8 @@ import (
 	"sync"
 
 	"github.com/go-kit/kit/log"
-	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher"
-	fetchersvc "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
+	fetcherapi "goa.design/plugins/goakit/examples/fetcher/fetcher"
+	fetcher "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/fetcher"
 	health "goa.design/plugins/goakit/examples/fetcher/fetcher/gen/health"
 )
 
@@ -25,7 +25,7 @@ func main() {
 		httpPortF    = flag.String("http-port", "", "HTTP port (overrides host HTTP port specified in service design)")
 		secureF      = flag.Bool("secure", false, "Use secure scheme (https or grpcs)")
 		dbgF         = flag.Bool("debug", false, "Log request and response bodies")
-		archiverHost = flag.String("archiver", "localhost:8081", "archiver service `host:port`")
+		archiverHost = flag.String("archiver", "localhost:8081", "archiver service `host:port`") // XXX This line was adde after generation.
 	)
 	flag.Parse()
 
@@ -41,22 +41,22 @@ func main() {
 
 	// Initialize the services.
 	var (
-		fetcherSvc fetchersvc.Service
+		fetcherSvc fetcher.Service
 		healthSvc  health.Service
 	)
 	{
-		fetcherSvc = fetcher.NewFetcher(logger, *archiverHost)
-		healthSvc = fetcher.NewHealth(logger)
+		fetcherSvc = fetcherapi.NewFetcher(logger, *archiverHost) // XXX *archiverHost was added after generation.
+		healthSvc = fetcherapi.NewHealth(logger)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other services
 	// potentially running in different processes.
 	var (
-		fetcherEndpoints *fetchersvc.Endpoints
+		fetcherEndpoints *fetcher.Endpoints
 		healthEndpoints  *health.Endpoints
 	)
 	{
-		fetcherEndpoints = fetchersvc.NewEndpoints(fetcherSvc)
+		fetcherEndpoints = fetcher.NewEndpoints(fetcherSvc)
 		healthEndpoints = health.NewEndpoints(healthSvc)
 	}
 
@@ -82,7 +82,7 @@ func main() {
 			addr := "http://localhost:80"
 			u, err := url.Parse(addr)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "invalid URL %#v: %s", addr, err)
+				fmt.Fprintf(os.Stderr, "invalid URL %#v: %s\n", addr, err)
 				os.Exit(1)
 			}
 			if *secureF {
@@ -101,7 +101,7 @@ func main() {
 		}
 
 	default:
-		fmt.Fprintf(os.Stderr, "invalid host argument: %q (valid hosts: localhost)", *hostF)
+		fmt.Fprintf(os.Stderr, "invalid host argument: %q (valid hosts: localhost)\n", *hostF)
 	}
 
 	// Wait for signal.
