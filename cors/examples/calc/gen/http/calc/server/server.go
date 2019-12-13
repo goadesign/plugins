@@ -63,7 +63,7 @@ func New(
 			{"CORS", "OPTIONS", "/add/{a}/{b}"},
 		},
 		Add:  NewAddHandler(e.Add, mux, decoder, encoder, errhandler, formatter),
-		CORS: NewCORSHandler(e.CORS, mux, decoder, encoder, errhandler, formatter),
+		CORS: NewCORSHandler(),
 	}
 }
 
