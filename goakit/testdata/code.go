@@ -59,8 +59,8 @@ func DecodeEndpoint1Request(mux goahttp.Muxer, decoder func(*http.Request) goaht
 
 var WithErrorMethodGoakitErrorEncoderCode = `// EncodeWithErrorMethodError returns a go-kit EncodeResponseFunc suitable for
 // encoding errors returned by the WithErrorService WithErrorMethod endpoint.
-func EncodeWithErrorMethodError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.ErrorEncoder {
-	enc := server.EncodeWithErrorMethodError(encoder)
+func EncodeWithErrorMethodError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(err error) goahttp.Statuser) kithttp.ErrorEncoder {
+	enc := server.EncodeWithErrorMethodError(encoder, formatter)
 	return func(ctx context.Context, err error, w http.ResponseWriter) {
 		enc(ctx, w, err)
 	}
@@ -69,8 +69,8 @@ func EncodeWithErrorMethodError(encoder func(context.Context, http.ResponseWrite
 
 var Endpoint1GoakitErrorEncoderCode = `// EncodeEndpoint1Error returns a go-kit EncodeResponseFunc suitable for
 // encoding errors returned by the MultiEndpointService Endpoint1 endpoint.
-func EncodeEndpoint1Error(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.ErrorEncoder {
-	enc := server.EncodeEndpoint1Error(encoder)
+func EncodeEndpoint1Error(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(err error) goahttp.Statuser) kithttp.ErrorEncoder {
+	enc := server.EncodeEndpoint1Error(encoder, formatter)
 	return func(ctx context.Context, err error, w http.ResponseWriter) {
 		enc(ctx, w, err)
 	}
@@ -79,8 +79,8 @@ func EncodeEndpoint1Error(encoder func(context.Context, http.ResponseWriter) goa
 
 var Endpoint2GoakitErrorEncoderCode = `// EncodeEndpoint2Error returns a go-kit EncodeResponseFunc suitable for
 // encoding errors returned by the MultiEndpointService Endpoint2 endpoint.
-func EncodeEndpoint2Error(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.ErrorEncoder {
-	enc := server.EncodeEndpoint2Error(encoder)
+func EncodeEndpoint2Error(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(err error) goahttp.Statuser) kithttp.ErrorEncoder {
+	enc := server.EncodeEndpoint2Error(encoder, formatter)
 	return func(ctx context.Context, err error, w http.ResponseWriter) {
 		enc(ctx, w, err)
 	}
