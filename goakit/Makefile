@@ -16,8 +16,10 @@ gen:
 
 example:
 	@rm -rf "$(GOPATH)/src/goa.design/plugins/goakit/examples/calc/cmd" && \
-	rm -rf "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher/cmd" && \
 	rm -rf "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver/cmd"
+	# rm -rf "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher/cmd"
+	# You must manually regenerate examples/fetcher/fetcher/cmd because it contains
+	# changes after generation. The changes are pointed by the comment XXX.
 	@goa example goa.design/plugins/goakit/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/calc"
 	@goa example goa.design/plugins/goakit/examples/fetcher/fetcher/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/fetcher"
 	@goa example goa.design/plugins/goakit/examples/fetcher/archiver/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/fetcher/archiver"
