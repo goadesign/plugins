@@ -2,6 +2,8 @@
 #
 # Makefile for goa v2 plugins
 
+export GO111MODULE=off
+
 # Add new plugins here to enable make
 PLUGINS=\
 	cors \

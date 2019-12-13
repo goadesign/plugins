@@ -2,6 +2,8 @@ language: go
 go:
 - 1.11.x
 env:
+  global:
+    - GO111MODULE=off
   matrix:
 install:
 - export PATH=${PATH}:${HOME}/gopath/bin
