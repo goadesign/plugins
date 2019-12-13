@@ -53,8 +53,8 @@ func DecodeFetchRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.D
 
 // EncodeFetchError returns an encoder for errors returned by the fetch fetcher
 // endpoint.
-func EncodeFetchError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, error) error {
-	encodeError := goahttp.ErrorEncoder(encoder)
+func EncodeFetchError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(err error) goahttp.Statuser) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := goahttp.ErrorEncoder(encoder, formatter)
 	return func(ctx context.Context, w http.ResponseWriter, v error) error {
 		en, ok := v.(ErrorNamer)
 		if !ok {
@@ -64,14 +64,24 @@ func EncodeFetchError(encoder func(context.Context, http.ResponseWriter) goahttp
 		case "bad_request":
 			res := v.(*goa.ServiceError)
 			enc := encoder(ctx, w)
-			body := NewFetchBadRequestResponseBody(res)
+			var body interface{}
+			if formatter != nil {
+				body = formatter(res)
+			} else {
+				body = NewFetchBadRequestResponseBody(res)
+			}
 			w.Header().Set("goa-error", "bad_request")
 			w.WriteHeader(http.StatusBadRequest)
 			return enc.Encode(body)
 		case "internal_error":
 			res := v.(*goa.ServiceError)
 			enc := encoder(ctx, w)
-			body := NewFetchInternalErrorResponseBody(res)
+			var body interface{}
+			if formatter != nil {
+				body = formatter(res)
+			} else {
+				body = NewFetchInternalErrorResponseBody(res)
+			}
 			w.Header().Set("goa-error", "internal_error")
 			w.WriteHeader(http.StatusInternalServerError)
 			return enc.Encode(body)

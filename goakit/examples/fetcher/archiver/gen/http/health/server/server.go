@@ -41,19 +41,25 @@ type MountPoint struct {
 	Pattern string
 }
 
-// New instantiates HTTP handlers for all the health service endpoints.
+// New instantiates HTTP handlers for all the health service endpoints using
+// the provided encoder and decoder. The handlers are mounted on the given mux
+// using the HTTP verb and path defined in the design. errhandler is called
+// whenever a response fails to be encoded. formatter is used to format errors
+// returned by the service methods prior to encoding. Both errhandler and
+// formatter are optional and can be nil.
 func New(
 	e *health.Endpoints,
 	mux goahttp.Muxer,
-	dec func(*http.Request) goahttp.Decoder,
-	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
-	eh func(context.Context, http.ResponseWriter, error),
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
 			{"Show", "GET", "/health"},
 		},
-		Show: NewShowHandler(e.Show, mux, dec, enc, eh),
+		Show: NewShowHandler(e.Show, mux, decoder, encoder, errhandler, formatter),
 	}
 }
 
@@ -87,13 +93,14 @@ func MountShowHandler(mux goahttp.Muxer, h http.Handler) {
 func NewShowHandler(
 	endpoint endpoint.Endpoint,
 	mux goahttp.Muxer,
-	dec func(*http.Request) goahttp.Decoder,
-	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
-	eh func(context.Context, http.ResponseWriter, error),
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(err error) goahttp.Statuser,
 ) http.Handler {
 	var (
-		encodeResponse = EncodeShowResponse(enc)
-		encodeError    = goahttp.ErrorEncoder(enc)
+		encodeResponse = EncodeShowResponse(encoder)
+		encodeError    = goahttp.ErrorEncoder(encoder, formatter)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
@@ -104,12 +111,12 @@ func NewShowHandler(
 
 		if err != nil {
 			if err := encodeError(ctx, w, err); err != nil {
-				eh(ctx, w, err)
+				errhandler(ctx, w, err)
 			}
 			return
 		}
 		if err := encodeResponse(ctx, w, res); err != nil {
-			eh(ctx, w, err)
+			errhandler(ctx, w, err)
 		}
 	})
 }
