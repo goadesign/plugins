@@ -65,15 +65,15 @@ func handleHTTPServer(ctx context.Context, u *url.URL, archiverEndpoints *archiv
 			endpoint.Endpoint(archiverEndpoints.Read),
 			archiverkitsvr.DecodeReadRequest(mux, dec),
 			archiverkitsvr.EncodeReadResponse(enc),
-			kithttp.ServerErrorEncoder(archiverkitsvr.EncodeReadError(enc)),
+			kithttp.ServerErrorEncoder(archiverkitsvr.EncodeReadError(enc, nil)),
 		)
-		archiverServer = archiversvr.New(archiverEndpoints, mux, dec, enc, eh)
+		archiverServer = archiversvr.New(archiverEndpoints, mux, dec, enc, eh, nil)
 		healthShowHandler = kithttp.NewServer(
 			endpoint.Endpoint(healthEndpoints.Show),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			healthkitsvr.EncodeShowResponse(enc),
 		)
-		healthServer = healthsvr.New(healthEndpoints, mux, dec, enc, eh)
+		healthServer = healthsvr.New(healthEndpoints, mux, dec, enc, eh, nil)
 	}
 
 	// Configure the mux.

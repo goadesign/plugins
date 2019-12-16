@@ -305,71 +305,94 @@ func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 }
 `
 
-var SimpleOriginServerInitCode = `// New instantiates HTTP handlers for all the SimpleOrigin service endpoints.
+var SimpleOriginServerInitCode = `// New instantiates HTTP handlers for all the SimpleOrigin service endpoints
+// using the provided encoder and decoder. The handlers are mounted on the
+// given mux using the HTTP verb and path defined in the design. errhandler is
+// called whenever a response fails to be encoded. formatter is used to format
+// errors returned by the service methods prior to encoding. Both errhandler
+// and formatter are optional and can be nil.
 func New(
 	e *simpleorigin.Endpoints,
 	mux goahttp.Muxer,
-	dec func(*http.Request) goahttp.Decoder,
-	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
-	eh func(context.Context, http.ResponseWriter, error),
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
 			{"SimpleOriginMethod", "GET", "/"},
 			{"CORS", "OPTIONS", "/"},
 		},
-		SimpleOriginMethod: NewSimpleOriginMethodHandler(e.SimpleOriginMethod, mux, dec, enc, eh),
+		SimpleOriginMethod: NewSimpleOriginMethodHandler(e.SimpleOriginMethod, mux, decoder, encoder, errhandler, formatter),
 		CORS:               NewCORSHandler(),
 	}
 }
 `
 
-var RegexpOriginServerInitCode = `// New instantiates HTTP handlers for all the RegexpOrigin service endpoints.
+var RegexpOriginServerInitCode = `// New instantiates HTTP handlers for all the RegexpOrigin service endpoints
+// using the provided encoder and decoder. The handlers are mounted on the
+// given mux using the HTTP verb and path defined in the design. errhandler is
+// called whenever a response fails to be encoded. formatter is used to format
+// errors returned by the service methods prior to encoding. Both errhandler
+// and formatter are optional and can be nil.
 func New(
 	e *regexporigin.Endpoints,
 	mux goahttp.Muxer,
-	dec func(*http.Request) goahttp.Decoder,
-	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
-	eh func(context.Context, http.ResponseWriter, error),
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
 			{"RegexpOriginMethod", "GET", "/"},
 			{"CORS", "OPTIONS", "/"},
 		},
-		RegexpOriginMethod: NewRegexpOriginMethodHandler(e.RegexpOriginMethod, mux, dec, enc, eh),
+		RegexpOriginMethod: NewRegexpOriginMethodHandler(e.RegexpOriginMethod, mux, decoder, encoder, errhandler, formatter),
 		CORS:               NewCORSHandler(),
 	}
 }
 `
 
-var MultiOriginServerInitCode = `// New instantiates HTTP handlers for all the MultiOrigin service endpoints.
+var MultiOriginServerInitCode = `// New instantiates HTTP handlers for all the MultiOrigin service endpoints
+// using the provided encoder and decoder. The handlers are mounted on the
+// given mux using the HTTP verb and path defined in the design. errhandler is
+// called whenever a response fails to be encoded. formatter is used to format
+// errors returned by the service methods prior to encoding. Both errhandler
+// and formatter are optional and can be nil.
 func New(
 	e *multiorigin.Endpoints,
 	mux goahttp.Muxer,
-	dec func(*http.Request) goahttp.Decoder,
-	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
-	eh func(context.Context, http.ResponseWriter, error),
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
 			{"MultiOriginMethod", "GET", "/"},
 			{"CORS", "OPTIONS", "/"},
 		},
-		MultiOriginMethod: NewMultiOriginMethodHandler(e.MultiOriginMethod, mux, dec, enc, eh),
+		MultiOriginMethod: NewMultiOriginMethodHandler(e.MultiOriginMethod, mux, decoder, encoder, errhandler, formatter),
 		CORS:              NewCORSHandler(),
 	}
 }
 `
 
 var OriginFileServerServerInitCode = `// New instantiates HTTP handlers for all the OriginFileServer service
-// endpoints.
+// endpoints using the provided encoder and decoder. The handlers are mounted
+// on the given mux using the HTTP verb and path defined in the design.
+// errhandler is called whenever a response fails to be encoded. formatter is
+// used to format errors returned by the service methods prior to encoding.
+// Both errhandler and formatter are optional and can be nil.
 func New(
 	e *originfileserver.Endpoints,
 	mux goahttp.Muxer,
-	dec func(*http.Request) goahttp.Decoder,
-	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
-	eh func(context.Context, http.ResponseWriter, error),
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
@@ -382,13 +405,18 @@ func New(
 `
 
 var OriginMultiEndpointServerInitCode = `// New instantiates HTTP handlers for all the OriginMultiEndpoint service
-// endpoints.
+// endpoints using the provided encoder and decoder. The handlers are mounted
+// on the given mux using the HTTP verb and path defined in the design.
+// errhandler is called whenever a response fails to be encoded. formatter is
+// used to format errors returned by the service methods prior to encoding.
+// Both errhandler and formatter are optional and can be nil.
 func New(
 	e *originmultiendpoint.Endpoints,
 	mux goahttp.Muxer,
-	dec func(*http.Request) goahttp.Decoder,
-	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
-	eh func(context.Context, http.ResponseWriter, error),
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
@@ -398,46 +426,59 @@ func New(
 			{"CORS", "OPTIONS", "/{:id}"},
 			{"CORS", "OPTIONS", "/"},
 		},
-		OriginMultiEndpointGet:     NewOriginMultiEndpointGetHandler(e.OriginMultiEndpointGet, mux, dec, enc, eh),
-		OriginMultiEndpointPost:    NewOriginMultiEndpointPostHandler(e.OriginMultiEndpointPost, mux, dec, enc, eh),
-		OriginMultiEndpointOptions: NewOriginMultiEndpointOptionsHandler(e.OriginMultiEndpointOptions, mux, dec, enc, eh),
+		OriginMultiEndpointGet:     NewOriginMultiEndpointGetHandler(e.OriginMultiEndpointGet, mux, decoder, encoder, errhandler, formatter),
+		OriginMultiEndpointPost:    NewOriginMultiEndpointPostHandler(e.OriginMultiEndpointPost, mux, decoder, encoder, errhandler, formatter),
+		OriginMultiEndpointOptions: NewOriginMultiEndpointOptionsHandler(e.OriginMultiEndpointOptions, mux, decoder, encoder, errhandler, formatter),
 		CORS:                       NewCORSHandler(),
 	}
 }
 `
 
-var MultiServiceSameOriginFirstServiceInitCode = `// New instantiates HTTP handlers for all the FirstService service endpoints.
+var MultiServiceSameOriginFirstServiceInitCode = `// New instantiates HTTP handlers for all the FirstService service endpoints
+// using the provided encoder and decoder. The handlers are mounted on the
+// given mux using the HTTP verb and path defined in the design. errhandler is
+// called whenever a response fails to be encoded. formatter is used to format
+// errors returned by the service methods prior to encoding. Both errhandler
+// and formatter are optional and can be nil.
 func New(
 	e *firstservice.Endpoints,
 	mux goahttp.Muxer,
-	dec func(*http.Request) goahttp.Decoder,
-	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
-	eh func(context.Context, http.ResponseWriter, error),
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
 			{"SimpleOriginMethod", "GET", "/"},
 			{"CORS", "OPTIONS", "/"},
 		},
-		SimpleOriginMethod: NewSimpleOriginMethodHandler(e.SimpleOriginMethod, mux, dec, enc, eh),
+		SimpleOriginMethod: NewSimpleOriginMethodHandler(e.SimpleOriginMethod, mux, decoder, encoder, errhandler, formatter),
 		CORS:               NewCORSHandler(),
 	}
 }
 `
-var MultiServiceSameOriginSecondServiceInitCode = `// New instantiates HTTP handlers for all the SecondService service endpoints.
+
+var MultiServiceSameOriginSecondServiceInitCode = `// New instantiates HTTP handlers for all the SecondService service endpoints
+// using the provided encoder and decoder. The handlers are mounted on the
+// given mux using the HTTP verb and path defined in the design. errhandler is
+// called whenever a response fails to be encoded. formatter is used to format
+// errors returned by the service methods prior to encoding. Both errhandler
+// and formatter are optional and can be nil.
 func New(
 	e *secondservice.Endpoints,
 	mux goahttp.Muxer,
-	dec func(*http.Request) goahttp.Decoder,
-	enc func(context.Context, http.ResponseWriter) goahttp.Encoder,
-	eh func(context.Context, http.ResponseWriter, error),
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
 			{"SimpleOriginMethod", "GET", "/"},
 			{"CORS", "OPTIONS", "/"},
 		},
-		SimpleOriginMethod: NewSimpleOriginMethodHandler(e.SimpleOriginMethod, mux, dec, enc, eh),
+		SimpleOriginMethod: NewSimpleOriginMethodHandler(e.SimpleOriginMethod, mux, decoder, encoder, errhandler, formatter),
 		CORS:               NewCORSHandler(),
 	}
 }

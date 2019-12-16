@@ -143,8 +143,8 @@ func serverCORS(f *codegen.File) {
 	}
 	for _, s := range f.Section("server-init") {
 		s.Source = strings.Replace(s.Source,
-			"e.{{ .Method.VarName }}, mux, {{ if .MultipartRequestDecoder }}{{ .MultipartRequestDecoder.InitName }}(mux, {{ .MultipartRequestDecoder.VarName }}){{ else }}dec{{ end }}, enc, eh",
-			`{{ if ne .Method.VarName "CORS" }}e.{{ .Method.VarName }}, mux, {{ if .MultipartRequestDecoder }}{{ .MultipartRequestDecoder.InitName }}(mux, {{ .MultipartRequestDecoder.VarName }}){{ else }}dec{{ end }}, enc, eh{{ end }}`,
+			`e.{{ .Method.VarName }}, mux, {{ if .MultipartRequestDecoder }}{{ .MultipartRequestDecoder.InitName }}(mux, {{ .MultipartRequestDecoder.VarName }}){{ else }}decoder{{ end }}, encoder, errhandler, formatter{{ if .ServerStream }}, upgrader, configurer.{{ .Method.VarName }}Fn{{ end }}`,
+			`{{ if ne .Method.VarName "CORS" }}e.{{ .Method.VarName }}, mux, {{ if .MultipartRequestDecoder }}{{ .MultipartRequestDecoder.InitName }}(mux, {{ .MultipartRequestDecoder.VarName }}){{ else }}decoder{{ end }}, encoder, errhandler, formatter{{ if .ServerStream }}, upgrader, configurer.{{ .Method.VarName }}Fn{{ end }}{{end}}`,
 			-1)
 	}
 	for _, s := range f.Section("server-handler") {
@@ -189,45 +189,45 @@ func {{ .OriginHandler }}(h http.Handler) http.Handler {
 	{{- end }}
 {{- end }}
 	origHndlr := h.(http.HandlerFunc)
-  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-    origin := r.Header.Get("Origin")
-    if origin == "" {
-      // Not a CORS request
-			origHndlr(w, r)
-			return
-    }
-	{{- range $i, $policy := .Origins }}
-		{{- if $policy.Regexp }}
-		if cors.MatchOriginRegexp(origin, spec{{$i}}) {
-		{{- else }}
-		if cors.MatchOrigin(origin, {{ printf "%q" $policy.Origin }}) {
-		{{- end }}
-      w.Header().Set("Access-Control-Allow-Origin", origin)
-			{{- if not (eq $policy.Origin "*") }}
-			w.Header().Set("Vary", "Origin")
-			{{- end }}
-			{{- if $policy.Exposed }}
-			w.Header().Set("Access-Control-Expose-Headers", "{{ join $policy.Exposed ", " }}")
-			{{- end }}
-			{{- if gt $policy.MaxAge 0 }}
-			w.Header().Set("Access-Control-Max-Age", "{{ $policy.MaxAge }}")
-			{{- end }}
-			w.Header().Set("Access-Control-Allow-Credentials", "{{ $policy.Credentials }}")
-      if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
-        // We are handling a preflight request
-				{{- if $policy.Methods }}
-				w.Header().Set("Access-Control-Allow-Methods", "{{ join $policy.Methods ", " }}")
-				{{- end }}
-				{{- if $policy.Headers }}
-				w.Header().Set("Access-Control-Allow-Headers", "{{ join $policy.Headers ", " }}")
-				{{- end }}
-			}
-			origHndlr(w, r)
-			return
-    }
-	{{- end }}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		// Not a CORS request
 		origHndlr(w, r)
 		return
+	}
+	{{- range $i, $policy := .Origins }}
+		{{- if $policy.Regexp }}
+	if cors.MatchOriginRegexp(origin, spec{{$i}}) {
+		{{- else }}
+	if cors.MatchOrigin(origin, {{ printf "%q" $policy.Origin }}) {
+		{{- end }}
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+			{{- if not (eq $policy.Origin "*") }}
+		w.Header().Set("Vary", "Origin")
+			{{- end }}
+			{{- if $policy.Exposed }}
+		w.Header().Set("Access-Control-Expose-Headers", "{{ join $policy.Exposed ", " }}")
+			{{- end }}
+			{{- if gt $policy.MaxAge 0 }}
+		w.Header().Set("Access-Control-Max-Age", "{{ $policy.MaxAge }}")
+			{{- end }}
+		w.Header().Set("Access-Control-Allow-Credentials", "{{ $policy.Credentials }}")
+		if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
+			// We are handling a preflight request
+				{{- if $policy.Methods }}
+			w.Header().Set("Access-Control-Allow-Methods", "{{ join $policy.Methods ", " }}")
+				{{- end }}
+				{{- if $policy.Headers }}
+			w.Header().Set("Access-Control-Allow-Headers", "{{ join $policy.Headers ", " }}")
+				{{- end }}
+		}
+		origHndlr(w, r)
+		return
+	}
+	{{- end }}
+	origHndlr(w, r)
+	return
   })
 }
 `

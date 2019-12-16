@@ -55,7 +55,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpo
 			calckitsvr.DecodeAddRequest(mux, dec),
 			calckitsvr.EncodeAddResponse(enc),
 		)
-		calcServer = calcsvr.New(calcEndpoints, mux, dec, enc, eh)
+		calcServer = calcsvr.New(calcEndpoints, mux, dec, enc, eh, nil)
 	}
 
 	// Configure the mux.
