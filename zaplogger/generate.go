@@ -96,7 +96,7 @@ func GenerateLoggerFile(genpkg string) *codegen.File {
 	}
 
 	sections = append(sections, &codegen.SectionTemplate{
-		Name:   "zaplooger",
+		Name:   "zaplogger",
 		Source: loggerT,
 	})
 
