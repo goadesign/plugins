@@ -147,12 +147,12 @@ func updateExampleFile(genpkg string, root *expr.RootExpr, f *fileToModify) {
 }
 
 const loggerT =`
-// Logger is an adapted zap logger
+// Logger is an adapted zerologger
 type Logger struct {
 	*zerolog.Logger
 }
 
-// New creates a new zap logger
+// New creates a new zerologger
 func New(serviceName string, isDebug bool) *Logger {
 	logLevel := zerolog.InfoLevel
 	if isDebug {
