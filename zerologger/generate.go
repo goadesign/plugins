@@ -159,7 +159,7 @@ func New(serviceName string, isDebug bool) *Logger {
 		logLevel = zerolog.DebugLevel
 	}
 	zerolog.SetGlobalLevel(logLevel)
-    logger := zerolog.New(os.Stderr).With().Timestamp().Logger()	
+    logger := zerolog.New(os.Stderr).With().Str("service", serviceName).Logger()
 	return &Logger{&logger}
 }
 
