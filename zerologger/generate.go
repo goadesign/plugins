@@ -132,15 +132,15 @@ func updateExampleFile(genpkg string, root *expr.RootExpr, f *fileToModify) {
 				`handler = middleware.PopulateRequestContext()(handler)
 				handler = middleware.RequestID(middleware.UseXRequestIDHeaderOption(true))(handler)`, 1)
 			s.Source = strings.Replace(s.Source, `logger.Printf("[%s] ERROR: %s", id, err.Error())`,
-				`logger.Error().Str("id",id).Err(err.Error())`, 1)
+				`logger.Error().Str("id", id).Err(err).Send()`, 1)
 			s.Source = strings.Replace(s.Source, "logger.Print(", "logger.Info().Msg(", -1)
-			s.Source = strings.Replace(s.Source, "logger.Printf(", "logger.Info().Msg(", -1)
+			s.Source = strings.Replace(s.Source, "logger.Printf(", "logger.Info().Msgf(", -1)
 			s.Source = strings.Replace(s.Source, "logger.Println(", "logger.Info().Msg(", -1)
 		}
 	} else {
 		for _, s := range f.file.SectionTemplates {
 			s.Source = strings.Replace(s.Source, "logger.Print(", "logger.Info().Msg(", -1)
-			s.Source = strings.Replace(s.Source, "logger.Printf(", "logger.Info().Msg(", -1)
+			s.Source = strings.Replace(s.Source, "logger.Printf(", "logger.Info().Msgf(", -1)
 			s.Source = strings.Replace(s.Source, "logger.Println(", "logger.Info().Msg(", -1)
 		}
 	}
