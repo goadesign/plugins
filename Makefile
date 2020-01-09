@@ -8,7 +8,8 @@ PLUGINS=\
 	docs \
 	goakit \
 	zaplogger \
-	i18n
+	i18n \
+	kubernetes
 
 export GO111MODULE=on
 

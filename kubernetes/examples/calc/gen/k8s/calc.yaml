@@ -1,0 +1,99 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: calc
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+    name: http
+  - port: 443
+    protocol: HTTP
+    targetPort: 8443
+    name: https
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: calc
+spec:
+  replicas: 2
+	minReadySeconds: 30
+	strategy:
+	  rollingUpdate:
+		  maxUnavailable: 1
+			maxSurge: 0
+	selector:
+	  matchLabels:
+		  app: calc
+	template:
+	  metadata:
+		  labels:
+			  app: calc
+		spec:
+		  affinity:
+			  podAntiAffinity:
+				  preferredDuringSchedulingIgnoredDuringExecution:
+					  - podAffinityTerm:
+						    labelSelector:
+								  matchExpressions:
+									- key: app
+									  operator: In
+										values:
+										- calc
+								topologyKey: failure-domain.beta.kubernetes.io/zone
+						  weight: 100
+	    initContainers:
+      - name: bootstrap
+		    image: myorg/calc:latest
+		    imagePullPolicy: IfNotPresent
+				resources:
+				  requests:
+					  memory: "128M"
+					limits:
+					  memory: "128M"
+	      env:
+		    - name: POD_NAME
+		      valueFrom:
+			      fieldRef:
+				      fieldPath: metadata.name
+	    containers:
+      - name: calc
+		    image: myorg/calc:latest
+		    imagePullPolicy: IfNotPresent
+		    command: ["foo", "bar", "-c"]
+		    args: ["-k", "-v"]
+		    livenessProbe:
+		      httpGet:
+			      path: /health-check
+				    port: 8080
+			    initialDelaySeconds: 5
+			    periodSeconds: 10
+		    readinessProbe:
+		      httpGet:
+			      path: /health-check
+				    port: 8080
+			    initialDelaySeconds: 5
+			    periodSeconds: 10
+				resources:
+				  requests:
+					  memory: "128M"
+					limits:
+					  memory: "128M"
+		    ports:
+	      - containerPort: 8080
+				  protocol: TCP
+	      - containerPort: 9090
+		      name: metrics
+				  protocol: TCP
+	      env:
+		    - name: POD_NAME
+		      valueFrom:
+			      fieldRef:
+				      fieldPath: metadata.name
+	      - name: HOSTNAME
+		      value: "example.com"
+	      - name: PORT
+		      value: "80"
