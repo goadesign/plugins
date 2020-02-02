@@ -94,7 +94,13 @@ func TestGoakitifyExample(t *testing.T) {
 		"multi-services": {
 			DSL: testdata.MultiServiceDSL,
 			Code: map[string]string{
-				"service-main-server-init": testdata.MultiServicesServerInitCode,
+				"server-http-init": testdata.MultiServicesServerInitCode,
+			},
+		},
+		"with-error": {
+			DSL: testdata.WithErrorDSL,
+			Code: map[string]string{
+				"server-http-init": testdata.WithErrorServerInitCode,
 			},
 		},
 	}

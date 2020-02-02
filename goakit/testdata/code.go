@@ -59,8 +59,8 @@ func DecodeEndpoint1Request(mux goahttp.Muxer, decoder func(*http.Request) goaht
 
 var WithErrorMethodGoakitErrorEncoderCode = `// EncodeWithErrorMethodError returns a go-kit EncodeResponseFunc suitable for
 // encoding errors returned by the WithErrorService WithErrorMethod endpoint.
-func EncodeWithErrorMethodError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.ErrorEncoder {
-	enc := server.EncodeWithErrorMethodError(encoder)
+func EncodeWithErrorMethodError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(err error) goahttp.Statuser) kithttp.ErrorEncoder {
+	enc := server.EncodeWithErrorMethodError(encoder, formatter)
 	return func(ctx context.Context, err error, w http.ResponseWriter) {
 		enc(ctx, w, err)
 	}
@@ -69,8 +69,8 @@ func EncodeWithErrorMethodError(encoder func(context.Context, http.ResponseWrite
 
 var Endpoint1GoakitErrorEncoderCode = `// EncodeEndpoint1Error returns a go-kit EncodeResponseFunc suitable for
 // encoding errors returned by the MultiEndpointService Endpoint1 endpoint.
-func EncodeEndpoint1Error(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.ErrorEncoder {
-	enc := server.EncodeEndpoint1Error(encoder)
+func EncodeEndpoint1Error(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(err error) goahttp.Statuser) kithttp.ErrorEncoder {
+	enc := server.EncodeEndpoint1Error(encoder, formatter)
 	return func(ctx context.Context, err error, w http.ResponseWriter) {
 		enc(ctx, w, err)
 	}
@@ -79,8 +79,8 @@ func EncodeEndpoint1Error(encoder func(context.Context, http.ResponseWriter) goa
 
 var Endpoint2GoakitErrorEncoderCode = `// EncodeEndpoint2Error returns a go-kit EncodeResponseFunc suitable for
 // encoding errors returned by the MultiEndpointService Endpoint2 endpoint.
-func EncodeEndpoint2Error(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.ErrorEncoder {
-	enc := server.EncodeEndpoint2Error(encoder)
+func EncodeEndpoint2Error(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(err error) goahttp.Statuser) kithttp.ErrorEncoder {
+	enc := server.EncodeEndpoint2Error(encoder, formatter)
 	return func(ctx context.Context, err error, w http.ResponseWriter) {
 		enc(ctx, w, err)
 	}
@@ -249,7 +249,7 @@ var MixedMainServerInitCode = `func example() {
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			mixedservicekitsvr.EncodeMixedMethodResponse(enc),
 		)
-		mixedServiceServer = mixedservicesvr.New(mixedServiceEndpoints, mux, dec, enc, eh)
+		mixedServiceServer = mixedservicesvr.New(mixedServiceEndpoints, mux, dec, enc, eh, nil)
 	}
 
 	// Configure the mux.
@@ -284,23 +284,48 @@ var MultiServicesServerInitCode = `func example() {
 		service2Server        *service2svr.Server
 	)
 	{
-		eh := ErrorHandler(logger)
+		eh := errorHandler(logger)
 		service1MethodHandler = kithttp.NewServer(
 			endpoint.Endpoint(service1Endpoints.Method),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			service1kitsvr.EncodeMethodResponse(enc),
 		)
-		service1Server = service1svr.New(service1Endpoints, mux, dec, enc, eh)
+		service1Server = service1svr.New(service1Endpoints, mux, dec, enc, eh, nil)
 		service2MethodHandler = kithttp.NewServer(
 			endpoint.Endpoint(service2Endpoints.Method),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
 			service2kitsvr.EncodeMethodResponse(enc),
 		)
-		service2Server = service2svr.New(service2Endpoints, mux, dec, enc, eh)
+		service2Server = service2svr.New(service2Endpoints, mux, dec, enc, eh, nil)
 	}
 
 	// Configure the mux.
 	service1kitsvr.MountMethodHandler(mux, service1MethodHandler)
 	service2kitsvr.MountMethodHandler(mux, service2MethodHandler)
+}
+`
+
+var WithErrorServerInitCode = `func example() {
+	// Wrap the endpoints with the transport specific layers. The generated
+	// server packages contains code generated from the design which maps
+	// the service input and output data structures to HTTP requests and
+	// responses.
+	var (
+		withErrorServiceWithErrorMethodHandler *kithttp.Server
+		withErrorServiceServer                 *witherrorservicesvr.Server
+	)
+	{
+		eh := errorHandler(logger)
+		withErrorServiceWithErrorMethodHandler = kithttp.NewServer(
+			endpoint.Endpoint(withErrorServiceEndpoints.WithErrorMethod),
+			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
+			witherrorservicekitsvr.EncodeWithErrorMethodResponse(enc),
+			kithttp.ServerErrorEncoder(witherrorservicekitsvr.EncodeWithErrorMethodError(enc, nil)),
+		)
+		withErrorServiceServer = witherrorservicesvr.New(withErrorServiceEndpoints, mux, dec, enc, eh, nil)
+	}
+
+	// Configure the mux.
+	witherrorservicekitsvr.MountWithErrorMethodHandler(mux, withErrorServiceWithErrorMethodHandler)
 }
 `
