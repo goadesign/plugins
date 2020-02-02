@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"sync"
 	"time"
 
@@ -65,9 +64,6 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpo
 	// here apply to all the service endpoints.
 	var handler http.Handler = mux
 	{
-		if debug {
-			handler = httpmdlwr.Debug(mux, os.Stdout)(handler)
-		}
 		handler = httpmdlwr.Log(logger)(handler)
 		handler = httpmdlwr.RequestID()(handler)
 	}
