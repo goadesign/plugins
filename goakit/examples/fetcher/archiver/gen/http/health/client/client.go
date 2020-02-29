@@ -62,7 +62,6 @@ func (c *Client) Show() endpoint.Endpoint {
 			return nil, err
 		}
 		resp, err := c.ShowDoer.Do(req)
-
 		if err != nil {
 			return nil, goahttp.ErrRequestError("health", "show", err)
 		}

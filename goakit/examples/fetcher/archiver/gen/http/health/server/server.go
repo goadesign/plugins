@@ -107,9 +107,7 @@ func NewShowHandler(
 		ctx = context.WithValue(ctx, goa.MethodKey, "show")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "health")
 		var err error
-
 		res, err := endpoint(ctx, nil)
-
 		if err != nil {
 			if err := encodeError(ctx, w, err); err != nil {
 				errhandler(ctx, w, err)

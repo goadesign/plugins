@@ -99,7 +99,8 @@ func NewFetchInternalErrorResponseBody(res *goa.ServiceError) *FetchInternalErro
 
 // NewFetchPayload builds a fetcher service fetch endpoint payload.
 func NewFetchPayload(url_ string) *fetcher.FetchPayload {
-	return &fetcher.FetchPayload{
-		URL: url_,
-	}
+	v := &fetcher.FetchPayload{}
+	v.URL = url_
+
+	return v
 }

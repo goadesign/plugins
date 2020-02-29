@@ -65,6 +65,7 @@ func NewFetchMediaViewOK(body *FetchResponseBody) *fetcherviews.FetchMediaView {
 		Status:      body.Status,
 		ArchiveHref: body.ArchiveHref,
 	}
+
 	return v
 }
 
@@ -78,6 +79,7 @@ func NewFetchBadRequest(body *FetchBadRequestResponseBody) *goa.ServiceError {
 		Timeout:   *body.Timeout,
 		Fault:     *body.Fault,
 	}
+
 	return v
 }
 
@@ -92,6 +94,7 @@ func NewFetchInternalError(body *FetchInternalErrorResponseBody) *goa.ServiceErr
 		Timeout:   *body.Timeout,
 		Fault:     *body.Fault,
 	}
+
 	return v
 }
 

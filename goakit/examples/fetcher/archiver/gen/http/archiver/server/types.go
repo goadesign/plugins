@@ -137,14 +137,16 @@ func NewArchivePayload(body *ArchiveRequestBody) *archiver.ArchivePayload {
 		Status: *body.Status,
 		Body:   *body.Body,
 	}
+
 	return v
 }
 
 // NewReadPayload builds a archiver service read endpoint payload.
 func NewReadPayload(id int) *archiver.ReadPayload {
-	return &archiver.ReadPayload{
-		ID: id,
-	}
+	v := &archiver.ReadPayload{}
+	v.ID = id
+
+	return v
 }
 
 // ValidateArchiveRequestBody runs the validations defined on ArchiveRequestBody
