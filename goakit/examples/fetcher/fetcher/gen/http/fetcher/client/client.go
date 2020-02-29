@@ -62,7 +62,6 @@ func (c *Client) Fetch() endpoint.Endpoint {
 			return nil, err
 		}
 		resp, err := c.FetchDoer.Do(req)
-
 		if err != nil {
 			return nil, goahttp.ErrRequestError("fetcher", "fetch", err)
 		}

@@ -27,18 +27,19 @@ func NewCORSHandler() http.Handler {
 		HandleOriginCode string
 		MountCORSCode    string
 		ServerInitCode   string
+		FileCount        int
 	}{
-		{"simple-origin", testdata.SimpleOriginDSL, testdata.SimpleOriginHandleCode, testdata.SimpleOriginMountCode, testdata.SimpleOriginServerInitCode},
-		{"regexp-origin", testdata.RegexpOriginDSL, testdata.RegexpOriginHandleCode, testdata.RegexpOriginMountCode, testdata.RegexpOriginServerInitCode},
-		{"multi-origin", testdata.MultiOriginDSL, testdata.MultiOriginHandleCode, testdata.MultiOriginMountCode, testdata.MultiOriginServerInitCode},
-		{"origin-file-server", testdata.OriginFileServerDSL, testdata.OriginFileServerHandleCode, testdata.OriginFileServerMountCode, testdata.OriginFileServerServerInitCode},
-		{"origin-multi-endpoint", testdata.OriginMultiEndpointDSL, testdata.OriginMultiEndpointHandleCode, testdata.OriginMultiEndpointMountCode, testdata.OriginMultiEndpointServerInitCode},
+		{"simple-origin", testdata.SimpleOriginDSL, testdata.SimpleOriginHandleCode, testdata.SimpleOriginMountCode, testdata.SimpleOriginServerInitCode, 2},
+		{"regexp-origin", testdata.RegexpOriginDSL, testdata.RegexpOriginHandleCode, testdata.RegexpOriginMountCode, testdata.RegexpOriginServerInitCode, 2},
+		{"multi-origin", testdata.MultiOriginDSL, testdata.MultiOriginHandleCode, testdata.MultiOriginMountCode, testdata.MultiOriginServerInitCode, 2},
+		{"origin-file-server", testdata.OriginFileServerDSL, testdata.OriginFileServerHandleCode, testdata.OriginFileServerMountCode, testdata.OriginFileServerServerInitCode, 1},
+		{"origin-multi-endpoint", testdata.OriginMultiEndpointDSL, testdata.OriginMultiEndpointHandleCode, testdata.OriginMultiEndpointMountCode, testdata.OriginMultiEndpointServerInitCode, 2},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
 			fs := httpcodegen.ServerFiles("", expr.Root)
-			if len(fs) != 2 {
+			if len(fs) != c.FileCount {
 				t.Fatalf("got %d files, expected two", len(fs))
 			}
 			cors.Generate("", []eval.Root{expr.Root}, fs)

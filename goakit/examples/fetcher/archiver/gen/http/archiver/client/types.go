@@ -99,6 +99,7 @@ func NewArchiveMediaViewOK(body *ArchiveResponseBody) *archiverviews.ArchiveMedi
 		Status: body.Status,
 		Body:   body.Body,
 	}
+
 	return v
 }
 
@@ -110,6 +111,7 @@ func NewReadArchiveMediaOK(body *ReadResponseBody) *archiverviews.ArchiveMediaVi
 		Status: body.Status,
 		Body:   body.Body,
 	}
+
 	return v
 }
 
@@ -123,6 +125,7 @@ func NewReadNotFound(body *ReadNotFoundResponseBody) *goa.ServiceError {
 		Timeout:   *body.Timeout,
 		Fault:     *body.Fault,
 	}
+
 	return v
 }
 
@@ -136,6 +139,7 @@ func NewReadBadRequest(body *ReadBadRequestResponseBody) *goa.ServiceError {
 		Timeout:   *body.Timeout,
 		Fault:     *body.Fault,
 	}
+
 	return v
 }
 

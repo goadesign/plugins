@@ -72,7 +72,6 @@ func (c *Client) Archive() endpoint.Endpoint {
 			return nil, err
 		}
 		resp, err := c.ArchiveDoer.Do(req)
-
 		if err != nil {
 			return nil, goahttp.ErrRequestError("archiver", "archive", err)
 		}
@@ -92,7 +91,6 @@ func (c *Client) Read() endpoint.Endpoint {
 			return nil, err
 		}
 		resp, err := c.ReadDoer.Do(req)
-
 		if err != nil {
 			return nil, goahttp.ErrRequestError("archiver", "read", err)
 		}

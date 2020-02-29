@@ -11,7 +11,7 @@ package calc
 import (
 	"context"
 
-	goa "goa.design/goa"
+	"goa.design/goa"
 )
 
 // Client is the "calc" service client.

@@ -38,6 +38,7 @@ func BuildArchivePayload(archiverArchiveBody string) (*archiver.ArchivePayload, 
 		Status: body.Status,
 		Body:   body.Body,
 	}
+
 	return v, nil
 }
 
@@ -60,8 +61,8 @@ func BuildReadPayload(archiverReadID string) (*archiver.ReadPayload, error) {
 			return nil, err
 		}
 	}
-	payload := &archiver.ReadPayload{
-		ID: id,
-	}
-	return payload, nil
+	v := &archiver.ReadPayload{}
+	v.ID = id
+
+	return v, nil
 }
