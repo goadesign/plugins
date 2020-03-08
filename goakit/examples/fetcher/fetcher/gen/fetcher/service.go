@@ -67,24 +67,14 @@ func MakeInternalError(err error) *goa.ServiceError {
 // NewFetchMedia initializes result type FetchMedia from viewed result type
 // FetchMedia.
 func NewFetchMedia(vres *fetcherviews.FetchMedia) *FetchMedia {
-	var res *FetchMedia
-	switch vres.View {
-	case "default", "":
-		res = newFetchMedia(vres.Projected)
-	}
-	return res
+	return newFetchMedia(vres.Projected)
 }
 
 // NewViewedFetchMedia initializes viewed result type FetchMedia from result
 // type FetchMedia using the given view.
 func NewViewedFetchMedia(res *FetchMedia, view string) *fetcherviews.FetchMedia {
-	var vres *fetcherviews.FetchMedia
-	switch view {
-	case "default", "":
-		p := newFetchMediaView(res)
-		vres = &fetcherviews.FetchMedia{Projected: p, View: "default"}
-	}
-	return vres
+	p := newFetchMediaView(res)
+	return &fetcherviews.FetchMedia{Projected: p, View: "default"}
 }
 
 // newFetchMedia converts projected type FetchMedia to service type FetchMedia.
