@@ -44,7 +44,7 @@ paths:
             $ref: '#/definitions/FetcherFetchInternalErrorResponseBody'
       schemes:
       - http
-  /health:
+  /health/:
     get:
       tags:
       - health
