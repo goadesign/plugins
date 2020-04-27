@@ -13,7 +13,7 @@ produces:
 - application/xml
 - application/gob
 paths:
-  /archive:
+  /archive/:
     post:
       tags:
       - archiver
@@ -65,7 +65,7 @@ paths:
             $ref: '#/definitions/ArchiverReadNotFoundResponseBody'
       schemes:
       - http
-  /health:
+  /health/:
     get:
       tags:
       - health
