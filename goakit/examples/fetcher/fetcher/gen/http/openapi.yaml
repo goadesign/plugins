@@ -14,7 +14,7 @@ produces:
 - application/xml
 - application/gob
 paths:
-  /fetch/{*url}:
+  /fetch/{url}:
     get:
       tags:
       - fetcher
@@ -44,7 +44,7 @@ paths:
             $ref: '#/definitions/FetcherFetchInternalErrorResponseBody'
       schemes:
       - http
-  /health/:
+  /health:
     get:
       tags:
       - health
