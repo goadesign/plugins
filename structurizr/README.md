@@ -1,6 +1,6 @@
-# Structirzr Plugin
+# Structurizr Plugin
 
-The `structirzr` plugin is a [Goa](https://github.com/goadesign/goa/tree/v3)
+The `structurizr` plugin is a [Goa](https://github.com/goadesign/goa/tree/v3)
 plugin that augments the Goa DSL with keywords that make it possible to
 describe a system architecture.
 
