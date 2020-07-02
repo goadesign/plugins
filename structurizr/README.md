@@ -12,25 +12,26 @@ architecture and produces JSON that is compatible with the
 
 ```Go
 var _ = Workspace("Getting Started", "This is a model of my software system.", func() {
-    Model(func() {
-        var User = Person("User", "A user of my software system.")
-        var MySystem = SoftwareSystem("Software System", "My software system.")
-        Rel(User, MySystem, "Uses")
+    var System = SoftwareSystem("Software System", "My software system.")
+
+    var User = Person("User", "A user of my software system.", func() {
+        Uses(System, "Uses")
     })
+
     Views(func() {
         SystemContext(MySystem, "SystemContext", "An example of a System Context diagram.", func() {
-            Include("*")
+            IncludeAll()
             AutoLayout()
         })
         Styles(func() {
-            Element(MySystem, func() { // Element("Software System", ...) also works
+            Element(System, func() { // Element("Software System", ...) also works
                 Background("#1168bd")
-                Color("ffffff")
+                Color("#ffffff")
              })
             Element(User, func() { // Element("User", ...) also works
                 Shape("Person")
                 Background("#08427b")
-                Color("ffffff")
+                Color("#ffffff")
             })
         })
     })
@@ -65,173 +66,331 @@ file follows the
 // description is.
 var _ = Workspace("[name]", "[description]", func() {
 
-     // Model defines the elements and relationships.
-     // Model must appear exactly once in a given design.
-     Model(func() {
-        // Person defines a person (user, actor, role or persona).
-        var identifier = Person("<name>", "[description]", func() { // optional
-            Tag("<name>", "[name]") // as many tags as needed
-        })
-        
-        // SoftwareSystem defines a software system.
-        var identifier = SoftwareSystem("<name>", "[description]", func() { // optional
+    // Enterprise provides a way to define a named "enterprise" (e.g. an
+    // organisation). On System Landscape and System Context diagrams, an
+    // enterprise is represented as a dashed box. Only a single enterprise
+    // can be defined within a model.
+    Enterprise("<name>")
+
+    // Person defines a person (user, actor, role or persona).
+    var PersonIdentifier = Person("<name>", "[description]", func() { // optional
+        Tag("<name>", "[name]") // as many tags as needed
+
+        // URL where more information about this system can be found.
+        URL("<url>")
+
+        // External indicates the person is external to the enterprise.
+        External()
+
+        // Adds a uni-directional relationship between this person and the given element.
+        Uses(ElementIdentifier, "<description>", "[technology]", Synchronous) /* or Asynchronous */)
+
+        // Adds an interaction between this person and another.
+        InteractsWith(PersonIdentifier, "<description>", "[technology]", Synchronous) /* or Asynchronous */)
+    })
+
+    // SoftwareSystem defines a software system.
+    var SoftwareSystemIdentifier = SoftwareSystem("<name>", "[description]", func() { // optional
+        Tag("<name>",  "[name]") // as many tags as needed
+
+        // URL where more information about this software system can be
+        // found.
+        URL("<url>") 
+
+        // External indicates the software system is external to the enterprise.
+        External()
+
+        // Adds a uni-directional relationship between this software system and the given element.
+        Uses(ElementIdentifier, "<description>", "[technology]", Synchronous) /* or Asynchronous */)
+
+        // Adds an interaction between this software system and a person.
+        Delivers(PersonIdentifier, "<description>", "[technology]", Synchronous) /* or Asynchronous */)
+    })
+
+    // Container defines a container within a software system.
+    var ContainerIdentifier = Container(SoftwareSystemIdentifier, "<name>",  "[description]",  "[technology]",  func() { // optional
+        Tag("<name>",  "[name]") // as many tags as neede
+
+        // URL where more information about this container can be found.
+        URL("<url>")
+
+        // Adds a uni-directional relationship between this container and the given element.
+        Uses(ElementIdentifier, "<description>", "[technology]", Synchronous) /* or Asynchronous */
+
+        // Adds an interaction between this container and a person.
+        Delivers(PersonIdentifier, "<description>", "[technology]", Synchronous) /* or Asynchronous */
+    })
+
+    // Container may also refer to a Goa service in which case the name
+    // and description are taken from the given service definition and
+    // the technology is set to "Go and Goa v3".
+    var ContainerIdentifier = Container(SoftwareSystemIdentifier, GoaServiceIdentifier, func() {
+        // ... see above
+    })
+
+    // Component defines a component within a container.
+    var ComponentIdentifier = Component(ContainerIdentifier, "<name>",  "[description]",  "[technology]",  func() { // optional
+        Tag("<name>",  "[name]") // as many tags as neede
+
+        // Adds a uni-directional relationship between this component and the given element.
+        Uses(ElementIdentifier, "<description>", "[technology]", Synchronous /* or Asynchronous */)
+
+        // Adds an interaction between this component and a person.
+        Delivers(PersonIdentifier, "<description>", "[technology]", Synchronous /* or Asynchronous */)
+    })
+
+    // DeploymentEnvironment provides a way to define a deployment
+    // environment (e.g. development, staging, production, etc).
+    DeploymentEnvironment("<name>", func() {
+
+        // DeploymentNode defines a deployment node. Deployment nodes can be
+        // nested, so a deployment node can contain other deployment nodes.
+        // A deployment node can also contain InfrastructureNode and
+        // ContainerInstance elements.
+        var DeploymentNodeIdentifier = DeploymentNode("<name>",  "[description]",  "[technology]",  func() { // optional
             Tag("<name>",  "[name]") // as many tags as needed
 
-            // Container defines a container within a software system.
-            Container("<name>",  "[description]",  "[technology]",  func() { // optional
-                Tag("<name>",  "[name]") // as many tags as needed
+            // Instances sets the number of instances, defaults to 1.
+            Instances(2)
 
-                // Component defines a component within a container.
-                Component("<name>",  "[description]",  "[technology]",  func() { // optional
-                    Tag("<name>",  "[name]") // as many tags as needed
-                })
-            })
+            // URL where more information about this deployment node can be
+            // found.
+            URL("<url>") 
 
-            // Container may also refer to a Goa service in which case the
-            // description is taken from the given service definition and the
-            // technology is set to "Go and Goa v3"
-            Container(MyService, func() {
-                Tag("<name>",  "[name]") // as many tags as needed
-                Component("<name>",  "[description]",  "[technology]",  func() { // optional
-                    Tag("<name>",  "[name]") // as many tags as needed
-                })
-            })
+            // Adds a uni-directional relationship between this and another deployment node.
+            Uses(DeploymentNodeIdentifier, "<description>", "[technology]", Synchronous /* or Asynchronous */)
         })
-        
-        // Rel defines a uni-directional relationship between two elements.
-        var _ = Rel(identifier, identifier, "[description]", "[technology]", func() { // optional
-            Tag("<name>",  "[name]">) // as many  tags  as  needed
+
+        // InfrastructureNode defines an infrastructure node, typically
+        // something like a load balancer, firewall, DNS service, etc.
+        var InfrastructureNodeIdentifier = InfrastructureNode(DeploymentNodeIdentifier, "<name>", "[description]", "[technology]", func() { // optional
+            Tag("<name>",  "[name]") // as many tags as needed
+
+            // URL where more information about this infrastructure node can be
+            // found.
+            URL("<url>") 
+
+            // Adds a uni-directional relationship between this and
+            // another deployment element (deployment node,
+            // infrastructure node, or container instance).
+            Uses(DeploymentElementIdentifier, "<description>", "[technology]", Synchronous /* or Asynchronous */)
         })
-        
-        // Enterprise provides a way to define a named "enterprise" (e.g. an
-        // organisation). Any people or software systems defined inside this
-        // block will be deemed to be "internal", while all others will be
-        // deemed to be "external". On System Landscape and System Context
-        // diagrams, an enterprise is represented as a dashed box. Only a single
-        // enterprise can be defined within a model.
-        var _ = Enterprise("<name>", func() {
-            // Allowed functions: Person, SoftwareSystem and Rel
-        })
- 
-        // DeploymentEnvironment provides a way to define a deployment
-        // environment (e.g. development, staging, production, etc).
-        var _ = DeploymentEnvironment("<name>", func() {
 
-            // DeploymentNode defines a deployment node. Deployment nodes can be
-            // nested, so a deployment node can contain other deployment nodes.
-            // A deployment node can also contain InfrastructureNode and
-            // ContainerInstance elements.
-            DeploymentNode("<name>", "[description]", "[technology]", func() { // optional
-                Tag("<name>",  "[name]") // as many tags as needed
+        // ContainerInstance defines an instance of the specified
+        // container that is deployed on the parent deployment node.
+        var ContainerInstanceIdentifier = ContainerInstance(identifier, func() { // optional
+            Tag("<name>",  "[name]") // as many tags as needed
 
-                // InfrastructureNode defines an infrastructure node, which is
-                // typically something like a load balancer, firewall, DNS
-                // service, etc.
-                InfrastructureNode("<name>", "[description]", "[technology]", func() { // optional
-                    Tag("<name>",  "[name]") // as many tags as needed
-                })
+            // URL where more information about this container node can be
+            // found.
+            URL("<url>") 
 
-                // ContainerInstance defines an instance of the specified
-                // container that is deployed on the parent deployment node.
-                ContainerInstance(identifier, func() { // optional
-                    Tag("<name>",  "[name]") // as many tags as needed
-                })
+            // Adds a uni-directional relationship between this and
+            // another deployment element (deployment node,
+            // infrastructure node, or container instance).
+            Uses(DeploymentElementIdentifier, "<description>", "[technology]", Synchronous /* or Asynchronous */)
+
+            // HealthCheck defines a HTTP-based health check for this
+            // container instance.
+            HealthCheck("<name>", func() {
+
+                // URL is the health check URL/endpoint.
+                URL("<url>")
+                
+                // Interval is the polling interval, in seconds.
+                Interval(42)
+
+                // Timeout after which a health check is deemed as failed,
+                // in milliseconds.
+                Timeout(42)
+
+                // Header defines a header that should be sent with the
+                // request.
+                Header("<name>", "<value>")
             })
         })
     })
 
     // Views is optional and defines one or more views.
     Views(func() {
-
-        // SystemLandspace defines a System Landscape view.
+        
+        // SystemLandscape defines a System Landscape view.
         SystemLandscape("[key]", "[description]", func() {
-            // Include given elements in view, use the wildvard (*) identifier
-            // to include all people and sofware systems.
-            Include("*")                    // - or -
-            Include(identifier, identifier) // as many identifiers as needed
 
-            // Exclude given element or relationship.
-            Exclude(identifier, identifier) // as many identifiers as needed
+            // Title of this view.
+            Title("<title>")
 
-            // AutoLayout enables automatic layout mode for the diagram.
-            // The first property is the rank direction:
-            //   tb: Top to bottom (default)
-            //   bt: Bottom to top
-            //   lr: Left to right
-            //   rl: Right to left
-            // The second property is the separation of ranks in pixels
-            // (default: 300), while the third property is the separation of
-            // nodes in the same rank in pixels (default: 300).
-            AutoLayout("[tb|bt|lr|rl]", "[rank separation]", "[node separation]")
+            // Include all people and software systems.
+            IncludeAll()
+
+            // Include given elements and relationships in view.
+            Include(Identifier, Identifier) // as many identifiers as needed
+
+            // Exclude given elements or relationships.
+            Exclude(Identifier, Identifier)) // as many identifiers as needed
+
+            // AutoLayout enables automatic layout mode for the diagram. The
+            // first argument indicates the rank direction, it must be one of
+            // RankTopBottom, RankBottomTop, RankLeftRight or RankRightLeft.
+            AutoLayout(RankTopBottom, func() {
+
+                // Separation between ranks in pixels
+                RankSeparation(200)
+
+                // Separation between nodes in the same rank in pixels
+                NodeSeparation(200) 
+
+                // Separation between edges in pixels
+                EdgeSeparation(10) 
+
+                // Create vertices during automatic layout.
+                Vertices()
+            }) 
 
             // AnimationStep defines an animation step consisting of the specified elements.
-            AnimationStep(identifier, identifier) // as many identifiers as needed.
+            AnimationStep(Identifier, Identifier)
+            
+            // PaperSize defines the paper size that should be used to render
+            // the view. The possible values for the argument follow the
+            // patterns A[0-6]_[Portrait|Landscape], Letter_[Portrait|Landscape]
+            // or Legal_[Portrait_Landscape]. Alternatively the argument may be
+            // one of Slide_4_3, Slide_16_9 or Slide_16_10.
+            PaperSize(Slide_4_3)
+
+            // Make enterprise boundary visible to differentiate internal
+            // elements from external elements on the resulting diagram.
+            EnterpriseBoundaryVisible()
         })
 
-        // Defines a System Context view for the specified software system.
-        SystemContext("<software system identifier>", "[key]", "[description]", func() {
-            Include() // see usage above.
-            Exclude()
-            AutoLayout()
-            AnimationStep()
+        SystemContext(SoftwareSystemIdentifier, "[key]", "[description]", func() {
+            // ... same usage as SystemLandscape.
+        })
+        
+        Container(SoftwareSystemIdentifier, "[key]", "[description]", func() {
+            // ... same usage as SystemLandscape without EnterpriseBoundaryVisible.
+
+            // Make software system boundaries visible for "external" containers
+            // (those outside the software system in scope).
+            SystemBoundariesVisible()
         })
 
-        // Container defines a Container view for the specified software system.
-        Container("<software system identifier>", "[key]", "[description]", func() {
-            Include() // see usage above.
-            Exclude()
-            AutoLayout()
-            AnimationStep()
+        Component(ContainerIdentifier, "[key]", "[description]", func() {
+            // ... same usage as SystemLandscape without EnterpriseBoundaryVisible.
+
+            // Make container boundaries visible for "external" components
+            // (those outside the container in scope).
+            ContainerBoundariesVisible()
         })
 
-        // Component defines a Component view for the specified container.
-        Component("<container identifier>", "[key]", "[description]", func() {
-            Include() // see usage above.
-            Exclude()
-            AutoLayout()
-            AnimationStep()
-        })
-
-        // Filtered defines a Filtered view on top of the specified view.
-        // The baseKey specifies the key of the System Landscape, System
-        // Context, Container, or Component view on which this filtered view
-        // should be based. The mode (include or exclude) defines whether the
-        // view should include or exclude elements/relationships based upon the
-        // tags provided.
-        Filtered("<base key>", "<include|exclude>", "[key]", "[description]", func() {
+        // Filtered defines a Filtered view on top of the specified view. The
+        // base key specifies the key of the System Landscape, System Context,
+        // Container, or Component view on which this filtered view should be
+        // based.
+        Filtered("<base key>", func() {
+            // Set of tags to include or exclude (if Exclude() is used)
+            // elements/relationships when rendering this filtered view.
             Tag("<tag>", "[tag]") // as many as needed
+
+            // Exclude elements and relationships with the given tags.
+            Exclude()
         }) 
 
         // Dynamic defines a Dynamic view for the specified scope. The first
-        // property defines the scope of the view, and therefore what can be
+        // argument defines the scope of the view, and therefore what can be
         // added to the view, as follows: 
-        //  * '*' scope: People and software systems.
+        //  * Global scope: People and software systems.
         //  * Software system scope: People, other software systems, and
         //    containers belonging to the software system.
         //  * Container scope: People, other software systems, other
         //    containers, and components belonging to the container.
-        // Dynamic views are created by specifying the relationships that should
-        // be added to the view.
-        Dynamic("<*|software system identifier|container identifier>", "[key]", "[description]", func() {
-            Rel(identifier, identifier, "[description]")
-            AutoLayout("[tb|bt|lr|rl]", "[rank separation]", "[node separation]")
+        Dynamic(Global, "[key]", "[description]", func() {
+
+            // Title of this view.
+            Title("<title>")
+
+            // AutoLayout enables automatic layout mode for the diagram. The
+            // first argument indicates the rank direction, it must be one of
+            // RankTopBottom, RankBottomTop, RankLeftRight or RankRightLeft.
+            AutoLayout(RankTopBottom, func() {
+
+                // Separation between ranks in pixels
+                RankSeparation(200)
+
+                // Separation between nodes in the same rank in pixels
+                NodeSeparation(200) 
+
+                // Separation between edges in pixels
+                EdgeSeparation(10) 
+
+                // Create vertices during automatic layout.
+                Vertices()
+            }) 
+
+            // PaperSize defines the paper size that should be used to render
+            // the view. The possible values for the argument follow the
+            // patterns A[0-6]_[Portrait|Landscape], Letter_[Portrait|Landscape]
+            // or Legal_[Portrait_Landscape]. Alternatively the argument may be
+            // one of Slide_4_3, Slide_16_9 or Slide_16_10.
+            PaperSize(Slide_4_3)
+
+            // Sequence of relationships that make up dynamic diagram.
+            Relationship(Identifier, Identifier)
+            Relationship(Identifier, Identifier)
+            // ...
+        })
+          
+        // Dynamic view on software system or container uses the corresponding
+        // identifier as first argument.
+        Dynamic(SoftwareSystemOrContainerIdentifier, "[key]", "[description]", func() {
+            // see usage above
         })
 
         // Deployment defines a Deployment view for the specified scope and
-        // deployment environment. The first property defines the scope of the
+        // deployment environment. The first argument defines the scope of the
         // view, and the second property defines the deployment environment. The
-        // combination of these two properties determines what can be added to
+        // combination of these two arguments determines what can be added to
         // the view, as follows: 
-        //  * '*' scope: All deployment nodes, infrastructure nodes, and container
-        //    instances within the deployment environment.
+        //  * Global scope: All deployment nodes, infrastructure nodes, and
+        //    container instances within the deployment environment.
         //  * Software system scope: All deployment nodes and infrastructure
         //    nodes within the deployment environment. Container instances within
         //    the deployment environment that belong to the software system.
-        Deployment("<*|software system identifier>", "<environment name>", "[key]", "[description]", func() {
-            Include() // see usage above
-            Exclude()
-            AutoLayout()
-            AnimationStep()
+        Deployment(Global, "<environment name>", "[key]", "[description]", func() {
+            // ... same usage as SystemLandscape without EnterpriseBoundaryVisible.
+        })
+
+        // Deployment on a software system uses the software system as first
+        // argument.
+        Deployment(SoftwareSystemIdentifier, "<environment name>", "[key]", "[description]", func() {
+            // see usage above
+        })
+
+        // Element describes the position of an instance of a model element
+        // (Person, Software System, Container or Component) in a View. The
+        // first argument represents the x value, the second argument the y
+        // value.
+        Element(Identifier, 42, 42)
+
+        // Relationship describes an instance of a model relationship in a View.
+        // The SourceIdentifier and TargetIdentifier are used to identify the relationship.
+        Relationship(SourceIdentifier, TargetIdentifier, func() {
+
+            // Description used in dynamic views.
+            Description("<description>")
+
+            // Order of relationship in dynamic views, e.g. 1.0, 1.1, 2.0
+            Order("<order>")
+
+            // Vertices lists the x and y coordinate of the vertices used to
+            // render the relationship. The number of arguments must be even.
+            Vertices(10, 20, 10, 40)
+
+            // Routing algorithm used when rendering relationship, one of
+            // Direct, Curved or Orthogonal.
+            Routing(Orthogonal)
+
+            // Position of annotation along line; 0 (start) to 100 (end).
+            Position(50)
         })
 
         // Styles is a wrapper for one or more element/relationship styles,
@@ -256,10 +415,10 @@ var _ = Workspace("[name]", "[description]", func() {
                 Description(true)
             })
 
-            // Rel defines a relationship style. All nested properties
+            // Relationship defines a relationship style. All nested properties
             // (thickness, color, etc) are optional, see Structurizr - Notation
             // for more details.
-            Rel("<tag>", func() {
+            Relationship("<tag>", func() {
                 Thickness(42)
                 Color("#<rrggbb>")
                 Dashed(true)
