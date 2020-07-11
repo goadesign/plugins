@@ -1,0 +1,49 @@
+openapi: 3.0.3
+info:
+  title: CORS Example Calc API
+  description: This API demonstrates the use of the goa CORS plugin
+  version: "1.0"
+servers:
+- url: localhost:80
+  description: Default server for calc
+paths:
+  /add/{a}/{b}:
+    get:
+      tags:
+      - calc
+      summary: add calc
+      description: Add adds up the two integer parameters and returns the results.
+      operationId: calc#add
+      parameters:
+      - name: a
+        in: path
+        description: Left operand
+        required: true
+        schema:
+          type: integer
+          description: Left operand
+          example: 1
+          format: int64
+        example: 1
+      - name: b
+        in: path
+        description: Right operand
+        required: true
+        schema:
+          type: integer
+          description: Right operand
+          example: 2
+          format: int64
+        example: 2
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Result of addition
+                example: 3
+                format: int64
+              example: 3
+components: {}
