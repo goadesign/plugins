@@ -71,7 +71,7 @@ func TestGenerate(t *testing.T) {
 	fs, _ := httpcodegen.OpenAPIFiles(expr.Root)
 	gfs, _ := i18n.Generate("", roots, fs)
 
-	if len(gfs) != 4 {
-		t.Errorf("Expected to generate four files, received %d", len(gfs))
+	if len(gfs) != 8 {
+		t.Errorf("Expected to generate eight files, received %d", len(gfs))
 	}
 }

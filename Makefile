@@ -12,7 +12,7 @@ PLUGINS=\
 
 export GO111MODULE=on
 
-all: gen lint test-plugins
+all: gen lint test
 
 travis: depend all check-freshness
 
@@ -44,9 +44,9 @@ lint: $(GOPATH)/bin/golint
 		make -C $$p lint || exit 1; \
 	done
 
-test-plugins:
+test:
 	@for p in $(PLUGINS) ; do \
-		make -C $$p || exit 1; \
+		make -C $$p test || exit 1; \
 	done
 
 check-freshness:
