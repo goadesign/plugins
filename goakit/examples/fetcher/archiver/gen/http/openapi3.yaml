@@ -4,7 +4,7 @@ info:
   description: Archiver is a service that manages the content of HTTP responses
   version: "1.0"
 servers:
-- url: localhost:80
+- url: http://localhost:80
   description: Default server for archiver
 paths:
   /archive:
