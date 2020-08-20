@@ -71,9 +71,11 @@ func {{ .MountHandler }}(mux goahttp.Muxer, h http.Handler) {
 // input: FileServerData
 const mountFileServerT = `{{ printf "%s configures the mux to serve GET request made to %q." .MountHandler (join .RequestPaths ", ") | comment }}
 func {{ .MountHandler }}(mux goahttp.Muxer) {
-{{- if .IsDir }}
+{{- if .IsDir }}	
 	{{- range .RequestPaths }}
-	mux.Handle("GET", "{{ . }}", http.FileServer(http.Dir({{ printf "%q" $.FilePath }})))
+	mux.Handle("GET", "{{ . }}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.FileServer(http.Dir({{ printf "%q" $.FilePath }}))
+		}))
 	{{- end }}
 {{- else }}
 	{{- range .RequestPaths }}
