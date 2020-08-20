@@ -19,10 +19,13 @@ func init() {
 	codegen.RegisterPlugin("docs", "gen", nil, Generate)
 }
 
+var uniqDef *codegen.NameScope
+
 // Generate produces the documentation JSON file.
 func Generate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	for _, root := range roots {
 		if r, ok := root.(*expr.RootExpr); ok {
+			uniqDef = codegen.NewNameScope()
 			files = append(files, docsFile(r))
 		}
 	}
@@ -193,12 +196,12 @@ func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr) *methodData {
 	return m
 }
 
-var uniqDef = codegen.NewNameScope()
-
 func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, streaming bool) *payloadData {
 	// since the definitions section is global to the API, we need to ensure uniqueness of TypeName
 	if ut, ok := att.Type.(*expr.UserTypeExpr); ok {
-		ut.TypeName = uniqDef.Unique(ut.TypeName)
+		if ut != expr.Empty {
+			ut.TypeName = uniqDef.Unique(ut.TypeName)
+		}
 	}
 
 	schema := openapi.AttributeTypeSchema(api, att)
