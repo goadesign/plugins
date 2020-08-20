@@ -19,13 +19,10 @@ func init() {
 	codegen.RegisterPlugin("docs", "gen", nil, Generate)
 }
 
-var uniqDef *codegen.NameScope
-
 // Generate produces the documentation JSON file.
 func Generate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	for _, root := range roots {
 		if r, ok := root.(*expr.RootExpr); ok {
-			uniqDef = codegen.NewNameScope()
 			files = append(files, docsFile(r))
 		}
 	}
@@ -93,6 +90,8 @@ func apiDocs(api *expr.APIExpr) *apiData {
 
 func servicesDocs(r *expr.RootExpr) map[string]*serviceData {
 	svcs := make(map[string]*serviceData, len(r.Services))
+	var nameScope = codegen.NewNameScope()
+
 	for _, svc := range r.Services {
 		n := svc.Name
 		svcs[n] = &serviceData{
@@ -102,7 +101,7 @@ func servicesDocs(r *expr.RootExpr) map[string]*serviceData {
 
 		svcs[n].Methods = make(map[string]*methodData, len(svc.Methods))
 		for _, meth := range svc.Methods {
-			svcs[n].Methods[meth.Name] = generateMethod(r.API, meth)
+			svcs[n].Methods[meth.Name] = generateMethod(r.API, meth, nameScope)
 		}
 
 		svcs[n].Requirements = make([]*requirementData, len(svc.Requirements))
@@ -178,12 +177,12 @@ func generateRequirement(req *expr.SecurityExpr) *requirementData {
 	return r
 }
 
-func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr) *methodData {
+func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr, nameScope *codegen.NameScope) *methodData {
 	m := &methodData{
 		Name:        meth.Name,
 		Description: meth.Description,
-		Payload:     generatePayload(api, meth.Payload, meth.IsPayloadStreaming()),
-		Result:      generatePayload(api, meth.Result, meth.Stream == expr.BidirectionalStreamKind || meth.Stream == expr.ServerStreamKind),
+		Payload:     generatePayload(api, meth.Payload, meth.IsPayloadStreaming(), nameScope),
+		Result:      generatePayload(api, meth.Result, meth.Stream == expr.BidirectionalStreamKind || meth.Stream == expr.ServerStreamKind, nameScope),
 	}
 	m.Errors = make(map[string]*errorData, len(meth.Errors))
 	for _, er := range meth.Errors {
@@ -196,12 +195,10 @@ func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr) *methodData {
 	return m
 }
 
-func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, streaming bool) *payloadData {
+func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, streaming bool, nameScope *codegen.NameScope) *payloadData {
 	// since the definitions section is global to the API, we need to ensure uniqueness of TypeName
-	if ut, ok := att.Type.(*expr.UserTypeExpr); ok {
-		if ut != expr.Empty {
-			ut.TypeName = uniqDef.Unique(ut.TypeName)
-		}
+	if ut, ok := att.Type.(*expr.UserTypeExpr); ok && ut != expr.Empty {
+		ut.TypeName = nameScope.Unique(ut.TypeName)
 	}
 
 	schema := openapi.AttributeTypeSchema(api, att)
