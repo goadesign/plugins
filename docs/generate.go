@@ -193,7 +193,14 @@ func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr) *methodData {
 	return m
 }
 
+var uniqDef = codegen.NewNameScope()
+
 func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, streaming bool) *payloadData {
+	// since the definitions section is global to the API, we need to ensure uniqueness of TypeName
+	if ut, ok := att.Type.(*expr.UserTypeExpr); ok {
+		ut.TypeName = uniqDef.Unique(ut.TypeName)
+	}
+
 	schema := openapi.AttributeTypeSchema(api, att)
 	return &payloadData{
 		Type:      schema,
