@@ -33,12 +33,33 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 // imports and replacing the following instances
 // * "goa.Endpoint" with "github.com/go-kit/kit/endpoint".Endpoint
 // * "log.Logger" with "github.com/go-kit/kit/log".Logger
-// and adding the corresponding imports.
+//
+// Goakitify also wraps instances of endpoint.Endpoint into instances of
+// goa.Endpoint when used as argument of either goagrpc.NewStreamHandler or
+// goagrpc.NewUnaryHandler.
 func Goakitify(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	for _, f := range files {
 		goakitify(f)
 	}
 	return files, nil
+}
+func goakitify(f *codegen.File) {
+	var hasEndpoint bool
+	for _, s := range f.SectionTemplates {
+		if !hasEndpoint {
+			hasEndpoint = goaEndpointRegexp.MatchString(s.Source)
+		}
+		s.Source = goaEndpointRegexp.ReplaceAllString(s.Source, "${1}endpoint.Endpoint${2}")
+		if s.Name == "grpc-handler-init" {
+			s.Source = strings.Replace(s.Source, "Handler(endpoint, ", "Handler(goa.Endpoint(endpoint), ", 1)
+		}
+	}
+	if hasEndpoint {
+		codegen.AddImport(
+			f.SectionTemplates[0],
+			&codegen.ImportSpec{Path: "github.com/go-kit/kit/endpoint"},
+		)
+	}
 }
 
 // GoakitifyExample  modifies all the previously generated example files by
@@ -52,25 +73,6 @@ func GoakitifyExample(genpkg string, roots []eval.Root, files []*codegen.File) (
 
 // goaEndpointRegexp matches occurrences of the "goa.Endpoint" type in Go code.
 var goaEndpointRegexp = regexp.MustCompile(`([^\p{L}_])goa\.Endpoint([^\p{L}_])`)
-
-// goakitify replaces all occurrences of goa.Endpoint with
-// "github.com/go-kit/kit/endpoint".Endpoint in the file section template
-// sources.
-func goakitify(f *codegen.File) {
-	var hasEndpoint bool
-	for _, s := range f.SectionTemplates {
-		if !hasEndpoint {
-			hasEndpoint = goaEndpointRegexp.MatchString(s.Source)
-		}
-		s.Source = goaEndpointRegexp.ReplaceAllString(s.Source, "${1}endpoint.Endpoint${2}")
-	}
-	if hasEndpoint {
-		codegen.AddImport(
-			f.SectionTemplates[0],
-			&codegen.ImportSpec{Path: "github.com/go-kit/kit/endpoint"},
-		)
-	}
-}
 
 // goaLoggerRegexp matches occurrences of "logger.<function>" in Go code.
 var goaLoggerRegexp = regexp.MustCompile(`logger\.\w+\((.*)\)`)
