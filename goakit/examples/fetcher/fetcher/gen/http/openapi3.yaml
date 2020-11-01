@@ -22,9 +22,9 @@ paths:
         schema:
           type: string
           description: URL to be fetched
-          example: http://johnston.biz/mitchel_jast
+          example: http://harveybauch.org/lulu
           format: uri
-        example: http://labadie.org/courtney
+        example: http://mayert.info/alejandrin.kautzer
       responses:
         "200":
           description: ""
@@ -42,12 +42,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                fault: true
-                id: 123abc
-                message: parameter 'p' must be an integer
+                id: 3F1FKVRR
+                message: Value of ID must be an integer
                 name: bad_request
-                temporary: true
-                timeout: false
         "500":
           description: ""
           content:
@@ -55,12 +52,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                fault: true
-                id: 123abc
-                message: parameter 'p' must be an integer
+                id: 3F1FKVRR
+                message: Value of ID must be an integer
                 name: bad_request
-                temporary: true
-                timeout: true
   /health:
     get:
       tags:
@@ -75,8 +69,8 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: Sint fugit nesciunt.
-              example: Ut cumque.
+                example: Rem perspiciatis consequatur excepturi voluptatem.
+              example: Sint fugit nesciunt.
 components:
   schemas:
     Error:
@@ -101,18 +95,15 @@ components:
         temporary:
           type: boolean
           description: Is the error temporary?
-          example: false
+          example: true
         timeout:
           type: boolean
           description: Is the error a timeout?
-          example: true
+          example: false
       example:
-        fault: false
-        id: 123abc
-        message: parameter 'p' must be an integer
+        id: 3F1FKVRR
+        message: Value of ID must be an integer
         name: bad_request
-        temporary: false
-        timeout: true
       required:
       - name
       - id
