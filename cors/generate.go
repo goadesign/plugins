@@ -203,9 +203,7 @@ func {{ .OriginHandler }}(h http.Handler) http.Handler {
 		if cors.MatchOrigin(origin, {{ printf "%q" $policy.Origin }}) {
 		{{- end }}
       w.Header().Set("Access-Control-Allow-Origin", origin)
-			{{- if not (eq $policy.Origin "*") }}
 			w.Header().Set("Vary", "Origin")
-			{{- end }}
 			{{- if $policy.Exposed }}
 			w.Header().Set("Access-Control-Expose-Headers", "{{ join $policy.Exposed ", " }}")
 			{{- end }}
