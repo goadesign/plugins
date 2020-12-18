@@ -25,7 +25,7 @@ paths:
               status: 200
       responses:
         "200":
-          description: ""
+          description: OK response.
           content:
             application/json:
               schema:
@@ -54,7 +54,7 @@ paths:
         example: 1007502908903998631
       responses:
         "200":
-          description: ""
+          description: OK response.
           content:
             application/json:
               schema:
@@ -64,7 +64,7 @@ paths:
                 href: /archive1/
                 status: 200
         "400":
-          description: ""
+          description: Bad Request response.
           content:
             application/vnd.goa.error:
               schema:
@@ -74,7 +74,7 @@ paths:
                 message: Value of ID must be an integer
                 name: bad_request
         "404":
-          description: ""
+          description: Not Found response.
           content:
             application/vnd.goa.error:
               schema:
@@ -92,7 +92,7 @@ paths:
       operationId: health#show
       responses:
         "200":
-          description: ""
+          description: OK response.
           content:
             text/plain:
               schema:

@@ -27,7 +27,7 @@ paths:
         example: http://mayert.info/alejandrin.kautzer
       responses:
         "200":
-          description: ""
+          description: OK response.
           content:
             application/json:
               schema:
@@ -36,7 +36,7 @@ paths:
                 archive_href: /archive/1
                 status: 200
         "400":
-          description: ""
+          description: Bad Request response.
           content:
             application/vnd.goa.error:
               schema:
@@ -46,7 +46,7 @@ paths:
                 message: Value of ID must be an integer
                 name: bad_request
         "500":
-          description: ""
+          description: Internal Server Error response.
           content:
             application/vnd.goa.error:
               schema:
@@ -64,7 +64,7 @@ paths:
       operationId: health#show
       responses:
         "200":
-          description: ""
+          description: OK response.
           content:
             text/plain:
               schema:
