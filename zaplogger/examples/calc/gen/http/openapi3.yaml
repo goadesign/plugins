@@ -41,7 +41,7 @@ paths:
         example: 8803302123552712831
       responses:
         "200":
-          description: ""
+          description: OK response.
           content:
             application/json:
               schema:
