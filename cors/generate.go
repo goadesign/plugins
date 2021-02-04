@@ -210,7 +210,9 @@ func {{ .OriginHandler }}(h http.Handler) http.Handler {
 			{{- if gt $policy.MaxAge 0 }}
 		w.Header().Set("Access-Control-Max-Age", "{{ $policy.MaxAge }}")
 			{{- end }}
+			{{- if eq $policy.Credentials true }}
 		w.Header().Set("Access-Control-Allow-Credentials", "{{ $policy.Credentials }}")
+			{{- end }}
 		if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 			// We are handling a preflight request
 				{{- if $policy.Methods }}
