@@ -146,7 +146,7 @@ func updateExampleFile(genpkg string, root *expr.RootExpr, f *fileToModify) {
 	}
 }
 
-const loggerT =`
+const loggerT = `
 // Logger is an adapted zerologger
 type Logger struct {
 	*zerolog.Logger
