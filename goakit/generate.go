@@ -88,6 +88,7 @@ func gokitifyExampleServer(genpkg string, file *codegen.File) {
 			hasLogger = strings.Contains(s.Source, "*log.Logger")
 		}
 		s.Source = strings.Replace(s.Source, "*log.Logger", "log.Logger", -1)
+		s.Source = strings.Replace(s.Source, "adapter = middleware.NewLogger(logger)", "adapter = logger", 1)
 		codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "fmt"})
 		s.Source = goaLoggerRegexp.ReplaceAllString(s.Source, "logger.Log(\"info\", fmt.Sprintf(${1}))")
 
