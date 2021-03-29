@@ -2,6 +2,9 @@
 #
 # Makefile for goa v3 plugins
 
+GOPATH=$(shell go env GOPATH)
+GOA:=$(shell goa version 2> /dev/null)
+
 # Add new plugins here to enable make
 PLUGINS=\
 	cors \
@@ -12,9 +15,20 @@ PLUGINS=\
 
 export GO111MODULE=on
 
-all: gen lint test
+all: check-goa gen lint test
 
 travis: depend all check-freshness
+
+check-goa:
+ifdef GOA
+	go mod download
+	@echo $(GOA)
+else
+	go get -u goa.design/goa/v3@v3
+	go get -u goa.design/goa/v3/...@v3
+	go mod download
+	@echo $(GOA)
+endif
 
 $(GOPATH)/bin/goimports:
 	@go get golang.org/x/tools/cmd/goimports

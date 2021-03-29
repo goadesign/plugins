@@ -7,6 +7,7 @@
 # - "example" generates the example files for the example services
 
 # include common Makefile content for plugins
+GOPATH=$(shell go env GOPATH)
 include $(GOPATH)/src/goa.design/plugins/plugins.mk
 
 gen:
