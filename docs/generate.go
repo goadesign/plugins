@@ -177,12 +177,17 @@ func generateRequirement(req *expr.SecurityExpr) *requirementData {
 	return r
 }
 
-func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr, nameScope *codegen.NameScope) *methodData {
+func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr, scope *codegen.NameScope) *methodData {
 	m := &methodData{
-		Name:        meth.Name,
-		Description: meth.Description,
-		Payload:     generatePayload(api, meth.Payload, meth.IsPayloadStreaming(), nameScope),
-		Result:      generatePayload(api, meth.Result, meth.Stream == expr.BidirectionalStreamKind || meth.Stream == expr.ServerStreamKind, nameScope),
+		Name:             meth.Name,
+		Description:      meth.Description,
+		Payload:          generatePayload(api, meth.Payload, scope),
+		StreamingPayload: generatePayload(api, meth.StreamingPayload, scope),
+	}
+	if meth.Stream == expr.BidirectionalStreamKind || meth.Stream == expr.ServerStreamKind {
+		m.StreamingResult = generatePayload(api, meth.Result, scope)
+	} else {
+		m.Result = generatePayload(api, meth.Result, scope)
 	}
 	m.Errors = make(map[string]*errorData, len(meth.Errors))
 	for _, er := range meth.Errors {
@@ -195,7 +200,7 @@ func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr, nameScope *codegen
 	return m
 }
 
-func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, streaming bool, nameScope *codegen.NameScope) *payloadData {
+func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, nameScope *codegen.NameScope) *payloadData {
 	// since the definitions section is global to the API, we need to ensure uniqueness of TypeName
 	if ut, ok := att.Type.(*expr.UserTypeExpr); ok && ut != expr.Empty {
 		ut.TypeName = nameScope.Unique(ut.TypeName)
@@ -203,9 +208,8 @@ func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, streaming bool,
 
 	schema := openapi.AttributeTypeSchema(api, att)
 	return &payloadData{
-		Type:      schema,
-		Example:   att.Example(api.Random()),
-		Streaming: streaming,
+		Type:    schema,
+		Example: att.Example(api.Random()),
 	}
 }
 
