@@ -99,7 +99,7 @@ type (
 
 	errorData struct {
 		Name        string          `json:"name"`
-		Description string          `json:"description,omitempty,omitempty"`
+		Description string          `json:"description,omitempty"`
 		Type        *openapi.Schema `json:"type"`
 		Temporary   bool            `json:"temporary,omitempty"`
 		Timeout     bool            `json:"timeout,omitempty"`

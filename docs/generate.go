@@ -8,7 +8,6 @@ import (
 	"text/template"
 
 	"goa.design/goa/v3/codegen"
-	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
 	"goa.design/goa/v3/expr"
 	"goa.design/goa/v3/http/codegen/openapi"
@@ -40,7 +39,7 @@ func docsFile(r *expr.RootExpr) *codegen.File {
 		// goa does not delete files in the top-level gen folder.
 		// https://github.com/goadesign/goa/pull/2194
 		// The plugin must delete docs.json so that the generator does not append
-		// to the existing docs.json.
+		// to any existing docs.json.
 		if err := os.Remove(jsonPath); err != nil {
 			panic(err)
 		}
@@ -225,22 +224,6 @@ func generateError(api *expr.APIExpr, er *expr.ErrorExpr) *errorData {
 		Timeout:     timeout,
 		Fault:       fault,
 	}
-}
-
-func generateScheme(sch *service.SchemeData) *schemeData {
-	s := &schemeData{
-		Type:   sch.Type,
-		Name:   sch.Name,
-		In:     sch.In,
-		Scheme: sch.SchemeName,
-	}
-	if len(sch.Flows) > 0 {
-		s.Flows = make([]*flowData, len(sch.Flows))
-		for i, f := range sch.Flows {
-			s.Flows[i] = &flowData{f.Type(), f.AuthorizationURL, f.TokenURL, f.RefreshURL}
-		}
-	}
-	return s
 }
 
 func toJSON(d interface{}) string {
