@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gorilla/websocket"
 	goahttp "goa.design/goa/v3/http"
 	httpmdlwr "goa.design/goa/v3/http/middleware"
 	"goa.design/goa/v3/middleware"
@@ -53,7 +54,8 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpo
 	)
 	{
 		eh := errorHandler(logger)
-		calcServer = calcsvr.New(calcEndpoints, mux, dec, enc, eh, nil)
+		upgrader := &websocket.Upgrader{}
+		calcServer = calcsvr.New(calcEndpoints, mux, dec, enc, eh, nil, upgrader, nil)
 		if debug {
 			servers := goahttp.Servers{
 				calcServer,

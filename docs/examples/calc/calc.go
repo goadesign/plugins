@@ -19,7 +19,11 @@ func NewCalc(logger *log.Logger) calc.Service {
 }
 
 // Add implements add.
-func (s *calcsrvc) Add(ctx context.Context, p *calc.AddPayload) (res int, err error) {
-	s.logger.Print("calc.add")
-	return
+func (s *calcsrvc) Add(ctx context.Context, p *calc.AddPayload, stream calc.AddServerStream) error {
+	stream.Send(p.Left + p.Right)
+	data, err := stream.Recv()
+	for err == nil {
+		stream.Send(data.A + data.B)
+	}
+	return stream.Close()
 }

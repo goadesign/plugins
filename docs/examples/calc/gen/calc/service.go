@@ -12,10 +12,10 @@ import (
 	"context"
 )
 
-// The calc service performs operations on numbers
+// The calc service performs additions on numbers
 type Service interface {
 	// Add implements add.
-	Add(context.Context, *AddPayload) (res int, err error)
+	Add(context.Context, *AddPayload, AddServerStream) (err error)
 }
 
 // ServiceName is the name of the service as defined in the design. This is the
@@ -28,8 +28,37 @@ const ServiceName = "calc"
 // MethodKey key.
 var MethodNames = [1]string{"add"}
 
+// AddServerStream is the interface a "add" endpoint server stream must satisfy.
+type AddServerStream interface {
+	// Send streams instances of "int".
+	Send(int) error
+	// Recv reads instances of "AddStreamingPayload" from the stream.
+	Recv() (*AddStreamingPayload, error)
+	// Close closes the stream.
+	Close() error
+}
+
+// AddClientStream is the interface a "add" endpoint client stream must satisfy.
+type AddClientStream interface {
+	// Send streams instances of "AddStreamingPayload".
+	Send(*AddStreamingPayload) error
+	// Recv reads instances of "int" from the stream.
+	Recv() (int, error)
+	// Close closes the stream.
+	Close() error
+}
+
 // AddPayload is the payload type of the calc service add method.
 type AddPayload struct {
+	// Left operand
+	Left int
+	// Right operand
+	Right int
+}
+
+// AddStreamingPayload is the streaming payload type of the calc service add
+// method.
+type AddStreamingPayload struct {
 	// Left operand
 	A int
 	// Right operand

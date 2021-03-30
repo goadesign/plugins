@@ -30,7 +30,7 @@ func UsageCommands() string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + ` calc add --a 5952269320165453119 --b 1828520165265779840` + "\n" +
+	return os.Args[0] + ` calc add --left 6322633713974661021 --right 3793862871819669726` + "\n" +
 		""
 }
 
@@ -42,13 +42,15 @@ func ParseEndpoint(
 	enc func(*http.Request) goahttp.Encoder,
 	dec func(*http.Response) goahttp.Decoder,
 	restore bool,
+	dialer goahttp.Dialer,
+	calcConfigurer *calcc.ConnConfigurer,
 ) (goa.Endpoint, interface{}, error) {
 	var (
 		calcFlags = flag.NewFlagSet("calc", flag.ContinueOnError)
 
-		calcAddFlags = flag.NewFlagSet("add", flag.ExitOnError)
-		calcAddAFlag = calcAddFlags.String("a", "REQUIRED", "Left operand")
-		calcAddBFlag = calcAddFlags.String("b", "REQUIRED", "Right operand")
+		calcAddFlags     = flag.NewFlagSet("add", flag.ExitOnError)
+		calcAddLeftFlag  = calcAddFlags.String("left", "REQUIRED", "Left operand")
+		calcAddRightFlag = calcAddFlags.String("right", "REQUIRED", "Right operand")
 	)
 	calcFlags.Usage = calcUsage
 	calcAddFlags.Usage = calcAddUsage
@@ -113,11 +115,11 @@ func ParseEndpoint(
 	{
 		switch svcn {
 		case "calc":
-			c := calcc.NewClient(scheme, host, doer, enc, dec, restore)
+			c := calcc.NewClient(scheme, host, doer, enc, dec, restore, dialer, calcConfigurer)
 			switch epn {
 			case "add":
 				endpoint = c.Add()
-				data, err = calcc.BuildAddPayload(*calcAddAFlag, *calcAddBFlag)
+				data, err = calcc.BuildAddPayload(*calcAddLeftFlag, *calcAddRightFlag)
 			}
 		}
 	}
@@ -130,7 +132,7 @@ func ParseEndpoint(
 
 // calcUsage displays the usage of the calc command and its subcommands.
 func calcUsage() {
-	fmt.Fprintf(os.Stderr, `The calc service performs operations on numbers
+	fmt.Fprintf(os.Stderr, `The calc service performs additions on numbers
 Usage:
     %s [globalflags] calc COMMAND [flags]
 
@@ -142,13 +144,13 @@ Additional help:
 `, os.Args[0], os.Args[0])
 }
 func calcAddUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] calc add -a INT -b INT
+	fmt.Fprintf(os.Stderr, `%s [flags] calc add -left INT -right INT
 
 Add implements add.
-    -a INT: Left operand
-    -b INT: Right operand
+    -left INT: Left operand
+    -right INT: Right operand
 
 Example:
-    `+os.Args[0]+` calc add --a 5952269320165453119 --b 1828520165265779840
+    `+os.Args[0]+` calc add --left 6322633713974661021 --right 3793862871819669726
 `, os.Args[0])
 }

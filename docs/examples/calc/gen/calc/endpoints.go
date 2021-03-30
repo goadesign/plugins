@@ -19,6 +19,15 @@ type Endpoints struct {
 	Add goa.Endpoint
 }
 
+// AddEndpointInput holds both the payload and the server stream of the "add"
+// method.
+type AddEndpointInput struct {
+	// Payload is the method payload.
+	Payload *AddPayload
+	// Stream is the server stream used by the "add" method to send data.
+	Stream AddServerStream
+}
+
 // NewEndpoints wraps the methods of the "calc" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
@@ -35,7 +44,7 @@ func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
 // service "calc".
 func NewAddEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		p := req.(*AddPayload)
-		return s.Add(ctx, p)
+		ep := req.(*AddEndpointInput)
+		return nil, s.Add(ctx, ep.Payload, ep.Stream)
 	}
 }
