@@ -16,22 +16,22 @@ func TestMountFiles(t *testing.T) {
 		"multi-endpoints": {
 			DSL: testdata.MultiEndpointDSL,
 			Code: map[string][]string{
-				"goakit-mount-handler":     []string{testdata.Endpoint1GoakitMountCode, testdata.Endpoint2GoakitMountCode},
-				"goakit-mount-file-server": []string{},
+				"goakit-mount-handler":     {testdata.Endpoint1GoakitMountCode, testdata.Endpoint2GoakitMountCode},
+				"goakit-mount-file-server": {},
 			},
 		},
 		"file-servers": {
 			DSL: testdata.FileServerDSL,
 			Code: map[string][]string{
-				"goakit-mount-handler":     []string{},
-				"goakit-mount-file-server": []string{testdata.File1GoakitMountCode, testdata.File2GoakitMountCode},
+				"goakit-mount-handler":     {},
+				"goakit-mount-file-server": {testdata.File1GoakitMountCode, testdata.File2GoakitMountCode},
 			},
 		},
 		"mixed": {
 			DSL: testdata.MixedDSL,
 			Code: map[string][]string{
-				"goakit-mount-handler":     []string{testdata.MixedMethodGoakitMountCode},
-				"goakit-mount-file-server": []string{testdata.MixedFileGoakitMountCode},
+				"goakit-mount-handler":     {testdata.MixedMethodGoakitMountCode},
+				"goakit-mount-file-server": {testdata.MixedFileGoakitMountCode},
 			},
 		},
 	}
