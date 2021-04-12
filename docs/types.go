@@ -68,18 +68,19 @@ type (
 	}
 
 	methodData struct {
-		Name         string                `json:"name"`
-		Description  string                `json:"description,omitempty"`
-		Payload      *payloadData          `json:"payload,omitempty"`
-		Result       *payloadData          `json:"result,omitempty"`
-		Errors       map[string]*errorData `json:"errors,omitempty"`
-		Requirements []*requirementData    `json:"requirements,omitempty"`
+		Name             string                `json:"name"`
+		Description      string                `json:"description,omitempty"`
+		Payload          *payloadData          `json:"payload,omitempty"`
+		StreamingPayload *payloadData          `json:"streaming_payload,omitempty"`
+		Result           *payloadData          `json:"result,omitempty"`
+		StreamingResult  *payloadData          `json:"streaming_result,omitempty"`
+		Errors           map[string]*errorData `json:"errors,omitempty"`
+		Requirements     []*requirementData    `json:"requirements,omitempty"`
 	}
 
 	payloadData struct {
-		Type      *openapi.Schema `json:"type"`
-		Example   interface{}     `json:"example,omitempty"`
-		Streaming bool            `json:"streaming,omitempty"`
+		Type    *openapi.Schema `json:"type"`
+		Example interface{}     `json:"example,omitempty"`
 	}
 
 	requirementData struct {
@@ -98,7 +99,7 @@ type (
 
 	errorData struct {
 		Name        string          `json:"name"`
-		Description string          `json:"description,omitempty,omitempty"`
+		Description string          `json:"description,omitempty"`
 		Type        *openapi.Schema `json:"type"`
 		Temporary   bool            `json:"temporary,omitempty"`
 		Timeout     bool            `json:"timeout,omitempty"`

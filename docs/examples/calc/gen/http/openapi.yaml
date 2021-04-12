@@ -1,9 +1,8 @@
 swagger: "2.0"
 info:
   title: Calculator Service
-  description: HTTP service for adding numbers, a goa teaser
   version: ""
-host: localhost:8000
+host: localhost:80
 consumes:
 - application/json
 - application/xml
@@ -13,31 +12,31 @@ produces:
 - application/xml
 - application/gob
 paths:
-  /add/{a}/{b}:
+  /add/{left}/{right}:
     get:
       tags:
       - calc
       summary: add calc
       operationId: calc#add
       parameters:
-      - name: a
+      - name: left
         in: path
         description: Left operand
         required: true
         type: integer
-      - name: b
+      - name: right
         in: path
         description: Right operand
         required: true
         type: integer
       responses:
-        "200":
-          description: OK response.
+        "101":
+          description: Switching Protocols response.
           schema:
             type: integer
             format: int64
       schemes:
-      - http
+      - ws
   /swagger.json:
     get:
       tags:
@@ -51,4 +50,3 @@ paths:
             type: file
       schemes:
       - http
-      - https

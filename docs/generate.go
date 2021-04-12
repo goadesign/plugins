@@ -8,7 +8,6 @@ import (
 	"text/template"
 
 	"goa.design/goa/v3/codegen"
-	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
 	"goa.design/goa/v3/expr"
 	"goa.design/goa/v3/http/codegen/openapi"
@@ -40,7 +39,7 @@ func docsFile(r *expr.RootExpr) *codegen.File {
 		// goa does not delete files in the top-level gen folder.
 		// https://github.com/goadesign/goa/pull/2194
 		// The plugin must delete docs.json so that the generator does not append
-		// to the existing docs.json.
+		// to any existing docs.json.
 		if err := os.Remove(jsonPath); err != nil {
 			panic(err)
 		}
@@ -177,12 +176,17 @@ func generateRequirement(req *expr.SecurityExpr) *requirementData {
 	return r
 }
 
-func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr, nameScope *codegen.NameScope) *methodData {
+func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr, scope *codegen.NameScope) *methodData {
 	m := &methodData{
-		Name:        meth.Name,
-		Description: meth.Description,
-		Payload:     generatePayload(api, meth.Payload, meth.IsPayloadStreaming(), nameScope),
-		Result:      generatePayload(api, meth.Result, meth.Stream == expr.BidirectionalStreamKind || meth.Stream == expr.ServerStreamKind, nameScope),
+		Name:             meth.Name,
+		Description:      meth.Description,
+		Payload:          generatePayload(api, meth.Payload, scope),
+		StreamingPayload: generatePayload(api, meth.StreamingPayload, scope),
+	}
+	if meth.Stream == expr.BidirectionalStreamKind || meth.Stream == expr.ServerStreamKind {
+		m.StreamingResult = generatePayload(api, meth.Result, scope)
+	} else {
+		m.Result = generatePayload(api, meth.Result, scope)
 	}
 	m.Errors = make(map[string]*errorData, len(meth.Errors))
 	for _, er := range meth.Errors {
@@ -195,7 +199,7 @@ func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr, nameScope *codegen
 	return m
 }
 
-func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, streaming bool, nameScope *codegen.NameScope) *payloadData {
+func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, nameScope *codegen.NameScope) *payloadData {
 	// since the definitions section is global to the API, we need to ensure uniqueness of TypeName
 	if ut, ok := att.Type.(*expr.UserTypeExpr); ok && ut != expr.Empty {
 		ut.TypeName = nameScope.Unique(ut.TypeName)
@@ -203,9 +207,8 @@ func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, streaming bool,
 
 	schema := openapi.AttributeTypeSchema(api, att)
 	return &payloadData{
-		Type:      schema,
-		Example:   att.Example(api.Random()),
-		Streaming: streaming,
+		Type:    schema,
+		Example: att.Example(api.Random()),
 	}
 }
 
@@ -221,22 +224,6 @@ func generateError(api *expr.APIExpr, er *expr.ErrorExpr) *errorData {
 		Timeout:     timeout,
 		Fault:       fault,
 	}
-}
-
-func generateScheme(sch *service.SchemeData) *schemeData {
-	s := &schemeData{
-		Type:   sch.Type,
-		Name:   sch.Name,
-		In:     sch.In,
-		Scheme: sch.SchemeName,
-	}
-	if len(sch.Flows) > 0 {
-		s.Flows = make([]*flowData, len(sch.Flows))
-		for i, f := range sch.Flows {
-			s.Flows[i] = &flowData{f.Type(), f.AuthorizationURL, f.TokenURL, f.RefreshURL}
-		}
-	}
-	return s
 }
 
 func toJSON(d interface{}) string {

@@ -18,33 +18,33 @@ func TestServerEncodeDecode(t *testing.T) {
 		"simple-service": {
 			DSL: testdata.SimpleServiceDSL,
 			Code: map[string][]string{
-				"goakit-response-encoder": []string{testdata.SimpleMethodGoakitResponseEncoderCode},
-				"goakit-request-decoder":  []string{},
-				"goakit-error-encoder":    []string{},
+				"goakit-response-encoder": {testdata.SimpleMethodGoakitResponseEncoderCode},
+				"goakit-request-decoder":  {},
+				"goakit-error-encoder":    {},
 			},
 		},
 		"with-payload": {
 			DSL: testdata.WithPayloadDSL,
 			Code: map[string][]string{
-				"goakit-response-encoder": []string{testdata.WithPayloadMethodGoakitResponseEncoderCode},
-				"goakit-request-decoder":  []string{testdata.WithPayloadMethodGoakitRequestDecoderCode},
-				"goakit-error-encoder":    []string{},
+				"goakit-response-encoder": {testdata.WithPayloadMethodGoakitResponseEncoderCode},
+				"goakit-request-decoder":  {testdata.WithPayloadMethodGoakitRequestDecoderCode},
+				"goakit-error-encoder":    {},
 			},
 		},
 		"with-error": {
 			DSL: testdata.WithErrorDSL,
 			Code: map[string][]string{
-				"goakit-response-encoder": []string{testdata.WithErrorMethodGoakitResponseEncoderCode},
-				"goakit-request-decoder":  []string{},
-				"goakit-error-encoder":    []string{testdata.WithErrorMethodGoakitErrorEncoderCode},
+				"goakit-response-encoder": {testdata.WithErrorMethodGoakitResponseEncoderCode},
+				"goakit-request-decoder":  {},
+				"goakit-error-encoder":    {testdata.WithErrorMethodGoakitErrorEncoderCode},
 			},
 		},
 		"multi-endpoints": {
 			DSL: testdata.MultiEndpointDSL,
 			Code: map[string][]string{
-				"goakit-response-encoder": []string{testdata.Endpoint1GoakitResponseEncoderCode, testdata.Endpoint2GoakitResponseEncoderCode},
-				"goakit-request-decoder":  []string{testdata.Endpoint1GoakitRequestDecoderCode},
-				"goakit-error-encoder":    []string{testdata.Endpoint1GoakitErrorEncoderCode, testdata.Endpoint2GoakitErrorEncoderCode},
+				"goakit-response-encoder": {testdata.Endpoint1GoakitResponseEncoderCode, testdata.Endpoint2GoakitResponseEncoderCode},
+				"goakit-request-decoder":  {testdata.Endpoint1GoakitRequestDecoderCode},
+				"goakit-error-encoder":    {testdata.Endpoint1GoakitErrorEncoderCode, testdata.Endpoint2GoakitErrorEncoderCode},
 			},
 		},
 	}
@@ -79,29 +79,29 @@ func TestClientEncodeDecode(t *testing.T) {
 		"simple-service": {
 			DSL: testdata.SimpleServiceDSL,
 			Code: map[string][]string{
-				"goakit-response-decoder": []string{testdata.SimpleMethodGoakitResponseDecoderCode},
-				"goakit-request-encoder":  []string{},
+				"goakit-response-decoder": {testdata.SimpleMethodGoakitResponseDecoderCode},
+				"goakit-request-encoder":  {},
 			},
 		},
 		"with-payload": {
 			DSL: testdata.WithPayloadDSL,
 			Code: map[string][]string{
-				"goakit-response-decoder": []string{testdata.WithPayloadMethodGoakitResponseDecoderCode},
-				"goakit-request-encoder":  []string{testdata.WithPayloadMethodGoakitRequestEncoderCode},
+				"goakit-response-decoder": {testdata.WithPayloadMethodGoakitResponseDecoderCode},
+				"goakit-request-encoder":  {testdata.WithPayloadMethodGoakitRequestEncoderCode},
 			},
 		},
 		"with-error": {
 			DSL: testdata.WithErrorDSL,
 			Code: map[string][]string{
-				"goakit-response-decoder": []string{testdata.WithErrorMethodGoakitResponseDecoderCode},
-				"goakit-request-encoder":  []string{},
+				"goakit-response-decoder": {testdata.WithErrorMethodGoakitResponseDecoderCode},
+				"goakit-request-encoder":  {},
 			},
 		},
 		"multi-endpoints": {
 			DSL: testdata.MultiEndpointDSL,
 			Code: map[string][]string{
-				"goakit-response-decoder": []string{testdata.Endpoint1GoakitResponseDecoderCode, testdata.Endpoint2GoakitResponseDecoderCode},
-				"goakit-request-encoder":  []string{testdata.Endpoint1GoakitRequestEncoderCode},
+				"goakit-response-decoder": {testdata.Endpoint1GoakitResponseDecoderCode, testdata.Endpoint2GoakitResponseDecoderCode},
+				"goakit-request-encoder":  {testdata.Endpoint1GoakitRequestEncoderCode},
 			},
 		},
 	}

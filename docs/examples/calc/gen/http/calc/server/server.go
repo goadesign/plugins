@@ -12,6 +12,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/gorilla/websocket"
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
 	calc "goa.design/plugins/v3/docs/examples/calc/gen/calc"
@@ -53,13 +54,18 @@ func New(
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
 	formatter func(err error) goahttp.Statuser,
+	upgrader goahttp.Upgrader,
+	configurer *ConnConfigurer,
 ) *Server {
+	if configurer == nil {
+		configurer = &ConnConfigurer{}
+	}
 	return &Server{
 		Mounts: []*MountPoint{
-			{"Add", "GET", "/add/{a}/{b}"},
+			{"Add", "GET", "/add/{left}/{right}"},
 			{"../../gen/http/openapi.json", "GET", "/swagger.json"},
 		},
-		Add: NewAddHandler(e.Add, mux, decoder, encoder, errhandler, formatter),
+		Add: NewAddHandler(e.Add, mux, decoder, encoder, errhandler, formatter, upgrader, configurer.AddFn),
 	}
 }
 
@@ -88,7 +94,7 @@ func MountAddHandler(mux goahttp.Muxer, h http.Handler) {
 			h.ServeHTTP(w, r)
 		}
 	}
-	mux.Handle("GET", "/add/{a}/{b}", f)
+	mux.Handle("GET", "/add/{left}/{right}", f)
 }
 
 // NewAddHandler creates a HTTP handler which loads the HTTP request and calls
@@ -100,11 +106,12 @@ func NewAddHandler(
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
 	formatter func(err error) goahttp.Statuser,
+	upgrader goahttp.Upgrader,
+	configurer goahttp.ConnConfigureFunc,
 ) http.Handler {
 	var (
-		decodeRequest  = DecodeAddRequest(mux, decoder)
-		encodeResponse = EncodeAddResponse(encoder)
-		encodeError    = goahttp.ErrorEncoder(encoder, formatter)
+		decodeRequest = DecodeAddRequest(mux, decoder)
+		encodeError   = goahttp.ErrorEncoder(encoder, formatter)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
@@ -117,15 +124,27 @@ func NewAddHandler(
 			}
 			return
 		}
-		res, err := endpoint(ctx, payload)
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithCancel(ctx)
+		v := &calc.AddEndpointInput{
+			Stream: &AddServerStream{
+				upgrader:   upgrader,
+				configurer: configurer,
+				cancel:     cancel,
+				w:          w,
+				r:          r,
+			},
+			Payload: payload.(*calc.AddPayload),
+		}
+		_, err = endpoint(ctx, v)
 		if err != nil {
+			if _, ok := err.(websocket.HandshakeError); ok {
+				return
+			}
 			if err := encodeError(ctx, w, err); err != nil {
 				errhandler(ctx, w, err)
 			}
 			return
-		}
-		if err := encodeResponse(ctx, w, res); err != nil {
-			errhandler(ctx, w, err)
 		}
 	})
 }

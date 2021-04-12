@@ -23,18 +23,25 @@ import (
 // to call the "calc" service "add" endpoint
 func (c *Client) BuildAddRequest(ctx context.Context, v interface{}) (*http.Request, error) {
 	var (
-		a int
-		b int
+		left  int
+		right int
 	)
 	{
 		p, ok := v.(*calc.AddPayload)
 		if !ok {
 			return nil, goahttp.ErrInvalidType("calc", "add", "*calc.AddPayload", v)
 		}
-		a = p.A
-		b = p.B
+		left = p.Left
+		right = p.Right
 	}
-	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: AddCalcPath(a, b)}
+	scheme := c.scheme
+	switch c.scheme {
+	case "http":
+		scheme = "ws"
+	case "https":
+		scheme = "wss"
+	}
+	u := &url.URL{Scheme: scheme, Host: c.host, Path: AddCalcPath(left, right)}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("calc", "add", u.String(), err)

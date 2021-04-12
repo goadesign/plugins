@@ -27,11 +27,11 @@ func NewClient(add goa.Endpoint) *Client {
 }
 
 // Add calls the "add" endpoint of the "calc" service.
-func (c *Client) Add(ctx context.Context, p *AddPayload) (res int, err error) {
+func (c *Client) Add(ctx context.Context, p *AddPayload) (res AddClientStream, err error) {
 	var ires interface{}
 	ires, err = c.AddEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(int), nil
+	return ires.(AddClientStream), nil
 }

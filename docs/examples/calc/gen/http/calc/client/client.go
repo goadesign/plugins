@@ -25,10 +25,12 @@ type Client struct {
 	// decoding so they can be read again.
 	RestoreResponseBody bool
 
-	scheme  string
-	host    string
-	encoder func(*http.Request) goahttp.Encoder
-	decoder func(*http.Response) goahttp.Decoder
+	scheme     string
+	host       string
+	encoder    func(*http.Request) goahttp.Encoder
+	decoder    func(*http.Response) goahttp.Decoder
+	dialer     goahttp.Dialer
+	configurer *ConnConfigurer
 }
 
 // NewClient instantiates HTTP clients for all the calc service servers.
@@ -39,7 +41,12 @@ func NewClient(
 	enc func(*http.Request) goahttp.Encoder,
 	dec func(*http.Response) goahttp.Decoder,
 	restoreBody bool,
+	dialer goahttp.Dialer,
+	cfn *ConnConfigurer,
 ) *Client {
+	if cfn == nil {
+		cfn = &ConnConfigurer{}
+	}
 	return &Client{
 		AddDoer:             doer,
 		RestoreResponseBody: restoreBody,
@@ -47,6 +54,8 @@ func NewClient(
 		host:                host,
 		decoder:             dec,
 		encoder:             enc,
+		dialer:              dialer,
+		configurer:          cfn,
 	}
 }
 
@@ -61,10 +70,19 @@ func (c *Client) Add() goa.Endpoint {
 		if err != nil {
 			return nil, err
 		}
-		resp, err := c.AddDoer.Do(req)
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithCancel(ctx)
+		conn, resp, err := c.dialer.DialContext(ctx, req.URL.String(), req.Header)
 		if err != nil {
+			if resp != nil {
+				return decodeResponse(resp)
+			}
 			return nil, goahttp.ErrRequestError("calc", "add", err)
 		}
-		return decodeResponse(resp)
+		if c.configurer.AddFn != nil {
+			conn = c.configurer.AddFn(conn, cancel)
+		}
+		stream := &AddClientStream{conn: conn}
+		return stream, nil
 	}
 }

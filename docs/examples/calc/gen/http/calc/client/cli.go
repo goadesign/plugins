@@ -16,29 +16,29 @@ import (
 )
 
 // BuildAddPayload builds the payload for the calc add endpoint from CLI flags.
-func BuildAddPayload(calcAddA string, calcAddB string) (*calc.AddPayload, error) {
+func BuildAddPayload(calcAddLeft string, calcAddRight string) (*calc.AddPayload, error) {
 	var err error
-	var a int
+	var left int
 	{
 		var v int64
-		v, err = strconv.ParseInt(calcAddA, 10, 64)
-		a = int(v)
+		v, err = strconv.ParseInt(calcAddLeft, 10, 64)
+		left = int(v)
 		if err != nil {
-			return nil, fmt.Errorf("invalid value for a, must be INT")
+			return nil, fmt.Errorf("invalid value for left, must be INT")
 		}
 	}
-	var b int
+	var right int
 	{
 		var v int64
-		v, err = strconv.ParseInt(calcAddB, 10, 64)
-		b = int(v)
+		v, err = strconv.ParseInt(calcAddRight, 10, 64)
+		right = int(v)
 		if err != nil {
-			return nil, fmt.Errorf("invalid value for b, must be INT")
+			return nil, fmt.Errorf("invalid value for right, must be INT")
 		}
 	}
 	v := &calc.AddPayload{}
-	v.A = a
-	v.B = b
+	v.Left = left
+	v.Right = right
 
 	return v, nil
 }
