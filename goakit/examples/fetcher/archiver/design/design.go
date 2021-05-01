@@ -65,7 +65,7 @@ var ArchiveMedia = ResultType("application/vnd.goa.archive", func() {
 	Attributes(func() {
 		Attribute("href", String, "The archive resouce href", func() {
 			Pattern("^/archive/[0-9]+$")
-			Example("/archive1/")
+			Example("/archive/1")
 		})
 		Attribute("status")
 		Attribute("body")
