@@ -134,3 +134,6 @@ components:
       required:
       - status
       - archive_href
+tags:
+- name: health
+- name: fetcher

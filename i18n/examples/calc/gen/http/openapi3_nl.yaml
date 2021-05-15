@@ -42,3 +42,6 @@ paths:
                 format: int64
               example: 3
 components: {}
+tags:
+- name: calc
+  description: De reken service stelt basis rekenmethodes publiekelijk beschikbaar

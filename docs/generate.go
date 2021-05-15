@@ -36,7 +36,7 @@ func docsFile(r *expr.RootExpr) *codegen.File {
 	}
 	jsonPath := filepath.Join(codegen.Gendir, "docs.json")
 	if _, err := os.Stat(jsonPath); !os.IsNotExist(err) {
-		// goa does not delete files in the top-level gen folder.
+		// Goa does not delete files in the top-level gen folder.
 		// https://github.com/goadesign/goa/pull/2194
 		// The plugin must delete docs.json so that the generator does not append
 		// to any existing docs.json.
@@ -201,7 +201,10 @@ func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr, scope *codegen.Nam
 
 func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, nameScope *codegen.NameScope) *payloadData {
 	// since the definitions section is global to the API, we need to ensure uniqueness of TypeName
-	if ut, ok := att.Type.(*expr.UserTypeExpr); ok && ut != expr.Empty {
+	if ut, ok := att.Type.(*expr.UserTypeExpr); ok {
+		if ut == expr.Empty {
+			return nil
+		}
 		ut.TypeName = nameScope.Unique(ut.TypeName)
 	}
 

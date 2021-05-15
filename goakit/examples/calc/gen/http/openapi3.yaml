@@ -47,3 +47,6 @@ paths:
                 format: int64
               example: 3
 components: {}
+tags:
+- name: calc
+  description: The calc service exposes public endpoints that uses go-kit.

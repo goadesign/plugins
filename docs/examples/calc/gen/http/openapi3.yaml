@@ -73,3 +73,6 @@ components:
       required:
       - a
       - b
+tags:
+- name: calc
+  description: The calc service performs additions on numbers
