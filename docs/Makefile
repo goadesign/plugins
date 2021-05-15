@@ -10,6 +10,7 @@ GOPATH=$(shell go env GOPATH)
 include $(GOPATH)/src/goa.design/plugins/plugins.mk
 
 gen:
+	@rm -f examples/calc/gen/docs.json
 	goa gen goa.design/plugins/v3/docs/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/docs/examples/calc" && \
 	make example
 
