@@ -55,8 +55,6 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpo
 	{
 		eh := errorHandler(logger)
 		upgrader := &websocket.Upgrader{}
-		// YA
-		//  WHoo
 		calcServer = calcsvr.New(calcEndpoints, mux, dec, enc, eh, nil, upgrader, nil, nil)
 		if debug {
 			servers := goahttp.Servers{
