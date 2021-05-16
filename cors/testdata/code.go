@@ -386,13 +386,18 @@ func New(
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
 	formatter func(err error) goahttp.Statuser,
+	fileSystemFileJSON http.FileSystem,
 ) *Server {
+	if fileSystemFileJSON == nil {
+		fileSystemFileJSON = http.Dir(".")
+	}
 	return &Server{
 		Mounts: []*MountPoint{
 			{"CORS", "OPTIONS", "/file.json"},
 			{"./file.json", "GET", "/file.json"},
 		},
-		CORS: NewCORSHandler(),
+		CORS:     NewCORSHandler(),
+		FileJSON: http.FileServer(fileSystemFileJSON),
 	}
 }
 `
