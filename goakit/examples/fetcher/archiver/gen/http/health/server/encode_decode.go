@@ -19,7 +19,7 @@ import (
 // show endpoint.
 func EncodeShowResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(string)
+		res, _ := v.(string)
 		ctx = context.WithValue(ctx, goahttp.ContentTypeKey, "text/plain")
 		enc := encoder(ctx, w)
 		body := res

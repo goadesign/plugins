@@ -112,7 +112,7 @@ definitions:
       href:
         type: string
         description: The archive resouce href
-        example: /archive1/
+        example: /archive/1
         pattern: ^/archive/[0-9]+$
       status:
         type: integer
@@ -122,7 +122,7 @@ definitions:
     description: ArchiveResponseBody result type (default view)
     example:
       body: Amet officia.
-      href: /archive1/
+      href: /archive/1
       status: 200
     required:
     - href
@@ -229,7 +229,7 @@ definitions:
       href:
         type: string
         description: The archive resouce href
-        example: /archive1/
+        example: /archive/1
         pattern: ^/archive/[0-9]+$
       status:
         type: integer
@@ -239,7 +239,7 @@ definitions:
     description: ReadResponseBody result type (default view)
     example:
       body: Numquam qui qui eligendi doloribus.
-      href: /archive1/
+      href: /archive/1
       status: 200
     required:
     - href

@@ -32,7 +32,7 @@ paths:
                 $ref: '#/components/schemas/ArchiveMedia'
               example:
                 body: Asperiores quas quas mollitia tempora expedita.
-                href: /archive1/
+                href: /archive/1
                 status: 200
   /archive/{id}:
     get:
@@ -61,7 +61,7 @@ paths:
                 $ref: '#/components/schemas/ArchiveMedia'
               example:
                 body: Provident at explicabo cum odit.
-                href: /archive1/
+                href: /archive/1
                 status: 200
         "400":
           description: Bad Request response.
@@ -111,7 +111,7 @@ components:
         href:
           type: string
           description: The archive resouce href
-          example: /archive1/
+          example: /archive/1
           pattern: ^/archive/[0-9]+$
         status:
           type: integer
@@ -120,7 +120,7 @@ components:
           minimum: 0
       example:
         body: Aliquam cupiditate similique.
-        href: /archive1/
+        href: /archive/1
         status: 200
       required:
       - href
@@ -184,3 +184,6 @@ components:
       - temporary
       - timeout
       - fault
+tags:
+- name: archiver
+- name: health
