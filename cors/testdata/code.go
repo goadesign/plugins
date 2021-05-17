@@ -1,8 +1,8 @@
 package testdata
 
-var SimpleOriginHandleCode = `// handleSimpleOriginOrigin applies the CORS response headers corresponding to
+var SimpleOriginHandleCode = `// HandleSimpleOriginOrigin applies the CORS response headers corresponding to
 // the origin for the service SimpleOrigin.
-func handleSimpleOriginOrigin(h http.Handler) http.Handler {
+func HandleSimpleOriginOrigin(h http.Handler) http.Handler {
 	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
@@ -26,9 +26,9 @@ func handleSimpleOriginOrigin(h http.Handler) http.Handler {
 }
 `
 
-var RegexpOriginHandleCode = `// handleRegexpOriginOrigin applies the CORS response headers corresponding to
+var RegexpOriginHandleCode = `// HandleRegexpOriginOrigin applies the CORS response headers corresponding to
 // the origin for the service RegexpOrigin.
-func handleRegexpOriginOrigin(h http.Handler) http.Handler {
+func HandleRegexpOriginOrigin(h http.Handler) http.Handler {
 	spec0 := regexp.MustCompile(".*RegexpOrigin.*")
 	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -53,9 +53,9 @@ func handleRegexpOriginOrigin(h http.Handler) http.Handler {
 }
 `
 
-var MultiOriginHandleCode = `// handleMultiOriginOrigin applies the CORS response headers corresponding to
+var MultiOriginHandleCode = `// HandleMultiOriginOrigin applies the CORS response headers corresponding to
 // the origin for the service MultiOrigin.
-func handleMultiOriginOrigin(h http.Handler) http.Handler {
+func HandleMultiOriginOrigin(h http.Handler) http.Handler {
 	spec0 := regexp.MustCompile(".*MultiOrigin2.*")
 	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -97,9 +97,9 @@ func handleMultiOriginOrigin(h http.Handler) http.Handler {
 }
 `
 
-var OriginFileServerHandleCode = `// handleOriginFileServerOrigin applies the CORS response headers corresponding
+var OriginFileServerHandleCode = `// HandleOriginFileServerOrigin applies the CORS response headers corresponding
 // to the origin for the service OriginFileServer.
-func handleOriginFileServerOrigin(h http.Handler) http.Handler {
+func HandleOriginFileServerOrigin(h http.Handler) http.Handler {
 	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
@@ -123,9 +123,9 @@ func handleOriginFileServerOrigin(h http.Handler) http.Handler {
 }
 `
 
-var OriginMultiEndpointHandleCode = `// handleOriginMultiEndpointOrigin applies the CORS response headers
+var OriginMultiEndpointHandleCode = `// HandleOriginMultiEndpointOrigin applies the CORS response headers
 // corresponding to the origin for the service OriginMultiEndpoint.
-func handleOriginMultiEndpointOrigin(h http.Handler) http.Handler {
+func HandleOriginMultiEndpointOrigin(h http.Handler) http.Handler {
 	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
@@ -149,9 +149,9 @@ func handleOriginMultiEndpointOrigin(h http.Handler) http.Handler {
 }
 `
 
-var MultiServiceSameOriginFirstServiceHandleCode = `// handleFirstServiceOrigin applies the CORS response headers corresponding to
+var MultiServiceSameOriginFirstServiceHandleCode = `// HandleFirstServiceOrigin applies the CORS response headers corresponding to
 // the origin for the service FirstService.
-func handleFirstServiceOrigin(h http.Handler) http.Handler {
+func HandleFirstServiceOrigin(h http.Handler) http.Handler {
 	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
@@ -174,9 +174,9 @@ func handleFirstServiceOrigin(h http.Handler) http.Handler {
 	})
 }
 `
-var MultiServiceSameOriginSecondServiceHandleCode = `// handleSecondServiceOrigin applies the CORS response headers corresponding to
+var MultiServiceSameOriginSecondServiceHandleCode = `// HandleSecondServiceOrigin applies the CORS response headers corresponding to
 // the origin for the service SecondService.
-func handleSecondServiceOrigin(h http.Handler) http.Handler {
+func HandleSecondServiceOrigin(h http.Handler) http.Handler {
 	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
@@ -203,7 +203,7 @@ func handleSecondServiceOrigin(h http.Handler) http.Handler {
 var SimpleOriginMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service SimpleOrigin.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
-	h = handleSimpleOriginOrigin(h)
+	h = HandleSimpleOriginOrigin(h)
 	f, ok := h.(http.HandlerFunc)
 	if !ok {
 		f = func(w http.ResponseWriter, r *http.Request) {
@@ -217,7 +217,7 @@ func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 var RegexpOriginMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service RegexpOrigin.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
-	h = handleRegexpOriginOrigin(h)
+	h = HandleRegexpOriginOrigin(h)
 	f, ok := h.(http.HandlerFunc)
 	if !ok {
 		f = func(w http.ResponseWriter, r *http.Request) {
@@ -231,7 +231,7 @@ func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 var MultiOriginMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service MultiOrigin.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
-	h = handleMultiOriginOrigin(h)
+	h = HandleMultiOriginOrigin(h)
 	f, ok := h.(http.HandlerFunc)
 	if !ok {
 		f = func(w http.ResponseWriter, r *http.Request) {
@@ -245,7 +245,7 @@ func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 var OriginFileServerMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service OriginFileServer.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
-	h = handleOriginFileServerOrigin(h)
+	h = HandleOriginFileServerOrigin(h)
 	f, ok := h.(http.HandlerFunc)
 	if !ok {
 		f = func(w http.ResponseWriter, r *http.Request) {
@@ -259,7 +259,7 @@ func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 var OriginMultiEndpointMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service OriginMultiEndpoint.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
-	h = handleOriginMultiEndpointOrigin(h)
+	h = HandleOriginMultiEndpointOrigin(h)
 	f, ok := h.(http.HandlerFunc)
 	if !ok {
 		f = func(w http.ResponseWriter, r *http.Request) {
@@ -274,7 +274,7 @@ func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 var MultiServiceSameOriginFirstServiceMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service FirstService.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
-	h = handleFirstServiceOrigin(h)
+	h = HandleFirstServiceOrigin(h)
 	f, ok := h.(http.HandlerFunc)
 	if !ok {
 		f = func(w http.ResponseWriter, r *http.Request) {
@@ -287,7 +287,7 @@ func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 var MultiServiceSameOriginSecondServiceMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service SecondService.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
-	h = handleSecondServiceOrigin(h)
+	h = HandleSecondServiceOrigin(h)
 	f, ok := h.(http.HandlerFunc)
 	if !ok {
 		f = func(w http.ResponseWriter, r *http.Request) {
