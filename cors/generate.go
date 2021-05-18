@@ -76,7 +76,7 @@ func buildServiceData(svc string) *ServiceData {
 		Name:           svc,
 		Origins:        expr.Origins(svc),
 		PreflightPaths: preflights,
-		OriginHandler:  "handle" + codegen.Goify(svc, true) + "Origin",
+		OriginHandler:  "Handle" + codegen.Goify(svc, true) + "Origin",
 		Endpoint: &httpcodegen.EndpointData{
 			Method: &service.MethodData{
 				VarName: "CORS",

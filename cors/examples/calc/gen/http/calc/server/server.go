@@ -85,7 +85,7 @@ func Mount(mux goahttp.Muxer, h *Server) {
 // MountAddHandler configures the mux to serve the "calc" service "add"
 // endpoint.
 func MountAddHandler(mux goahttp.Muxer, h http.Handler) {
-	f, ok := handleCalcOrigin(h).(http.HandlerFunc)
+	f, ok := HandleCalcOrigin(h).(http.HandlerFunc)
 	if !ok {
 		f = func(w http.ResponseWriter, r *http.Request) {
 			h.ServeHTTP(w, r)
@@ -136,7 +136,7 @@ func NewAddHandler(
 // MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service calc.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
-	h = handleCalcOrigin(h)
+	h = HandleCalcOrigin(h)
 	f, ok := h.(http.HandlerFunc)
 	if !ok {
 		f = func(w http.ResponseWriter, r *http.Request) {
@@ -153,9 +153,9 @@ func NewCORSHandler() http.Handler {
 	})
 }
 
-// handleCalcOrigin applies the CORS response headers corresponding to the
+// HandleCalcOrigin applies the CORS response headers corresponding to the
 // origin for the service calc.
-func handleCalcOrigin(h http.Handler) http.Handler {
+func HandleCalcOrigin(h http.Handler) http.Handler {
 	spec0 := regexp.MustCompile(".*localhost.*")
 	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -15,7 +15,7 @@ gen:
 	make example
 
 example:
-	@ rm -rf "$(GOPATH)/src/goa.design/plugins/cors/examples/calc/cmd"
+	@rm -rf "$(GOPATH)/src/goa.design/plugins/cors/examples/calc/cmd"
 	goa example goa.design/plugins/v3/cors/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/cors/examples/calc"
 
 build-examples:
