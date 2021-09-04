@@ -94,7 +94,7 @@ func main() {
 				}
 				u.Host = net.JoinHostPort(h, *httpPortF)
 			} else if u.Port() == "" {
-				u.Host = net.JoinHostPort(u.Host, ":80")
+				u.Host = net.JoinHostPort(u.Host, "80")
 			}
 			handleHTTPServer(ctx, u, calcEndpoints, &wg, errc, logger, *dbgF)
 		}
