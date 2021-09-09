@@ -7,5 +7,5 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.16.0
-	goa.design/goa/v3 v3.5.0
+	goa.design/goa/v3 v3.5.1
 )

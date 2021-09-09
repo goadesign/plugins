@@ -700,6 +700,8 @@ goa.design/goa/v3 v3.4.3 h1:MLZAuJGNVSSxXgwVPiQun33wrCXvb94Ka1w4GyENHwE=
 goa.design/goa/v3 v3.4.3/go.mod h1:ebbEQvCugeHeWM6Vu6zqdmiCHDICiHVNZf3L58a87J0=
 goa.design/goa/v3 v3.5.0 h1:Z+HuDXpK0yGFNvxKbx+xVFaMhQIPxqp9OCEpfUGYMaM=
 goa.design/goa/v3 v3.5.0/go.mod h1:/o4ffHNl7YljkrPK/zJcEprP/3kETvAwmAgfr0+30K8=
+goa.design/goa/v3 v3.5.1 h1:ld3VreU8GjguH5adJL1pytrimJjVaGAw0wA3+LhdsGo=
+goa.design/goa/v3 v3.5.1/go.mod h1:tCVpXqn31bQkKvpqeJCE1qnGx/t+vd9uDUNBP950Hc0=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20181029021203-45a5f77698d3/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
@@ -872,6 +874,7 @@ google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013/go.mod h1:NbSheEEY
 google.golang.org/genproto v0.0.0-20210513213006-bf773b8c8384 h1:z+j74wi4yV+P7EtK9gPLGukOk7mFOy9wMQaC0wNb7eY=
 google.golang.org/genproto v0.0.0-20210513213006-bf773b8c8384/go.mod h1:P3QM42oQyzQSnHPnZ/vqoCdDmzH28fzWByN9asMeM8A=
 google.golang.org/genproto v0.0.0-20210816143620-e15ff196659d/go.mod h1:eFjDcFEctNawg4eG61bRv87N7iHBWyVhJu7u1kqDUXY=
+google.golang.org/genproto v0.0.0-20210903162649-d08c68adba83/go.mod h1:eFjDcFEctNawg4eG61bRv87N7iHBWyVhJu7u1kqDUXY=
 google.golang.org/grpc v1.17.0/go.mod h1:6QZJwpn2B+Zp71q/5VxRsJ6NXXVCE5NRUHRo+f3cWCs=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.0/go.mod h1:chYK+tFQF0nDUGJgXMSgLCQk3phJEuONr2DCgLDdAQM=
