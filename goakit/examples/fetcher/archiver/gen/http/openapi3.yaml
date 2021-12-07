@@ -31,7 +31,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ArchiveMedia'
               example:
-                body: Asperiores quas quas mollitia tempora expedita.
+                body: Esse soluta repellat repellendus.
                 href: /archive/1
                 status: 200
   /archive/{id}:
@@ -49,9 +49,9 @@ paths:
         schema:
           type: integer
           description: ID of archive
-          example: 2499395481066573742
+          example: 6358618607000181014
           minimum: 0
-        example: 1007502908903998631
+        example: 1731606075945581921
       responses:
         "200":
           description: OK response.
@@ -60,7 +60,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ArchiveMedia'
               example:
-                body: Provident at explicabo cum odit.
+                body: Quas mollitia tempora expedita dignissimos debitis quibusdam.
                 href: /archive/1
                 status: 200
         "400":
@@ -97,8 +97,8 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: Rem consequuntur consequatur.
-              example: Dolorum corrupti voluptas ut consequuntur.
+                example: Cupiditate similique voluptatem aliquam nihil.
+              example: Consequatur et sint cumque dolorum corrupti.
 components:
   schemas:
     ArchiveMedia:
@@ -107,7 +107,7 @@ components:
         body:
           type: string
           description: HTTP response body content
-          example: Aut culpa.
+          example: Quia cum qui numquam soluta iusto.
         href:
           type: string
           description: The archive resouce href
@@ -119,7 +119,7 @@ components:
           example: 200
           minimum: 0
       example:
-        body: Aliquam cupiditate similique.
+        body: Ad beatae incidunt consequuntur aperiam aliquid.
         href: /archive/1
         status: 200
       required:
@@ -132,14 +132,14 @@ components:
         body:
           type: string
           description: HTTP response body content
-          example: Soluta iusto vel ad.
+          example: Numquam qui qui eligendi doloribus.
         status:
           type: integer
           description: HTTP status
           example: 200
           minimum: 0
       example:
-        body: Incidunt consequuntur aperiam.
+        body: Placeat aspernatur ullam qui numquam quis numquam.
         status: 200
       required:
       - status
@@ -150,7 +150,7 @@ components:
         fault:
           type: boolean
           description: Is the error a server-side fault?
-          example: false
+          example: true
         id:
           type: string
           description: ID is a unique identifier for this particular occurrence of
@@ -172,7 +172,7 @@ components:
         timeout:
           type: boolean
           description: Is the error a timeout?
-          example: false
+          example: true
       example:
         id: 3F1FKVRR
         message: Value of ID must be an integer
