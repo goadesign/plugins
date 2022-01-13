@@ -42,7 +42,7 @@ $(GOPATH)/bin/goa:
 depend: $(GOPATH)/bin/goimports $(GOPATH)/bin/golint $(GOPATH)/bin/goa
 
 tidy:
-	@go mod tidy -v
+	@go mod tidy -v -compat=1.17
 
 gen:
 	@for p in $(PLUGINS) ; do \
