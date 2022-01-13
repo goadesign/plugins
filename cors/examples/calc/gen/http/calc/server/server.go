@@ -151,14 +151,8 @@ func MountIndexHTML(mux goahttp.Muxer, h http.Handler) {
 // service calc.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 	h = HandleCalcOrigin(h)
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("OPTIONS", "/add/{a}/{b}", f)
-	mux.Handle("OPTIONS", "/", f)
+	mux.Handle("OPTIONS", "/add/{a}/{b}", h.ServeHTTP)
+	mux.Handle("OPTIONS", "/", h.ServeHTTP)
 }
 
 // NewCORSHandler creates a HTTP handler which returns a simple 200 response.

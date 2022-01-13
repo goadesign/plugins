@@ -222,13 +222,7 @@ var SimpleOriginMountCode = `// MountCORSHandler configures the mux to serve the
 // service SimpleOrigin.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 	h = HandleSimpleOriginOrigin(h)
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("OPTIONS", "/", f)
+	mux.Handle("OPTIONS", "/", h.ServeHTTP)
 }
 `
 
@@ -236,13 +230,7 @@ var RegexpOriginMountCode = `// MountCORSHandler configures the mux to serve the
 // service RegexpOrigin.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 	h = HandleRegexpOriginOrigin(h)
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("OPTIONS", "/", f)
+	mux.Handle("OPTIONS", "/", h.ServeHTTP)
 }
 `
 
@@ -250,13 +238,7 @@ var MultiOriginMountCode = `// MountCORSHandler configures the mux to serve the 
 // service MultiOrigin.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 	h = HandleMultiOriginOrigin(h)
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("OPTIONS", "/", f)
+	mux.Handle("OPTIONS", "/", h.ServeHTTP)
 }
 `
 
@@ -264,13 +246,7 @@ var OriginFileServerMountCode = `// MountCORSHandler configures the mux to serve
 // service OriginFileServer.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 	h = HandleOriginFileServerOrigin(h)
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("OPTIONS", "/file.json", f)
+	mux.Handle("OPTIONS", "/file.json", h.ServeHTTP)
 }
 `
 
@@ -278,14 +254,8 @@ var OriginMultiEndpointMountCode = `// MountCORSHandler configures the mux to se
 // service OriginMultiEndpoint.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 	h = HandleOriginMultiEndpointOrigin(h)
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("OPTIONS", "/{:id}", f)
-	mux.Handle("OPTIONS", "/", f)
+	mux.Handle("OPTIONS", "/{:id}", h.ServeHTTP)
+	mux.Handle("OPTIONS", "/", h.ServeHTTP)
 }
 `
 
@@ -293,26 +263,14 @@ var MultiServiceSameOriginFirstServiceMountCode = `// MountCORSHandler configure
 // service FirstService.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 	h = HandleFirstServiceOrigin(h)
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("OPTIONS", "/", f)
+	mux.Handle("OPTIONS", "/", h.ServeHTTP)
 }
 `
 var MultiServiceSameOriginSecondServiceMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service SecondService.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 	h = HandleSecondServiceOrigin(h)
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("OPTIONS", "/", f)
+	mux.Handle("OPTIONS", "/", h.ServeHTTP)
 }
 `
 
@@ -320,13 +278,7 @@ var FilesMountCode = `// MountCORSHandler configures the mux to serve the CORS e
 // service Files.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 	h = HandleFilesOrigin(h)
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("OPTIONS", "/index", f)
+	mux.Handle("OPTIONS", "/index", h.ServeHTTP)
 }
 `
 
