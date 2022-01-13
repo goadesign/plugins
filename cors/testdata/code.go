@@ -200,6 +200,32 @@ func HandleSecondServiceOrigin(h http.Handler) http.Handler {
 }
 `
 
+var FilesHandleCode = `// HandleFilesOrigin applies the CORS response headers corresponding to the
+// origin for the service Files.
+func HandleFilesOrigin(h http.Handler) http.Handler {
+	origHndlr := h.(http.HandlerFunc)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			// Not a CORS request
+			origHndlr(w, r)
+			return
+		}
+		if cors.MatchOrigin(origin, "*") {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin")
+			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
+				// We are handling a preflight request
+			}
+			origHndlr(w, r)
+			return
+		}
+		origHndlr(w, r)
+		return
+	})
+}
+`
+
 var SimpleOriginMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service SimpleOrigin.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
@@ -295,6 +321,20 @@ func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 		}
 	}
 	mux.Handle("OPTIONS", "/", f)
+}
+`
+
+var FilesMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
+// service Files.
+func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
+	h = HandleFilesOrigin(h)
+	f, ok := h.(http.HandlerFunc)
+	if !ok {
+		f = func(w http.ResponseWriter, r *http.Request) {
+			h.ServeHTTP(w, r)
+		}
+	}
+	mux.Handle("OPTIONS", "/index", f)
 }
 `
 
@@ -478,6 +518,35 @@ func New(
 		},
 		SimpleOriginMethod: NewSimpleOriginMethodHandler(e.SimpleOriginMethod, mux, decoder, encoder, errhandler, formatter),
 		CORS:               NewCORSHandler(),
+	}
+}
+`
+
+var FilesServerInitCode = `// New instantiates HTTP handlers for all the Files service endpoints using the
+// provided encoder and decoder. The handlers are mounted on the given mux
+// using the HTTP verb and path defined in the design. errhandler is called
+// whenever a response fails to be encoded. formatter is used to format errors
+// returned by the service methods prior to encoding. Both errhandler and
+// formatter are optional and can be nil.
+func New(
+	e *files.Endpoints,
+	mux goahttp.Muxer,
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(err error) goahttp.Statuser,
+	fileSystemIndexHTML http.FileSystem,
+) *Server {
+	if fileSystemIndexHTML == nil {
+		fileSystemIndexHTML = http.Dir(".")
+	}
+	return &Server{
+		Mounts: []*MountPoint{
+			{"CORS", "OPTIONS", "/index"},
+			{"index.html", "GET", "/index"},
+		},
+		CORS:      NewCORSHandler(),
+		IndexHTML: http.FileServer(fileSystemIndexHTML),
 	}
 }
 `
