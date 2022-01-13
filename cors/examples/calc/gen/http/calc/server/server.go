@@ -172,12 +172,11 @@ func NewCORSHandler() http.Handler {
 // origin for the service calc.
 func HandleCalcOrigin(h http.Handler) http.Handler {
 	spec0 := regexp.MustCompile(".*localhost.*")
-	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		if origin == "" {
 			// Not a CORS request
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOriginRegexp(origin, spec0) {
@@ -189,7 +188,7 @@ func HandleCalcOrigin(h http.Handler) http.Handler {
 				// We are handling a preflight request
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOrigin(origin, "http://127.0.0.1") {
@@ -203,10 +202,10 @@ func HandleCalcOrigin(h http.Handler) http.Handler {
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
 				w.Header().Set("Access-Control-Allow-Headers", "X-Shared-Secret")
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	})
 }

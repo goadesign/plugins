@@ -3,12 +3,11 @@ package testdata
 var SimpleOriginHandleCode = `// HandleSimpleOriginOrigin applies the CORS response headers corresponding to
 // the origin for the service SimpleOrigin.
 func HandleSimpleOriginOrigin(h http.Handler) http.Handler {
-	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		if origin == "" {
 			// Not a CORS request
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOrigin(origin, "SimpleOrigin") {
@@ -17,10 +16,10 @@ func HandleSimpleOriginOrigin(h http.Handler) http.Handler {
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	})
 }
@@ -30,12 +29,11 @@ var RegexpOriginHandleCode = `// HandleRegexpOriginOrigin applies the CORS respo
 // the origin for the service RegexpOrigin.
 func HandleRegexpOriginOrigin(h http.Handler) http.Handler {
 	spec0 := regexp.MustCompile(".*RegexpOrigin.*")
-	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		if origin == "" {
 			// Not a CORS request
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOriginRegexp(origin, spec0) {
@@ -44,10 +42,10 @@ func HandleRegexpOriginOrigin(h http.Handler) http.Handler {
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	})
 }
@@ -57,12 +55,11 @@ var MultiOriginHandleCode = `// HandleMultiOriginOrigin applies the CORS respons
 // the origin for the service MultiOrigin.
 func HandleMultiOriginOrigin(h http.Handler) http.Handler {
 	spec0 := regexp.MustCompile(".*MultiOrigin2.*")
-	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		if origin == "" {
 			// Not a CORS request
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOriginRegexp(origin, spec0) {
@@ -74,7 +71,7 @@ func HandleMultiOriginOrigin(h http.Handler) http.Handler {
 				// We are handling a preflight request
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOrigin(origin, "MultiOrigin1") {
@@ -88,10 +85,10 @@ func HandleMultiOriginOrigin(h http.Handler) http.Handler {
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
 				w.Header().Set("Access-Control-Allow-Headers", "X-Shared-Secret")
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	})
 }
@@ -100,12 +97,11 @@ func HandleMultiOriginOrigin(h http.Handler) http.Handler {
 var OriginFileServerHandleCode = `// HandleOriginFileServerOrigin applies the CORS response headers corresponding
 // to the origin for the service OriginFileServer.
 func HandleOriginFileServerOrigin(h http.Handler) http.Handler {
-	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		if origin == "" {
 			// Not a CORS request
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOrigin(origin, "OriginFileServer") {
@@ -114,10 +110,10 @@ func HandleOriginFileServerOrigin(h http.Handler) http.Handler {
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	})
 }
@@ -126,12 +122,11 @@ func HandleOriginFileServerOrigin(h http.Handler) http.Handler {
 var OriginMultiEndpointHandleCode = `// HandleOriginMultiEndpointOrigin applies the CORS response headers
 // corresponding to the origin for the service OriginMultiEndpoint.
 func HandleOriginMultiEndpointOrigin(h http.Handler) http.Handler {
-	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		if origin == "" {
 			// Not a CORS request
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOrigin(origin, "OriginMultiEndpoint") {
@@ -140,10 +135,10 @@ func HandleOriginMultiEndpointOrigin(h http.Handler) http.Handler {
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	})
 }
@@ -152,12 +147,11 @@ func HandleOriginMultiEndpointOrigin(h http.Handler) http.Handler {
 var MultiServiceSameOriginFirstServiceHandleCode = `// HandleFirstServiceOrigin applies the CORS response headers corresponding to
 // the origin for the service FirstService.
 func HandleFirstServiceOrigin(h http.Handler) http.Handler {
-	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		if origin == "" {
 			// Not a CORS request
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOrigin(origin, "SimpleOrigin") {
@@ -166,10 +160,10 @@ func HandleFirstServiceOrigin(h http.Handler) http.Handler {
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	})
 }
@@ -177,12 +171,11 @@ func HandleFirstServiceOrigin(h http.Handler) http.Handler {
 var MultiServiceSameOriginSecondServiceHandleCode = `// HandleSecondServiceOrigin applies the CORS response headers corresponding to
 // the origin for the service SecondService.
 func HandleSecondServiceOrigin(h http.Handler) http.Handler {
-	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		if origin == "" {
 			// Not a CORS request
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOrigin(origin, "SimpleOrigin") {
@@ -191,10 +184,10 @@ func HandleSecondServiceOrigin(h http.Handler) http.Handler {
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	})
 }
@@ -203,12 +196,11 @@ func HandleSecondServiceOrigin(h http.Handler) http.Handler {
 var FilesHandleCode = `// HandleFilesOrigin applies the CORS response headers corresponding to the
 // origin for the service Files.
 func HandleFilesOrigin(h http.Handler) http.Handler {
-	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		if origin == "" {
 			// Not a CORS request
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOrigin(origin, "*") {
@@ -217,10 +209,10 @@ func HandleFilesOrigin(h http.Handler) http.Handler {
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	})
 }

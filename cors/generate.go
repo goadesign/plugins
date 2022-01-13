@@ -188,12 +188,11 @@ func {{ .OriginHandler }}(h http.Handler) http.Handler {
 	spec{{$i}} := regexp.MustCompile({{ printf "%q" $policy.Origin }})
 	{{- end }}
 {{- end }}
-	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	origin := r.Header.Get("Origin")
 	if origin == "" {
 		// Not a CORS request
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	}
 	{{- range $i, $policy := .Origins }}
@@ -222,11 +221,11 @@ func {{ .OriginHandler }}(h http.Handler) http.Handler {
 			w.Header().Set("Access-Control-Allow-Headers", "{{ join $policy.Headers ", " }}")
 				{{- end }}
 		}
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	}
 	{{- end }}
-	origHndlr(w, r)
+	h.ServeHTTP(w, r)
 	return
   })
 }
