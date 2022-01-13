@@ -168,14 +168,8 @@ func {{ .Endpoint.HandlerInit }}() http.Handler {
 var mountCORST = `{{ printf "%s configures the mux to serve the CORS endpoints for the service %s." .Endpoint.MountHandler .Name | comment }}
 func {{ .Endpoint.MountHandler }}(mux goahttp.Muxer, h http.Handler) {
 	h = {{ .OriginHandler }}(h)
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
 	{{- range $p := .PreflightPaths }}
-	mux.Handle("OPTIONS", "{{ $p }}", f)
+	mux.Handle("OPTIONS", "{{ $p }}", h.ServeHTTP)
 	{{- end }}
 }
 `
@@ -188,12 +182,11 @@ func {{ .OriginHandler }}(h http.Handler) http.Handler {
 	spec{{$i}} := regexp.MustCompile({{ printf "%q" $policy.Origin }})
 	{{- end }}
 {{- end }}
-	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	origin := r.Header.Get("Origin")
 	if origin == "" {
 		// Not a CORS request
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	}
 	{{- range $i, $policy := .Origins }}
@@ -222,11 +215,11 @@ func {{ .OriginHandler }}(h http.Handler) http.Handler {
 			w.Header().Set("Access-Control-Allow-Headers", "{{ join $policy.Headers ", " }}")
 				{{- end }}
 		}
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	}
 	{{- end }}
-	origHndlr(w, r)
+	h.ServeHTTP(w, r)
 	return
   })
 }

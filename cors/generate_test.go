@@ -35,6 +35,7 @@ func NewCORSHandler() http.Handler {
 		{"origin-file-server", testdata.OriginFileServerDSL, []string{testdata.OriginFileServerHandleCode}, []string{testdata.OriginFileServerMountCode}, []string{testdata.OriginFileServerServerInitCode}, 1},
 		{"origin-multi-endpoint", testdata.OriginMultiEndpointDSL, []string{testdata.OriginMultiEndpointHandleCode}, []string{testdata.OriginMultiEndpointMountCode}, []string{testdata.OriginMultiEndpointServerInitCode}, 2},
 		{"multiservice-origin", testdata.MultiServiceSameOriginDSL, []string{testdata.MultiServiceSameOriginFirstServiceHandleCode, testdata.MultiServiceSameOriginSecondServiceHandleCode}, []string{testdata.MultiServiceSameOriginFirstServiceMountCode, testdata.MultiServiceSameOriginSecondServiceMountCode}, []string{testdata.MultiServiceSameOriginFirstServiceInitCode, testdata.MultiServiceSameOriginSecondServiceInitCode}, 4},
+		{"files", testdata.FilesDSL, []string{testdata.FilesHandleCode}, []string{testdata.FilesMountCode}, []string{testdata.FilesServerInitCode}, 1},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {

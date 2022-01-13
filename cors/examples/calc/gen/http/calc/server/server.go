@@ -21,9 +21,10 @@ import (
 
 // Server lists the calc service endpoint HTTP handlers.
 type Server struct {
-	Mounts []*MountPoint
-	Add    http.Handler
-	CORS   http.Handler
+	Mounts    []*MountPoint
+	Add       http.Handler
+	CORS      http.Handler
+	IndexHTML http.Handler
 }
 
 // ErrorNamer is an interface implemented by generated error structs that
@@ -56,14 +57,21 @@ func New(
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
 	formatter func(err error) goahttp.Statuser,
+	fileSystemIndexHTML http.FileSystem,
 ) *Server {
+	if fileSystemIndexHTML == nil {
+		fileSystemIndexHTML = http.Dir(".")
+	}
 	return &Server{
 		Mounts: []*MountPoint{
 			{"Add", "GET", "/add/{a}/{b}"},
 			{"CORS", "OPTIONS", "/add/{a}/{b}"},
+			{"CORS", "OPTIONS", "/"},
+			{"/index.html", "GET", "/"},
 		},
-		Add:  NewAddHandler(e.Add, mux, decoder, encoder, errhandler, formatter),
-		CORS: NewCORSHandler(),
+		Add:       NewAddHandler(e.Add, mux, decoder, encoder, errhandler, formatter),
+		CORS:      NewCORSHandler(),
+		IndexHTML: http.FileServer(fileSystemIndexHTML),
 	}
 }
 
@@ -80,6 +88,7 @@ func (s *Server) Use(m func(http.Handler) http.Handler) {
 func Mount(mux goahttp.Muxer, h *Server) {
 	MountAddHandler(mux, h.Add)
 	MountCORSHandler(mux, h.CORS)
+	MountIndexHTML(mux, h.IndexHTML)
 }
 
 // MountAddHandler configures the mux to serve the "calc" service "add"
@@ -133,17 +142,17 @@ func NewAddHandler(
 	})
 }
 
+// MountIndexHTML configures the mux to serve GET request made to "/".
+func MountIndexHTML(mux goahttp.Muxer, h http.Handler) {
+	mux.Handle("GET", "/", HandleCalcOrigin(h).ServeHTTP)
+}
+
 // MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service calc.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 	h = HandleCalcOrigin(h)
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("OPTIONS", "/add/{a}/{b}", f)
+	mux.Handle("OPTIONS", "/add/{a}/{b}", h.ServeHTTP)
+	mux.Handle("OPTIONS", "/", h.ServeHTTP)
 }
 
 // NewCORSHandler creates a HTTP handler which returns a simple 200 response.
@@ -157,12 +166,11 @@ func NewCORSHandler() http.Handler {
 // origin for the service calc.
 func HandleCalcOrigin(h http.Handler) http.Handler {
 	spec0 := regexp.MustCompile(".*localhost.*")
-	origHndlr := h.(http.HandlerFunc)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		if origin == "" {
 			// Not a CORS request
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOriginRegexp(origin, spec0) {
@@ -174,7 +182,7 @@ func HandleCalcOrigin(h http.Handler) http.Handler {
 				// We are handling a preflight request
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
 		if cors.MatchOrigin(origin, "http://127.0.0.1") {
@@ -188,10 +196,10 @@ func HandleCalcOrigin(h http.Handler) http.Handler {
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
 				w.Header().Set("Access-Control-Allow-Headers", "X-Shared-Secret")
 			}
-			origHndlr(w, r)
+			h.ServeHTTP(w, r)
 			return
 		}
-		origHndlr(w, r)
+		h.ServeHTTP(w, r)
 		return
 	})
 }

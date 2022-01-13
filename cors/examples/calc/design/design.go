@@ -48,4 +48,6 @@ var _ = Service("calc", func() {
 			Response(StatusOK)
 		})
 	})
+
+	Files("/", "/index.html")
 })

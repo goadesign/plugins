@@ -95,3 +95,10 @@ var MultiServiceSameOriginDSL = func() {
 		})
 	})
 }
+
+var FilesDSL = func() {
+	Service("Files", func() {
+		cors.Origin("*")
+		Files("/index", "index.html")
+	})
+}

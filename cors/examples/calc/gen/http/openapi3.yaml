@@ -7,6 +7,15 @@ servers:
 - url: http://localhost:80
   description: Default server for calc
 paths:
+  /:
+    get:
+      tags:
+      - calc
+      summary: Download /index.html
+      operationId: calc#/
+      responses:
+        "200":
+          description: File downloaded
   /add/{a}/{b}:
     get:
       tags:
