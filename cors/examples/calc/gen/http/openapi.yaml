@@ -13,6 +13,19 @@ produces:
 - application/xml
 - application/gob
 paths:
+  /:
+    get:
+      tags:
+      - calc
+      summary: Download /index.html
+      operationId: calc#/
+      responses:
+        "200":
+          description: File downloaded
+          schema:
+            type: file
+      schemes:
+      - http
   /add/{a}/{b}:
     get:
       tags:
