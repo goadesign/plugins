@@ -80,8 +80,9 @@ func TestGoakitify(t *testing.T) {
 
 func TestGoakitifyExample(t *testing.T) {
 	cases := map[string]struct {
-		DSL  func()
-		Code map[string]string
+		DSL     func()
+		Code    map[string]string
+		Imports []string
 	}{
 		"mixed": {
 			DSL: testdata.MixedDSL,
@@ -90,18 +91,21 @@ func TestGoakitifyExample(t *testing.T) {
 				"service-main-middleware":  testdata.MixedMainMiddlewareCode,
 				"service-main-server-init": testdata.MixedMainServerInitCode,
 			},
+			Imports: []string{"http/mixed_service/kitserver"},
 		},
 		"multi-services": {
 			DSL: testdata.MultiServiceDSL,
 			Code: map[string]string{
 				"server-http-init": testdata.MultiServicesServerInitCode,
 			},
+			Imports: []string{"http/service1/kitserver", "http/service2/kitserver"},
 		},
 		"with-error": {
 			DSL: testdata.WithErrorDSL,
 			Code: map[string]string{
 				"server-http-init": testdata.WithErrorServerInitCode,
 			},
+			Imports: []string{"http/with_error_service/kitserver"},
 		},
 	}
 	for name, c := range cases {
@@ -128,6 +132,11 @@ func TestGoakitifyExample(t *testing.T) {
 						if code != expCode {
 							t.Errorf("invalid code for %s, got:\n%s\ngot vs. expected:\n%s", s.Name, code, codegen.Diff(t, code, expCode))
 						}
+					}
+				}
+				if strings.HasSuffix(f.Path, "/http.go") && !strings.HasSuffix(f.Path, "cli/http.go") {
+					for _, imp := range c.Imports {
+						requireImport(t, f, imp)
 					}
 				}
 			}

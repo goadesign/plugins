@@ -12,8 +12,9 @@ import (
 
 func TestServerEncodeDecode(t *testing.T) {
 	cases := map[string]struct {
-		DSL  func()
-		Code map[string][]string
+		DSL    func()
+		Code   map[string][]string
+		Import string
 	}{
 		"simple-service": {
 			DSL: testdata.SimpleServiceDSL,
@@ -22,6 +23,7 @@ func TestServerEncodeDecode(t *testing.T) {
 				"goakit-request-decoder":  {},
 				"goakit-error-encoder":    {},
 			},
+			Import: "/http/simple_service/server",
 		},
 		"with-payload": {
 			DSL: testdata.WithPayloadDSL,
@@ -30,6 +32,7 @@ func TestServerEncodeDecode(t *testing.T) {
 				"goakit-request-decoder":  {testdata.WithPayloadMethodGoakitRequestDecoderCode},
 				"goakit-error-encoder":    {},
 			},
+			Import: "/http/with_payload_service/server",
 		},
 		"with-error": {
 			DSL: testdata.WithErrorDSL,
@@ -38,6 +41,7 @@ func TestServerEncodeDecode(t *testing.T) {
 				"goakit-request-decoder":  {},
 				"goakit-error-encoder":    {testdata.WithErrorMethodGoakitErrorEncoderCode},
 			},
+			Import: "/http/with_error_service/server",
 		},
 		"multi-endpoints": {
 			DSL: testdata.MultiEndpointDSL,
@@ -46,6 +50,7 @@ func TestServerEncodeDecode(t *testing.T) {
 				"goakit-request-decoder":  {testdata.Endpoint1GoakitRequestDecoderCode},
 				"goakit-error-encoder":    {testdata.Endpoint1GoakitErrorEncoderCode, testdata.Endpoint2GoakitErrorEncoderCode},
 			},
+			Import: "/http/multi_endpoint_service/server",
 		},
 	}
 	for name, c := range cases {
@@ -62,6 +67,7 @@ func TestServerEncodeDecode(t *testing.T) {
 					for sec, secCode := range c.Code {
 						testCode(t, f, sec, secCode)
 					}
+					requireImport(t, f, c.Import)
 				}
 			}
 			if !found {
@@ -73,8 +79,9 @@ func TestServerEncodeDecode(t *testing.T) {
 
 func TestClientEncodeDecode(t *testing.T) {
 	cases := map[string]struct {
-		DSL  func()
-		Code map[string][]string
+		DSL    func()
+		Code   map[string][]string
+		Import string
 	}{
 		"simple-service": {
 			DSL: testdata.SimpleServiceDSL,
@@ -82,6 +89,7 @@ func TestClientEncodeDecode(t *testing.T) {
 				"goakit-response-decoder": {testdata.SimpleMethodGoakitResponseDecoderCode},
 				"goakit-request-encoder":  {},
 			},
+			Import: "/http/simple_service/client",
 		},
 		"with-payload": {
 			DSL: testdata.WithPayloadDSL,
@@ -89,6 +97,7 @@ func TestClientEncodeDecode(t *testing.T) {
 				"goakit-response-decoder": {testdata.WithPayloadMethodGoakitResponseDecoderCode},
 				"goakit-request-encoder":  {testdata.WithPayloadMethodGoakitRequestEncoderCode},
 			},
+			Import: "/http/with_payload_service/client",
 		},
 		"with-error": {
 			DSL: testdata.WithErrorDSL,
@@ -96,6 +105,7 @@ func TestClientEncodeDecode(t *testing.T) {
 				"goakit-response-decoder": {testdata.WithErrorMethodGoakitResponseDecoderCode},
 				"goakit-request-encoder":  {},
 			},
+			Import: "/http/with_error_service/client",
 		},
 		"multi-endpoints": {
 			DSL: testdata.MultiEndpointDSL,
@@ -103,6 +113,7 @@ func TestClientEncodeDecode(t *testing.T) {
 				"goakit-response-decoder": {testdata.Endpoint1GoakitResponseDecoderCode, testdata.Endpoint2GoakitResponseDecoderCode},
 				"goakit-request-encoder":  {testdata.Endpoint1GoakitRequestEncoderCode},
 			},
+			Import: "/http/multi_endpoint_service/client",
 		},
 	}
 	for name, c := range cases {
@@ -119,6 +130,7 @@ func TestClientEncodeDecode(t *testing.T) {
 					for sec, secCode := range c.Code {
 						testCode(t, f, sec, secCode)
 					}
+					requireImport(t, f, c.Import)
 				}
 			}
 			if !found {
