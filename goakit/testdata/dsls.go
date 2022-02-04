@@ -94,3 +94,13 @@ var MultiServiceDSL = func() {
 		})
 	})
 }
+
+var GoifyableServiceDSL = func() {
+	Service("Goifyable @ Service", func() {
+		Method("Goifyable @ Method", func() {
+			HTTP(func() {
+				GET("/")
+			})
+		})
+	})
+}

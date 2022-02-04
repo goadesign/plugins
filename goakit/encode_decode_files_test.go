@@ -52,6 +52,15 @@ func TestServerEncodeDecode(t *testing.T) {
 			},
 			Import: "/http/multi_endpoint_service/server",
 		},
+		"goifyable-service": {
+			DSL: testdata.GoifyableServiceDSL,
+			Code: map[string][]string{
+				"goakit-response-encoder": {testdata.GoifyableMethodGoakitResponseEncoderCode},
+				"goakit-request-decoder":  {},
+				"goakit-error-encoder":    {},
+			},
+			Import: "/http/goifyable_service/server",
+		},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {

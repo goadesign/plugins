@@ -107,6 +107,13 @@ func TestGoakitifyExample(t *testing.T) {
 			},
 			Imports: []string{"http/with_error_service/kitserver"},
 		},
+		"goifyable": {
+			DSL: testdata.GoifyableServiceDSL,
+			Code: map[string]string{
+				"server-http-init": testdata.GoifyableServerInitCode,
+			},
+			Imports: []string{"http/goifyable_service/kitserver"},
+		},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {

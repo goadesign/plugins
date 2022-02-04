@@ -38,6 +38,14 @@ func TestMountFiles(t *testing.T) {
 			},
 			Path: "gen/http/mixed_service/kitserver/mount.go",
 		},
+		"goifyable": {
+			DSL: testdata.GoifyableServiceDSL,
+			Code: map[string][]string{
+				"goakit-mount-handler":     {testdata.GoifyableMethodGoakitMountCode},
+				"goakit-mount-file-server": {},
+			},
+			Path: "gen/http/goifyable_service/kitserver/mount.go",
+		},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
