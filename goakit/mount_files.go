@@ -23,8 +23,8 @@ func MountFiles(root *expr.RootExpr) []*codegen.File {
 // mountFile returns the file defining the mount handler functions for the given
 // service.
 func mountFile(svc *expr.HTTPServiceExpr) *codegen.File {
-	path := filepath.Join(codegen.Gendir, "http", codegen.SnakeCase(svc.Name()), "kitserver", "mount.go")
 	data := httpcodegen.HTTPServices.Get(svc.Name())
+	path := filepath.Join(codegen.Gendir, "http", data.Service.PathName, "kitserver", "mount.go")
 	title := fmt.Sprintf("%s go-kit HTTP server encoders and decoders", svc.Name())
 	sections := []*codegen.SectionTemplate{
 		codegen.Header(title, "server", []*codegen.ImportSpec{

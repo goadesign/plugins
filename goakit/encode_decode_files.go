@@ -25,8 +25,9 @@ func EncodeDecodeFiles(genpkg string, root *expr.RootExpr) []*codegen.File {
 // serverEncodeDecode returns the file defining the go-kit HTTP server encoding
 // and decoding logic.
 func serverEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr) *codegen.File {
-	path := filepath.Join(codegen.Gendir, "http", codegen.SnakeCase(svc.Name()), "kitserver", "encode_decode.go")
 	data := httpcodegen.HTTPServices.Get(svc.Name())
+	svcName := data.Service.PathName
+	path := filepath.Join(codegen.Gendir, "http", svcName, "kitserver", "encode_decode.go")
 	title := fmt.Sprintf("%s go-kit HTTP server encoders and decoders", svc.Name())
 	sections := []*codegen.SectionTemplate{
 		codegen.Header(title, "server", []*codegen.ImportSpec{
@@ -36,7 +37,7 @@ func serverEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr) *codegen.File 
 			{Path: "github.com/go-kit/kit/transport/http", Name: "kithttp"},
 			{Path: "goa.design/goa/v3", Name: "goa"},
 			{Path: "goa.design/goa/v3/http", Name: "goahttp"},
-			{Path: genpkg + "/http/" + data.Service.Name + "/server"},
+			{Path: genpkg + "/http/" + svcName + "/server"},
 		}),
 	}
 
@@ -70,9 +71,10 @@ func serverEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr) *codegen.File 
 // clientEncodeDecode returns the file defining the go-kit HTTP client encoding
 // and decoding logic.
 func clientEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr) *codegen.File {
-	path := filepath.Join(codegen.Gendir, "http", codegen.SnakeCase(svc.Name()), "kitclient", "encode_decode.go")
-	title := fmt.Sprintf("%s go-kit HTTP client encoders and decoders", svc.Name())
 	data := httpcodegen.HTTPServices.Get(svc.Name())
+	svcName := data.Service.PathName
+	path := filepath.Join(codegen.Gendir, "http", svcName, "kitclient", "encode_decode.go")
+	title := fmt.Sprintf("%s go-kit HTTP client encoders and decoders", svc.Name())
 	sections := []*codegen.SectionTemplate{
 		codegen.Header(title, "client", []*codegen.ImportSpec{
 			{Path: "context"},
@@ -81,7 +83,7 @@ func clientEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr) *codegen.File 
 			{Path: "github.com/go-kit/kit/transport/http", Name: "kithttp"},
 			{Path: "goa.design/goa/v3", Name: "goa"},
 			{Path: "goa.design/goa/v3/http", Name: "goahttp"},
-			{Path: genpkg + "/http/" + data.Service.Name + "/client"},
+			{Path: genpkg + "/http/" + svcName + "/client"},
 		}),
 	}
 
