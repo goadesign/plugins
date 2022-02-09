@@ -106,10 +106,10 @@ func gokitifyExampleServer(genpkg string, file *codegen.File) {
 			data := s.Data.(map[string]interface{})
 			svcs := data["Services"].([]*httpcodegen.ServiceData)
 			for _, svc := range svcs {
-				pkgName := httpcodegen.HTTPServices.Get(svc.Service.Name).Service.PkgName
+				svcData := httpcodegen.HTTPServices.Get(svc.Service.Name).Service
 				codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{
-					Path: path.Join(genpkg, "http", svc.Service.Name, "kitserver"),
-					Name: pkgName + "kitsvr",
+					Path: path.Join(genpkg, "http", svcData.PathName, "kitserver"),
+					Name: svcData.PkgName + "kitsvr",
 				})
 			}
 			s.Source = gokitServerInitT

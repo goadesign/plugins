@@ -35,6 +35,13 @@ func EncodeEndpoint2Response(encoder func(context.Context, http.ResponseWriter) 
 }
 `
 
+var GoifyableMethodGoakitResponseEncoderCode = `// EncodeGoifyableMethodResponse returns a go-kit EncodeResponseFunc suitable
+// for encoding Goifyable @ Service Goifyable @ Method responses.
+func EncodeGoifyableMethodResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) kithttp.EncodeResponseFunc {
+	return server.EncodeGoifyableMethodResponse(encoder)
+}
+`
+
 var WithPayloadMethodGoakitRequestDecoderCode = `// DecodeWithPayloadMethodRequest returns a go-kit DecodeRequestFunc suitable
 // for decoding WithPayloadService WithPayloadMethod requests.
 func DecodeWithPayloadMethodRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) kithttp.DecodeRequestFunc {
@@ -220,6 +227,19 @@ func MountMixedFileJSON(mux goahttp.Muxer) {
 }
 `
 
+var GoifyableMethodGoakitMountCode = `// MountGoifyableMethodHandler configures the mux to serve the "Goifyable @
+// Service" service "Goifyable @ Method" endpoint.
+func MountGoifyableMethodHandler(mux goahttp.Muxer, h http.Handler) {
+	f, ok := h.(http.HandlerFunc)
+	if !ok {
+		f = func(w http.ResponseWriter, r *http.Request) {
+			h.ServeHTTP(w, r)
+		}
+	}
+	mux.Handle("GET", "/", f)
+}
+`
+
 var MixedMainLoggerCode = `func example() {
 	// Setup gokit logger.
 	var (
@@ -327,5 +347,29 @@ var WithErrorServerInitCode = `func example() {
 
 	// Configure the mux.
 	witherrorservicekitsvr.MountWithErrorMethodHandler(mux, withErrorServiceWithErrorMethodHandler)
+}
+`
+
+var GoifyableServerInitCode = `func example() {
+	// Wrap the endpoints with the transport specific layers. The generated
+	// server packages contains code generated from the design which maps
+	// the service input and output data structures to HTTP requests and
+	// responses.
+	var (
+		goifyableServiceGoifyableMethodHandler *kithttp.Server
+		goifyableServiceServer                 *goifyableservicesvr.Server
+	)
+	{
+		eh := errorHandler(logger)
+		goifyableServiceGoifyableMethodHandler = kithttp.NewServer(
+			endpoint.Endpoint(goifyableServiceEndpoints.GoifyableMethod),
+			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
+			goifyableservicekitsvr.EncodeGoifyableMethodResponse(enc),
+		)
+		goifyableServiceServer = goifyableservicesvr.New(goifyableServiceEndpoints, mux, dec, enc, eh, nil)
+	}
+
+	// Configure the mux.
+	goifyableservicekitsvr.MountGoifyableMethodHandler(mux, goifyableServiceGoifyableMethodHandler)
 }
 `
