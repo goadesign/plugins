@@ -1,8 +1,8 @@
 package types
 
 import (
-	"fmt"
 	"path/filepath"
+	"sort"
 
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/eval"
@@ -52,6 +52,10 @@ func typesFile(r *expr.RootExpr) *codegen.File {
 	scope := codegen.NewNameScope()
 	sections := []*codegen.SectionTemplate{header}
 
+	sort.Slice(r.Types, func(i, j int) bool {
+		return r.Types[i].Name() < r.Types[j].Name()
+	})
+
 	data := make([]typeData, len(r.Types))
 	for i, t := range r.Types {
 		data[i] = typeData{
@@ -70,7 +74,6 @@ func typesFile(r *expr.RootExpr) *codegen.File {
 	attCtx := codegen.AttributeContext{Scope: codegen.NewAttributeScope(scope)}
 	for _, t := range r.Types {
 		def := codegen.RecursiveValidationCode(t.Attribute(), &attCtx, true, expr.IsAlias(t), "v")
-		fmt.Println(def)
 		vdata = append(vdata, validateData{
 			VarName:     codegen.Goify(t.Name(), true),
 			Name:        t.Name(),
@@ -94,8 +97,8 @@ func typesFile(r *expr.RootExpr) *codegen.File {
 const typeDeclT = `type (
 	{{range . }}{{ if .Description }}{{ comment .Description }}
 	{{ end }}{{ .VarName }} {{ .Def }}
-{{ end }})
 
+{{ end }})
 `
 
 const validateT = `{{range . }}{{ printf "Validate%s runs the validations defined on %s" .VarName .Name | comment }}
