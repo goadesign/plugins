@@ -114,3 +114,10 @@ as the package is imported solely for its side-effects (initialization).
 Enabling the plugin changes the behavior of the `gen` command of the `goa` tool.
 The command generates an additional `docs.json` at the top level containing the
 documentation.
+
+## Known Limitations
+
+If `goa gen` is invoked with a custom output path (i.e. with the `-o` argument)
+then the plugin appends to any pre-existing `doc.json` file instead of
+overwriting. Make sure to delete the file prior to running `goa gen` when using
+the `-o` option.
