@@ -2,26 +2,12 @@ package types
 
 import (
 	"path/filepath"
-	"sort"
+	"regexp"
 
 	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
 	"goa.design/goa/v3/expr"
-)
-
-type (
-	typeData struct {
-		VarName     string
-		Description string
-		Def         string
-	}
-
-	validateData struct {
-		VarName     string
-		Name        string
-		ValidateDef string
-		Ref         string
-	}
 )
 
 // Name of directory that contains generated types.
@@ -33,79 +19,69 @@ func init() {
 }
 
 // Generate produces the documentation JSON file.
-func Generate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
+func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	for _, root := range roots {
 		if r, ok := root.(*expr.RootExpr); ok {
-			files = append(files, typesFile(r))
+			files = append(files, typesFile(genpkg, r.Types))
 		}
 	}
 	return files, nil
 }
 
-func typesFile(r *expr.RootExpr) *codegen.File {
+func typesFile(genpkg string, types []expr.UserType) *codegen.File {
 	path := filepath.Join(codegen.Gendir, "types", "types.go")
 	header := codegen.Header("Data types", "types",
 		[]*codegen.ImportSpec{
 			codegen.GoaImport(""),
 		},
 	)
-	scope := codegen.NewNameScope()
 	sections := []*codegen.SectionTemplate{header}
 
-	sort.Slice(r.Types, func(i, j int) bool {
-		return r.Types[i].Name() < r.Types[j].Name()
-	})
+	// Create dummy service so we can leverage Goa's code generation.
+	svc := &expr.ServiceExpr{Name: "dummy"}
+	expr.Root.Services = append(expr.Root.Services, svc)
 
-	data := make([]typeData, len(r.Types))
-	for i, t := range r.Types {
-		data[i] = typeData{
-			VarName:     codegen.Goify(t.Name(), true),
-			Description: t.Attribute().Description,
-			Def:         scope.GoTypeDef(t.Attribute(), false, false),
-		}
-	}
-	sections = append(sections, &codegen.SectionTemplate{
-		Name:   "type-decl",
-		Source: typeDeclT,
-		Data:   data,
-	})
-
-	var vdata []validateData
-	attCtx := codegen.AttributeContext{Scope: codegen.NewAttributeScope(scope)}
-	for _, t := range r.Types {
-		def := codegen.RecursiveValidationCode(t.Attribute(), &attCtx, true, expr.IsAlias(t), "v")
-		vdata = append(vdata, validateData{
-			VarName:     codegen.Goify(t.Name(), true),
-			Name:        t.Name(),
-			ValidateDef: def,
-			Ref:         scope.GoTypeRef(&expr.AttributeExpr{Type: t}),
+	// Create a dummy method for each type.
+	for _, t := range types {
+		svc.Methods = append(svc.Methods, &expr.MethodExpr{
+			Name:             t.Name() + "M",
+			Payload:          &expr.AttributeExpr{Type: t},
+			StreamingPayload: &expr.AttributeExpr{Type: expr.Empty},
+			Result:           &expr.AttributeExpr{Type: expr.Empty},
+			Service:          svc,
 		})
 	}
-	sections = append(sections, &codegen.SectionTemplate{
-		Name:   "type-validation",
-		Source: validateT,
-		Data:   vdata,
-	})
 
-	return &codegen.File{
-		Path:             path,
-		SectionTemplates: sections,
+	// Generate the code and retrieve the relevant sections.
+	files := service.Files(genpkg, svc, make(map[string][]string))
+	for _, f := range files {
+		for _, section := range f.SectionTemplates {
+			sn := section.Name
+			if sn == "service-payload" ||
+				sn == "service-union-value-method" ||
+				sn == "service-user-type" {
+				if sn == "service-payload" {
+					// Override the payload comment with the original type description.
+					section.FuncMap = map[string]interface{}{
+						"comment": func(s string) string { return getDescription(s, types) },
+					}
+				}
+				sections = append(sections, section)
+			}
+		}
 	}
+
+	return &codegen.File{Path: path, SectionTemplates: sections}
 }
 
-// input: TypeData
-const typeDeclT = `type (
-	{{range . }}{{ if .Description }}{{ comment .Description }}
-	{{ end }}{{ .VarName }} {{ .Def }}
+var nameRegex = regexp.MustCompile(`([^\s]*)`)
 
-{{ end }})
-`
-
-const validateT = `{{range . }}{{ printf "Validate%s runs the validations defined on %s" .VarName .Name | comment }}
-func Validate{{ .VarName }}(v {{ .Ref }}) (err error) {
-	{{ .ValidateDef }}
-	return
+func getDescription(comment string, types []expr.UserType) string {
+	name := nameRegex.FindStringSubmatch(comment)[1]
+	for _, t := range types {
+		if t.Name() == name {
+			return codegen.Comment(t.Attribute().Description)
+		}
+	}
+	return ""
 }
-{{ end }}
-
-`
