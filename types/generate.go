@@ -10,6 +10,15 @@ import (
 	"goa.design/goa/v3/expr"
 )
 
+type (
+	validateData struct {
+		VarName     string
+		Name        string
+		ValidateDef string
+		Ref         string
+	}
+)
+
 // Name of directory that contains generated types.
 const Gendir = "types"
 
@@ -22,13 +31,14 @@ func init() {
 func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	for _, root := range roots {
 		if r, ok := root.(*expr.RootExpr); ok {
-			files = append(files, typesFile(genpkg, r.Types))
+			files = append(files, typesFile(genpkg, r))
 		}
 	}
 	return files, nil
 }
 
-func typesFile(genpkg string, types []expr.UserType) *codegen.File {
+func typesFile(genpkg string, r *expr.RootExpr) *codegen.File {
+	types := r.Types
 	path := filepath.Join(codegen.Gendir, "types", "types.go")
 	header := codegen.Header("Data types", "types",
 		[]*codegen.ImportSpec{
@@ -71,6 +81,27 @@ func typesFile(genpkg string, types []expr.UserType) *codegen.File {
 		}
 	}
 
+	var vdata []validateData
+	scope := codegen.NewNameScope()
+	attCtx := codegen.AttributeContext{Scope: codegen.NewAttributeScope(scope)}
+	for _, t := range r.Types {
+		def := codegen.RecursiveValidationCode(t.Attribute(), &attCtx, true, expr.IsAlias(t), "v")
+		if def == "" {
+			continue
+		}
+		vdata = append(vdata, validateData{
+			VarName:     codegen.Goify(t.Name(), true),
+			Name:        t.Name(),
+			ValidateDef: def,
+			Ref:         scope.GoTypeRef(&expr.AttributeExpr{Type: t}),
+		})
+	}
+	sections = append(sections, &codegen.SectionTemplate{
+		Name:   "type-validation",
+		Source: validateT,
+		Data:   vdata,
+	})
+
 	return &codegen.File{Path: path, SectionTemplates: sections}
 }
 
@@ -85,3 +116,12 @@ func getDescription(comment string, types []expr.UserType) string {
 	}
 	return ""
 }
+
+const validateT = `{{range . }}{{ printf "Validate%s runs the validations defined on %s" .VarName .Name | comment }}
+func Validate{{ .VarName }}(v {{ .Ref }}) (err error) {
+	{{ .ValidateDef }}
+	return
+}
+{{ end }}
+
+`
