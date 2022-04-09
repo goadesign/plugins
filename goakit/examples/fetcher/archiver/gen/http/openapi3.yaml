@@ -64,25 +64,17 @@ paths:
                 href: /archive/1
                 status: 200
         "400":
-          description: Bad Request response.
+          description: 'bad_request: Bad Request response.'
           content:
             application/vnd.goa.error:
               schema:
                 $ref: '#/components/schemas/Error'
-              example:
-                id: 3F1FKVRR
-                message: Value of ID must be an integer
-                name: bad_request
         "404":
-          description: Not Found response.
+          description: 'not_found: Not Found response.'
           content:
             application/vnd.goa.error:
               schema:
                 $ref: '#/components/schemas/Error'
-              example:
-                id: 3F1FKVRR
-                message: Value of ID must be an integer
-                name: bad_request
   /health:
     get:
       tags:

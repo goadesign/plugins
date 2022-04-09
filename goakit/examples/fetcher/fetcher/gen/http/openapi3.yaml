@@ -38,25 +38,17 @@ paths:
                 archive_href: /archive/1
                 status: 200
         "400":
-          description: Bad Request response.
+          description: 'bad_request: Bad Request response.'
           content:
             application/vnd.goa.error:
               schema:
                 $ref: '#/components/schemas/Error'
-              example:
-                id: 3F1FKVRR
-                message: Value of ID must be an integer
-                name: bad_request
         "500":
-          description: Internal Server Error response.
+          description: 'internal_error: Internal Server Error response.'
           content:
             application/vnd.goa.error:
               schema:
                 $ref: '#/components/schemas/Error'
-              example:
-                id: 3F1FKVRR
-                message: Value of ID must be an integer
-                name: bad_request
   /health:
     get:
       tags:
