@@ -1,54 +1,54 @@
 swagger: "2.0"
 info:
-  title: CORS Example Calc API
-  description: This API demonstrates the use of the goa CORS plugin
-  version: ""
+    title: CORS Example Calc API
+    description: This API demonstrates the use of the goa CORS plugin
+    version: ""
 host: localhost:80
 consumes:
-- application/json
-- application/xml
-- application/gob
+    - application/json
+    - application/xml
+    - application/gob
 produces:
-- application/json
-- application/xml
-- application/gob
+    - application/json
+    - application/xml
+    - application/gob
 paths:
-  /:
-    get:
-      tags:
-      - calc
-      summary: Download /index.html
-      operationId: calc#/
-      responses:
-        "200":
-          description: File downloaded
-          schema:
-            type: file
-      schemes:
-      - http
-  /add/{a}/{b}:
-    get:
-      tags:
-      - calc
-      summary: add calc
-      description: Add adds up the two integer parameters and returns the results.
-      operationId: calc#add
-      parameters:
-      - name: a
-        in: path
-        description: Left operand
-        required: true
-        type: integer
-      - name: b
-        in: path
-        description: Right operand
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK response.
-          schema:
-            type: integer
-            format: int64
-      schemes:
-      - http
+    /:
+        get:
+            tags:
+                - calc
+            summary: Download /index.html
+            operationId: calc#/
+            responses:
+                "200":
+                    description: File downloaded
+                    schema:
+                        type: file
+            schemes:
+                - http
+    /add/{a}/{b}:
+        get:
+            tags:
+                - calc
+            summary: add calc
+            description: Add adds up the two integer parameters and returns the results.
+            operationId: calc#add
+            parameters:
+                - name: a
+                  in: path
+                  description: Left operand
+                  required: true
+                  type: integer
+                - name: b
+                  in: path
+                  description: Right operand
+                  required: true
+                  type: integer
+            responses:
+                "200":
+                    description: OK response.
+                    schema:
+                        type: integer
+                        format: int64
+            schemes:
+                - http

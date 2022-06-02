@@ -1,247 +1,243 @@
 swagger: "2.0"
 info:
-  title: The goakit example downstream service
-  description: Archiver is a service that manages the content of HTTP responses
-  version: ""
+    title: The goakit example downstream service
+    description: Archiver is a service that manages the content of HTTP responses
+    version: ""
 host: localhost:80
 consumes:
-- application/json
-- application/xml
-- application/gob
+    - application/json
+    - application/xml
+    - application/gob
 produces:
-- application/json
-- application/xml
-- application/gob
+    - application/json
+    - application/xml
+    - application/gob
 paths:
-  /archive:
-    post:
-      tags:
-      - archiver
-      summary: archive archiver
-      description: Archive HTTP response
-      operationId: archiver#archive
-      parameters:
-      - name: ArchiveRequestBody
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/ArchiverArchiveRequestBody'
-          required:
-          - status
-          - body
-      responses:
-        "200":
-          description: OK response.
-          schema:
-            $ref: '#/definitions/ArchiverArchiveResponseBody'
-      schemes:
-      - http
-  /archive/{id}:
-    get:
-      tags:
-      - archiver
-      summary: read archiver
-      description: Read HTTP response from archive
-      operationId: archiver#read
-      parameters:
-      - name: id
-        in: path
-        description: ID of archive
-        required: true
-        type: integer
-        minimum: 0
-      responses:
-        "200":
-          description: OK response.
-          schema:
-            $ref: '#/definitions/ArchiverReadResponseBody'
-        "400":
-          description: Bad Request response.
-          schema:
-            $ref: '#/definitions/ArchiverReadBadRequestResponseBody'
-        "404":
-          description: Not Found response.
-          schema:
-            $ref: '#/definitions/ArchiverReadNotFoundResponseBody'
-      schemes:
-      - http
-  /health:
-    get:
-      tags:
-      - health
-      summary: show health
-      description: Health check endpoint
-      operationId: health#show
-      produces:
-      - text/plain
-      responses:
-        "200":
-          description: OK response.
-          schema:
-            type: string
-      schemes:
-      - http
+    /archive:
+        post:
+            tags:
+                - archiver
+            summary: archive archiver
+            description: Archive HTTP response
+            operationId: archiver#archive
+            parameters:
+                - name: ArchiveRequestBody
+                  in: body
+                  required: true
+                  schema:
+                    $ref: '#/definitions/ArchiverArchiveRequestBody'
+                    required:
+                        - status
+                        - body
+            responses:
+                "200":
+                    description: OK response.
+                    schema:
+                        $ref: '#/definitions/ArchiverArchiveResponseBody'
+            schemes:
+                - http
+    /archive/{id}:
+        get:
+            tags:
+                - archiver
+            summary: read archiver
+            description: Read HTTP response from archive
+            operationId: archiver#read
+            parameters:
+                - name: id
+                  in: path
+                  description: ID of archive
+                  required: true
+                  type: integer
+                  minimum: 0
+            responses:
+                "200":
+                    description: OK response.
+                    schema:
+                        $ref: '#/definitions/ArchiverReadResponseBody'
+                "400":
+                    description: Bad Request response.
+                    schema:
+                        $ref: '#/definitions/ArchiverReadBadRequestResponseBody'
+                "404":
+                    description: Not Found response.
+                    schema:
+                        $ref: '#/definitions/ArchiverReadNotFoundResponseBody'
+            schemes:
+                - http
+    /health:
+        get:
+            tags:
+                - health
+            summary: show health
+            description: Health check endpoint
+            operationId: health#show
+            produces:
+                - text/plain
+            responses:
+                "200":
+                    description: OK response.
+                    schema:
+                        type: string
+            schemes:
+                - http
 definitions:
-  ArchiverArchiveRequestBody:
-    title: ArchiverArchiveRequestBody
-    type: object
-    properties:
-      body:
-        type: string
-        description: HTTP response body content
-        example: Sint delectus beatae est itaque.
-      status:
-        type: integer
-        description: HTTP status
-        example: 200
-        minimum: 0
-    example:
-      body: Autem mollitia optio.
-      status: 200
-    required:
-    - status
-    - body
-  ArchiverArchiveResponseBody:
-    title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
-    type: object
-    properties:
-      body:
-        type: string
-        description: HTTP response body content
-        example: At maiores dolor iusto accusantium in modi.
-      href:
-        type: string
-        description: The archive resouce href
-        example: /archive/1
-        pattern: ^/archive/[0-9]+$
-      status:
-        type: integer
-        description: HTTP status
-        example: 200
-        minimum: 0
-    description: ArchiveResponseBody result type (default view)
-    example:
-      body: Amet officia.
-      href: /archive/1
-      status: 200
-    required:
-    - href
-    - status
-    - body
-  ArchiverReadBadRequestResponseBody:
-    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
-    type: object
-    properties:
-      fault:
-        type: boolean
-        description: Is the error a server-side fault?
-        example: false
-      id:
-        type: string
-        description: ID is a unique identifier for this particular occurrence of the
-          problem.
-        example: 123abc
-      message:
-        type: string
-        description: Message is a human-readable explanation specific to this occurrence
-          of the problem.
-        example: parameter 'p' must be an integer
-      name:
-        type: string
-        description: Name is the name of this class of errors.
-        example: bad_request
-      temporary:
-        type: boolean
-        description: Is the error temporary?
-        example: true
-      timeout:
-        type: boolean
-        description: Is the error a timeout?
-        example: true
-    description: read_bad_request_response_body result type (default view)
-    example:
-      fault: true
-      id: 123abc
-      message: parameter 'p' must be an integer
-      name: bad_request
-      temporary: true
-      timeout: false
-    required:
-    - name
-    - id
-    - message
-    - temporary
-    - timeout
-    - fault
-  ArchiverReadNotFoundResponseBody:
-    title: 'Mediatype identifier: application/vnd.goa.error; view=default'
-    type: object
-    properties:
-      fault:
-        type: boolean
-        description: Is the error a server-side fault?
-        example: false
-      id:
-        type: string
-        description: ID is a unique identifier for this particular occurrence of the
-          problem.
-        example: 123abc
-      message:
-        type: string
-        description: Message is a human-readable explanation specific to this occurrence
-          of the problem.
-        example: parameter 'p' must be an integer
-      name:
-        type: string
-        description: Name is the name of this class of errors.
-        example: bad_request
-      temporary:
-        type: boolean
-        description: Is the error temporary?
-        example: true
-      timeout:
-        type: boolean
-        description: Is the error a timeout?
-        example: false
-    description: read_not_found_response_body result type (default view)
-    example:
-      fault: true
-      id: 123abc
-      message: parameter 'p' must be an integer
-      name: bad_request
-      temporary: true
-      timeout: true
-    required:
-    - name
-    - id
-    - message
-    - temporary
-    - timeout
-    - fault
-  ArchiverReadResponseBody:
-    title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
-    type: object
-    properties:
-      body:
-        type: string
-        description: HTTP response body content
-        example: Alias ipsa eum laborum ut quod.
-      href:
-        type: string
-        description: The archive resouce href
-        example: /archive/1
-        pattern: ^/archive/[0-9]+$
-      status:
-        type: integer
-        description: HTTP status
-        example: 200
-        minimum: 0
-    description: ReadResponseBody result type (default view)
-    example:
-      body: Numquam qui qui eligendi doloribus.
-      href: /archive/1
-      status: 200
-    required:
-    - href
-    - status
-    - body
+    ArchiverArchiveRequestBody:
+        title: ArchiverArchiveRequestBody
+        type: object
+        properties:
+            body:
+                type: string
+                description: HTTP response body content
+                example: Sint delectus beatae est itaque.
+            status:
+                type: integer
+                description: HTTP status
+                example: 200
+                minimum: 0
+        example:
+            body: Autem mollitia optio.
+            status: 200
+        required:
+            - status
+            - body
+    ArchiverArchiveResponseBody:
+        title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
+        type: object
+        properties:
+            body:
+                type: string
+                description: HTTP response body content
+                example: At maiores dolor iusto accusantium in modi.
+            href:
+                type: string
+                description: The archive resouce href
+                example: /archive/1
+                pattern: ^/archive/[0-9]+$
+            status:
+                type: integer
+                description: HTTP status
+                example: 200
+                minimum: 0
+        description: ArchiveResponseBody result type (default view)
+        example:
+            body: Amet officia.
+            href: /archive/1
+            status: 200
+        required:
+            - href
+            - status
+            - body
+    ArchiverReadBadRequestResponseBody:
+        title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+        type: object
+        properties:
+            fault:
+                type: boolean
+                description: Is the error a server-side fault?
+                example: false
+            id:
+                type: string
+                description: ID is a unique identifier for this particular occurrence of the problem.
+                example: 123abc
+            message:
+                type: string
+                description: Message is a human-readable explanation specific to this occurrence of the problem.
+                example: parameter 'p' must be an integer
+            name:
+                type: string
+                description: Name is the name of this class of errors.
+                example: bad_request
+            temporary:
+                type: boolean
+                description: Is the error temporary?
+                example: true
+            timeout:
+                type: boolean
+                description: Is the error a timeout?
+                example: true
+        description: read_bad_request_response_body result type (default view)
+        example:
+            fault: true
+            id: 123abc
+            message: parameter 'p' must be an integer
+            name: bad_request
+            temporary: true
+            timeout: false
+        required:
+            - name
+            - id
+            - message
+            - temporary
+            - timeout
+            - fault
+    ArchiverReadNotFoundResponseBody:
+        title: 'Mediatype identifier: application/vnd.goa.error; view=default'
+        type: object
+        properties:
+            fault:
+                type: boolean
+                description: Is the error a server-side fault?
+                example: false
+            id:
+                type: string
+                description: ID is a unique identifier for this particular occurrence of the problem.
+                example: 123abc
+            message:
+                type: string
+                description: Message is a human-readable explanation specific to this occurrence of the problem.
+                example: parameter 'p' must be an integer
+            name:
+                type: string
+                description: Name is the name of this class of errors.
+                example: bad_request
+            temporary:
+                type: boolean
+                description: Is the error temporary?
+                example: true
+            timeout:
+                type: boolean
+                description: Is the error a timeout?
+                example: false
+        description: read_not_found_response_body result type (default view)
+        example:
+            fault: true
+            id: 123abc
+            message: parameter 'p' must be an integer
+            name: bad_request
+            temporary: true
+            timeout: true
+        required:
+            - name
+            - id
+            - message
+            - temporary
+            - timeout
+            - fault
+    ArchiverReadResponseBody:
+        title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
+        type: object
+        properties:
+            body:
+                type: string
+                description: HTTP response body content
+                example: Alias ipsa eum laborum ut quod.
+            href:
+                type: string
+                description: The archive resouce href
+                example: /archive/1
+                pattern: ^/archive/[0-9]+$
+            status:
+                type: integer
+                description: HTTP status
+                example: 200
+                minimum: 0
+        description: ReadResponseBody result type (default view)
+        example:
+            body: Numquam qui qui eligendi doloribus.
+            href: /archive/1
+            status: 200
+        required:
+            - href
+            - status
+            - body
