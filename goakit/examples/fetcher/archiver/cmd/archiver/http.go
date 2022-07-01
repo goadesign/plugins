@@ -115,7 +115,10 @@ func handleHTTPServer(ctx context.Context, u *url.URL, archiverEndpoints *archiv
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		_ = srv.Shutdown(ctx)
+		err := srv.Shutdown(ctx)
+		if err != nil {
+			logger.Log("info", fmt.Sprintf("failed to shutdown: %v", err))
+		}
 	}()
 }
 
