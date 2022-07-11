@@ -16,7 +16,7 @@ var NoValidation = func() {
 
 var Require = func() {
 	var _ = Type("Require", func() {
-		Attribute("attr", String)
+		Attribute("attr", ArrayOf(String))
 		Required("attr")
 	})
 }
@@ -64,5 +64,29 @@ var Exampl = func() {
 		})
 		Attribute("name", String, "Name")
 		Required("age", "name")
+	})
+}
+
+var Array = func() {
+	var Item = Type("Item", func() {
+		Attribute("name")
+		Required("name")
+	})
+
+	var _ = Type("Array", func() {
+		Attribute("array", ArrayOf(Item))
+		Required("array")
+	})
+}
+
+var ArrayArray = func() {
+	var Item = Type("ArrayItem", func() {
+		Attribute("names", ArrayOf(String))
+		Required("names")
+	})
+
+	var _ = Type("ArrayArray", func() {
+		Attribute("array", ArrayOf(Item))
+		Required("array")
 	})
 }

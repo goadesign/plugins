@@ -1,0 +1,27 @@
+//
+// Data types
+//
+// Command:
+// goa
+
+package types
+
+import 	goa "goa.design/goa/v3/pkg"
+
+
+type Array struct {
+	Array []*Item
+}
+
+type Item struct {
+	Name string
+}
+// ValidateArray runs the validations defined on Array
+func ValidateArray(v *Array) (err error) {
+	if v.Array == nil {
+        err = goa.MergeErrors(err, goa.MissingFieldError("array", "v"))
+}
+	return
+}
+
+

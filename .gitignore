@@ -10,3 +10,4 @@
 /goakit/examples/calc/cmd/calccli/calccli
 
 *.swp
+.vscode/*
