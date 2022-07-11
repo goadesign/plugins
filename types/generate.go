@@ -49,7 +49,7 @@ func typesFile(genpkg string, r *expr.RootExpr) *codegen.File {
 
 	// Create dummy service so we can leverage Goa's code generation.
 	svc := &expr.ServiceExpr{Name: "dummy"}
-	expr.Root.Services = append(expr.Root.Services, svc)
+	expr.Root.Services = []*expr.ServiceExpr{svc}
 
 	// Create a dummy method for each type.
 	for _, t := range types {
@@ -84,10 +84,10 @@ func typesFile(genpkg string, r *expr.RootExpr) *codegen.File {
 	var vdata []validateData
 	scope := codegen.NewNameScope()
 	attCtx := codegen.AttributeContext{Scope: codegen.NewAttributeScope(scope)}
-	for _, t := range r.Types {
+	addValidation := func(t expr.UserType) {
 		def := codegen.RecursiveValidationCode(t.Attribute(), &attCtx, true, expr.IsAlias(t), "v")
 		if def == "" {
-			continue
+			return
 		}
 		vdata = append(vdata, validateData{
 			VarName:     codegen.Goify(t.Name(), true),
@@ -96,6 +96,10 @@ func typesFile(genpkg string, r *expr.RootExpr) *codegen.File {
 			Ref:         scope.GoTypeRef(&expr.AttributeExpr{Type: t}),
 		})
 	}
+	seen := make(map[string]struct{})
+	for _, t := range r.Types {
+		collectUserTypes(t, addValidation, seen)
+	}
 	sections = append(sections, &codegen.SectionTemplate{
 		Name:   "type-validation",
 		Source: validateT,
@@ -103,6 +107,32 @@ func typesFile(genpkg string, r *expr.RootExpr) *codegen.File {
 	})
 
 	return &codegen.File{Path: path, SectionTemplates: sections}
+}
+
+// collectUserTypes traverses the given data type recursively and calls back the
+// given function for each attribute using a user type.
+func collectUserTypes(dt expr.DataType, cb func(expr.UserType), seen map[string]struct{}) {
+	if dt == expr.Empty {
+		return
+	}
+	switch actual := dt.(type) {
+	case *expr.Object:
+		for _, nat := range *actual {
+			collectUserTypes(nat.Attribute.Type, cb, seen)
+		}
+	case *expr.Array:
+		collectUserTypes(actual.ElemType.Type, cb, seen)
+	case *expr.Map:
+		collectUserTypes(actual.KeyType.Type, cb, seen)
+		collectUserTypes(actual.ElemType.Type, cb, seen)
+	case expr.UserType:
+		if _, ok := seen[actual.ID()]; ok {
+			return
+		}
+		seen[actual.ID()] = struct{}{}
+		cb(actual)
+		collectUserTypes(actual.Attribute().Type, cb, seen)
+	}
 }
 
 var nameRegex = regexp.MustCompile(`([^\s]*)`)

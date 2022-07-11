@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
 	"goa.design/plugins/v3/types/testdata"
 )
@@ -27,9 +29,12 @@ func TestTypes(t *testing.T) {
 		{"multiple", testdata.Multiple},
 		{"alias", testdata.Alias},
 		{"example", testdata.Exampl},
+		{"array", testdata.Array},
+		{"recArray", testdata.ArrayArray},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
+			service.Services = make(service.ServicesData)
 			root := codegen.RunDSL(t, c.DSL)
 			fs, err := Generate("", []eval.Root{root}, nil)
 			if err != nil {
@@ -47,14 +52,15 @@ func TestTypes(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
+			got := buf.String()[strings.Index(buf.String(), "\n")+1:]
 			golden := filepath.Join("testdata", fmt.Sprintf("%s.go_", c.Name))
 			if *update {
 				ioutil.WriteFile(golden, buf.Bytes(), 0644)
 			}
 			expected, _ := ioutil.ReadFile(golden)
-			if buf.String() != string(expected) {
-				t.Errorf("invalid content for %s: got\n%s\ngot vs. expected:\n%s",
-					fs[0].Path, buf.String(), codegen.Diff(t, buf.String(), string(expected)))
+			if got != string(expected) {
+				t.Errorf("invalid content for %s compared to %s: got\n%s\ngot vs. expected:\n%s",
+					fs[0].Path, golden, got, codegen.Diff(t, got, string(expected)))
 			}
 		})
 	}
