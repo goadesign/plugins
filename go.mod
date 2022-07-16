@@ -6,7 +6,7 @@ require (
 	github.com/go-kit/kit v0.12.0
 	github.com/gorilla/websocket v1.5.0
 	go.uber.org/zap v1.21.0
-	goa.design/goa/v3 v3.7.11
+	goa.design/goa/v3 v3.7.12
 )
 
 require (
@@ -16,6 +16,8 @@ require (
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/manveru/faker v0.0.0-20171103152722-9fbc68a78c4d // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
