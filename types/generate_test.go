@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -55,9 +55,9 @@ func TestTypes(t *testing.T) {
 			got := buf.String()[strings.Index(buf.String(), "\n")+1:]
 			golden := filepath.Join("testdata", fmt.Sprintf("%s.go_", c.Name))
 			if *update {
-				ioutil.WriteFile(golden, buf.Bytes(), 0644)
+				os.WriteFile(golden, buf.Bytes(), 0644)
 			}
-			expected, _ := ioutil.ReadFile(golden)
+			expected, _ := os.ReadFile(golden)
 			if got != string(expected) {
 				t.Errorf("invalid content for %s compared to %s: got\n%s\ngot vs. expected:\n%s",
 					fs[0].Path, golden, got, codegen.Diff(t, got, string(expected)))

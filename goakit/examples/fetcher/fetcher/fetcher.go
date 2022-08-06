@@ -3,7 +3,7 @@ package fetcher
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -55,7 +55,7 @@ func (s *fetchersvcsvc) Fetch(ctx context.Context, p *fetchersvc.FetchPayload) (
 
 	// Read response
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fetchersvc.MakeBadRequest(fmt.Errorf("failed to decode response: %s", err))
 	}

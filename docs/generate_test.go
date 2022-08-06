@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -51,9 +51,9 @@ func TestDocs(t *testing.T) {
 			}
 			golden := filepath.Join("testdata", fmt.Sprintf("%s.json", c.Name))
 			if *update {
-				ioutil.WriteFile(golden, buf.Bytes(), 0644)
+				os.WriteFile(golden, buf.Bytes(), 0644)
 			}
-			expected, _ := ioutil.ReadFile(golden)
+			expected, _ := os.ReadFile(golden)
 			if buf.String() != string(expected) {
 				t.Errorf("invalid content for %s: got\n%s\ngot vs. expected:\n%s",
 					fs[0].Path, buf.String(), codegen.Diff(t, buf.String(), string(expected)))
