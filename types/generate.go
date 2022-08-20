@@ -43,6 +43,7 @@ func typesFile(genpkg string, r *expr.RootExpr) *codegen.File {
 	header := codegen.Header("Data types", "types",
 		[]*codegen.ImportSpec{
 			codegen.GoaImport(""),
+			{Path: "unicode/utf8"},
 		},
 	)
 	sections := []*codegen.SectionTemplate{header}
