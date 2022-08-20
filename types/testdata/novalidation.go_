@@ -6,7 +6,10 @@
 
 package types
 
-import 	goa "goa.design/goa/v3/pkg"
+import (
+	goa "goa.design/goa/v3/pkg"
+	"unicode/utf8"
+)
 
 type (
 	NoVal struct {
