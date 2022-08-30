@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/go-kit/kit v0.12.0
 	github.com/gorilla/websocket v1.5.0
-	go.uber.org/zap v1.22.0
+	go.uber.org/zap v1.23.0
 	goa.design/goa/v3 v3.8.4
 )
 
@@ -25,7 +25,6 @@ require (
 	github.com/zach-klippenstein/goregen v0.0.0-20160303162051-795b5e3961ea // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/sys v0.0.0-20220803195053-6e608f9ce704 // indirect
 	golang.org/x/text v0.3.7 // indirect
