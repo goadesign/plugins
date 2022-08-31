@@ -136,12 +136,14 @@ func updateExampleFile(genpkg string, root *expr.RootExpr, f *fileToModify) {
 			s.Source = strings.Replace(s.Source, "logger.Print(", "logger.Info().Msg(", -1)
 			s.Source = strings.Replace(s.Source, "logger.Printf(", "logger.Info().Msgf(", -1)
 			s.Source = strings.Replace(s.Source, "logger.Println(", "logger.Info().Msg(", -1)
+			s.Source = strings.Replace(s.Source, "logger.Fatalf", "logger.Fatal().Msgf(", -1)
 		}
 	} else {
 		for _, s := range f.file.SectionTemplates {
 			s.Source = strings.Replace(s.Source, "logger.Print(", "logger.Info().Msg(", -1)
 			s.Source = strings.Replace(s.Source, "logger.Printf(", "logger.Info().Msgf(", -1)
 			s.Source = strings.Replace(s.Source, "logger.Println(", "logger.Info().Msg(", -1)
+			s.Source = strings.Replace(s.Source, "logger.Fatalf", "logger.Fatal().Msgf(", -1)
 		}
 	}
 }
