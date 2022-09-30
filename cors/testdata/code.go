@@ -294,7 +294,7 @@ func New(
 	decoder func(*http.Request) goahttp.Decoder,
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
-	formatter func(err error) goahttp.Statuser,
+	formatter func(ctx context.Context, err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
@@ -319,7 +319,7 @@ func New(
 	decoder func(*http.Request) goahttp.Decoder,
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
-	formatter func(err error) goahttp.Statuser,
+	formatter func(ctx context.Context, err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
@@ -344,7 +344,7 @@ func New(
 	decoder func(*http.Request) goahttp.Decoder,
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
-	formatter func(err error) goahttp.Statuser,
+	formatter func(ctx context.Context, err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
@@ -369,7 +369,7 @@ func New(
 	decoder func(*http.Request) goahttp.Decoder,
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
-	formatter func(err error) goahttp.Statuser,
+	formatter func(ctx context.Context, err error) goahttp.Statuser,
 	fileSystemFileJSON http.FileSystem,
 ) *Server {
 	if fileSystemFileJSON == nil {
@@ -398,7 +398,7 @@ func New(
 	decoder func(*http.Request) goahttp.Decoder,
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
-	formatter func(err error) goahttp.Statuser,
+	formatter func(ctx context.Context, err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
@@ -428,7 +428,7 @@ func New(
 	decoder func(*http.Request) goahttp.Decoder,
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
-	formatter func(err error) goahttp.Statuser,
+	formatter func(ctx context.Context, err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
@@ -453,7 +453,7 @@ func New(
 	decoder func(*http.Request) goahttp.Decoder,
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
-	formatter func(err error) goahttp.Statuser,
+	formatter func(ctx context.Context, err error) goahttp.Statuser,
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
@@ -478,7 +478,7 @@ func New(
 	decoder func(*http.Request) goahttp.Decoder,
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
-	formatter func(err error) goahttp.Statuser,
+	formatter func(ctx context.Context, err error) goahttp.Statuser,
 	fileSystemIndexHTML http.FileSystem,
 ) *Server {
 	if fileSystemIndexHTML == nil {
