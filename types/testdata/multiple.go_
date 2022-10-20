@@ -45,12 +45,12 @@ if v.Other == nil {
         err = goa.MergeErrors(err, goa.MissingFieldError("other", "v"))
 }
 if v.Attr != nil {
-if err2 := ValidateAType(v.Attr); err2 != nil {
+	if err2 := ValidateAType(v.Attr); err2 != nil {
         err = goa.MergeErrors(err, err2)
 }
 }
 if v.Other != nil {
-if err2 := ValidateOtherType(v.Other); err2 != nil {
+	if err2 := ValidateOtherType(v.Other); err2 != nil {
         err = goa.MergeErrors(err, err2)
 }
 }
