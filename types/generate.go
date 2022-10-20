@@ -86,7 +86,7 @@ func typesFile(genpkg string, r *expr.RootExpr) *codegen.File {
 	scope := codegen.NewNameScope()
 	attCtx := codegen.AttributeContext{Scope: codegen.NewAttributeScope(scope)}
 	addValidation := func(t expr.UserType) {
-		def := codegen.RecursiveValidationCode(t.Attribute(), &attCtx, true, expr.IsAlias(t), "v")
+		def := codegen.ValidationCode(t.Attribute(), t, &attCtx, true, expr.IsAlias(t), "v")
 		if def == "" {
 			return
 		}
