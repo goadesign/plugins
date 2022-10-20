@@ -1,6 +1,6 @@
 # Docs Plugin
 
-The `docs` plugin is a [Goa](https://github.com/goadesign/goa/tree/v2) plugin
+The `docs` plugin is a [Goa](https://github.com/goadesign/goa/tree/v3) plugin
 that generates documentation from Goa designs. The plugin generates transport
 agnostic documentation in the form of a JSON document structured as follows:
 

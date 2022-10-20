@@ -7,7 +7,7 @@
 
 # include common Makefile content for plugins
 GOPATH=$(shell go env GOPATH)
-include $(GOPATH)/src/goa.design/plugins/plugins.mk
+include ../plugins.mk
 
 gen:
 	@goa gen goa.design/plugins/v3/goakit/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/goakit/examples/calc"

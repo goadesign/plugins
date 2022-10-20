@@ -25,7 +25,7 @@ func getLocales() ([]string, error) {
 	locales := os.Getenv(ENVKEY)
 
 	if locales == "" {
-		return nil, fmt.Errorf("Environment variable \"GOA_I18N\" not found, this is required to generate locale dependend output")
+		return nil, fmt.Errorf("environment variable \"GOA_I18N\" not found, this is required to generate locale dependend output")
 	}
 
 	return strings.Split(locales, ","), nil

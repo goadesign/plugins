@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	fetcher "goa.design/plugins/v3/goakit/examples/fetcher/fetcher"
 	fetchersvc "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/fetcher"
 	health "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/health"
@@ -111,5 +111,5 @@ func main() {
 	cancel()
 
 	wg.Wait()
-	logger.Log("info", fmt.Sprintf("exited"))
+	logger.Log("info", "exited")
 }

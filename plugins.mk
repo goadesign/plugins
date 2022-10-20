@@ -2,7 +2,7 @@
 #
 # Include this file in all the plugins Makefile as follows
 #
-#		include $(GOPATH)/src/goa.design/plugins/plugins.mk
+#		include ../plugins.mk
 #
 # Targets:
 # - "depend" retrieves the Go packages needed to run the linter and tests

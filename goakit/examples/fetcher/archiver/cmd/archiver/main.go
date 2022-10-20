@@ -11,7 +11,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	archiverapi "goa.design/plugins/v3/goakit/examples/fetcher/archiver"
 	archiver "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver"
 	health "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/health"
@@ -113,5 +113,5 @@ func main() {
 	cancel()
 
 	wg.Wait()
-	logger.Log("info", fmt.Sprintf("exited"))
+	logger.Log("info", "exited")
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	archiversvc "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver"
 	"goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/archiver/server"
 )

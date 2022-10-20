@@ -1,15 +1,9 @@
 # goakit
 
-The `goakit` plugin is a [goa](https://github.com/goadesign/goa/tree/v2) plugin that generates
+The `goakit` plugin is a [Goa](https://github.com/goadesign/goa/tree/v3) plugin that generates
 [Go kit](https://github.com/go-kit/kit) services and clients from goa design packages.
 
 ## Usage
-
-goa v3 must be installed:
-
-```bash
-go get goa.design/goa/v3/...
-```
 
 Simply import the plugin in the service design package. Use the blank identifier `_` as explicit
 package name:
@@ -53,6 +47,5 @@ command).
 The [cellar](https://github.com/goadesign/plugins/tree/master/goakit/examples/cellar)
 example
 [design](https://github.com/goa.design/plugins/tree/master/goakit/examples/cellar/design/design.go)
-illustrates the usage by importing both the official [cellar example design
-package](https://github.com/goa.design/goa/v3/tree/v2/examples/cellar/design) and
+illustrates the usage by importing both the top level cellar example design and
 the goakit plugin.

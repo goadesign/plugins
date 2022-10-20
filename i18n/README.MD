@@ -1,6 +1,6 @@
 # I18n Plugin
 
-The `i18n` plugin is a [goa v3](https://github.com/goadesign/goa/tree/v3) plugin
+The `i18n` plugin is a [Goa](https://github.com/goadesign/goa/tree/v3) plugin
 that makes it possible to generate multiple internationalized openapi specs.
 This plugin is decoupled from an i18n library, this is up to the user to decide. 
 
@@ -22,10 +22,10 @@ An environment variable `GOA_I18N` needs to be set up before running goa. This e
 a comma separated list of all locales you wish to generate. For example: 
 
 ```
-GOA_I18N=en goa gen calc/design // Handles `en` locale only
-GOA_I18N=en,nl goa gen calc/design // Handles `en` and `nl` locales
+GOA_I18N=en goa gen calc/design          // Handles `en` locale only
+GOA_I18N=en,nl goa gen calc/design       // Handles `en` and `nl` locales
 GOA_I18N=en,nl,de_DE goa gen calc/design // Handles `en`, `nl` and `de_DE` locales
-goa gen calc/design // Error, GOA_I18N not defined
+goa gen calc/design                      // Error, GOA_I18N not defined
 ```
 
 The first locale in the list is the `default` locale. 

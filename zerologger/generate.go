@@ -1,7 +1,6 @@
 package zerologger
 
 import (
-	"fmt"
 	"path"
 	"path/filepath"
 	"strings"
@@ -87,7 +86,7 @@ func GenerateFiles(genpkg string, root *expr.RootExpr) []*codegen.File {
 // GenerateLoggerFile returns the generated zerolog logger file.
 func GenerateLoggerFile(genpkg string) *codegen.File {
 	path := filepath.Join(codegen.Gendir, "log", "logger.go")
-	title := fmt.Sprint("Zerolog logger implementation")
+	title := "Zerolog logger implementation"
 	sections := []*codegen.SectionTemplate{
 		codegen.Header(title, "log", []*codegen.ImportSpec{
 			{Path: "github.com/rs/zerolog"},

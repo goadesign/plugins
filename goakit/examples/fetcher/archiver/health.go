@@ -3,7 +3,7 @@ package archiver
 import (
 	"context"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	health "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/health"
 )
 

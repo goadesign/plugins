@@ -8,8 +8,8 @@ import (
 	"net/url"
 
 	"github.com/go-kit/kit/endpoint"
-	"github.com/go-kit/kit/log"
 	kithttp "github.com/go-kit/kit/transport/http"
+	"github.com/go-kit/log"
 	goahttp "goa.design/goa/v3/http"
 	archiversvc "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver"
 	archiverkc "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/archiver/kitclient"

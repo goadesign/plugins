@@ -32,7 +32,7 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 // Goakitify modifies all the previously generated files by adding go-kit
 // imports and replacing the following instances
 // * "goa.Endpoint" with "github.com/go-kit/kit/endpoint".Endpoint
-// * "log.Logger" with "github.com/go-kit/kit/log".Logger
+// * "log.Logger" with "github.com/go-kit/log".Logger
 //
 // Goakitify also wraps instances of endpoint.Endpoint into instances of
 // goa.Endpoint when used as argument of either goagrpc.NewStreamHandler or
@@ -94,7 +94,7 @@ func gokitifyExampleServer(genpkg string, file *codegen.File) {
 
 		switch s.Name {
 		case "server-main-logger":
-			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/kit/log"})
+			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/log"})
 			s.Source = gokitLoggerT
 		case "server-http-logger":
 			s.Source = ""
@@ -122,7 +122,7 @@ func gokitifyExampleServer(genpkg string, file *codegen.File) {
 				specs := imports.([]*codegen.ImportSpec)
 				for _, s := range specs {
 					if s.Path == "log" {
-						s.Path = "github.com/go-kit/kit/log"
+						s.Path = "github.com/go-kit/log"
 					}
 				}
 			}

@@ -1,6 +1,6 @@
 # ZeroLogger Plugin
 
-The `ZeroLogger` plugin is a [Goa v3](https://github.com/goadesign/goa/tree/v3) plugin
+The `ZeroLogger` plugin is a [Goa](https://github.com/goadesign/goa/tree/v3) plugin
 that adapt the basic logger to use the [zerolog](https://github.com/rs/zerolog) library.
 
 ## Enabling the Plugin

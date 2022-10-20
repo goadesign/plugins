@@ -11,7 +11,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	calcapi "goa.design/plugins/v3/goakit/examples/calc"
 	calc "goa.design/plugins/v3/goakit/examples/calc/gen/calc"
 )
@@ -108,5 +108,5 @@ func main() {
 	cancel()
 
 	wg.Wait()
-	logger.Log("info", fmt.Sprintf("exited"))
+	logger.Log("info", "exited")
 }

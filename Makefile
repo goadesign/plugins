@@ -20,6 +20,7 @@ PLUGINS=\
 	docs \
 	goakit \
 	i18n \
+	types \
 	zaplogger \
 	zerologger
 
