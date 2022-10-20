@@ -42,7 +42,7 @@ endif
 
 all: check-goa gen lint test
 
-ci: depend all check-freshness
+ci: depend all 
 
 depend:
 	@echo INSTALLING DEPENDENCIES...
