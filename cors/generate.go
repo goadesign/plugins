@@ -144,7 +144,6 @@ func serverCORS(f *codegen.File) {
 			FuncMap: fm,
 		})
 		fm["join"] = strings.Join
-		fm["trim"] = strings.Trim
 		f.SectionTemplates = append(f.SectionTemplates, &codegen.SectionTemplate{
 			Name:    "handle-cors",
 			Source:  handleCORST,
