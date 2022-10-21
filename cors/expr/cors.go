@@ -28,7 +28,7 @@ type (
 		Credentials bool
 		// Regexp tells whether the Origin string is a regular expression.
 		Regexp bool
-		// Regexp tells whether the Origin string should be pulled from an environment variable
+		// EnvVar tells whether the Origin string should be pulled from an environment variable
 		EnvVar bool
 		// Parent expression, ServiceExpr or APIExpr.
 		Parent eval.Expression
