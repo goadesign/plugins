@@ -194,11 +194,9 @@ func {{ .OriginHandler }}(h http.Handler) http.Handler {
 	if !present {
 		panic("CORS origin environment variable \"{{ $policy.Origin }}\" not set!")
 	}
-	{{- else }}
-	originStr{{$i}} := {{ printf "%q" $policy.Origin }}
 	{{- end }}
 	{{- if $policy.Regexp }}
-	spec{{$i}} := regexp.MustCompile(originStr{{$i}})
+	spec{{$i}} := regexp.MustCompile({{ printf "%q" $policy.Origin }})
 	{{- end }}
 {{- end }}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -212,7 +210,11 @@ func {{ .OriginHandler }}(h http.Handler) http.Handler {
 		{{- if $policy.Regexp }}
 	if cors.MatchOriginRegexp(origin, spec{{$i}}) {
 		{{- else }}
+	{{- if $policy.EnvVar }}
 	if cors.MatchOrigin(origin, originStr{{$i}}) {
+	{{- else }}
+	if cors.MatchOrigin(origin, {{ printf "%q" $policy.Origin }}) {
+	{{- end }}
 		{{- end }}
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Vary", "Origin")
