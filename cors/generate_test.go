@@ -9,6 +9,7 @@ import (
 	"goa.design/goa/v3/eval"
 	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
+
 	"goa.design/plugins/v3/cors"
 	"goa.design/plugins/v3/cors/testdata"
 )
@@ -31,6 +32,7 @@ func NewCORSHandler() http.Handler {
 	}{
 		{"simple-origin", testdata.SimpleOriginDSL, []string{testdata.SimpleOriginHandleCode}, []string{testdata.SimpleOriginMountCode}, []string{testdata.SimpleOriginServerInitCode}, 2},
 		{"regexp-origin", testdata.RegexpOriginDSL, []string{testdata.RegexpOriginHandleCode}, []string{testdata.RegexpOriginMountCode}, []string{testdata.RegexpOriginServerInitCode}, 2},
+		{"simple-env-var-origin", testdata.SimpleEnvVarOriginDSL, []string{testdata.SimpleEnvVarOriginHandleCode}, []string{testdata.SimpleEnvVarOriginMountCode}, []string{testdata.SimpleEnvVarOriginServerInitCode}, 2},
 		{"multi-origin", testdata.MultiOriginDSL, []string{testdata.MultiOriginHandleCode}, []string{testdata.MultiOriginMountCode}, []string{testdata.MultiOriginServerInitCode}, 2},
 		{"origin-file-server", testdata.OriginFileServerDSL, []string{testdata.OriginFileServerHandleCode}, []string{testdata.OriginFileServerMountCode}, []string{testdata.OriginFileServerServerInitCode}, 1},
 		{"origin-multi-endpoint", testdata.OriginMultiEndpointDSL, []string{testdata.OriginMultiEndpointHandleCode}, []string{testdata.OriginMultiEndpointMountCode}, []string{testdata.OriginMultiEndpointServerInitCode}, 2},
