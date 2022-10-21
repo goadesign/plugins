@@ -44,8 +44,7 @@ command).
 
 ## Example
 
-The [cellar](https://github.com/goadesign/plugins/tree/master/goakit/examples/cellar)
-example
-[design](https://github.com/goa.design/plugins/tree/master/goakit/examples/cellar/design/design.go)
-illustrates the usage by importing both the top level cellar example design and
-the goakit plugin.
+The [calc](https://github.com/goadesign/plugins/tree/v3/goakit/examples/calc/design) and 
+[fetcher](https://github.com/goadesign/plugins/tree/v3/goakit/examples/fetcher/design) example
+design packages show how to enable the plugin. The corresponding `gen` folders contain the
+generated HTTP Go kit server and client packages.
