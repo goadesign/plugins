@@ -21,6 +21,10 @@ import (
 // Origin accepts an origin string as the first argument and
 // an optional DSL function as the second argument.
 //
+// Optionally, you can specify the name of an environment variable instead, prefixed by a "$".
+// The value you store in that environment variable follows the same rules as the above
+// and can similarly be a regular expression.
+//
 // Example:
 //
 //	import cors "goa.design/plugins/v3/cors"
@@ -33,6 +37,8 @@ import (
 //	        cors.MaxAge(600)                 // How long to cache a preflight request response
 //	        cors.Credentials()               // Sets Access-Control-Allow-Credentials header
 //	    })
+//
+//	    cors.Origin("$ORIGIN") // Simple example to demonstrate using an environment variable
 //	})
 //
 //	var _ = Service("calculator", func() {
@@ -49,6 +55,10 @@ func Origin(origin string, args ...interface{}) {
 	if strings.HasPrefix(origin, "/") && strings.HasSuffix(origin, "/") {
 		o.Regexp = true
 		o.Origin = strings.Trim(origin, "/")
+	}
+	if strings.HasPrefix(origin, "$") {
+		o.EnvVar = true
+		o.Origin = strings.Trim(origin, "$")
 	}
 
 	var dsl func()

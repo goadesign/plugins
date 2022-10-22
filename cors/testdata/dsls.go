@@ -2,6 +2,7 @@ package testdata
 
 import (
 	. "goa.design/goa/v3/dsl"
+
 	cors "goa.design/plugins/v3/cors/dsl"
 )
 
@@ -20,6 +21,17 @@ var RegexpOriginDSL = func() {
 	Service("RegexpOrigin", func() {
 		cors.Origin("/.*RegexpOrigin.*/")
 		Method("RegexpOriginMethod", func() {
+			HTTP(func() {
+				GET("/")
+			})
+		})
+	})
+}
+
+var SimpleEnvVarOriginDSL = func() {
+	Service("SimpleEnvVarOrigin", func() {
+		cors.Origin("$SIMPLE_ORIGIN")
+		Method("SimpleEnvVarOriginMethod", func() {
 			HTTP(func() {
 				GET("/")
 			})

@@ -51,6 +51,35 @@ func HandleRegexpOriginOrigin(h http.Handler) http.Handler {
 }
 `
 
+var SimpleEnvVarOriginHandleCode = `// HandleSimpleEnvVarOriginOrigin applies the CORS response headers
+// corresponding to the origin for the service SimpleEnvVarOrigin.
+func HandleSimpleEnvVarOriginOrigin(h http.Handler) http.Handler {
+	originStr0, present := os.LookupEnv("SIMPLE_ORIGIN")
+	if !present {
+		panic("CORS origin environment variable \"SIMPLE_ORIGIN\" not set!")
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			// Not a CORS request
+			h.ServeHTTP(w, r)
+			return
+		}
+		if cors.MatchOrigin(origin, originStr0) {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin")
+			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
+				// We are handling a preflight request
+			}
+			h.ServeHTTP(w, r)
+			return
+		}
+		h.ServeHTTP(w, r)
+		return
+	})
+}
+`
+
 var MultiOriginHandleCode = `// HandleMultiOriginOrigin applies the CORS response headers corresponding to
 // the origin for the service MultiOrigin.
 func HandleMultiOriginOrigin(h http.Handler) http.Handler {
@@ -234,6 +263,14 @@ func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 }
 `
 
+var SimpleEnvVarOriginMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
+// service SimpleEnvVarOrigin.
+func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
+	h = HandleSimpleEnvVarOriginOrigin(h)
+	mux.Handle("OPTIONS", "/", h.ServeHTTP)
+}
+`
+
 var MultiOriginMountCode = `// MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service MultiOrigin.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
@@ -328,6 +365,31 @@ func New(
 		},
 		RegexpOriginMethod: NewRegexpOriginMethodHandler(e.RegexpOriginMethod, mux, decoder, encoder, errhandler, formatter),
 		CORS:               NewCORSHandler(),
+	}
+}
+`
+
+var SimpleEnvVarOriginServerInitCode = `// New instantiates HTTP handlers for all the SimpleEnvVarOrigin service
+// endpoints using the provided encoder and decoder. The handlers are mounted
+// on the given mux using the HTTP verb and path defined in the design.
+// errhandler is called whenever a response fails to be encoded. formatter is
+// used to format errors returned by the service methods prior to encoding.
+// Both errhandler and formatter are optional and can be nil.
+func New(
+	e *simpleenvvarorigin.Endpoints,
+	mux goahttp.Muxer,
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(ctx context.Context, err error) goahttp.Statuser,
+) *Server {
+	return &Server{
+		Mounts: []*MountPoint{
+			{"SimpleEnvVarOriginMethod", "GET", "/"},
+			{"CORS", "OPTIONS", "/"},
+		},
+		SimpleEnvVarOriginMethod: NewSimpleEnvVarOriginMethodHandler(e.SimpleEnvVarOriginMethod, mux, decoder, encoder, errhandler, formatter),
+		CORS:                     NewCORSHandler(),
 	}
 }
 `
