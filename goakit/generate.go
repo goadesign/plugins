@@ -74,8 +74,17 @@ func GoakitifyExample(genpkg string, roots []eval.Root, files []*codegen.File) (
 // goaEndpointRegexp matches occurrences of the "goa.Endpoint" type in Go code.
 var goaEndpointRegexp = regexp.MustCompile(`([^\p{L}_])goa\.Endpoint([^\p{L}_])`)
 
-// goaLoggerRegexp matches occurrences of "logger.<function>" in Go code.
-var goaLoggerRegexp = regexp.MustCompile(`logger\.\w+\((.*)\)`)
+// loggerPrintRegexp matches occurrences of "logger.Print" and "logger.Println".
+var loggerPrintRegexp = regexp.MustCompile(`logger\.(Print|Println)\((.*)\)`)
+
+// loggerFatalRegexp matches occurrences of "logger.Fatal" and "logger.Fatalln".
+var loggerFatalRegexp = regexp.MustCompile(`logger\.(Fatal|Fatalln)\((.*)\)`)
+
+// loggerPrintfRegexp matches occurrences of "logger.Printf".
+var loggerPrintfRegexp = regexp.MustCompile(`logger\.(Printf)\((.*)\)`)
+
+// loggerFatalRegexpf matches occurrences of "logger.Fatalf".
+var loggerFatalfRegexp = regexp.MustCompile(`logger\.(Fatalf)\((.*)\)`)
 
 // gokitifyExampleServer imports gokit endpoint, logger, and transport
 // packages in the example server implementation. It also replaces every stdlib
@@ -90,8 +99,10 @@ func gokitifyExampleServer(genpkg string, file *codegen.File) {
 		s.Source = strings.Replace(s.Source, "*log.Logger", "log.Logger", -1)
 		s.Source = strings.Replace(s.Source, "adapter = middleware.NewLogger(logger)", "adapter = logger", 1)
 		codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "fmt"})
-		s.Source = goaLoggerRegexp.ReplaceAllString(s.Source, "logger.Log(\"info\", fmt.Sprintf(${1}))")
-
+		s.Source = loggerPrintRegexp.ReplaceAllString(s.Source, "logger.Log(\"info\", ${2})")
+		s.Source = loggerPrintfRegexp.ReplaceAllString(s.Source, "logger.Log(\"info\", fmt.Sprintf(${2}))")
+		s.Source = loggerFatalRegexp.ReplaceAllString(s.Source, "logger.Log(\"fatal\", ${2})\nos.Exit(1)")
+		s.Source = loggerFatalfRegexp.ReplaceAllString(s.Source, "logger.Log(\"fatal\", fmt.Sprintf(${2}))\nos.Exit(1)")
 		switch s.Name {
 		case "server-main-logger":
 			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/log"})
