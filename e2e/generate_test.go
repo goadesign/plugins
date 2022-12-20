@@ -6,8 +6,8 @@ import (
 	"log"
 	"testing"
 
-	"github.com/jasondborneman/goa_plugins/v3/e2e"
-	"github.com/jasondborneman/goa_plugins/v3/e2e/testdata"
+	"github.com/jasondborneman/goa_plugins/e2e/e2e"
+	"github.com/jasondborneman/goa_plugins/e2e/e2e/testdata"
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/eval"
 )
