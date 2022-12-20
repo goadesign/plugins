@@ -6,10 +6,10 @@ import (
 	"log"
 	"testing"
 
+	"github.com/jasondborneman/goa_plugins/v3/e2e"
+	"github.com/jasondborneman/goa_plugins/v3/e2e/testdata"
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/eval"
-	"goa.design/plugins/v3/e2e"
-	"goa.design/plugins/v3/e2e/testdata"
 )
 
 var update = flag.Bool("update", false, "update golden files")

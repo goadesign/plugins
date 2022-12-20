@@ -1,4 +1,4 @@
-module goa.design/plugins/v3
+module github.com/jasondborneman/goa_plugins/e2e
 
 go 1.18
 
