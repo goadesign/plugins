@@ -211,7 +211,7 @@ func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, nameScope *code
 	schema := openapi.AttributeTypeSchema(api, att)
 	return &payloadData{
 		Type:    schema,
-		Example: att.Example(api.Random()),
+		Example: att.Example(api.ExampleGenerator),
 	}
 }
 
