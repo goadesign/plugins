@@ -10,7 +10,7 @@ import (
 	cli "goa.design/plugins/v3/docs/examples/calc/gen/http/cli/calc"
 )
 
-func doHTTP(scheme, host string, timeout int, debug bool) (goa.Endpoint, interface{}, error) {
+func doHTTP(scheme, host string, timeout int, debug bool) (goa.Endpoint, any, error) {
 	var (
 		doer goahttp.Doer
 	)

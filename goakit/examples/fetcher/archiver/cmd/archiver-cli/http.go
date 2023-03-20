@@ -9,7 +9,7 @@ import (
 	cli "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/cli/archiver"
 )
 
-func doHTTP(scheme, host string, timeout int, debug bool) (endpoint.Endpoint, interface{}, error) {
+func doHTTP(scheme, host string, timeout int, debug bool) (endpoint.Endpoint, any, error) {
 	var (
 		doer goahttp.Doer
 	)
