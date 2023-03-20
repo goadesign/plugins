@@ -24,7 +24,7 @@ PLUGINS=\
 	zaplogger \
 	zerologger
 
-PROTOC_VERSION=21.2
+PROTOC_VERSION=22.2
 UNZIP=unzip
 ifeq ($(GOOS),linux)
 	PROTOC=protoc-$(PROTOC_VERSION)-linux-x86_64
