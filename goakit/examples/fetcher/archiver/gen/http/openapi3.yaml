@@ -49,9 +49,9 @@ paths:
                   schema:
                     type: integer
                     description: ID of archive
-                    example: 2499395481066573742
+                    example: 3819557355377074292
                     minimum: 0
-                  example: 1007502908903998631
+                  example: 8570738615275469826
             responses:
                 "200":
                     description: OK response.
@@ -89,8 +89,8 @@ paths:
                         text/plain:
                             schema:
                                 type: string
-                                example: Rem consequuntur consequatur.
-                            example: Dolorum corrupti voluptas ut consequuntur.
+                                example: Dolorem impedit id facilis fuga vel explicabo.
+                            example: Nihil dignissimos laboriosam quaerat quas facilis.
 components:
     schemas:
         ArchiveMedia:
@@ -99,7 +99,7 @@ components:
                 body:
                     type: string
                     description: HTTP response body content
-                    example: Aut culpa.
+                    example: Nobis possimus.
                 href:
                     type: string
                     description: The archive resouce href
@@ -111,7 +111,7 @@ components:
                     example: 200
                     minimum: 0
             example:
-                body: Aliquam cupiditate similique.
+                body: Delectus ut esse vitae debitis aut.
                 href: /archive/1
                 status: 200
             required:
@@ -124,14 +124,14 @@ components:
                 body:
                     type: string
                     description: HTTP response body content
-                    example: Soluta iusto vel ad.
+                    example: Et sint.
                 status:
                     type: integer
                     description: HTTP status
                     example: 200
                     minimum: 0
             example:
-                body: Incidunt consequuntur aperiam.
+                body: Dolorum corrupti voluptas ut consequuntur.
                 status: 200
             required:
                 - status
@@ -158,15 +158,18 @@ components:
                 temporary:
                     type: boolean
                     description: Is the error temporary?
-                    example: true
+                    example: false
                 timeout:
                     type: boolean
                     description: Is the error a timeout?
                     example: false
             example:
-                id: 3F1FKVRR
-                message: Value of ID must be an integer
+                fault: true
+                id: 123abc
+                message: parameter 'p' must be an integer
                 name: bad_request
+                temporary: true
+                timeout: false
             required:
                 - name
                 - id

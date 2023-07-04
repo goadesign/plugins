@@ -89,14 +89,14 @@ definitions:
             body:
                 type: string
                 description: HTTP response body content
-                example: Sint delectus beatae est itaque.
+                example: Numquam qui qui eligendi doloribus.
             status:
                 type: integer
                 description: HTTP status
                 example: 200
                 minimum: 0
         example:
-            body: Autem mollitia optio.
+            body: Placeat aspernatur ullam qui numquam quis numquam.
             status: 200
         required:
             - status
@@ -108,7 +108,7 @@ definitions:
             body:
                 type: string
                 description: HTTP response body content
-                example: At maiores dolor iusto accusantium in modi.
+                example: Harum autem mollitia optio.
             href:
                 type: string
                 description: The archive resouce href
@@ -121,7 +121,7 @@ definitions:
                 minimum: 0
         description: ArchiveResponseBody result type (default view)
         example:
-            body: Amet officia.
+            body: Alias ipsa eum laborum ut quod.
             href: /archive/1
             status: 200
         required:
@@ -155,10 +155,10 @@ definitions:
             timeout:
                 type: boolean
                 description: Is the error a timeout?
-                example: true
+                example: false
         description: read_bad_request_response_body result type (default view)
         example:
-            fault: true
+            fault: false
             id: 123abc
             message: parameter 'p' must be an integer
             name: bad_request
@@ -178,7 +178,7 @@ definitions:
             fault:
                 type: boolean
                 description: Is the error a server-side fault?
-                example: false
+                example: true
             id:
                 type: string
                 description: ID is a unique identifier for this particular occurrence of the problem.
@@ -198,15 +198,15 @@ definitions:
             timeout:
                 type: boolean
                 description: Is the error a timeout?
-                example: false
+                example: true
         description: read_not_found_response_body result type (default view)
         example:
-            fault: true
+            fault: false
             id: 123abc
             message: parameter 'p' must be an integer
             name: bad_request
             temporary: true
-            timeout: true
+            timeout: false
         required:
             - name
             - id
@@ -221,7 +221,7 @@ definitions:
             body:
                 type: string
                 description: HTTP response body content
-                example: Alias ipsa eum laborum ut quod.
+                example: Quia cum qui numquam soluta iusto.
             href:
                 type: string
                 description: The archive resouce href
@@ -234,7 +234,7 @@ definitions:
                 minimum: 0
         description: ReadResponseBody result type (default view)
         example:
-            body: Numquam qui qui eligendi doloribus.
+            body: Ad beatae incidunt consequuntur aperiam aliquid.
             href: /archive/1
             status: 200
         required:
