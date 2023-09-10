@@ -49,14 +49,13 @@ func TestPrepare(t *testing.T) {
 }
 func checkExpr(roots []eval.Root, t interface{}, cb func(se interface{})) {
 	for _, root := range roots {
-		root.WalkSets(func(es eval.ExpressionSet) error {
+		root.WalkSets(func(es eval.ExpressionSet) {
 			for _, e := range es {
 				et := reflect.TypeOf(e)
 				if et == reflect.TypeOf(t) {
 					cb(e)
 				}
 			}
-			return nil
 		})
 	}
 }

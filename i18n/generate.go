@@ -32,7 +32,7 @@ func getLocales() ([]string, error) {
 }
 
 // Prepare executes all translations with the default language
-func Prepare(genpkg string, roots []eval.Root) error {
+func Prepare(_ string, roots []eval.Root) error {
 	locales, error := getLocales()
 
 	if error != nil {
@@ -45,7 +45,7 @@ func Prepare(genpkg string, roots []eval.Root) error {
 }
 
 func walkTranslations(roots []eval.Root, locale string) {
-	walker := func(s eval.ExpressionSet) error {
+	walker := func(s eval.ExpressionSet) {
 		i18nRoot := expr.Root
 
 		for _, e := range s {
@@ -59,7 +59,6 @@ func walkTranslations(roots []eval.Root, locale string) {
 				handleTitleTranslation(e, i18nExpr.Messages(locale))
 			}
 		}
-		return nil
 	}
 	for _, root := range roots {
 		root.WalkSets(walker)
@@ -85,7 +84,7 @@ func handleTitleTranslation(p eval.Expression, e []string) {
 
 // Generate produces additional openapi files for locales configured via
 // the system environment variable GOA_I18N
-func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
+func Generate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	locales, _ := getLocales()
 
 	if len(locales) <= 1 {
