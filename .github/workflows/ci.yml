@@ -19,7 +19,7 @@ jobs:
       id: go
 
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v3    
+      uses: actions/checkout@v4    
 
     - name: Extract branch name
       run: echo "::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})"
