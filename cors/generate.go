@@ -235,7 +235,7 @@ func {{ .OriginHandler }}(h http.Handler) http.Handler {
 			w.Header().Set("Access-Control-Allow-Headers", "{{ join $policy.Headers ", " }}")
 				{{- end }}
 		}
-		h.ServeHTTP(w, r)
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 	{{- end }}
