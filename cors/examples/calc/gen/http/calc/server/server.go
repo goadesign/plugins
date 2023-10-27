@@ -157,10 +157,10 @@ func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 	mux.Handle("OPTIONS", "/", h.ServeHTTP)
 }
 
-// NewCORSHandler creates a HTTP handler which returns a simple 200 response.
+// NewCORSHandler creates a HTTP handler which returns a simple 204 response.
 func NewCORSHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+		w.WriteHeader(204)
 	})
 }
 
@@ -183,6 +183,8 @@ func HandleCalcOrigin(h http.Handler) http.Handler {
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
+				w.WriteHeader(204)
+				return
 			}
 			h.ServeHTTP(w, r)
 			return
@@ -197,6 +199,8 @@ func HandleCalcOrigin(h http.Handler) http.Handler {
 				// We are handling a preflight request
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
 				w.Header().Set("Access-Control-Allow-Headers", "X-Shared-Secret")
+				w.WriteHeader(204)
+				return
 			}
 			h.ServeHTTP(w, r)
 			return

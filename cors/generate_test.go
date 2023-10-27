@@ -15,10 +15,10 @@ import (
 )
 
 func TestGenerate(t *testing.T) {
-	var corsHandler = `// NewCORSHandler creates a HTTP handler which returns a simple 200 response.
+	var corsHandler = `// NewCORSHandler creates a HTTP handler which returns a simple 204 response.
 func NewCORSHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+		w.WriteHeader(204)
 	})
 }
 `
