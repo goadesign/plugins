@@ -15,6 +15,8 @@ func HandleSimpleOriginOrigin(h http.Handler) http.Handler {
 			w.Header().Set("Vary", "Origin")
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
+				w.WriteHeader(204)
+				return
 			}
 			h.ServeHTTP(w, r)
 			return
@@ -41,6 +43,8 @@ func HandleRegexpOriginOrigin(h http.Handler) http.Handler {
 			w.Header().Set("Vary", "Origin")
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
+				w.WriteHeader(204)
+				return
 			}
 			h.ServeHTTP(w, r)
 			return
@@ -70,6 +74,8 @@ func HandleSimpleEnvVarOriginOrigin(h http.Handler) http.Handler {
 			w.Header().Set("Vary", "Origin")
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
+				w.WriteHeader(204)
+				return
 			}
 			h.ServeHTTP(w, r)
 			return
@@ -99,6 +105,8 @@ func HandleMultiOriginOrigin(h http.Handler) http.Handler {
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
+				w.WriteHeader(204)
+				return
 			}
 			h.ServeHTTP(w, r)
 			return
@@ -113,6 +121,8 @@ func HandleMultiOriginOrigin(h http.Handler) http.Handler {
 				// We are handling a preflight request
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
 				w.Header().Set("Access-Control-Allow-Headers", "X-Shared-Secret")
+				w.WriteHeader(204)
+				return
 			}
 			h.ServeHTTP(w, r)
 			return
@@ -138,6 +148,8 @@ func HandleOriginFileServerOrigin(h http.Handler) http.Handler {
 			w.Header().Set("Vary", "Origin")
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
+				w.WriteHeader(204)
+				return
 			}
 			h.ServeHTTP(w, r)
 			return
@@ -163,6 +175,8 @@ func HandleOriginMultiEndpointOrigin(h http.Handler) http.Handler {
 			w.Header().Set("Vary", "Origin")
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
+				w.WriteHeader(204)
+				return
 			}
 			h.ServeHTTP(w, r)
 			return
@@ -188,6 +202,8 @@ func HandleFirstServiceOrigin(h http.Handler) http.Handler {
 			w.Header().Set("Vary", "Origin")
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
+				w.WriteHeader(204)
+				return
 			}
 			h.ServeHTTP(w, r)
 			return
@@ -212,6 +228,8 @@ func HandleSecondServiceOrigin(h http.Handler) http.Handler {
 			w.Header().Set("Vary", "Origin")
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
+				w.WriteHeader(204)
+				return
 			}
 			h.ServeHTTP(w, r)
 			return
@@ -237,6 +255,8 @@ func HandleFilesOrigin(h http.Handler) http.Handler {
 			w.Header().Set("Vary", "Origin")
 			if acrm := r.Header.Get("Access-Control-Request-Method"); acrm != "" {
 				// We are handling a preflight request
+				w.WriteHeader(204)
+				return
 			}
 			h.ServeHTTP(w, r)
 			return
