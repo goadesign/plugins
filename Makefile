@@ -40,7 +40,7 @@ ifeq ($(GOOS),windows)
 	GOPATH:=$(subst \,/,$(GOPATH))
 endif
 
-all: check-goa gen lint test
+all: check-goa gen tidy lint test
 
 ci: depend all 
 
@@ -70,7 +70,7 @@ else
 endif
 
 tidy:
-	@go mod tidy -v -compat=1.19
+	@go mod tidy
 
 gen:
 	@for p in $(PLUGINS) ; do \
