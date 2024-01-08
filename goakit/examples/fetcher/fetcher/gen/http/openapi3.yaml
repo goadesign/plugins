@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
     title: The goakit example upstream service
     description: Fetcher is a service that makes GET requests to arbitrary URLs and stores the results in the downstream 'archiver' service.
-    version: "1.0"
+    version: 0.0.1
 servers:
     - url: http://localhost:80
       description: Default server for fetcher

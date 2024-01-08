@@ -2,7 +2,7 @@ swagger: "2.0"
 info:
     title: CORS Voorbeeld Calc API
     description: Dit is een demonstratie van de vertalings plugin (i18n) van Goa
-    version: ""
+    version: 0.0.1
 host: localhost:80
 consumes:
     - application/json

@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
     title: The goakit example downstream service
     description: Archiver is a service that manages the content of HTTP responses
-    version: "1.0"
+    version: 0.0.1
 servers:
     - url: http://localhost:80
       description: Default server for archiver
