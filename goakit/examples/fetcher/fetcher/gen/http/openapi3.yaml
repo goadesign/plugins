@@ -118,6 +118,7 @@ components:
                     type: integer
                     description: HTTP status code returned by fetched service
                     example: 200
+                    format: int64
                     minimum: 0
             example:
                 archive_href: /archive/1

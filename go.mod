@@ -7,7 +7,7 @@ require (
 	github.com/go-kit/log v0.2.1
 	github.com/gorilla/websocket v1.5.1
 	go.uber.org/zap v1.26.0
-	goa.design/goa/v3 v3.14.5
+	goa.design/goa/v3 v3.14.6
 )
 
 require (

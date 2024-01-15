@@ -158,6 +158,7 @@ definitions:
                 type: integer
                 description: HTTP status code returned by fetched service
                 example: 200
+                format: int64
                 minimum: 0
         description: FetchResponseBody result type (default view)
         example:

@@ -94,6 +94,7 @@ definitions:
                 type: integer
                 description: HTTP status
                 example: 200
+                format: int64
                 minimum: 0
         example:
             body: Placeat aspernatur ullam qui numquam quis numquam.
@@ -118,6 +119,7 @@ definitions:
                 type: integer
                 description: HTTP status
                 example: 200
+                format: int64
                 minimum: 0
         description: ArchiveResponseBody result type (default view)
         example:
@@ -231,6 +233,7 @@ definitions:
                 type: integer
                 description: HTTP status
                 example: 200
+                format: int64
                 minimum: 0
         description: ReadResponseBody result type (default view)
         example:

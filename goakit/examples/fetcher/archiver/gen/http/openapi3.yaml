@@ -50,6 +50,7 @@ paths:
                     type: integer
                     description: ID of archive
                     example: 3819557355377074292
+                    format: int64
                     minimum: 0
                   example: 8570738615275469826
             responses:
@@ -109,6 +110,7 @@ components:
                     type: integer
                     description: HTTP status
                     example: 200
+                    format: int64
                     minimum: 0
             example:
                 body: Delectus ut esse vitae debitis aut.
@@ -129,6 +131,7 @@ components:
                     type: integer
                     description: HTTP status
                     example: 200
+                    format: int64
                     minimum: 0
             example:
                 body: Dolorum corrupti voluptas ut consequuntur.
