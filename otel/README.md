@@ -31,7 +31,20 @@ where `PACKAGE` is the Go import path of the design package.
 
 Importing the `otel` package changes the behavior of the `gen` command of the
 `goa` tool. The `gen` command output is modified so that the generated HTTP
-handlers are wrapped with a call to the `otelhttp.WithRouteTag`
+handlers are wrapped with a call to the `otelhttp.WithRouteTag`.
+
+That is the code generated in `gen/http/<service>/server/server.go` that
+mounts an endpoint handler onto the HTTP mux changes from:
+
+```go
+mux.Handle("<VERB>", "<PATH>", f)
+```
+
+to:
+
+```go
+mux.Handle("<VERB>", otelhttp.WithRouteTag("<PATH>", f).ServeHTTP))
+```
 
 ## OpenTelemetry Configuration
 
