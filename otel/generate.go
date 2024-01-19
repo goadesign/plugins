@@ -21,9 +21,8 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 				if s.Name == "server-handler" {
 					s.Source = strings.Replace(
 						s.Source,
-						"{{- range Routes }}",
-						`f = otelhttp.WithRouteTag("{{ .Path }}", f).ServeHTTP
-						 {{- range Routes }}`,
+						`mux.Handle("{{ .Verb }}", "{{ .Path }}", f)`,
+						`mux.Handle("{{ .Verb }}", "{{ .Path }}", otelhttp.WithRouteTag("{{ .Path }}", f).ServeHTTP)`,
 						1,
 					)
 				}
