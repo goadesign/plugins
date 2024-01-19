@@ -1,0 +1,11 @@
+// MountMethodHandler configures the mux to serve the "Service" service
+// "Method" endpoint.
+func MountMethodHandler(mux goahttp.Muxer, h http.Handler) {
+	f, ok := h.(http.HandlerFunc)
+	if !ok {
+		f = func(w http.ResponseWriter, r *http.Request) {
+			h.ServeHTTP(w, r)
+		}
+	}
+	mux.Handle("GET", "/", otelhttp.WithRouteTag("/", f).ServeHTTP)
+}
