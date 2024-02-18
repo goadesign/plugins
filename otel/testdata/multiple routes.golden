@@ -1,3 +1,4 @@
+
 // MountMethodHandler configures the mux to serve the "Service2" service
 // "Method" endpoint.
 func MountMethodHandler(mux goahttp.Muxer, h http.Handler) {
