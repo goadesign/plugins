@@ -28,7 +28,6 @@ func main() {
 		dbgF      = flag.Bool("debug", false, "Log request and response bodies")
 	)
 	flag.Parse()
-
 	// Setup gokit logger.
 	var (
 		logger log.Logger
