@@ -8,7 +8,7 @@ require (
 	github.com/gorilla/websocket v1.5.1
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
-	goa.design/goa/v3 v3.16.0
+	goa.design/goa/v3 v3.16.1
 )
 
 require (
