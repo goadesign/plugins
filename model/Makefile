@@ -6,3 +6,4 @@
 GOPATH=$(shell go env GOPATH)
 include ../plugins.mk
 
+gen:

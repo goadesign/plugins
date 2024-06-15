@@ -26,7 +26,7 @@ PLUGINS=\
 	zaplogger \
 	zerologger
 
-PROTOC_VERSION=27.0
+PROTOC_VERSION=27.1
 ifeq ($(GOOS),linux)
 	PROTOC=protoc-$(PROTOC_VERSION)-linux-x86_64
 	PROTOC_EXEC=$(PROTOC)/bin/protoc
@@ -47,18 +47,20 @@ ci: depend all
 
 depend:
 	@echo INSTALLING DEPENDENCIES...
-	@for package in $(DEPEND); do go install $$package; done
-	@go mod tid
-	@if [[ `protoc --version` != "libprotoc ${PROTOC_VERSION}" ]]; then
-	@echo INSTALLING PROTOC...
-	@mkdir $(PROTOC)
-	@cd $(PROTOC); \
-	curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOC_VERSION)/$(PROTOC).zip; \
-	unzip $(PROTOC).zip
-	@cp $(PROTOC_EXEC) $(GOPATH)/bin && \
-		rm -rf $(PROTOC) && \
-		echo "`protoc --version`"
-	@fi
+	@for package in $(DEPEND); do \
+		go install $$package; \
+	done
+	@go mod tidy
+	@if [ "`protoc --version`" != "libprotoc ${PROTOC_VERSION}" ]; then \
+		echo INSTALLING PROTOC...; \
+		mkdir -p $(PROTOC); \
+		cd $(PROTOC) && \
+		curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOC_VERSION)/$(PROTOC).zip && \
+		sudo unzip -o ${PROTOC}.zip -d /usr/local bin/protoc && \
+  		sudo unzip -o ${PROTOC}.zip -d /usr/local 'include/*' && \
+		cd .. && rm -rf $(PROTOC); \
+		echo "`protoc --version`"; \
+	fi
 
 check-goa:
 ifdef GOA
