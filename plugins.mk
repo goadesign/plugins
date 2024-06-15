@@ -4,11 +4,16 @@
 #
 #		include ../plugins.mk
 #
+# Each plugin Makefile may define the following targets:
+#
+# - gen: generate the plugin code
+# - build-examples: build the plugin examples binaries
+# - clean: clean the plugin examples binaries
+#
 # Targets:
-# - "depend" retrieves the Go packages needed to run the linter and tests
+# - "all" calls "gen", "test", "lint", "build-examples" and "clean"
 # - "lint" runs the linter and checks the code format using goimports
 # - "test" runs the tests
-export GO111MODULE=on
 
 all: gen test lint build-examples clean
 

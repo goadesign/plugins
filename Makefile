@@ -20,19 +20,19 @@ PLUGINS=\
 	docs \
 	goakit \
 	i18n \
+	model \
 	otel \
 	types \
 	zaplogger \
 	zerologger
 
-PROTOC_VERSION=22.2
-UNZIP=unzip
+PROTOC_VERSION=27.0
 ifeq ($(GOOS),linux)
 	PROTOC=protoc-$(PROTOC_VERSION)-linux-x86_64
 	PROTOC_EXEC=$(PROTOC)/bin/protoc
 endif
 ifeq ($(GOOS),darwin)
-	PROTOC=protoc-$(PROTOC_VERSION)-osx-x86_64
+	PROTOC=protoc-$(PROTOC_VERSION)-osx-universal_binary
 	PROTOC_EXEC=$(PROTOC)/bin/protoc
 endif
 ifeq ($(GOOS),windows)
@@ -47,17 +47,18 @@ ci: depend all
 
 depend:
 	@echo INSTALLING DEPENDENCIES...
-	@go mod download
 	@for package in $(DEPEND); do go install $$package; done
-	@go mod tidy -compat=1.19
+	@go mod tid
+	@if [[ `protoc --version` != "libprotoc ${PROTOC_VERSION}" ]]; then
 	@echo INSTALLING PROTOC...
 	@mkdir $(PROTOC)
 	@cd $(PROTOC); \
 	curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOC_VERSION)/$(PROTOC).zip; \
-	$(UNZIP) $(PROTOC).zip
+	unzip $(PROTOC).zip
 	@cp $(PROTOC_EXEC) $(GOPATH)/bin && \
 		rm -rf $(PROTOC) && \
 		echo "`protoc --version`"
+	@fi
 
 check-goa:
 ifdef GOA
