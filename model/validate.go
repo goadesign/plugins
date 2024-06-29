@@ -26,13 +26,12 @@ func Validate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.Fi
 	var r *modelexpr.RootExpr
 	var ok bool
 	for _, root := range roots {
-		if r, ok := root.(*expr.RootExpr); ok {
+		if re, ok := root.(*expr.RootExpr); ok {
 			// Note: this root is guaranteed to be appear before the model root
-			services = r.Services
+			services = re.Services
 			continue
 		}
-		r, ok = root.(*modelexpr.RootExpr)
-		if ok {
+		if r, ok = root.(*modelexpr.RootExpr); ok {
 			break
 		}
 	}
@@ -152,7 +151,7 @@ func Validate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.Fi
 			pluralize(len(noService)), strings.Join(noService, ", "), pluralVerb(len(noService)))
 	}
 
-	return nil, nil
+	return files, nil
 }
 
 // Helper functions to handle singular/plural

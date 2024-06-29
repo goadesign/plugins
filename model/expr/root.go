@@ -38,10 +38,10 @@ type (
 
 // Register design root with eval engine.
 func init() {
+	InitRoot()
 	if err := eval.Register(Root); err != nil {
 		panic(err)
 	}
-	InitRoot()
 }
 
 // InitRoot initializes the root expression.
