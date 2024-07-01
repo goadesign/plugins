@@ -11,7 +11,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/go-kit/log"
+	kitlog "github.com/go-kit/log"
 	calcapi "goa.design/plugins/v3/goakit/examples/calc"
 	calc "goa.design/plugins/v3/goakit/examples/calc/gen/calc"
 )
@@ -29,12 +29,12 @@ func main() {
 	flag.Parse()
 	// Setup gokit logger.
 	var (
-		logger log.Logger
+		logger kitlog.Logger
 	)
 	{
-		logger = log.NewLogfmtLogger(os.Stderr)
-		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
-		logger = log.With(logger, "caller", log.DefaultCaller)
+		logger = kitlog.NewLogfmtLogger(os.Stderr)
+		logger = kitlog.With(logger, "ts", kitlog.DefaultTimestampUTC)
+		logger = kitlog.With(logger, "caller", kitlog.DefaultCaller)
 	}
 
 	// Initialize the services.
@@ -76,7 +76,7 @@ func main() {
 			addr := "http://localhost:80"
 			u, err := url.Parse(addr)
 			if err != nil {
-				logger.Log("fatal", fmt.Sprintf("invalid URL %#v: %s\n", addr, err))
+				logger.Log("error", err, "invalid URL", addr)
 				os.Exit(1)
 			}
 			if *secureF {
@@ -88,27 +88,27 @@ func main() {
 			if *httpPortF != "" {
 				h, _, err := net.SplitHostPort(u.Host)
 				if err != nil {
-					logger.Log("fatal", fmt.Sprintf("invalid URL %#v: %s\n", u.Host, err))
+					logger.Log("error", err, "invalid URL", u.Host)
 					os.Exit(1)
 				}
 				u.Host = net.JoinHostPort(h, *httpPortF)
 			} else if u.Port() == "" {
 				u.Host = net.JoinHostPort(u.Host, "80")
 			}
-			handleHTTPServer(ctx, u, calcEndpoints, &wg, errc, logger, *dbgF)
+			handleHTTPServer(ctx, u, calcEndpoints, &wg, errc, *dbgF)
 		}
 
 	default:
-		logger.Log("fatal", fmt.Sprintf("invalid host argument: %q (valid hosts: localhost)\n", *hostF))
+		logger.Log("error", fmt.Errorf("invalid host argument: %q (valid hosts: localhost)", *hostF))
 		os.Exit(1)
 	}
 
 	// Wait for signal.
-	logger.Log("info", fmt.Sprintf("exiting (%v)", <-errc))
+	logger.Log("exiting", <-errc)
 
 	// Send cancellation signal to the goroutines.
 	cancel()
 
 	wg.Wait()
-	logger.Log("info", "exited")
+	logger.Log("msg", "exited")
 }
