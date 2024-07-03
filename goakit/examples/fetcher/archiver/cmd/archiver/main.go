@@ -81,7 +81,7 @@ func main() {
 			addr := "http://localhost:80"
 			u, err := url.Parse(addr)
 			if err != nil {
-				logger.Log("error", err, "invalid URL", addr)
+				logger.Log("fatal", fmt.Sprintf("invalid URL %#v\n", addr))
 				os.Exit(1)
 			}
 			if *secureF {
@@ -93,7 +93,7 @@ func main() {
 			if *httpPortF != "" {
 				h, _, err := net.SplitHostPort(u.Host)
 				if err != nil {
-					logger.Log("error", err, "invalid URL", u.Host)
+					logger.Log("fatal", fmt.Sprintf("invalid URL %#v\n", u.Host))
 					os.Exit(1)
 				}
 				u.Host = net.JoinHostPort(h, *httpPortF)
@@ -104,16 +104,16 @@ func main() {
 		}
 
 	default:
-		logger.Log("error", fmt.Errorf("invalid host argument: %q (valid hosts: localhost)\n", *hostF))
+		logger.Log("fatal", fmt.Errorf("invalid host argument: %q (valid hosts: localhost)\n", *hostF))
 		os.Exit(1)
 	}
 
 	// Wait for signal.
-	logger.Log("exiting", <-errc)
+	logger.Log("info", "exiting (%v)", <-errc)
 
 	// Send cancellation signal to the goroutines.
 	cancel()
 
 	wg.Wait()
-	logger.Log("msg", "exited")
+	logger.Log("info", "exited")
 }

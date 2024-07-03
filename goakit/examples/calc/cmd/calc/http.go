@@ -9,8 +9,8 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 	kithttp "github.com/go-kit/kit/transport/http"
+	"github.com/go-kit/log"
 	"goa.design/clue/debug"
-	"goa.design/clue/log"
 	goahttp "goa.design/goa/v3/http"
 	calc "goa.design/plugins/v3/goakit/examples/calc/gen/calc"
 	calckitsvr "goa.design/plugins/v3/goakit/examples/calc/gen/http/calc/kitserver"
@@ -19,7 +19,7 @@ import (
 
 // handleHTTPServer starts configures and starts a HTTP server on the given
 // URL. It shuts down the server if any error is received in the error channel.
-func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpoints, wg *sync.WaitGroup, errc chan error, dbg bool) {
+func handleHTTPServer(ctx context.Context, logger log.Logger, u *url.URL, calcEndpoints *calc.Endpoints, wg *sync.WaitGroup, errc chan error, dbg bool) {
 
 	// Provide the transport specific request decoder and response encoder.
 	// The goa http package has built-in support for JSON, XML and gob.
@@ -52,7 +52,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpo
 		calcServer     *calcsvr.Server
 	)
 	{
-		eh := errorHandler(ctx)
+		eh := errorHandler(logger)
 		calcAddHandler = kithttp.NewServer(
 			endpoint.Endpoint(calcEndpoints.Add),
 			calckitsvr.DecodeAddRequest(mux, dec),
@@ -74,7 +74,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpo
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: u.Host, Handler: handler, ReadHeaderTimeout: time.Second * 60}
 	for _, m := range calcServer.Mounts {
-		log.Printf(ctx, "HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
+		logger.Log("info", "HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 	}
 
 	(*wg).Add(1)
@@ -83,12 +83,12 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpo
 
 		// Start HTTP server in a separate goroutine.
 		go func() {
-			log.Printf(ctx, "HTTP server listening on %q", u.Host)
+			logger.Log("info", "HTTP server listening on %q", u.Host)
 			errc <- srv.ListenAndServe()
 		}()
 
 		<-ctx.Done()
-		log.Printf(ctx, "shutting down HTTP server at %q", u.Host)
+		logger.Log("info", "shutting down HTTP server at %q", u.Host)
 
 		// Shutdown gracefully with a 30s timeout.
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -96,7 +96,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpo
 
 		err := srv.Shutdown(ctx)
 		if err != nil {
-			log.Printf(ctx, "failed to shutdown: %v", err)
+			logger.Log("info", "failed to shutdown: %v", err)
 		}
 	}()
 }
@@ -104,8 +104,8 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpo
 // errorHandler returns a function that writes and logs the given error.
 // The function also writes and logs the error unique ID so that it's possible
 // to correlate.
-func errorHandler(logCtx context.Context) func(context.Context, http.ResponseWriter, error) {
+func errorHandler(logger log.Logger) func(context.Context, http.ResponseWriter, error) {
 	return func(ctx context.Context, w http.ResponseWriter, err error) {
-		log.Printf(logCtx, "ERROR: %s", err.Error())
+		logger.Log("info", "ERROR: %s", err.Error())
 	}
 }

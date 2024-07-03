@@ -74,47 +74,59 @@ func GoakitifyExample(genpkg string, roots []eval.Root, files []*codegen.File) (
 // goaEndpointRegexp matches occurrences of the "goa.Endpoint" type in Go code.
 var goaEndpointRegexp = regexp.MustCompile(`([^\p{L}_])goa\.Endpoint([^\p{L}_])`)
 
-// loggerPrintRegexp matches occurrences of "logger.Print" and "logger.Println".
-var loggerPrintRegexp = regexp.MustCompile(`logger\.(Print|Println)\((.*)\)`)
+// logPrintfRegexp matches occurrences of "log.Printf".
+var logPrintfRegexp = regexp.MustCompile(`log\.Printf\((ctx|logCtx), (.*)\)`)
 
-// loggerFatalRegexp matches occurrences of "logger.Fatal" and "logger.Fatalln".
-var loggerFatalRegexp = regexp.MustCompile(`logger\.(Fatal|Fatalln)\((.*)\)`)
+// logFatalRegexp matches occurrences of "log.Fatal"
+var logFatalRegexp = regexp.MustCompile(`log\.Fatal\(ctx, (.*)\)`)
 
-// loggerPrintfRegexp matches occurrences of "logger.Printf".
-var loggerPrintfRegexp = regexp.MustCompile(`logger\.(Printf)\((.*)\)`)
+// logFatalfRegexp matches occurrences of "log.Fatalf".
+var logFatalfRegexp = regexp.MustCompile(`log\.Fatalf\(ctx, err, (.*)\)`)
 
-// loggerFatalRegexpf matches occurrences of "logger.Fatalf".
-var loggerFatalfRegexp = regexp.MustCompile(`logger\.(Fatalf)\((.*)\)`)
+// deletedImports contains the list of imports that should be removed from the
+// generated files.
+var deletedImports = []string{"log", "goa.design/clue/log"}
 
 // gokitifyExampleServer imports gokit endpoint, logger, and transport
 // packages in the example server implementation. It also replaces every stdlib
 // logger with gokit logger.
 func gokitifyExampleServer(genpkg string, file *codegen.File) {
 	goakitify(file)
-	var hasLogger bool
-	for _, s := range file.SectionTemplates {
-		if !hasLogger {
-			hasLogger = strings.Contains(s.Source, "*log.Logger")
-		}
-		s.Source = strings.Replace(s.Source, "*log.Logger", "log.Logger", -1)
-		s.Source = strings.Replace(s.Source, "adapter = middleware.NewLogger(logger)", "adapter = logger", 1)
+	for _, section := range file.SectionTemplates {
+		deleteImports(section)
+		codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/log"})
 		codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "fmt"})
-		s.Source = loggerPrintRegexp.ReplaceAllString(s.Source, "logger.Log(\"info\", ${2})")
-		s.Source = loggerPrintfRegexp.ReplaceAllString(s.Source, "logger.Log(\"info\", fmt.Sprintf(${2}))")
-		s.Source = loggerFatalRegexp.ReplaceAllString(s.Source, "logger.Log(\"fatal\", ${2})\nos.Exit(1)")
-		s.Source = loggerFatalfRegexp.ReplaceAllString(s.Source, "logger.Log(\"fatal\", fmt.Sprintf(${2}))\nos.Exit(1)")
-		switch s.Name {
+		section.Source = strings.Replace(section.Source, "*log.Logger", "log.Logger", -1)
+		section.Source = logPrintfRegexp.ReplaceAllString(section.Source, "logger.Log(\"info\", ${2})")
+		section.Source = logFatalRegexp.ReplaceAllString(section.Source, "logger.Log(\"fatal\", ${1})\nos.Exit(1)")
+		section.Source = logFatalfRegexp.ReplaceAllString(section.Source, "logger.Log(\"fatal\", fmt.Sprintf(${1}))\nos.Exit(1)")
+		switch section.Name {
+		case "basic-service-struct":
 		case "server-main-logger":
 			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/log"})
-			s.Source = gokitLoggerT
-		case "server-http-logger":
-			s.Source = ""
-		case "server-http-middleware":
-			s.Source = strings.Replace(s.Source, "adapter", "logger", -1)
+			section.Source = gokitLoggerT
+		case "server-main-services":
+			oldinit := "{{ .VarName }}Svc = {{ $.APIPkg }}.New{{ .StructName }}()"
+			newinit := "{{ .VarName }}Svc = {{ $.APIPkg }}.New{{ .StructName }}(logger)"
+			section.Source = strings.Replace(section.Source, oldinit, newinit, -1)
+		case "server-main-endpoints":
+			rm := `			{{ .VarName }}Endpoints.Use(debug.LogPayloads())
+			{{ .VarName }}Endpoints.Use(log.Endpoint)`
+			section.Source = strings.Replace(section.Source, rm, "", -1)
+		case "server-main-handler":
+			section.Source = strings.Replace(section.Source, "handle{{ toUpper $u.Transport.Name }}Server(ctx", "handle{{ toUpper $u.Transport.Name }}Server(ctx, logger", 1)
+		case "server-main-interrupts":
+			section.Source = strings.Replace(section.Source, "ctx, cancel := context.WithCancel(ctx)", "ctx, cancel := context.WithCancel(context.Background())", 1)
+		case "server-http-configure":
+			section.Source = strings.Replace(section.Source, "eh := errorHandler(ctx)", "eh := errorHandler(logger)", 1)
+		case "server-http-errorhandler":
+			section.Source = strings.Replace(section.Source, "func errorHandler(logCtx context.Context", "func errorHandler(logger log.Logger", 1)
+		case "server-http-start":
+			section.Source = strings.Replace(section.Source, "ctx context.Context", "ctx context.Context, logger log.Logger", 1)
 		case "server-http-init":
 			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/kit/transport/http", Name: "kithttp"})
 			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/kit/endpoint"})
-			data := s.Data.(map[string]interface{})
+			data := section.Data.(map[string]interface{})
 			svcs := data["Services"].([]*httpcodegen.ServiceData)
 			for _, svc := range svcs {
 				svcData := httpcodegen.HTTPServices.Get(svc.Service.Name).Service
@@ -123,20 +135,26 @@ func gokitifyExampleServer(genpkg string, file *codegen.File) {
 					Name: svcData.PkgName + "kitsvr",
 				})
 			}
-			s.Source = gokitServerInitT
+			section.Source = gokitServerInitT
 		}
 	}
-	if hasLogger {
-		// Replace existing stdlib logger with gokit logger in imports
-		if data, ok := file.SectionTemplates[0].Data.(map[string]interface{}); ok {
-			if imports, ok := data["Imports"]; ok {
-				specs := imports.([]*codegen.ImportSpec)
-				for _, s := range specs {
-					if s.Path == "log" {
-						s.Path = "github.com/go-kit/log"
+}
+
+// deleteImports removes specified import paths from a section's import specifications.
+func deleteImports(section *codegen.SectionTemplate) {
+	if data, ok := section.Data.(map[string]interface{}); ok {
+		if imports, ok := data["Imports"].([]*codegen.ImportSpec); ok {
+			var newimports []*codegen.ImportSpec
+		outer:
+			for _, imp := range imports {
+				for _, del := range deletedImports {
+					if imp.Path == del {
+						continue outer
 					}
 				}
+				newimports = append(newimports, imp)
 			}
+			data["Imports"] = newimports
 		}
 	}
 }

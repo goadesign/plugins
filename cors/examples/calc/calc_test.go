@@ -1,7 +1,6 @@
 package calc
 
 import (
-	"log"
 	"testing"
 
 	goahttp "goa.design/goa/v3/http"
@@ -11,7 +10,7 @@ import (
 
 func TestMountIndexHTML(t *testing.T) {
 	mux := goahttp.NewMuxer()
-	e := calc.NewEndpoints(NewCalc(log.Default()))
+	e := calc.NewEndpoints(NewCalc())
 	s := calcserver.New(e, mux, nil, nil, nil, nil, nil)
 	calcserver.Mount(mux, s)
 }

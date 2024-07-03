@@ -12,9 +12,10 @@ import (
 	"sync"
 	"syscall"
 
+	"goa.design/clue/debug"
+	"goa.design/clue/log"
 	calcapi "goa.design/plugins/v3/zaplogger/examples/calc"
 	calc "goa.design/plugins/v3/zaplogger/examples/calc/gen/calc"
-	log "goa.design/plugins/v3/zaplogger/examples/calc/gen/log"
 )
 
 func main() {
@@ -31,19 +32,23 @@ func main() {
 	flag.Parse()
 
 	// Setup logger. Replace logger with your own log package of choice.
-	var (
-		logger *log.Logger
-	)
-	{
-		logger = log.New("calcapi", false)
+	format := log.FormatJSON
+	if log.IsTerminal() {
+		format = log.FormatTerminal
 	}
+	ctx := log.Context(context.Background(), log.WithFormat(format))
+	if *dbgF {
+		ctx = log.Context(ctx, log.WithDebug())
+		log.Debugf(ctx, "debug logs enabled")
+	}
+	log.Print(ctx, log.KV{K: "http-port", V: *httpPortF})
 
 	// Initialize the services.
 	var (
 		calcSvc calc.Service
 	)
 	{
-		calcSvc = calcapi.NewCalc(logger)
+		calcSvc = calcapi.NewCalc()
 	}
 
 	// Wrap the services in endpoints that can be invoked from other services
@@ -53,6 +58,8 @@ func main() {
 	)
 	{
 		calcEndpoints = calc.NewEndpoints(calcSvc)
+		calcEndpoints.Use(debug.LogPayloads())
+		calcEndpoints.Use(log.Endpoint)
 	}
 
 	// Create channel used by both the signal handler and server goroutines
@@ -68,7 +75,7 @@ func main() {
 	}()
 
 	var wg sync.WaitGroup
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 
 	// Start the servers and send errors (if any) to the error channel.
 	switch *hostF {
@@ -77,7 +84,7 @@ func main() {
 			addr := "http://localhost:8000/calc"
 			u, err := url.Parse(addr)
 			if err != nil {
-				logger.Fatalf("invalid URL %#v: %s\n", addr, err)
+				log.Fatalf(ctx, err, "invalid URL %#v\n", addr)
 			}
 			if *secureF {
 				u.Scheme = "https"
@@ -88,13 +95,13 @@ func main() {
 			if *httpPortF != "" {
 				h, _, err := net.SplitHostPort(u.Host)
 				if err != nil {
-					logger.Fatalf("invalid URL %#v: %s\n", u.Host, err)
+					log.Fatalf(ctx, err, "invalid URL %#v\n", u.Host)
 				}
 				u.Host = net.JoinHostPort(h, *httpPortF)
 			} else if u.Port() == "" {
 				u.Host = net.JoinHostPort(u.Host, "80")
 			}
-			handleHTTPServer(ctx, u, calcEndpoints, &wg, errc, logger, *dbgF)
+			handleHTTPServer(ctx, u, calcEndpoints, &wg, errc, *dbgF)
 		}
 
 	case "production":
@@ -103,7 +110,7 @@ func main() {
 			addr = strings.Replace(addr, "{version}", *versionF, -1)
 			u, err := url.Parse(addr)
 			if err != nil {
-				logger.Fatalf("invalid URL %#v: %s\n", addr, err)
+				log.Fatalf(ctx, err, "invalid URL %#v\n", addr)
 			}
 			if *secureF {
 				u.Scheme = "https"
@@ -114,25 +121,25 @@ func main() {
 			if *httpPortF != "" {
 				h, _, err := net.SplitHostPort(u.Host)
 				if err != nil {
-					logger.Fatalf("invalid URL %#v: %s\n", u.Host, err)
+					log.Fatalf(ctx, err, "invalid URL %#v\n", u.Host)
 				}
 				u.Host = net.JoinHostPort(h, *httpPortF)
 			} else if u.Port() == "" {
 				u.Host = net.JoinHostPort(u.Host, "443")
 			}
-			handleHTTPServer(ctx, u, calcEndpoints, &wg, errc, logger, *dbgF)
+			handleHTTPServer(ctx, u, calcEndpoints, &wg, errc, *dbgF)
 		}
 
 	default:
-		logger.Fatalf("invalid host argument: %q (valid hosts: development|production)\n", *hostF)
+		log.Fatal(ctx, fmt.Errorf("invalid host argument: %q (valid hosts: development|production)\n", *hostF))
 	}
 
 	// Wait for signal.
-	logger.Infof("exiting (%v)", <-errc)
+	log.Printf(ctx, "exiting (%v)", <-errc)
 
 	// Send cancellation signal to the goroutines.
 	cancel()
 
 	wg.Wait()
-	logger.Info("exited")
+	log.Printf(ctx, "exited")
 }

@@ -94,10 +94,10 @@ func handleHTTPServer(ctx context.Context, logger log.Logger, u *url.URL, archiv
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: u.Host, Handler: handler, ReadHeaderTimeout: time.Second * 60}
 	for _, m := range archiverServer.Mounts {
-		logger.Log("HTTP", "mount", "method", m.Method, "verb", m.Verb, "pattern", m.Pattern)
+		logger.Log("info", "HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 	}
 	for _, m := range healthServer.Mounts {
-		logger.Log("HTTP", "mount", "method", m.Method, "verb", m.Verb, "pattern", m.Pattern)
+		logger.Log("info", "HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 	}
 
 	(*wg).Add(1)
@@ -106,12 +106,12 @@ func handleHTTPServer(ctx context.Context, logger log.Logger, u *url.URL, archiv
 
 		// Start HTTP server in a separate goroutine.
 		go func() {
-			logger.Log("HTTP", "listening", "addr", u.Host)
+			logger.Log("info", "HTTP server listening on %q", u.Host)
 			errc <- srv.ListenAndServe()
 		}()
 
 		<-ctx.Done()
-		logger.Log("HTTP", "shutting down", "addr", u.Host)
+		logger.Log("info", "shutting down HTTP server at %q", u.Host)
 
 		// Shutdown gracefully with a 30s timeout.
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -119,7 +119,7 @@ func handleHTTPServer(ctx context.Context, logger log.Logger, u *url.URL, archiv
 
 		err := srv.Shutdown(ctx)
 		if err != nil {
-			logger.Log("failed to shutdown", err.Error())
+			logger.Log("info", "failed to shutdown: %v", err)
 		}
 	}()
 }
@@ -129,6 +129,6 @@ func handleHTTPServer(ctx context.Context, logger log.Logger, u *url.URL, archiv
 // to correlate.
 func errorHandler(logger log.Logger) func(context.Context, http.ResponseWriter, error) {
 	return func(ctx context.Context, w http.ResponseWriter, err error) {
-		logger.Log("ERROR", err.Error())
+		logger.Log("info", "ERROR: %s", err.Error())
 	}
 }
