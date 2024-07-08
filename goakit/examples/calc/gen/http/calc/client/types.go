@@ -4,6 +4,6 @@
 //
 // Command:
 // $ goa gen goa.design/plugins/v3/goakit/examples/calc/design -o
-// $(GOPATH)/src/goa.design/plugins/goakit/examples/calc
+// $(GOPATH)/src/goa.design/plugins/goakit//examples/calc
 
 package client

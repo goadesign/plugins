@@ -4,6 +4,6 @@
 //
 // Command:
 // $ goa gen goa.design/plugins/v3/cors/examples/calc/design -o
-// $(GOPATH)/src/goa.design/plugins/cors/examples/calc
+// $(GOPATH)/src/goa.design/plugins/cors//examples/calc
 
 package client

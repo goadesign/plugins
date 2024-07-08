@@ -4,7 +4,7 @@
 //
 // Command:
 // $ goa gen goa.design/plugins/v3/docs/examples/calc/design -o
-// $(GOPATH)/src/goa.design/plugins/docs/examples/calc
+// $(GOPATH)/src/goa.design/plugins/docs//examples/calc
 
 package client
 
