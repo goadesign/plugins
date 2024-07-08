@@ -3,8 +3,13 @@
 # Makefile for Goa otel plugin
 
 # include common Makefile content for plugins
-GOPATH=$(shell go env GOPATH)
 include ../plugins.mk
 
 # Make CI happy
 gen:
+
+build-examples:
+# nothing to do
+
+clean:
+# nothing to do

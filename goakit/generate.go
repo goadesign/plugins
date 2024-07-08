@@ -30,9 +30,8 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 }
 
 // Goakitify modifies all the previously generated files by adding go-kit
-// imports and replacing the following instances
-// * "goa.Endpoint" with "github.com/go-kit/kit/endpoint".Endpoint
-// * "log.Logger" with "github.com/go-kit/log".Logger
+// imports and replacing the following instances "goa.Endpoint" with
+// "github.com/go-kit/kit/endpoint".Endpoint
 //
 // Goakitify also wraps instances of endpoint.Endpoint into instances of
 // goa.Endpoint when used as argument of either goagrpc.NewStreamHandler or
@@ -74,15 +73,6 @@ func GoakitifyExample(genpkg string, roots []eval.Root, files []*codegen.File) (
 // goaEndpointRegexp matches occurrences of the "goa.Endpoint" type in Go code.
 var goaEndpointRegexp = regexp.MustCompile(`([^\p{L}_])goa\.Endpoint([^\p{L}_])`)
 
-// logPrintfRegexp matches occurrences of "log.Printf".
-var logPrintfRegexp = regexp.MustCompile(`log\.Printf\((ctx|logCtx), (.*)\)`)
-
-// logFatalRegexp matches occurrences of "log.Fatal"
-var logFatalRegexp = regexp.MustCompile(`log\.Fatal\(ctx, (.*)\)`)
-
-// logFatalfRegexp matches occurrences of "log.Fatalf".
-var logFatalfRegexp = regexp.MustCompile(`log\.Fatalf\(ctx, err, (.*)\)`)
-
 // deletedImports contains the list of imports that should be removed from the
 // generated files.
 var deletedImports = []string{"log", "goa.design/clue/log"}
@@ -92,37 +82,42 @@ var deletedImports = []string{"log", "goa.design/clue/log"}
 // logger with gokit logger.
 func gokitifyExampleServer(genpkg string, file *codegen.File) {
 	goakitify(file)
+	hasGoaMiddleware := false
 	for _, section := range file.SectionTemplates {
-		deleteImports(section)
-		codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/log"})
-		codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "fmt"})
-		section.Source = strings.Replace(section.Source, "*log.Logger", "log.Logger", -1)
-		section.Source = logPrintfRegexp.ReplaceAllString(section.Source, "logger.Log(\"info\", ${2})")
-		section.Source = logFatalRegexp.ReplaceAllString(section.Source, "logger.Log(\"fatal\", ${1})\nos.Exit(1)")
-		section.Source = logFatalfRegexp.ReplaceAllString(section.Source, "logger.Log(\"fatal\", fmt.Sprintf(${1}))\nos.Exit(1)")
 		switch section.Name {
-		case "basic-service-struct":
-		case "server-main-logger":
-			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/log"})
-			section.Source = gokitLoggerT
 		case "server-main-services":
+			deleteImports(file.SectionTemplates[0])
+			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Name: "kitlog", Path: "github.com/go-kit/log"})
+			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "goa.design/clue/log"})
 			oldinit := "{{ .VarName }}Svc = {{ $.APIPkg }}.New{{ .StructName }}()"
-			newinit := "{{ .VarName }}Svc = {{ $.APIPkg }}.New{{ .StructName }}(logger)"
-			section.Source = strings.Replace(section.Source, oldinit, newinit, -1)
+			section.Source = strings.Replace(section.Source, oldinit, initT, 1)
+		case "basic-service-struct":
+			deleteImports(file.SectionTemplates[0])
+			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/log"})
+			section.Source = basicServiceStructT
+		case "basic-service-init":
+			section.Source = basicServiceInitT
+		case "basic-endpoint":
+			section.Source = strings.Replace(
+				section.Source,
+				`log.Printf(ctx, "{{ .ServiceVarName }}.{{ .Name }}")`,
+				`s.logger.Log("service", "{{ .ServiceVarName}}", "method", "{{ .Name }}")`,
+				1,
+			)
 		case "server-main-endpoints":
-			rm := `			{{ .VarName }}Endpoints.Use(debug.LogPayloads())
-			{{ .VarName }}Endpoints.Use(log.Endpoint)`
-			section.Source = strings.Replace(section.Source, rm, "", -1)
-		case "server-main-handler":
-			section.Source = strings.Replace(section.Source, "handle{{ toUpper $u.Transport.Name }}Server(ctx", "handle{{ toUpper $u.Transport.Name }}Server(ctx, logger", 1)
-		case "server-main-interrupts":
-			section.Source = strings.Replace(section.Source, "ctx, cancel := context.WithCancel(ctx)", "ctx, cancel := context.WithCancel(context.Background())", 1)
-		case "server-http-configure":
-			section.Source = strings.Replace(section.Source, "eh := errorHandler(ctx)", "eh := errorHandler(logger)", 1)
-		case "server-http-errorhandler":
-			section.Source = strings.Replace(section.Source, "func errorHandler(logCtx context.Context", "func errorHandler(logger log.Logger", 1)
-		case "server-http-start":
-			section.Source = strings.Replace(section.Source, "ctx context.Context", "ctx context.Context, logger log.Logger", 1)
+			hasGoaMiddleware = true
+			section.Source = strings.Replace(
+				section.Source,
+				`{{ .VarName }}Endpoints.Use(debug.LogPayloads())`,
+				`{{ .VarName }}Endpoints.Use(wrapMiddleware(debug.LogPayloads()))`,
+				1,
+			)
+			section.Source = strings.Replace(
+				section.Source,
+				`{{ .VarName }}Endpoints.Use(log.Endpoint)`,
+				`{{ .VarName }}Endpoints.Use(wrapMiddleware(log.Endpoint))`,
+				1,
+			)
 		case "server-http-init":
 			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/kit/transport/http", Name: "kithttp"})
 			codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/kit/endpoint"})
@@ -137,6 +132,14 @@ func gokitifyExampleServer(genpkg string, file *codegen.File) {
 			}
 			section.Source = gokitServerInitT
 		}
+	}
+	if hasGoaMiddleware {
+		codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Name: "goa", Path: "goa.design/goa/v3/pkg"})
+		codegen.AddImport(file.SectionTemplates[0], &codegen.ImportSpec{Path: "github.com/go-kit/kit/endpoint"})
+		file.SectionTemplates = append(file.SectionTemplates, &codegen.SectionTemplate{
+			Name:   "middleware-wrapper",
+			Source: middlewareWrapperT,
+		})
 	}
 }
 
@@ -159,16 +162,39 @@ func deleteImports(section *codegen.SectionTemplate) {
 	}
 }
 
-const gokitLoggerT = `
-  // Setup gokit logger.
-  var (
-    logger log.Logger
-  )
-  {
-    logger = log.NewLogfmtLogger(os.Stderr)
-    logger = log.With(logger, "ts", log.DefaultTimestampUTC)
-    logger = log.With(logger, "caller", log.DefaultCaller)
-  }
+const middlewareWrapperT = `
+// Wrap goa middleware into go-kit middleware.
+func wrapMiddleware(mw func(goa.Endpoint) goa.Endpoint) (func (endpoint.Endpoint) endpoint.Endpoint) {
+	return func(e endpoint.Endpoint) endpoint.Endpoint {
+		return endpoint.Endpoint(mw(goa.Endpoint(e)))
+	}
+}
+`
+
+const initT = `{
+	var logger kitlog.Logger
+	logger = kitlog.NewLogfmtLogger(os.Stderr)
+	logger = kitlog.With(logger, "ts", kitlog.DefaultTimestampUTC)
+	logger = kitlog.With(logger, "caller", kitlog.DefaultCaller)
+	logger = kitlog.With(logger, "service", {{ printf "%q" .Name }})
+	{{ .VarName }}Svc = {{ $.APIPkg }}.New{{ .StructName }}(logger)
+}
+`
+
+const basicServiceStructT = `
+{{ printf "%s service example implementation.\nThe example methods log the requests and return zero values." .Name | comment }}
+type {{ .VarName }}srvc struct {
+	logger log.Logger
+}
+`
+
+const basicServiceInitT = `
+{{ printf "New%s returns the %s service implementation." .StructName .Name | comment }}
+func New{{ .StructName }}(logger log.Logger) {{ .PkgName }}.Service {
+	return &{{ .VarName }}srvc{
+		logger: logger,
+	}
+}
 `
 
 const gokitServerInitT = `
@@ -185,7 +211,7 @@ const gokitServerInitT = `
   {{- end }}
   )
   {
-    eh := errorHandler(logger)
+    eh := errorHandler(ctx)
     {{- if needStream .Services }}
       upgrader := &websocket.Upgrader{}
     {{- end }}

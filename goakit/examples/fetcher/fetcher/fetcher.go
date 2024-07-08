@@ -1,4 +1,4 @@
-package fetcher
+package fetcherapi
 
 import (
 	"context"
@@ -11,25 +11,26 @@ import (
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/go-kit/log"
 	goahttp "goa.design/goa/v3/http"
-	archiversvc "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver"
-	archiverkc "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/archiver/kitclient"
-	archiverks "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/archiver/server"
-	fetchersvc "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/fetcher"
+
+	genarchiver "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver"
+	genarchiverclient "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/archiver/kitclient"
+	genarchiverserver "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/archiver/server"
+	genfetcher "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // fetcher service example implementation.
 // The example methods log the requests and return zero values.
-type fetchersvcsvc struct {
+type fetchersvc struct {
 	logger  log.Logger
 	archive endpoint.Endpoint
 }
 
 // NewFetcher returns the fetcher service implementation.
-func NewFetcher(logger log.Logger, archiverHost string) fetchersvc.Service {
+func NewFetcher(logger log.Logger, archiverHost string) genfetcher.Service {
 	u := url.URL{
 		Scheme: "http",
 		Host:   archiverHost,
-		Path:   archiverks.ArchiveArchiverPath(),
+		Path:   genarchiverserver.ArchiveArchiverPath(),
 	}
 	var (
 		dec = goahttp.ResponseDecoder
@@ -38,37 +39,37 @@ func NewFetcher(logger log.Logger, archiverHost string) fetchersvc.Service {
 	arc := kithttp.NewClient(
 		"POST",
 		&u,
-		archiverkc.EncodeArchiveRequest(enc),
-		archiverkc.DecodeArchiveResponse(dec),
+		genarchiverclient.EncodeArchiveRequest(enc),
+		genarchiverclient.DecodeArchiveResponse(dec),
 	)
-	return &fetchersvcsvc{logger: logger, archive: arc.Endpoint()}
+	return &fetchersvc{logger: logger, archive: arc.Endpoint()}
 }
 
 // Fetch makes a GET request to the given URL and stores the results in the
 // archiver service which must be running or the request fails
-func (s *fetchersvcsvc) Fetch(ctx context.Context, p *fetchersvc.FetchPayload) (*fetchersvc.FetchMedia, error) {
+func (s *fetchersvc) Fetch(ctx context.Context, p *genfetcher.FetchPayload) (*genfetcher.FetchMedia, error) {
 	// Make request to external endpoint
 	resp, err := http.Get(p.URL)
 	if err != nil {
-		return nil, fetchersvc.MakeBadRequest(fmt.Errorf("bad request URL: %s", err))
+		return nil, genfetcher.MakeBadRequest(fmt.Errorf("bad request URL: %s", err))
 	}
 
 	// Read response
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fetchersvc.MakeBadRequest(fmt.Errorf("failed to decode response: %s", err))
+		return nil, genfetcher.MakeBadRequest(fmt.Errorf("failed to decode response: %s", err))
 	}
 
 	// Archive response using archiver service
-	res, err := s.archive(ctx, &archiversvc.ArchivePayload{Status: resp.StatusCode, Body: string(body)})
+	res, err := s.archive(ctx, &genarchiver.ArchivePayload{Status: resp.StatusCode, Body: string(body)})
 	if err != nil {
-		return nil, fetchersvc.MakeBadRequest(fmt.Errorf("failed to decode response: %s", err))
+		return nil, genfetcher.MakeBadRequest(fmt.Errorf("failed to decode response: %s", err))
 	}
 
 	// Return response
-	media := res.(*archiversvc.ArchiveMedia)
-	return &fetchersvc.FetchMedia{
+	media := res.(*genarchiver.ArchiveMedia)
+	return &genfetcher.FetchMedia{
 		ArchiveHref: media.Href,
 		Status:      media.Status,
 	}, nil
