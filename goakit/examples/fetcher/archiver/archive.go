@@ -1,4 +1,4 @@
-package archiver
+package archiverapi
 
 import (
 	"sync"

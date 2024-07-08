@@ -1,6 +1,6 @@
 #! /usr/bin/make
 #
-# Makefile for goa v3 zaplogger plugin
+# Makefile for Goa zaplogger plugin
 #
 # Targets:
 # - "gen" generates the goa files for the example services
@@ -9,7 +9,7 @@
 GOPATH=$(shell go env GOPATH)
 include ../plugins.mk
 
-gen:
+gen: clean
 	goa gen goa.design/plugins/v3/zaplogger/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/zaplogger/examples/calc" && \
 	make example
 
@@ -23,4 +23,4 @@ build-examples:
 
 clean:
 	@cd "$(GOPATH)/src/goa.design/plugins/zaplogger/examples/calc" && \
-		rm -f calc calc-cli
+		rm -rf cmd calc.go

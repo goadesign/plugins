@@ -12,6 +12,7 @@ import (
 	"sync"
 	"syscall"
 
+	"go.uber.org/zap"
 	"goa.design/clue/debug"
 	"goa.design/clue/log"
 	calcapi "goa.design/plugins/v3/zaplogger/examples/calc"
@@ -48,7 +49,16 @@ func main() {
 		calcSvc calc.Service
 	)
 	{
-		calcSvc = calcapi.NewCalc()
+
+		var zlog *zap.SugaredLogger
+		if *dbgF {
+			l, _ := zap.NewDevelopment()
+			zlog = l.Sugar().With(zap.String("service", "calc"))
+		} else {
+			l, _ := zap.NewProduction()
+			zlog = l.Sugar().With(zap.String("service", "calc"))
+		}
+		calcSvc = calcapi.NewCalc(zlog)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other services
@@ -131,7 +141,7 @@ func main() {
 		}
 
 	default:
-		log.Fatal(ctx, fmt.Errorf("invalid host argument: %q (valid hosts: development|production)\n", *hostF))
+		log.Fatal(ctx, fmt.Errorf("invalid host argument: %q (valid hosts: development|production)", *hostF))
 	}
 
 	// Wait for signal.
