@@ -304,7 +304,7 @@ var MultiServicesServerInitCode = `func example() {
 		service2Server        *service2svr.Server
 	)
 	{
-		eh := errorHandler(logger)
+		eh := errorHandler(ctx)
 		service1MethodHandler = kithttp.NewServer(
 			endpoint.Endpoint(service1Endpoints.Method),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
@@ -335,7 +335,7 @@ var WithErrorServerInitCode = `func example() {
 		withErrorServiceServer                 *witherrorservicesvr.Server
 	)
 	{
-		eh := errorHandler(logger)
+		eh := errorHandler(ctx)
 		withErrorServiceWithErrorMethodHandler = kithttp.NewServer(
 			endpoint.Endpoint(withErrorServiceEndpoints.WithErrorMethod),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },
@@ -360,7 +360,7 @@ var GoifyableServerInitCode = `func example() {
 		goifyableServiceServer                 *goifyableservicesvr.Server
 	)
 	{
-		eh := errorHandler(logger)
+		eh := errorHandler(ctx)
 		goifyableServiceGoifyableMethodHandler = kithttp.NewServer(
 			endpoint.Endpoint(goifyableServiceEndpoints.GoifyableMethod),
 			func(context.Context, *http.Request) (request interface{}, err error) { return nil, nil },

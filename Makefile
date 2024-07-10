@@ -3,7 +3,6 @@
 # Makefile for goa v3 plugins
 
 GOOS=$(shell go env GOOS)
-GOPATH=$(shell go env GOPATH)
 GOA:=$(shell goa version 2> /dev/null)
 
 # Only list test and build dependencies
@@ -38,7 +37,6 @@ endif
 ifeq ($(GOOS),windows)
 	PROTOC=protoc-$(PROTOC_VERSION)-win32
 	PROTOC_EXEC="$(PROTOC)\bin\protoc.exe"
-	GOPATH:=$(subst \,/,$(GOPATH))
 endif
 
 all: check-goa gen tidy lint test

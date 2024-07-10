@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/generator"
 	"goa.design/goa/v3/eval"
@@ -51,27 +53,19 @@ func TestGoakitify(t *testing.T) {
 			roots := []eval.Root{expr.Root}
 			files := generateFiles(t, roots)
 			newFiles, err := Goakitify("", roots, files)
-			if err != nil {
-				t.Fatalf("generate error: %v", err)
-			}
+			require.NoError(t, err)
 			// Before state: Collect all files with goa endpoint.
 			for _, f := range newFiles {
-				goaEndpointFiles[f.Path] = containsGoaEndpoint(f)
+				goaEndpointFiles[f.Path] = containsGoaEndpoint(t, f)
 			}
 			// After state: files with goa endpoint should be replaced by gokit endpoint
 			for _, f := range files {
 				if goaEndpointFiles[f.Path] {
-					if containsGoaEndpoint(f) {
-						t.Errorf("file %s still has goa endpoints", f.Path)
-					}
+					assert.False(t, containsGoaEndpoint(t, f), "file %s still has goa endpoints", f.Path)
 					buf := new(bytes.Buffer)
-					if err := f.SectionTemplates[0].Write(buf); err != nil {
-						t.Fatalf("error writing section in file %s", f.Path)
-					}
+					require.NoError(t, f.SectionTemplates[0].Write(buf))
 					code := buf.String()
-					if !strings.Contains(code, "github.com/go-kit/kit/endpoint") {
-						t.Errorf("go-kit not imported in file %s:\n%s", f.Path, code)
-					}
+					assert.Contains(t, code, "github.com/go-kit/kit/endpoint", "go-kit not imported in file %s", f.Path)
 				}
 			}
 		})
@@ -121,25 +115,20 @@ func TestGoakitifyExample(t *testing.T) {
 			roots := []eval.Root{expr.Root}
 			files := generateExamples(t, roots)
 			files, err := GoakitifyExample("", roots, files)
-			if err != nil {
-				t.Fatalf("examples generate error: %v", err)
-			}
+			require.NoError(t, err)
 			for _, f := range files {
-				if containsStdlibLogger(f) {
-					t.Errorf("file %s still has stdlib logger instances", f.Path)
-				}
+				source, ok := containsStdlibLogger(t, f)
+				require.False(t, ok, "file %s still has stdlib logger instances:\n%s", f.Path, source)
 				for _, s := range f.SectionTemplates {
-					if expCode, ok := c.Code[s.Name]; ok {
-						buf := new(bytes.Buffer)
-						if err := s.Write(buf); err != nil {
-							t.Fatalf("error writing section in file %s", f.Path)
-						}
-						code := buf.String()
-						code = codegen.FormatTestCode(t, "package foo\nfunc example(){"+code+"}")
-						if code != expCode {
-							t.Errorf("invalid code for %s, got:\n%s\ngot vs. expected:\n%s", s.Name, code, codegen.Diff(t, code, expCode))
-						}
+					expCode, ok := c.Code[s.Name]
+					if !ok {
+						continue
 					}
+					buf := new(bytes.Buffer)
+					require.NoError(t, s.Write(buf))
+					code := buf.String()
+					code = codegen.FormatTestCode(t, "package foo\nfunc example(){"+code+"}")
+					require.Equal(t, expCode, code, "invalid code for %s", s.Name)
 				}
 				if strings.HasSuffix(f.Path, "/http.go") && !strings.HasSuffix(f.Path, "cli/http.go") {
 					for _, imp := range c.Imports {
@@ -153,26 +142,21 @@ func TestGoakitifyExample(t *testing.T) {
 
 func generateFiles(t *testing.T, roots []eval.Root) []*codegen.File {
 	files, err := generator.Service("", roots)
-	if err != nil {
-		t.Fatalf("error in code generation: %v", err)
-	}
+	require.NoError(t, err)
 	httpFiles, err := generator.Transport("", roots)
-	if err != nil {
-		t.Fatalf("error in HTTP code generation: %v", err)
-	}
+	require.NoError(t, err)
 	files = append(files, httpFiles...)
 	return files
 }
 
 func generateExamples(t *testing.T, roots []eval.Root) []*codegen.File {
 	files, err := generator.Example("", roots)
-	if err != nil {
-		t.Fatalf("error in code generation: %v", err)
-	}
+	require.NoError(t, err)
 	return files
 }
 
-func containsGoaEndpoint(f *codegen.File) bool {
+func containsGoaEndpoint(t *testing.T, f *codegen.File) bool {
+	t.Helper()
 	for _, s := range f.SectionTemplates {
 		if goaEndpointRegexp.MatchString(s.Source) {
 			return true
@@ -181,11 +165,12 @@ func containsGoaEndpoint(f *codegen.File) bool {
 	return false
 }
 
-func containsStdlibLogger(f *codegen.File) bool {
+func containsStdlibLogger(t *testing.T, f *codegen.File) (string, bool) {
+	t.Helper()
 	for _, s := range f.SectionTemplates {
 		if strings.Contains(s.Source, "*log.Logger") {
-			return true
+			return s.Source, true
 		}
 	}
-	return false
+	return "", false
 }

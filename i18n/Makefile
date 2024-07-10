@@ -7,21 +7,21 @@
 # - "example" generates the example files for the example services
 
 # include common Makefile content for plugins
-GOPATH=$(shell go env GOPATH)
+PLUGIN_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 include ../plugins.mk
 
 gen:
-	@GOA_I18N=en,nl goa gen goa.design/plugins/v3/i18n/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/i18n/examples/calc" && \
+	@GOA_I18N=en,nl goa gen goa.design/plugins/v3/i18n/examples/calc/design -o "$(PLUGIN_DIR)/examples/calc" && \
 	make example
 
 example:
-	@ rm -rf "$(GOPATH)/src/goa.design/plugins/i18n/examples/calc/cmd"
-	goa example goa.design/plugins/v3/i18n/examples/calc/design -o "$(GOPATH)/src/goa.design/plugins/i18n/examples/calc"
+	@ rm -rf "$(PLUGIN_DIR)/examples/calc/cmd"
+	goa example goa.design/plugins/v3/i18n/examples/calc/design -o "$(PLUGIN_DIR)/examples/calc"
 
 build-examples:
-	@cd "$(GOPATH)/src/goa.design/plugins/i18n/examples/calc" && \
+	@cd "$(PLUGIN_DIR)/examples/calc" && \
 		go build ./cmd/calc && go build ./cmd/calc-cli
 
 clean:
-	@cd "$(GOPATH)/src/goa.design/plugins/i18n/examples/calc" && \
+	@cd "$(PLUGIN_DIR)/examples/calc" && \
 		rm -f calc calc-cli

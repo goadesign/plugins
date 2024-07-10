@@ -1,4 +1,4 @@
-package archiver
+package archiverapi
 
 import (
 	"context"
@@ -9,18 +9,19 @@ import (
 
 // health service example implementation.
 // The example methods log the requests and return zero values.
-type healthsvc struct {
+type healthsrvc struct {
 	logger log.Logger
 }
 
 // NewHealth returns the health service implementation.
 func NewHealth(logger log.Logger) health.Service {
-	return &healthsvc{logger}
+	return &healthsrvc{
+		logger: logger,
+	}
 }
 
 // Health check endpoint
-func (s *healthsvc) Show(ctx context.Context) (string, error) {
-	var res string
-	s.logger.Log("msg", "health.show")
-	return res, nil
+func (s *healthsrvc) Show(ctx context.Context) (res string, err error) {
+	s.logger.Log("service", "health", "method", "show")
+	return
 }
