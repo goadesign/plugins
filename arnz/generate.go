@@ -8,7 +8,7 @@ import (
 	goahttp "goa.design/goa/v3/http/codegen"
 )
 
-var MethodARNs = make(map[string][]string)
+var MethodARNs = make(map[string]map[string][]string)
 
 func init() {
 	codegen.RegisterPlugin("arnz", "gen", nil, Generate)
@@ -24,22 +24,24 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 		if filepath.Base(file.Path) == "server.go" {
 			for _, s := range file.Section("server-handler") {
 				if data, ok := s.Data.(*goahttp.EndpointData); ok {
-					if _, ok := MethodARNs[data.Method.Name]; ok {
-						codegen.AddImport(file.SectionTemplates[0],
-							&codegen.ImportSpec{Path: "encoding/json"},
-							&codegen.ImportSpec{Path: "strings"},
-							&codegen.ImportSpec{Path: "github.com/aws/aws-lambda-go/events"})
+					if _, ok := MethodARNs[data.ServiceName]; ok {
+						if _, ok := MethodARNs[data.ServiceName][data.Method.Name]; ok {
+							codegen.AddImport(file.SectionTemplates[0],
+								&codegen.ImportSpec{Path: "encoding/json"},
+								&codegen.ImportSpec{Path: "strings"},
+								&codegen.ImportSpec{Path: "github.com/aws/aws-lambda-go/events"})
 
-						file.SectionTemplates = append(file.SectionTemplates, &codegen.SectionTemplate{
-							Name:   "arnz-middleware",
-							Source: arnzMiddleWareT,
-							Data: ArnzData{
-								MethodName:  data.Method.Name,
-								AllowedArns: MethodARNs[data.Method.Name],
-							},
-						})
+							file.SectionTemplates = append(file.SectionTemplates, &codegen.SectionTemplate{
+								Name:   "arnz-middleware",
+								Source: arnzMiddleWareT,
+								Data: ArnzData{
+									MethodName:  data.Method.Name,
+									AllowedArns: MethodARNs[data.ServiceName][data.Method.Name],
+								},
+							})
 
-						s.Source = serverHandlerT
+							s.Source = serverHandlerT
+						}
 					}
 				}
 			}
@@ -67,17 +69,32 @@ func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 		var amzCtx events.APIGatewayV2HTTPRequestContext
 		err := json.Unmarshal([]byte(amzReqCtxHeader), &amzCtx)
 		if err != nil {
-			http.Error(w, "unauthorized: error parsing X-Amzn-Request-Context header", http.StatusUnauthorized)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error":   "unauthorized",
+				"message": "error parsing X-Amzn-Request-Context header",
+			})
 			return
 		}
 
 		if amzCtx.Authorizer == nil {
-			http.Error(w, "unauthorized: no authorizer defined in X-Amzn-Request-Context", http.StatusUnauthorized)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error":   "unauthorized",
+				"message": "no authorizer defined in X-Amzn-Request-Context",
+			})
 			return
 		}
 
 		if amzCtx.Authorizer.IAM == nil {
-			http.Error(w, "unauthorized: no IAM authorizer defined in X-Amzn-Request-Context", http.StatusUnauthorized)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error":   "unauthorized",
+				"message": "no IAM authorizer defined in X-Amzn-Request-Context",
+			})
 			return
 		}
 
@@ -90,9 +107,12 @@ func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 		}
 
 		if !authorized {
-			http.Error(w, 
-				fmt.Sprintf("unauthorized: %s", callerArn), 
-				http.StatusUnauthorized)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error":   "unauthorized",
+				"message": callerArn,
+			})
 			return
 		}
 
