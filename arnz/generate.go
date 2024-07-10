@@ -64,7 +64,7 @@ func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 
 		amzReqCtxHeader := r.Header.Get(key)
 
-		var amzCtx events.APIGatewayV2HTTPRequestContext{}
+		var amzCtx events.APIGatewayV2HTTPRequestContext
 		err := json.Unmarshal([]byte(amzReqCtxHeader), &amzCtx)
 		if err != nil {
 			http.Error(w, "unauthorized: error parsing X-Amzn-Request-Context header", http.StatusUnauthorized)
