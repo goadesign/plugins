@@ -4,9 +4,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
+
 	"goa.design/plugins/v3/goakit/testdata"
 )
 
@@ -66,9 +69,7 @@ func TestServerEncodeDecode(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
 			fs := EncodeDecodeFiles("", expr.Root)
-			if len(fs) != 2 {
-				t.Fatalf("got %d files, expected 2", len(fs))
-			}
+			require.Len(t, fs, 2)
 			var found bool
 			for _, f := range fs {
 				if strings.Contains(f.Path, "kitserver") {
@@ -79,9 +80,7 @@ func TestServerEncodeDecode(t *testing.T) {
 					requireImport(t, f, c.Import)
 				}
 			}
-			if !found {
-				t.Fatalf("kitserver encode_decode.go file not found")
-			}
+			assert.True(t, found)
 		})
 	}
 }
@@ -129,9 +128,7 @@ func TestClientEncodeDecode(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
 			fs := EncodeDecodeFiles("", expr.Root)
-			if len(fs) != 2 {
-				t.Fatalf("got %d files, expected 2", len(fs))
-			}
+			require.Len(t, fs, 2)
 			var found bool
 			for _, f := range fs {
 				if strings.Contains(f.Path, "kitclient") {
@@ -142,22 +139,16 @@ func TestClientEncodeDecode(t *testing.T) {
 					requireImport(t, f, c.Import)
 				}
 			}
-			if !found {
-				t.Fatalf("kitserver encode_decode.go file not found")
-			}
+			assert.True(t, found)
 		})
 	}
 }
 
 func testCode(t *testing.T, file *codegen.File, section string, expCode []string) {
 	sections := file.Section(section)
-	if len(sections) != len(expCode) {
-		t.Fatalf("%s: got %d sections, expected %d", section, len(sections), len(expCode))
-	}
+	require.Len(t, sections, len(expCode))
 	for i, c := range expCode {
 		code := codegen.SectionCode(t, sections[i])
-		if code != c {
-			t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, c))
-		}
+		assert.Equal(t, c, code)
 	}
 }
