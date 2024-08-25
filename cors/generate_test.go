@@ -2,9 +2,10 @@ package cors_test
 
 import (
 	"path/filepath"
-	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/eval"
 	"goa.design/goa/v3/expr"
@@ -43,9 +44,7 @@ func NewCORSHandler() http.Handler {
 		t.Run(c.Name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
 			fs := httpcodegen.ServerFiles("", expr.Root)
-			if len(fs) != c.CodeGenCount {
-				t.Fatalf("got %d files, expected %d", len(fs), c.CodeGenCount)
-			}
+			require.Len(t, fs, c.CodeGenCount)
 			cors.Generate("", []eval.Root{expr.Root}, fs)
 			expectedCodeIndex := -1
 			for _, f := range fs {
@@ -63,14 +62,10 @@ func NewCORSHandler() http.Handler {
 					originHndlr = data.OriginHandler
 				}
 				for _, s := range f.Section("server-handler") {
-					if !strings.Contains(s.Source, originHndlr) {
-						t.Errorf("server-handler: invalid code, expected to contain %s", originHndlr)
-					}
+					assert.Contains(t, s.Source, originHndlr)
 				}
 				for _, s := range f.Section("server-files") {
-					if !strings.Contains(s.Source, originHndlr) {
-						t.Errorf("server-handler: invalid code, expected to contain %s", originHndlr)
-					}
+					assert.Contains(t, s.Source, originHndlr)
 				}
 			}
 		})
@@ -79,11 +74,7 @@ func NewCORSHandler() http.Handler {
 
 func testCode(t *testing.T, file *codegen.File, section, expCode string) {
 	sections := file.Section(section)
-	if len(sections) < 1 {
-		t.Fatalf("%s: got %d sections, expected at least 1", section, len(sections))
-	}
+	require.Greater(t, len(sections), 0)
 	code := codegen.SectionCode(t, sections[0])
-	if code != expCode {
-		t.Errorf("invalid code, got:\n%s\ngot vs. expected:\n%s", code, codegen.Diff(t, code, expCode))
-	}
+	assert.Equal(t, expCode, code)
 }

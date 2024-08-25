@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/eval"
 	"goa.design/plugins/v3/docs"
@@ -36,28 +38,19 @@ func TestDocs(t *testing.T) {
 		t.Run(c.Name, func(t *testing.T) {
 			root := codegen.RunDSL(t, c.DSL)
 			fs, err := docs.Generate("", []eval.Root{root}, nil)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if len(fs) == 0 {
-				t.Fatalf("got 0 files, expected 1")
-			}
-			if len(fs[0].SectionTemplates) == 0 {
-				t.Fatalf("got 0 sections, expected 1")
-			}
+			require.NoError(t, err)
+			require.NotEmpty(t, fs)
+			require.NotEmpty(t, fs[0].SectionTemplates)
 			var buf bytes.Buffer
-			if err := fs[0].SectionTemplates[0].Write(&buf); err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, fs[0].SectionTemplates[0].Write(&buf))
 			golden := filepath.Join("testdata", fmt.Sprintf("%s.json", c.Name))
 			if *update {
 				os.WriteFile(golden, buf.Bytes(), 0644)
+				return
 			}
-			expected, _ := os.ReadFile(golden)
-			if buf.String() != string(expected) {
-				t.Errorf("invalid content for %s: got\n%s\ngot vs. expected:\n%s",
-					fs[0].Path, buf.String(), codegen.Diff(t, buf.String(), string(expected)))
-			}
+			expected, err := os.ReadFile(golden)
+			require.NoError(t, err)
+			assert.Equal(t, string(expected), buf.String())
 		})
 	}
 }

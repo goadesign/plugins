@@ -9,9 +9,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
+
 	"goa.design/plugins/v3/types/testdata"
 )
 
@@ -37,31 +40,22 @@ func TestTypes(t *testing.T) {
 			service.Services = make(service.ServicesData)
 			root := codegen.RunDSL(t, c.DSL)
 			fs, err := Generate("", []eval.Root{root}, nil)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if len(fs) == 0 {
-				t.Fatalf("got 0 files, expected 1")
-			}
-			if len(fs[0].SectionTemplates) == 0 {
-				t.Fatalf("got 0 sections, expected 1")
-			}
+			require.NoError(t, err)
+			require.NotEmpty(t, fs)
+			require.NotEmpty(t, fs[0].SectionTemplates)
 			var buf bytes.Buffer
 			for _, s := range fs[0].SectionTemplates {
-				if err := s.Write(&buf); err != nil {
-					t.Fatal(err)
-				}
+				require.NoError(t, s.Write(&buf))
 			}
 			got := buf.String()[strings.Index(buf.String(), "\n")+1:]
 			golden := filepath.Join("testdata", fmt.Sprintf("%s.go_", c.Name))
 			if *update {
 				os.WriteFile(golden, buf.Bytes(), 0644)
+				return
 			}
-			expected, _ := os.ReadFile(golden)
-			if got != string(expected) {
-				t.Errorf("invalid content for %s compared to %s: got\n%s\ngot vs. expected:\n%s",
-					fs[0].Path, golden, got, codegen.Diff(t, got, string(expected)))
-			}
+			expected, err := os.ReadFile(golden)
+			require.NoError(t, err)
+			assert.Equal(t, string(expected), got)
 		})
 	}
 }
