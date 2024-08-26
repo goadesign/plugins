@@ -3,6 +3,7 @@ module goa.design/plugins/v3
 go 1.22.0
 
 require (
+	github.com/aws/aws-lambda-go v1.47.0
 	github.com/go-kit/kit v0.13.0
 	github.com/go-kit/log v0.2.1
 	github.com/gorilla/websocket v1.5.3

@@ -10,6 +10,7 @@
 /goakit/examples/calc/cmd/calccli/calccli
 /zaplogger/examples/calc/calc
 /zaplogger/examples/calc/calc-cli
+/arnz/test/gen
 
 *.swp
 .vscode/*
