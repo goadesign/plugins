@@ -10,7 +10,7 @@ PLUGIN_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 include ../plugins.mk
 
 gen:
-	goa gen goa.design/plugins/v3/arnz/test/design -o "$(PLUGIN_DIR)/test"
+	goa gen goa.design/plugins/v3/arnz/example/design -o "$(PLUGIN_DIR)/example"
 
 build-examples:
 
