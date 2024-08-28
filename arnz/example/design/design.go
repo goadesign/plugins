@@ -5,11 +5,9 @@ import (
 	. "goa.design/plugins/v3/arnz/dsl"
 )
 
-const (
-	AdminArn = "arn:aws:iam::123456789012:user/administrator"
-	DevArn   = "arn:aws:iam::123456789012:user/developer"
-	ReadArn  = "arn:aws:iam::123456789012:user/reader"
-)
+var Admin = []string{"^arn:aws:iam::123456789012:user/administrator$"}
+var Dev = append([]string{"^arn:aws:iam::123456789012:user/developer$"}, Admin...)
+var ReadOnly = append([]string{"arn:aws:iam::123456789012:user/read-only"}, Dev...)
 
 var CrudResponse = Type("ResponseBody", func() {
 	Attribute("action", String)
@@ -18,13 +16,9 @@ var CrudResponse = Type("ResponseBody", func() {
 
 var _ = API("Arnz", func() {})
 
-var _ = Service("Like", func() {
-	HTTP(func() {
-		Path("/like")
-	})
-
+var _ = Service("Arnz", func() {
 	Method("create", func() {
-		AllowArnsLike("admin")
+		AllowArnsMatching(Admin...)
 		Result(CrudResponse)
 		HTTP(func() {
 			POST("/")
@@ -33,6 +27,7 @@ var _ = Service("Like", func() {
 	})
 
 	Method("read", func() {
+		AllowArnsMatching(ReadOnly...)
 		Result(CrudResponse)
 		HTTP(func() {
 			GET("/")
@@ -41,8 +36,7 @@ var _ = Service("Like", func() {
 	})
 
 	Method("update", func() {
-		AllowUnsigned()
-		AllowArnsLike("admin", "developer")
+		AllowArnsMatching(Dev...)
 		Result(CrudResponse)
 		HTTP(func() {
 			PUT("/")
@@ -51,52 +45,19 @@ var _ = Service("Like", func() {
 	})
 
 	Method("delete", func() {
-		AllowArnsLike("admin")
+		AllowArnsMatching(Admin...)
 		Result(CrudResponse)
 		HTTP(func() {
 			DELETE("/")
 			Response(StatusOK)
 		})
 	})
-})
 
-var _ = Service("Match", func() {
-	HTTP(func() {
-		Path("/match")
-	})
-
-	Method("create", func() {
-		AllowArnsMatching(AdminArn)
-		Result(CrudResponse)
-		HTTP(func() {
-			POST("/")
-			Response(StatusOK)
-		})
-	})
-
-	Method("read", func() {
-		Result(CrudResponse)
-		HTTP(func() {
-			GET("/")
-			Response(StatusOK)
-		})
-	})
-
-	Method("update", func() {
+	Method("health", func() {
 		AllowUnsigned()
-		AllowArnsLike(AdminArn, DevArn)
 		Result(CrudResponse)
 		HTTP(func() {
-			PUT("/")
-			Response(StatusOK)
-		})
-	})
-
-	Method("delete", func() {
-		AllowArnsLike(AdminArn)
-		Result(CrudResponse)
-		HTTP(func() {
-			DELETE("/")
+			GET("/health")
 			Response(StatusOK)
 		})
 	})

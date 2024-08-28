@@ -5,11 +5,10 @@ import (
 	. "goa.design/plugins/v3/arnz/dsl"
 )
 
-var Conflicting = func() {
-	Service("Conflicting", func() {
+var WrongScope = func() {
+	Service("WrongScope", func() {
+		AllowArnsMatching("admin")
 		Method("create", func() {
-			AllowArnsLike("admin")
-			AllowArnsMatching("admin")
 			Result(Empty)
 			HTTP(func() {
 				POST("/")
@@ -19,15 +18,13 @@ var Conflicting = func() {
 	})
 }
 
-var WrongScope = func() {
-	Service("WrongScope", func() {
-
-		AllowArnsMatching("admin")
-
+var BadMatcher = func() {
+	Service("BadMatcher", func() {
+		AllowArnsMatching(`^arn:aws:iam::123456789012:user/([a-zA-Z0-9_+=,.@-]+$`)
 		Method("create", func() {
 			Result(Empty)
 			HTTP(func() {
-				POST("/")
+				GET("/")
 				Response(StatusOK)
 			})
 		})

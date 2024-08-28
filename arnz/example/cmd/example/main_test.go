@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -10,20 +9,20 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/stretchr/testify/assert"
-	d "goa.design/plugins/v3/arnz/example/design"
 )
 
 const (
+	admin           = "arn:aws:iam::123456789012:user/administrator"
+	dev             = "arn:aws:iam::123456789012:user/developer"
+	readonly        = "arn:aws:iam::123456789012:user/read-only"
 	created         = "{\"action\":\"created!\"}\n"
 	read            = "{\"action\":\"read!\"}\n"
 	updated         = "{\"action\":\"updated!\"}\n"
 	deleted         = "{\"action\":\"deleted!\"}\n"
+	healthy         = "{\"action\":\"healthy!\"}\n"
 	unauthenticated = "{\"error\":\"unauthorized\",\"message\":\"no X-Amzn-Request-Context header\"}\n"
+	unauthorized    = "{\"error\":\"unauthorized\",\"message\":\"caller not authorized\"}\n"
 )
-
-func unauthorized(arn string) string {
-	return fmt.Sprintf("{\"error\":\"unauthorized\",\"message\":\"caller %s is not authorized\"}\n", arn)
-}
 
 func TestUnsigned(t *testing.T) {
 	cases := []struct {
@@ -33,15 +32,11 @@ func TestUnsigned(t *testing.T) {
 		StatusCode int
 		Body       string
 	}{
-		{"Anonymous Create AllowUnsigned", "POST", "/like", http.StatusUnauthorized, unauthenticated},
-		{"Anonymous Read AllowUnsigned", "GET", "/like", http.StatusUnauthorized, unauthenticated},
-		{"Anonymous Update AllowUnsigned", "PUT", "/like", http.StatusOK, updated},
-		{"Anonymous Delete AllowUnsigned", "DELETE", "/like", http.StatusUnauthorized, unauthenticated},
-
-		{"Anonymous Create AllowUnsigned", "POST", "/match", http.StatusUnauthorized, unauthenticated},
-		{"Anonymous Read AllowUnsigned", "GET", "/match", http.StatusUnauthorized, unauthenticated},
-		{"Anonymous Update AllowUnsigned", "PUT", "/match", http.StatusOK, updated},
-		{"Anonymous Delete AllowUnsigned", "DELETE", "/match", http.StatusUnauthorized, unauthenticated},
+		{"Unsigned Create", "POST", "/", http.StatusForbidden, unauthenticated},
+		{"Unsigned Read", "GET", "/", http.StatusForbidden, unauthenticated},
+		{"Unsigned Update", "PUT", "/", http.StatusForbidden, unauthenticated},
+		{"Unsigned Delete", "DELETE", "/", http.StatusForbidden, unauthenticated},
+		{"Unsigned Health", "GET", "/health", http.StatusOK, healthy},
 	}
 
 	for _, c := range cases {
@@ -68,35 +63,23 @@ func TestSigned(t *testing.T) {
 		StatusCode int
 		Body       string
 	}{
-		{"Signed Create AllowArnsLike AdminArn", d.AdminArn, "POST", "/like", http.StatusOK, created},
-		{"Signed Read AllowArnsLike AdminArn", d.AdminArn, "GET", "/like", http.StatusOK, read},
-		{"Signed Update AllowArnsLike AdminArn", d.AdminArn, "PUT", "/like", http.StatusOK, updated},
-		{"Signed Delete AllowArnsLike AdminArn", d.AdminArn, "DELETE", "/like", http.StatusOK, deleted},
+		{"Admin Create", admin, "POST", "/", http.StatusOK, created},
+		{"Admin Read", admin, "GET", "/", http.StatusOK, read},
+		{"Admin Update", admin, "PUT", "/", http.StatusOK, updated},
+		{"Admin Delete", admin, "DELETE", "/", http.StatusOK, deleted},
+		{"Admin Health", admin, "GET", "/health", http.StatusOK, healthy},
 
-		{"Signed Create AllowArnsLike DevArn", d.DevArn, "POST", "/like", http.StatusUnauthorized, unauthorized(d.DevArn)},
-		{"Signed Read AllowArnsLike DevArn", d.DevArn, "GET", "/like", http.StatusOK, read},
-		{"Signed Update AllowArnsLike DevArn", d.DevArn, "PUT", "/like", http.StatusOK, updated},
-		{"Signed Delete AllowArnsLike DevArn", d.DevArn, "DELETE", "/like", http.StatusUnauthorized, unauthorized(d.DevArn)},
+		{"Dev Create", dev, "POST", "/", http.StatusForbidden, unauthorized},
+		{"Dev Read", dev, "GET", "/", http.StatusOK, read},
+		{"Dev Update", dev, "PUT", "/", http.StatusOK, updated},
+		{"Dev Delete", dev, "DELETE", "/", http.StatusForbidden, unauthorized},
+		{"Dev Health", dev, "GET", "/health", http.StatusOK, healthy},
 
-		{"Signed Create AllowArnsLike ReadArn", d.ReadArn, "POST", "/like", http.StatusUnauthorized, unauthorized(d.ReadArn)},
-		{"Signed Read AllowArnsLike ReadArn", d.ReadArn, "GET", "/like", http.StatusOK, read},
-		{"Signed Update AllowArnsLike ReadArn", d.ReadArn, "PUT", "/like", http.StatusUnauthorized, unauthorized(d.ReadArn)},
-		{"Signed Delete AllowArnsLike ReadArn", d.ReadArn, "DELETE", "/like", http.StatusUnauthorized, unauthorized(d.ReadArn)},
-
-		{"Signed Create AllowArnsMatching AdminArn", d.AdminArn, "POST", "/match", http.StatusOK, created},
-		{"Signed Read AllowArnsMatching AdminArn", d.AdminArn, "GET", "/match", http.StatusOK, read},
-		{"Signed Update AllowArnsMatching AdminArn", d.AdminArn, "PUT", "/match", http.StatusOK, updated},
-		{"Signed Delete AllowArnsMatching AdminArn", d.AdminArn, "DELETE", "/match", http.StatusOK, deleted},
-
-		{"Signed Create AllowArnsMatching DevArn", d.DevArn, "POST", "/match", http.StatusUnauthorized, unauthorized(d.DevArn)},
-		{"Signed Read AllowArnsMatching DevArn", d.DevArn, "GET", "/match", http.StatusOK, read},
-		{"Signed Update AllowArnsMatching DevArn", d.DevArn, "PUT", "/match", http.StatusOK, updated},
-		{"Signed Delete AllowArnsMatching DevArn", d.DevArn, "DELETE", "/match", http.StatusUnauthorized, unauthorized(d.DevArn)},
-
-		{"Signed Create AllowArnsMatching ReadArn", d.ReadArn, "POST", "/match", http.StatusUnauthorized, unauthorized(d.ReadArn)},
-		{"Signed Read AllowArnsMatching ReadArn", d.ReadArn, "GET", "/match", http.StatusOK, read},
-		{"Signed Update AllowArnsMatching ReadArn", d.ReadArn, "PUT", "/match", http.StatusUnauthorized, unauthorized(d.ReadArn)},
-		{"Signed Delete AllowArnsMatching ReadArn", d.ReadArn, "DELETE", "/match", http.StatusUnauthorized, unauthorized(d.ReadArn)},
+		{"ReadOnly Create", readonly, "POST", "/", http.StatusForbidden, unauthorized},
+		{"ReadOnly Read", readonly, "GET", "/", http.StatusOK, read},
+		{"ReadOnly Update", readonly, "PUT", "/", http.StatusForbidden, unauthorized},
+		{"ReadOnly Delete", readonly, "DELETE", "/", http.StatusForbidden, unauthorized},
+		{"ReadOnly Health", readonly, "GET", "/health", http.StatusOK, healthy},
 	}
 
 	for _, c := range cases {
@@ -120,7 +103,6 @@ func unsigned(t *testing.T, verb, url string) *http.Response {
 		t.Fatalf("Failed to create %s request: %v", verb, err)
 	}
 
-	// Set the Content-Type header to application/json
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
@@ -151,7 +133,6 @@ func signed(t *testing.T, verb, url, callerArn string) *http.Response {
 		t.Fatalf("Failed to create GET request: %v", err)
 	}
 
-	// Set the necessary headers for JSON
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-Amzn-Request-Context", string(header))

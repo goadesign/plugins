@@ -2,9 +2,8 @@ package caller
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"strings"
+	"regexp"
 
 	"github.com/aws/aws-lambda-go/events"
 )
@@ -16,7 +15,6 @@ const (
 type Gate struct {
 	MethodName        string
 	AllowUnsigned     bool
-	AllowArnsLike     []string
 	AllowArnsMatching []string
 }
 
@@ -31,22 +29,22 @@ func Extract(w http.ResponseWriter, r *http.Request) (caller *string, pass bool)
 
 	err := json.Unmarshal([]byte(amzReqCtxHeader), &amzCtx)
 	if err != nil {
-		WriteUnauthorized(w, "failed to unmarshal X-Amzn-Request-Context header")
+		WriteUnauthenticated(w, "failed to unmarshal X-Amzn-Request-Context header")
 		return
 	}
 
 	if amzCtx.Authorizer == nil {
-		WriteUnauthorized(w, "no Authorizer defined in X-Amzn-Request-Context")
+		WriteUnauthenticated(w, "no Authorizer defined in X-Amzn-Request-Context")
 		return
 	}
 
 	if amzCtx.Authorizer.IAM == nil {
-		WriteUnauthorized(w, "no IAM defined in X-Amzn-Request-Context")
+		WriteUnauthenticated(w, "no IAM defined in X-Amzn-Request-Context")
 		return
 	}
 
 	if amzCtx.Authorizer.IAM.UserARN == "" {
-		WriteUnauthorized(w, "no UserARN defined in X-Amzn-Request-Context")
+		WriteUnauthenticated(w, "no UserARN defined in X-Amzn-Request-Context")
 		return
 	}
 
@@ -57,31 +55,31 @@ func IsUnsigned(r *http.Request) (pass bool) {
 	return r.Header.Get(header) == "" || r.Header.Get(header) == "null"
 }
 
-func ArnLike(w http.ResponseWriter, callerArn string, allowedArns []string) (pass bool) {
-	for _, partialArn := range allowedArns {
-		if strings.Contains(callerArn, partialArn) {
+func ArnMatch(w http.ResponseWriter, callerArn string, matchers []string) (pass bool) {
+	for _, pattern := range matchers {
+		re := regexp.MustCompile(pattern)
+		if re.MatchString(callerArn) {
 			return true
 		}
 	}
-	WriteUnauthorized(w, fmt.Sprintf("caller %s is not authorized", callerArn))
-	return false
-}
-
-func ArnMatch(w http.ResponseWriter, callerArn string, allowedArns []string) (pass bool) {
-	for _, fullArn := range allowedArns {
-		if callerArn == fullArn {
-			return true
-		}
-	}
-	WriteUnauthorized(w, fmt.Sprintf("caller %s is not authorized", callerArn))
+	WriteUnauthorized(w, "caller not authorized")
 	return false
 }
 
 func WriteUnauthorized(w http.ResponseWriter, message string) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusUnauthorized)
+	w.WriteHeader(http.StatusForbidden)
 	json.NewEncoder(w).Encode(map[string]string{
 		"error":   "unauthorized",
+		"message": message,
+	})
+}
+
+func WriteUnauthenticated(w http.ResponseWriter, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusUnauthorized)
+	json.NewEncoder(w).Encode(map[string]string{
+		"error":   "unauthenticated",
 		"message": message,
 	})
 }

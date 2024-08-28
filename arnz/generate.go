@@ -10,7 +10,7 @@ import (
 	"goa.design/plugins/v3/arnz/caller"
 )
 
-var MethodRules = make(map[string]map[string]*caller.Gate)
+var MethodGates = make(map[string]map[string]*caller.Gate)
 
 func init() {
 	codegen.RegisterPlugin("arnz", "gen", nil, Generate)
@@ -21,8 +21,8 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 		if filepath.Base(file.Path) == "server.go" {
 			for _, s := range file.Section("server-handler") {
 				if data, ok := s.Data.(*goahttp.EndpointData); ok {
-					if _, ok := MethodRules[data.ServiceName]; ok {
-						if _, ok := MethodRules[data.ServiceName][data.Method.Name]; ok {
+					if _, ok := MethodGates[data.ServiceName]; ok {
+						if _, ok := MethodGates[data.ServiceName][data.Method.Name]; ok {
 							codegen.AddImport(file.SectionTemplates[0],
 								&codegen.ImportSpec{Path: "encoding/json"},
 								&codegen.ImportSpec{Path: "strings"},
@@ -32,8 +32,8 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 
 							file.SectionTemplates = append(file.SectionTemplates, &codegen.SectionTemplate{
 								Name:   "arnz-middleware",
-								Source: gated,
-								Data:   MethodRules[data.ServiceName][data.Method.Name],
+								Source: definedGate,
+								Data:   MethodGates[data.ServiceName][data.Method.Name],
 							})
 
 							s.Source = strings.Replace(
@@ -51,7 +51,7 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 
 							file.SectionTemplates = append(file.SectionTemplates, &codegen.SectionTemplate{
 								Name:   "arnz-middleware",
-								Source: ungated,
+								Source: defaultGate,
 								Data: caller.Gate{
 									MethodName: data.Method.Name,
 								},
@@ -72,7 +72,7 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 	return files, nil
 }
 
-const ungated = `
+const defaultGate = `
 {{ printf "for authorization based on AWS ARNs" | comment }}
  func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +84,7 @@ const ungated = `
 }
 `
 
-const gated = `
+const definedGate = `
 {{ printf "for authorization based on AWS ARNs" | comment }}
 func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) { 
@@ -94,36 +94,24 @@ func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		{{- end }}
-
-		{{- if or (gt (len .AllowArnsLike) 0) (gt (len .AllowArnsMatching) 0) }}
+		{{- if (gt (len .AllowArnsMatching) 0) }}
 		callerArn, pass := caller.Extract(w, r)
 		if !pass {
 			return
 		}
-
-		{{- if gt (len .AllowArnsLike) 0 }}
-		allowedArnsLike := []string{ {{- range .AllowArnsLike }} "{{ . }}", {{- end }} }
-		if !caller.ArnLike(w, *callerArn, allowedArnsLike) {
+		allowArnsMatching := []string{
+			{{- range .AllowArnsMatching }}
+			"{{ . }}",
+			{{- end }}
+		}
+		if !caller.ArnMatch(w, *callerArn, allowArnsMatching) {
 			return
 		}
-		{{- end }}
-
-		{{- if gt (len .AllowArnsMatching) 0 }}
-		allowedArnsMatching := []string{ {{- range .AllowArnsMatching }} "{{ . }}", {{- end }} }
-		if !caller.ArnMatch(w, *callerArn, allowedArnsMatching) {
-			return
-		}
-		{{- end }}
-
 		{{- else }}
-
-		_, pass := caller.Extract(w, r)
-		if !pass {
+		if _, pass := caller.Extract(w, r); !pass {
 			return
 		}
-
 		{{- end }}
-
 		handler(w, r)
 	}
 }
