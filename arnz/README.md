@@ -1,6 +1,6 @@
 # Arnz
 
-ArnZ is a DSL for authorizing methods based on AWS IAM caller ARNs.
+ArnZ is a DSL for authorizing methods based on [AWS IAM](https://aws.amazon.com/iam/) caller ARNs.
 
 ## Given
 
@@ -12,7 +12,7 @@ Your Goa application...
 
 ### Authenticate All Callers
 
-When imported, all methods will require all callers to be [IAM](https://aws.amazon.com/iam/) authenticated.
+When imported, all methods will require all callers to be IAM authenticated.
 
 ```go
 package design
