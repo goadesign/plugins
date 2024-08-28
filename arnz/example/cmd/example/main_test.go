@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,22 +13,35 @@ import (
 	d "goa.design/plugins/v3/arnz/example/design"
 )
 
+const (
+	created         = "{\"action\":\"created!\"}\n"
+	read            = "{\"action\":\"read!\"}\n"
+	updated         = "{\"action\":\"updated!\"}\n"
+	deleted         = "{\"action\":\"deleted!\"}\n"
+	unauthenticated = "{\"error\":\"unauthorized\",\"message\":\"no X-Amzn-Request-Context header\"}\n"
+)
+
+func unauthorized(arn string) string {
+	return fmt.Sprintf("{\"error\":\"unauthorized\",\"message\":\"caller %s is not authorized\"}\n", arn)
+}
+
 func TestUnsigned(t *testing.T) {
 	cases := []struct {
 		Name       string
 		Verb       string
 		Path       string
 		StatusCode int
+		Body       string
 	}{
-		{"Anonymous Create AllowUnsigned", "POST", "/like", http.StatusUnauthorized},
-		{"Anonymous Read AllowUnsigned", "GET", "/like", http.StatusUnauthorized},
-		{"Anonymous Update AllowUnsigned", "PUT", "/like", http.StatusOK},
-		{"Anonymous Delete AllowUnsigned", "DELETE", "/like", http.StatusUnauthorized},
+		{"Anonymous Create AllowUnsigned", "POST", "/like", http.StatusUnauthorized, unauthenticated},
+		{"Anonymous Read AllowUnsigned", "GET", "/like", http.StatusUnauthorized, unauthenticated},
+		{"Anonymous Update AllowUnsigned", "PUT", "/like", http.StatusOK, updated},
+		{"Anonymous Delete AllowUnsigned", "DELETE", "/like", http.StatusUnauthorized, unauthenticated},
 
-		{"Anonymous Create AllowUnsigned", "POST", "/match", http.StatusUnauthorized},
-		{"Anonymous Read AllowUnsigned", "GET", "/match", http.StatusUnauthorized},
-		{"Anonymous Update AllowUnsigned", "PUT", "/match", http.StatusOK},
-		{"Anonymous Delete AllowUnsigned", "DELETE", "/match", http.StatusUnauthorized},
+		{"Anonymous Create AllowUnsigned", "POST", "/match", http.StatusUnauthorized, unauthenticated},
+		{"Anonymous Read AllowUnsigned", "GET", "/match", http.StatusUnauthorized, unauthenticated},
+		{"Anonymous Update AllowUnsigned", "PUT", "/match", http.StatusOK, updated},
+		{"Anonymous Delete AllowUnsigned", "DELETE", "/match", http.StatusUnauthorized, unauthenticated},
 	}
 
 	for _, c := range cases {
@@ -36,6 +51,10 @@ func TestUnsigned(t *testing.T) {
 
 			resp := unsigned(t, c.Verb, ts.URL+c.Path)
 			assert.Equal(t, c.StatusCode, resp.StatusCode)
+
+			bytes, err := io.ReadAll(resp.Body)
+			assert.NoError(t, err)
+			assert.Equal(t, c.Body, string(bytes))
 		})
 	}
 }
@@ -47,36 +66,37 @@ func TestSigned(t *testing.T) {
 		Verb       string
 		Path       string
 		StatusCode int
+		Body       string
 	}{
-		{"Signed Create AllowArnsLike AdminArn", d.AdminArn, "POST", "/like", http.StatusOK},
-		{"Signed Read AllowArnsLike AdminArn", d.AdminArn, "GET", "/like", http.StatusOK},
-		{"Signed Update AllowArnsLike AdminArn", d.AdminArn, "PUT", "/like", http.StatusOK},
-		{"Signed Delete AllowArnsLike AdminArn", d.AdminArn, "DELETE", "/like", http.StatusOK},
+		{"Signed Create AllowArnsLike AdminArn", d.AdminArn, "POST", "/like", http.StatusOK, created},
+		{"Signed Read AllowArnsLike AdminArn", d.AdminArn, "GET", "/like", http.StatusOK, read},
+		{"Signed Update AllowArnsLike AdminArn", d.AdminArn, "PUT", "/like", http.StatusOK, updated},
+		{"Signed Delete AllowArnsLike AdminArn", d.AdminArn, "DELETE", "/like", http.StatusOK, deleted},
 
-		{"Signed Create AllowArnsLike DevArn", d.DevArn, "POST", "/like", http.StatusUnauthorized},
-		{"Signed Read AllowArnsLike DevArn", d.DevArn, "GET", "/like", http.StatusOK},
-		{"Signed Update AllowArnsLike DevArn", d.DevArn, "PUT", "/like", http.StatusOK},
-		{"Signed Delete AllowArnsLike DevArn", d.DevArn, "DELETE", "/like", http.StatusUnauthorized},
+		{"Signed Create AllowArnsLike DevArn", d.DevArn, "POST", "/like", http.StatusUnauthorized, unauthorized(d.DevArn)},
+		{"Signed Read AllowArnsLike DevArn", d.DevArn, "GET", "/like", http.StatusOK, read},
+		{"Signed Update AllowArnsLike DevArn", d.DevArn, "PUT", "/like", http.StatusOK, updated},
+		{"Signed Delete AllowArnsLike DevArn", d.DevArn, "DELETE", "/like", http.StatusUnauthorized, unauthorized(d.DevArn)},
 
-		{"Signed Create AllowArnsLike ReadArn", d.ReadArn, "POST", "/like", http.StatusUnauthorized},
-		{"Signed Read AllowArnsLike ReadArn", d.ReadArn, "GET", "/like", http.StatusOK},
-		{"Signed Update AllowArnsLike ReadArn", d.ReadArn, "PUT", "/like", http.StatusUnauthorized},
-		{"Signed Delete AllowArnsLike ReadArn", d.ReadArn, "DELETE", "/like", http.StatusUnauthorized},
+		{"Signed Create AllowArnsLike ReadArn", d.ReadArn, "POST", "/like", http.StatusUnauthorized, unauthorized(d.ReadArn)},
+		{"Signed Read AllowArnsLike ReadArn", d.ReadArn, "GET", "/like", http.StatusOK, read},
+		{"Signed Update AllowArnsLike ReadArn", d.ReadArn, "PUT", "/like", http.StatusUnauthorized, unauthorized(d.ReadArn)},
+		{"Signed Delete AllowArnsLike ReadArn", d.ReadArn, "DELETE", "/like", http.StatusUnauthorized, unauthorized(d.ReadArn)},
 
-		{"Signed Create AllowArnsMatching AdminArn", d.AdminArn, "POST", "/match", http.StatusOK},
-		{"Signed Read AllowArnsMatching AdminArn", d.AdminArn, "GET", "/match", http.StatusOK},
-		{"Signed Update AllowArnsMatching AdminArn", d.AdminArn, "PUT", "/match", http.StatusOK},
-		{"Signed Delete AllowArnsMatching AdminArn", d.AdminArn, "DELETE", "/match", http.StatusOK},
+		{"Signed Create AllowArnsMatching AdminArn", d.AdminArn, "POST", "/match", http.StatusOK, created},
+		{"Signed Read AllowArnsMatching AdminArn", d.AdminArn, "GET", "/match", http.StatusOK, read},
+		{"Signed Update AllowArnsMatching AdminArn", d.AdminArn, "PUT", "/match", http.StatusOK, updated},
+		{"Signed Delete AllowArnsMatching AdminArn", d.AdminArn, "DELETE", "/match", http.StatusOK, deleted},
 
-		{"Signed Create AllowArnsMatching DevArn", d.DevArn, "POST", "/match", http.StatusUnauthorized},
-		{"Signed Read AllowArnsMatching DevArn", d.DevArn, "GET", "/match", http.StatusOK},
-		{"Signed Update AllowArnsMatching DevArn", d.DevArn, "PUT", "/match", http.StatusOK},
-		{"Signed Delete AllowArnsMatching DevArn", d.DevArn, "DELETE", "/match", http.StatusUnauthorized},
+		{"Signed Create AllowArnsMatching DevArn", d.DevArn, "POST", "/match", http.StatusUnauthorized, unauthorized(d.DevArn)},
+		{"Signed Read AllowArnsMatching DevArn", d.DevArn, "GET", "/match", http.StatusOK, read},
+		{"Signed Update AllowArnsMatching DevArn", d.DevArn, "PUT", "/match", http.StatusOK, updated},
+		{"Signed Delete AllowArnsMatching DevArn", d.DevArn, "DELETE", "/match", http.StatusUnauthorized, unauthorized(d.DevArn)},
 
-		{"Signed Create AllowArnsMatching ReadArn", d.ReadArn, "POST", "/match", http.StatusUnauthorized},
-		{"Signed Read AllowArnsMatching ReadArn", d.ReadArn, "GET", "/match", http.StatusOK},
-		{"Signed Update AllowArnsMatching ReadArn", d.ReadArn, "PUT", "/match", http.StatusUnauthorized},
-		{"Signed Delete AllowArnsMatching ReadArn", d.ReadArn, "DELETE", "/match", http.StatusUnauthorized},
+		{"Signed Create AllowArnsMatching ReadArn", d.ReadArn, "POST", "/match", http.StatusUnauthorized, unauthorized(d.ReadArn)},
+		{"Signed Read AllowArnsMatching ReadArn", d.ReadArn, "GET", "/match", http.StatusOK, read},
+		{"Signed Update AllowArnsMatching ReadArn", d.ReadArn, "PUT", "/match", http.StatusUnauthorized, unauthorized(d.ReadArn)},
+		{"Signed Delete AllowArnsMatching ReadArn", d.ReadArn, "DELETE", "/match", http.StatusUnauthorized, unauthorized(d.ReadArn)},
 	}
 
 	for _, c := range cases {
@@ -86,6 +106,10 @@ func TestSigned(t *testing.T) {
 
 			resp := signed(t, c.Verb, ts.URL+c.Path, c.Caller)
 			assert.Equal(t, c.StatusCode, resp.StatusCode)
+
+			bytes, err := io.ReadAll(resp.Body)
+			assert.NoError(t, err)
+			assert.Equal(t, c.Body, string(bytes))
 		})
 	}
 }

@@ -90,6 +90,7 @@ func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) { 
 		{{- if .AllowUnsigned }}
 		if caller.IsUnsigned(r) {
+			handler(w, r)
 			return
 		}
 		{{- end }}

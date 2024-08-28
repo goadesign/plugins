@@ -11,6 +11,11 @@ const (
 	ReadArn  = "arn:aws:iam::123456789012:user/reader"
 )
 
+var CrudResponse = Type("ResponseBody", func() {
+	Attribute("action", String)
+	Required("action")
+})
+
 var _ = API("Arnz", func() {})
 
 var _ = Service("Like", func() {
@@ -20,7 +25,7 @@ var _ = Service("Like", func() {
 
 	Method("create", func() {
 		AllowArnsLike("admin")
-		Result(Empty)
+		Result(CrudResponse)
 		HTTP(func() {
 			POST("/")
 			Response(StatusOK)
@@ -28,7 +33,7 @@ var _ = Service("Like", func() {
 	})
 
 	Method("read", func() {
-		Result(Empty)
+		Result(CrudResponse)
 		HTTP(func() {
 			GET("/")
 			Response(StatusOK)
@@ -38,7 +43,7 @@ var _ = Service("Like", func() {
 	Method("update", func() {
 		AllowUnsigned()
 		AllowArnsLike("admin", "developer")
-		Result(Empty)
+		Result(CrudResponse)
 		HTTP(func() {
 			PUT("/")
 			Response(StatusOK)
@@ -47,7 +52,7 @@ var _ = Service("Like", func() {
 
 	Method("delete", func() {
 		AllowArnsLike("admin")
-		Result(Empty)
+		Result(CrudResponse)
 		HTTP(func() {
 			DELETE("/")
 			Response(StatusOK)
@@ -62,7 +67,7 @@ var _ = Service("Match", func() {
 
 	Method("create", func() {
 		AllowArnsMatching(AdminArn)
-		Result(Empty)
+		Result(CrudResponse)
 		HTTP(func() {
 			POST("/")
 			Response(StatusOK)
@@ -70,7 +75,7 @@ var _ = Service("Match", func() {
 	})
 
 	Method("read", func() {
-		Result(Empty)
+		Result(CrudResponse)
 		HTTP(func() {
 			GET("/")
 			Response(StatusOK)
@@ -80,7 +85,7 @@ var _ = Service("Match", func() {
 	Method("update", func() {
 		AllowUnsigned()
 		AllowArnsLike(AdminArn, DevArn)
-		Result(Empty)
+		Result(CrudResponse)
 		HTTP(func() {
 			PUT("/")
 			Response(StatusOK)
@@ -89,7 +94,7 @@ var _ = Service("Match", func() {
 
 	Method("delete", func() {
 		AllowArnsLike(AdminArn)
-		Result(Empty)
+		Result(CrudResponse)
 		HTTP(func() {
 			DELETE("/")
 			Response(StatusOK)

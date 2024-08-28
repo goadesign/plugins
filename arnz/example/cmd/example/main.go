@@ -21,12 +21,12 @@ func main() {
 func server(port int) *http.Server {
 	mux := goahttp.NewMuxer()
 
-	crud := &example.Service{}
-
-	likeEndpoints := like.NewEndpoints(crud)
-	matchEndpoints := match.NewEndpoints(crud)
-
+	likesvc := &example.LikeService{}
+	likeEndpoints := like.NewEndpoints(likesvc)
 	likeApi := likehttp.New(likeEndpoints, mux, goahttp.RequestDecoder, goahttp.ResponseEncoder, nil, nil)
+
+	matchsvc := &example.MatchService{}
+	matchEndpoints := match.NewEndpoints(matchsvc)
 	matchApi := matchhttp.New(matchEndpoints, mux, goahttp.RequestDecoder, goahttp.ResponseEncoder, nil, nil)
 
 	likeApi.Mount(mux)

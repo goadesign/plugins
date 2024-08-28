@@ -9,6 +9,10 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
+const (
+	header = "X-Amzn-Request-Context"
+)
+
 type Gate struct {
 	MethodName        string
 	AllowUnsigned     bool
@@ -16,13 +20,14 @@ type Gate struct {
 	AllowArnsMatching []string
 }
 
-const (
-	header = "X-Amzn-Request-Context"
-)
-
 func Extract(w http.ResponseWriter, r *http.Request) (caller *string, pass bool) {
 	var amzCtx events.APIGatewayV2HTTPRequestContext
 	amzReqCtxHeader := r.Header.Get(header)
+
+	if amzReqCtxHeader == "" || amzReqCtxHeader == "null" {
+		WriteUnauthorized(w, "no X-Amzn-Request-Context header")
+		return
+	}
 
 	err := json.Unmarshal([]byte(amzReqCtxHeader), &amzCtx)
 	if err != nil {
