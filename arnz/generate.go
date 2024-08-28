@@ -101,7 +101,7 @@ func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 		}
 		allowArnsMatching := []string{
 			{{- range .AllowArnsMatching }}
-			"{{ . }}",
+			` + "`{{ . }}`" + `,
 			{{- end }}
 		}
 		if !caller.Authorize(w, *callerArn, allowArnsMatching) {
