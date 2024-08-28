@@ -18,12 +18,16 @@ type Gate struct {
 	AllowArnsMatching []string
 }
 
-func Extract(w http.ResponseWriter, r *http.Request) (caller *string, pass bool) {
+func IsUnsigned(r *http.Request) (pass bool) {
+	return r.Header.Get(header) == "" || r.Header.Get(header) == "null"
+}
+
+func Authenticate(w http.ResponseWriter, r *http.Request) (caller *string, pass bool) {
 	var amzCtx events.APIGatewayV2HTTPRequestContext
 	amzReqCtxHeader := r.Header.Get(header)
 
-	if amzReqCtxHeader == "" || amzReqCtxHeader == "null" {
-		WriteUnauthorized(w, "no X-Amzn-Request-Context header")
+	if IsUnsigned(r) {
+		WriteUnauthenticated(w, "caller not authenticated")
 		return
 	}
 
@@ -51,11 +55,7 @@ func Extract(w http.ResponseWriter, r *http.Request) (caller *string, pass bool)
 	return &amzCtx.Authorizer.IAM.UserARN, true
 }
 
-func IsUnsigned(r *http.Request) (pass bool) {
-	return r.Header.Get(header) == "" || r.Header.Get(header) == "null"
-}
-
-func ArnMatch(w http.ResponseWriter, callerArn string, matchers []string) (pass bool) {
+func Authorize(w http.ResponseWriter, callerArn string, matchers []string) (pass bool) {
 	for _, pattern := range matchers {
 		re := regexp.MustCompile(pattern)
 		if re.MatchString(callerArn) {

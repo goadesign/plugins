@@ -20,7 +20,7 @@ const (
 	updated         = "{\"action\":\"updated!\"}\n"
 	deleted         = "{\"action\":\"deleted!\"}\n"
 	healthy         = "{\"action\":\"healthy!\"}\n"
-	unauthenticated = "{\"error\":\"unauthorized\",\"message\":\"no X-Amzn-Request-Context header\"}\n"
+	unauthenticated = "{\"error\":\"unauthenticated\",\"message\":\"caller not authenticated\"}\n"
 	unauthorized    = "{\"error\":\"unauthorized\",\"message\":\"caller not authorized\"}\n"
 )
 
@@ -32,10 +32,10 @@ func TestUnsigned(t *testing.T) {
 		StatusCode int
 		Body       string
 	}{
-		{"Unsigned Create", "POST", "/", http.StatusForbidden, unauthenticated},
-		{"Unsigned Read", "GET", "/", http.StatusForbidden, unauthenticated},
-		{"Unsigned Update", "PUT", "/", http.StatusForbidden, unauthenticated},
-		{"Unsigned Delete", "DELETE", "/", http.StatusForbidden, unauthenticated},
+		{"Unsigned Create", "POST", "/", http.StatusUnauthorized, unauthenticated},
+		{"Unsigned Read", "GET", "/", http.StatusUnauthorized, unauthenticated},
+		{"Unsigned Update", "PUT", "/", http.StatusUnauthorized, unauthenticated},
+		{"Unsigned Delete", "DELETE", "/", http.StatusUnauthorized, unauthenticated},
 		{"Unsigned Health", "GET", "/health", http.StatusOK, healthy},
 	}
 

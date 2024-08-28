@@ -76,7 +76,7 @@ const defaultGate = `
 {{ printf "for authorization based on AWS ARNs" | comment }}
  func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if _, pass := caller.Extract(w, r); !pass {
+		if _, pass := caller.Authenticate(w, r); !pass {
 			return
 		}
 		handler(w, r)
@@ -95,7 +95,7 @@ func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 		}
 		{{- end }}
 		{{- if (gt (len .AllowArnsMatching) 0) }}
-		callerArn, pass := caller.Extract(w, r)
+		callerArn, pass := caller.Authenticate(w, r)
 		if !pass {
 			return
 		}
@@ -104,11 +104,11 @@ func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 			"{{ . }}",
 			{{- end }}
 		}
-		if !caller.ArnMatch(w, *callerArn, allowArnsMatching) {
+		if !caller.Authorize(w, *callerArn, allowArnsMatching) {
 			return
 		}
 		{{- else }}
-		if _, pass := caller.Extract(w, r); !pass {
+		if _, pass := caller.Authenticate(w, r); !pass {
 			return
 		}
 		{{- end }}
