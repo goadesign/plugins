@@ -7,10 +7,10 @@ import (
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/eval"
 	goahttp "goa.design/goa/v3/http/codegen"
-	"goa.design/plugins/v3/arnz/caller"
+	"goa.design/plugins/v3/arnz/auth"
 )
 
-var MethodGates = make(map[string]map[string]*caller.Gate)
+var MethodGates = make(map[string]map[string]*auth.Gate)
 
 func init() {
 	codegen.RegisterPlugin("arnz", "gen", nil, Generate)
@@ -27,7 +27,7 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 								&codegen.ImportSpec{Path: "encoding/json"},
 								&codegen.ImportSpec{Path: "strings"},
 								&codegen.ImportSpec{Path: "github.com/aws/aws-lambda-go/events"},
-								&codegen.ImportSpec{Path: "goa.design/plugins/v3/arnz/caller"},
+								&codegen.ImportSpec{Path: "goa.design/plugins/v3/arnz/auth"},
 							)
 
 							file.SectionTemplates = append(file.SectionTemplates, &codegen.SectionTemplate{
@@ -46,13 +46,13 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 							codegen.AddImport(file.SectionTemplates[0],
 								&codegen.ImportSpec{Path: "encoding/json"},
 								&codegen.ImportSpec{Path: "github.com/aws/aws-lambda-go/events"},
-								&codegen.ImportSpec{Path: "goa.design/plugins/v3/arnz/caller"},
+								&codegen.ImportSpec{Path: "goa.design/plugins/v3/arnz/auth"},
 							)
 
 							file.SectionTemplates = append(file.SectionTemplates, &codegen.SectionTemplate{
 								Name:   "arnz-middleware",
 								Source: defaultGate,
-								Data: caller.Gate{
+								Data: auth.Gate{
 									MethodName: data.Method.Name,
 								},
 							})
@@ -76,7 +76,7 @@ const defaultGate = `
 {{ printf "for authorization based on AWS ARNs" | comment }}
  func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if _, pass := caller.Authenticate(w, r); !pass {
+		if _, pass := auth.Authenticate(w, r); !pass {
 			return
 		}
 		handler(w, r)
@@ -89,13 +89,13 @@ const definedGate = `
 func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) { 
 		{{- if .AllowUnsigned }}
-		if caller.IsUnsigned(r) {
+		if auth.IsUnsigned(r) {
 			handler(w, r)
 			return
 		}
 		{{- end }}
 		{{- if (gt (len .AllowArnsMatching) 0) }}
-		callerArn, pass := caller.Authenticate(w, r)
+		callerArn, pass := auth.Authenticate(w, r)
 		if !pass {
 			return
 		}
@@ -104,11 +104,11 @@ func {{ .MethodName }}Arnz(handler http.HandlerFunc) http.HandlerFunc {
 			` + "`{{ . }}`" + `,
 			{{- end }}
 		}
-		if !caller.Authorize(w, *callerArn, allowArnsMatching) {
+		if !auth.Authorize(w, *callerArn, allowArnsMatching) {
 			return
 		}
 		{{- else }}
-		if _, pass := caller.Authenticate(w, r); !pass {
+		if _, pass := auth.Authenticate(w, r); !pass {
 			return
 		}
 		{{- end }}

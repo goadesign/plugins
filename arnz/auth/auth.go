@@ -1,4 +1,4 @@
-package caller
+package auth
 
 import (
 	"encoding/json"

@@ -6,7 +6,7 @@ import (
 	"goa.design/goa/v3/eval"
 	goaexpr "goa.design/goa/v3/expr"
 	"goa.design/plugins/v3/arnz"
-	"goa.design/plugins/v3/arnz/caller"
+	"goa.design/plugins/v3/arnz/auth"
 )
 
 // AllowArnsMatching accepts regex patterns to match caller ARNs.
@@ -24,14 +24,14 @@ func AllowUnsignedCallers() {
 	rule.AllowUnsigned = true
 }
 
-func get() *caller.Gate {
+func get() *auth.Gate {
 	if m, ok := eval.Current().(*goaexpr.MethodExpr); ok {
 		if _, exists := arnz.MethodGates[m.Service.Name]; !exists {
-			arnz.MethodGates[m.Service.Name] = make(map[string]*caller.Gate)
+			arnz.MethodGates[m.Service.Name] = make(map[string]*auth.Gate)
 		}
 
 		if _, exists := arnz.MethodGates[m.Service.Name][m.Name]; !exists {
-			arnz.MethodGates[m.Service.Name][m.Name] = &caller.Gate{
+			arnz.MethodGates[m.Service.Name][m.Name] = &auth.Gate{
 				MethodName: m.Name,
 			}
 		}
