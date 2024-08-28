@@ -19,7 +19,7 @@ func AllowArnsMatching(regex ...string) {
 }
 
 // AllowUnsigned will allow callers skipping the gateway to bypass ARN checks.
-func AllowUnsigned() {
+func AllowUnsignedCallers() {
 	rule := get()
 	rule.AllowUnsigned = true
 }

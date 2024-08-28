@@ -54,7 +54,7 @@ var _ = Service("Arnz", func() {
 	})
 
 	Method("health", func() {
-		AllowUnsigned()
+		AllowUnsignedCallers()
 		Result(CrudResponse)
 		HTTP(func() {
 			GET("/health")
