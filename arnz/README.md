@@ -5,7 +5,7 @@ ArnZ is a DSL for authorizing methods based on [AWS IAM](https://aws.amazon.com/
 ## Given
 
 Your Goa application...
-1. is Recieving traffic via an [AWS API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html).
+1. is recieving traffic via an [AWS API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html).
 1. is using the [IAM_AUTH](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-access-control-iam.html) authorizer.
 
 ## You Can
