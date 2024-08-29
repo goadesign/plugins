@@ -2,7 +2,7 @@ package design
 
 import (
 	. "goa.design/goa/v3/dsl"
-	. "goa.design/plugins/v3/arnz/dsl"
+	arnz "goa.design/plugins/v3/arnz/dsl"
 )
 
 var Admin = []string{"^arn:aws:iam::123456789012:user/administrator$"}
@@ -18,7 +18,7 @@ var _ = API("Arnz", func() {})
 
 var _ = Service("Arnz", func() {
 	Method("create", func() {
-		AllowArnsMatching(Admin...)
+		arnz.AllowArnsMatching(Admin...)
 		Result(CrudResponse)
 		HTTP(func() {
 			POST("/")
@@ -27,7 +27,7 @@ var _ = Service("Arnz", func() {
 	})
 
 	Method("read", func() {
-		AllowArnsMatching(ReadOnly...)
+		arnz.AllowArnsMatching(ReadOnly...)
 		Result(CrudResponse)
 		HTTP(func() {
 			GET("/")
@@ -36,7 +36,7 @@ var _ = Service("Arnz", func() {
 	})
 
 	Method("update", func() {
-		AllowArnsMatching(Dev...)
+		arnz.AllowArnsMatching(Dev...)
 		Result(CrudResponse)
 		HTTP(func() {
 			PUT("/")
@@ -45,7 +45,7 @@ var _ = Service("Arnz", func() {
 	})
 
 	Method("delete", func() {
-		AllowArnsMatching(Admin...)
+		arnz.AllowArnsMatching(Admin...)
 		Result(CrudResponse)
 		HTTP(func() {
 			DELETE("/")
@@ -54,7 +54,7 @@ var _ = Service("Arnz", func() {
 	})
 
 	Method("health", func() {
-		AllowUnsignedCallers()
+		arnz.AllowUnsignedCallers()
 		Result(CrudResponse)
 		HTTP(func() {
 			GET("/health")

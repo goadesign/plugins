@@ -1,0 +1,94 @@
+openapi: 3.0.3
+info:
+    title: Goa API
+    version: 0.0.1
+servers:
+    - url: http://localhost:80
+      description: Default server for Arnz
+paths:
+    /:
+        delete:
+            tags:
+                - Arnz
+            summary: delete Arnz
+            operationId: Arnz#delete
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ResponseBody'
+                            example:
+                                action: Voluptas fuga.
+        get:
+            tags:
+                - Arnz
+            summary: read Arnz
+            operationId: Arnz#read
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ResponseBody'
+                            example:
+                                action: Atque fugit vero quo aut cupiditate.
+        post:
+            tags:
+                - Arnz
+            summary: create Arnz
+            operationId: Arnz#create
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ResponseBody'
+                            example:
+                                action: Numquam fugit omnis cum ut.
+        put:
+            tags:
+                - Arnz
+            summary: update Arnz
+            operationId: Arnz#update
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ResponseBody'
+                            example:
+                                action: Est nam aut dolor id praesentium.
+    /health:
+        get:
+            tags:
+                - Arnz
+            summary: health Arnz
+            operationId: Arnz#health
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ResponseBody'
+                            example:
+                                action: Temporibus nostrum modi fugit praesentium aut aliquam.
+components:
+    schemas:
+        ResponseBody:
+            type: object
+            properties:
+                action:
+                    type: string
+                    example: Cum suscipit deserunt illo repellendus eius qui.
+            example:
+                action: Est vel occaecati.
+            required:
+                - action
+tags:
+    - name: Arnz
