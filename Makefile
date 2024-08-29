@@ -23,7 +23,8 @@ PLUGINS=\
 	otel \
 	types \
 	zaplogger \
-	zerologger
+	zerologger \
+	arnz
 
 PROTOC_VERSION=27.1
 ifeq ($(GOOS),linux)
