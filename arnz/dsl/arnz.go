@@ -13,7 +13,11 @@ import (
 func AllowArnsMatching(regex ...string) {
 	rule := get()
 	for _, given := range regex {
-		regexp.MustCompile(given)
+		_, err := regexp.Compile(given)
+		if err != nil {
+			eval.ReportError("invalid regex pattern in AllowArnsMatching: %s", given)
+		}
+
 		rule.AllowArnsMatching = append(rule.AllowArnsMatching, given)
 	}
 }

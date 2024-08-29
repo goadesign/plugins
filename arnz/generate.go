@@ -20,52 +20,46 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 	for _, file := range files {
 		if filepath.Base(file.Path) == "server.go" {
 			for _, s := range file.Section("server-handler") {
-				if data, ok := s.Data.(*goahttp.EndpointData); ok {
-					if _, ok := MethodGates[data.ServiceName]; ok {
-						if _, ok := MethodGates[data.ServiceName][data.Method.Name]; ok {
-							codegen.AddImport(file.SectionTemplates[0],
-								&codegen.ImportSpec{Path: "encoding/json"},
-								&codegen.ImportSpec{Path: "strings"},
-								&codegen.ImportSpec{Path: "github.com/aws/aws-lambda-go/events"},
-								&codegen.ImportSpec{Path: "goa.design/plugins/v3/arnz/auth"},
-							)
-
-							file.SectionTemplates = append(file.SectionTemplates, &codegen.SectionTemplate{
-								Name:   "arnz-middleware",
-								Source: definedGate,
-								Data:   MethodGates[data.ServiceName][data.Method.Name],
-							})
-
-							s.Source = strings.Replace(
-								s.Source,
-								`mux.Handle("{{ .Verb }}", "{{ .Path }}", f)`,
-								`mux.Handle("{{ .Verb }}", "{{ .Path }}", `+data.Method.Name+`Arnz(f))`,
-								1,
-							)
-						} else {
-							codegen.AddImport(file.SectionTemplates[0],
-								&codegen.ImportSpec{Path: "encoding/json"},
-								&codegen.ImportSpec{Path: "github.com/aws/aws-lambda-go/events"},
-								&codegen.ImportSpec{Path: "goa.design/plugins/v3/arnz/auth"},
-							)
-
-							file.SectionTemplates = append(file.SectionTemplates, &codegen.SectionTemplate{
-								Name:   "arnz-middleware",
-								Source: defaultGate,
-								Data: auth.Gate{
-									MethodName: data.Method.Name,
-								},
-							})
-
-							s.Source = strings.Replace(
-								s.Source,
-								`mux.Handle("{{ .Verb }}", "{{ .Path }}", f)`,
-								`mux.Handle("{{ .Verb }}", "{{ .Path }}", `+data.Method.Name+`Arnz(f))`,
-								1,
-							)
-						}
-					}
+				data, ok := s.Data.(*goahttp.EndpointData)
+				if !ok {
+					continue
 				}
+
+				_, ok = MethodGates[data.ServiceName]
+				if !ok {
+					continue
+				}
+
+				codegen.AddImport(file.SectionTemplates[0],
+					&codegen.ImportSpec{Path: "encoding/json"},
+					&codegen.ImportSpec{Path: "strings"},
+					&codegen.ImportSpec{Path: "github.com/aws/aws-lambda-go/events"},
+					&codegen.ImportSpec{Path: "goa.design/plugins/v3/arnz/auth"},
+				)
+
+				_, ok = MethodGates[data.ServiceName][data.Method.Name]
+				if ok {
+					file.SectionTemplates = append(file.SectionTemplates, &codegen.SectionTemplate{
+						Name:   "arnz-middleware",
+						Source: definedGate,
+						Data:   MethodGates[data.ServiceName][data.Method.Name],
+					})
+				} else {
+					file.SectionTemplates = append(file.SectionTemplates, &codegen.SectionTemplate{
+						Name:   "arnz-middleware",
+						Source: defaultGate,
+						Data: auth.Gate{
+							MethodName: data.Method.Name,
+						},
+					})
+				}
+
+				s.Source = strings.Replace(
+					s.Source,
+					`mux.Handle("{{ .Verb }}", "{{ .Path }}", f)`,
+					`mux.Handle("{{ .Verb }}", "{{ .Path }}", `+data.Method.Name+`Arnz(f))`,
+					1,
+				)
 			}
 		}
 	}

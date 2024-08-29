@@ -58,3 +58,8 @@ Allowing unsigned requests is useful for allowing traffic not originated from AP
 ```
 
 _note_: Allowing unsigned callers does not disable authentication or authorization for signed requests.
+
+## Further Reading
+- [Signing HTTP requests using AWS credentials](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_aws-signing.html)
+- [API Gateway Developer Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html)
+- [API Gateway IAM Authorizer Docs](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-access-control-iam.html)
