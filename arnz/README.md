@@ -19,7 +19,7 @@ package design
 
 import (
 	. "goa.design/goa/v3/dsl"
-	. "goa.design/plugins/v3/arnz/dsl"
+	_ "goa.design/plugins/v3/arnz/dsl"
 )
 ```
 
@@ -28,16 +28,12 @@ import (
 You can authorize callers by ARN using the `AllowArnsMatching` function, passing it a regular expression. 
 
 ```go
-package design
-
-var _ = Service("MyService", func() {
-	Method("privileged", func() {
-		AllowArnsMatching("^arn:aws:iam::123456789012:user/administrator$")
-		Result(SecretStuff)
-		HTTP(func() {
-			POST("/")
-			Response(StatusOK)
-		})
+Method("privileged", func() {
+	AllowArnsMatching("^arn:aws:iam::123456789012:user/administrator$")
+	Result(SecretStuff)
+	HTTP(func() {
+		POST("/")
+		Response(StatusOK)
 	})
 })
 ```
@@ -47,14 +43,14 @@ var _ = Service("MyService", func() {
 Allowing unsigned requests is useful for allowing traffic not originated from API gateway. 
 
 ```go
-    Method("healthz", func() {
-        AllowUnsignedCallers()
-        Result(HealthCheck)
-        HTTP(func() {
-            POST("/")
-            Response(StatusOK)
-        })
-    })
+Method("healthz", func() {
+	AllowUnsignedCallers()
+	Result(HealthCheck)
+	HTTP(func() {
+		POST("/")
+		Response(StatusOK)
+	})
+})
 ```
 
 _note_: Allowing unsigned callers does not disable authentication or authorization for signed requests.

@@ -25,9 +25,11 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 					continue
 				}
 
-				_, ok = MethodGates[data.ServiceName]
-				if !ok {
-					continue
+				var gateDefined bool
+				if _, ok = MethodGates[data.ServiceName]; ok {
+					if _, ok = MethodGates[data.ServiceName][data.Method.Name]; ok {
+						gateDefined = true
+					}
 				}
 
 				codegen.AddImport(file.SectionTemplates[0],
@@ -37,8 +39,7 @@ func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codeg
 					&codegen.ImportSpec{Path: "goa.design/plugins/v3/arnz/auth"},
 				)
 
-				_, ok = MethodGates[data.ServiceName][data.Method.Name]
-				if ok {
+				if gateDefined {
 					file.SectionTemplates = append(file.SectionTemplates, &codegen.SectionTemplate{
 						Name:   "arnz-middleware",
 						Source: definedGate,
