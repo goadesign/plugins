@@ -32,7 +32,7 @@ Method("privileged", func() {
 	AllowArnsMatching("^arn:aws:iam::123456789012:user/administrator$")
 	Result(SecretStuff)
 	HTTP(func() {
-		POST("/")
+		Get("/secrets")
 		Response(StatusOK)
 	})
 })
@@ -47,7 +47,7 @@ Method("healthz", func() {
 	AllowUnsignedCallers()
 	Result(HealthCheck)
 	HTTP(func() {
-		POST("/")
+		GET("/healthz")
 		Response(StatusOK)
 	})
 })
