@@ -460,7 +460,7 @@ func New(
 	return &Server{
 		Mounts: []*MountPoint{
 			{"CORS", "OPTIONS", "/file.json"},
-			{"./file.json", "GET", "/file.json"},
+			{"Serve ./file.json", "GET", "/file.json"},
 		},
 		CORS:     NewCORSHandler(),
 		FileJSON: http.FileServer(fileSystemFileJSON),
@@ -569,7 +569,7 @@ func New(
 	return &Server{
 		Mounts: []*MountPoint{
 			{"CORS", "OPTIONS", "/index"},
-			{"index.html", "GET", "/index"},
+			{"Serve index.html", "GET", "/index"},
 		},
 		CORS:      NewCORSHandler(),
 		IndexHTML: http.FileServer(fileSystemIndexHTML),

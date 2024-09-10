@@ -85,9 +85,9 @@ components:
             properties:
                 action:
                     type: string
-                    example: Cum suscipit deserunt illo repellendus eius qui.
+                    example: Vel sit nihil velit possimus.
             example:
-                action: Est vel occaecati.
+                action: Provident nulla.
             required:
                 - action
 tags:

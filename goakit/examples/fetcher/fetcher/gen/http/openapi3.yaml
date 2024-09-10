@@ -31,7 +31,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/FetchMedia'
+                                $ref: '#/components/schemas/GoaFetch'
                             example:
                                 archive_href: /archive/1
                                 status: 200
@@ -106,7 +106,7 @@ components:
                 - temporary
                 - timeout
                 - fault
-        FetchMedia:
+        GoaFetch:
             type: object
             properties:
                 archive_href:
@@ -120,6 +120,7 @@ components:
                     example: 200
                     format: int64
                     minimum: 0
+            description: FetchResponse contains the HTTP status code returned by the fetched service and the href to the archived results in the archiver service
             example:
                 archive_href: /archive/1
                 status: 200

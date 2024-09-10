@@ -22,7 +22,7 @@ paths:
                 "200":
                     description: OK response.
                     schema:
-                        $ref: '#/definitions/ArnzReadResponseBody'
+                        $ref: '#/definitions/ResponseBody'
                         required:
                             - action
             schemes:
@@ -36,7 +36,7 @@ paths:
                 "200":
                     description: OK response.
                     schema:
-                        $ref: '#/definitions/ArnzUpdateResponseBody'
+                        $ref: '#/definitions/ResponseBody'
                         required:
                             - action
             schemes:
@@ -50,7 +50,7 @@ paths:
                 "200":
                     description: OK response.
                     schema:
-                        $ref: '#/definitions/ArnzCreateResponseBody'
+                        $ref: '#/definitions/ResponseBody'
                         required:
                             - action
             schemes:
@@ -64,7 +64,7 @@ paths:
                 "200":
                     description: OK response.
                     schema:
-                        $ref: '#/definitions/ArnzDeleteResponseBody'
+                        $ref: '#/definitions/ResponseBody'
                         required:
                             - action
             schemes:
@@ -79,14 +79,14 @@ paths:
                 "200":
                     description: OK response.
                     schema:
-                        $ref: '#/definitions/ArnzHealthResponseBody'
+                        $ref: '#/definitions/ResponseBody'
                         required:
                             - action
             schemes:
                 - http
 definitions:
-    ArnzCreateResponseBody:
-        title: ArnzCreateResponseBody
+    ResponseBody:
+        title: ResponseBody
         type: object
         properties:
             action:
@@ -94,49 +94,5 @@ definitions:
                 example: Voluptates voluptate quis est nobis.
         example:
             action: Repellendus vitae non.
-        required:
-            - action
-    ArnzDeleteResponseBody:
-        title: ArnzDeleteResponseBody
-        type: object
-        properties:
-            action:
-                type: string
-                example: Quos hic dolorum quisquam aliquid.
-        example:
-            action: Minus itaque hic at autem est.
-        required:
-            - action
-    ArnzHealthResponseBody:
-        title: ArnzHealthResponseBody
-        type: object
-        properties:
-            action:
-                type: string
-                example: Beatae nulla qui aut.
-        example:
-            action: Labore mollitia nihil architecto et.
-        required:
-            - action
-    ArnzReadResponseBody:
-        title: ArnzReadResponseBody
-        type: object
-        properties:
-            action:
-                type: string
-                example: Vel sit nihil velit possimus.
-        example:
-            action: Provident nulla.
-        required:
-            - action
-    ArnzUpdateResponseBody:
-        title: ArnzUpdateResponseBody
-        type: object
-        properties:
-            action:
-                type: string
-                example: Repellat modi.
-        example:
-            action: Corrupti deleniti aut ipsum nemo illo.
         required:
             - action

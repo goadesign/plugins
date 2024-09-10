@@ -31,7 +31,7 @@ paths:
                 "200":
                     description: OK response.
                     schema:
-                        $ref: '#/definitions/FetcherFetchResponseBody'
+                        $ref: '#/definitions/GoaFetch'
                 "400":
                     description: Bad Request response.
                     schema:
@@ -145,7 +145,7 @@ definitions:
             - temporary
             - timeout
             - fault
-    FetcherFetchResponseBody:
+    GoaFetch:
         title: 'Mediatype identifier: application/vnd.goa.fetch; view=default'
         type: object
         properties:

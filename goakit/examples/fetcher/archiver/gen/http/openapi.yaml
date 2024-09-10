@@ -25,7 +25,7 @@ paths:
                   in: body
                   required: true
                   schema:
-                    $ref: '#/definitions/ArchiverArchiveRequestBody'
+                    $ref: '#/definitions/ArchivePayload'
                     required:
                         - status
                         - body
@@ -33,7 +33,7 @@ paths:
                 "200":
                     description: OK response.
                     schema:
-                        $ref: '#/definitions/ArchiverArchiveResponseBody'
+                        $ref: '#/definitions/GoaArchive'
             schemes:
                 - http
     /archive/{id}:
@@ -54,7 +54,7 @@ paths:
                 "200":
                     description: OK response.
                     schema:
-                        $ref: '#/definitions/ArchiverReadResponseBody'
+                        $ref: '#/definitions/GoaArchive'
                 "400":
                     description: Bad Request response.
                     schema:
@@ -82,8 +82,8 @@ paths:
             schemes:
                 - http
 definitions:
-    ArchiverArchiveRequestBody:
-        title: ArchiverArchiveRequestBody
+    ArchivePayload:
+        title: ArchivePayload
         type: object
         properties:
             body:
@@ -102,34 +102,6 @@ definitions:
         required:
             - status
             - body
-    ArchiverArchiveResponseBody:
-        title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
-        type: object
-        properties:
-            body:
-                type: string
-                description: HTTP response body content
-                example: Harum autem mollitia optio.
-            href:
-                type: string
-                description: The archive resouce href
-                example: /archive/1
-                pattern: ^/archive/[0-9]+$
-            status:
-                type: integer
-                description: HTTP status
-                example: 200
-                format: int64
-                minimum: 0
-        description: ArchiveResponseBody result type (default view)
-        example:
-            body: Alias ipsa eum laborum ut quod.
-            href: /archive/1
-            status: 200
-        required:
-            - href
-            - status
-            - body
     ArchiverReadBadRequestResponseBody:
         title: 'Mediatype identifier: application/vnd.goa.error; view=default'
         type: object
@@ -137,7 +109,7 @@ definitions:
             fault:
                 type: boolean
                 description: Is the error a server-side fault?
-                example: false
+                example: true
             id:
                 type: string
                 description: ID is a unique identifier for this particular occurrence of the problem.
@@ -164,8 +136,8 @@ definitions:
             id: 123abc
             message: parameter 'p' must be an integer
             name: bad_request
-            temporary: true
-            timeout: false
+            temporary: false
+            timeout: true
         required:
             - name
             - id
@@ -180,7 +152,7 @@ definitions:
             fault:
                 type: boolean
                 description: Is the error a server-side fault?
-                example: true
+                example: false
             id:
                 type: string
                 description: ID is a unique identifier for this particular occurrence of the problem.
@@ -196,19 +168,19 @@ definitions:
             temporary:
                 type: boolean
                 description: Is the error temporary?
-                example: true
+                example: false
             timeout:
                 type: boolean
                 description: Is the error a timeout?
                 example: true
         description: read_not_found_response_body result type (default view)
         example:
-            fault: false
+            fault: true
             id: 123abc
             message: parameter 'p' must be an integer
             name: bad_request
             temporary: true
-            timeout: false
+            timeout: true
         required:
             - name
             - id
@@ -216,14 +188,14 @@ definitions:
             - temporary
             - timeout
             - fault
-    ArchiverReadResponseBody:
+    GoaArchive:
         title: 'Mediatype identifier: application/vnd.goa.archive; view=default'
         type: object
         properties:
             body:
                 type: string
                 description: HTTP response body content
-                example: Quia cum qui numquam soluta iusto.
+                example: Harum autem mollitia optio.
             href:
                 type: string
                 description: The archive resouce href
@@ -235,9 +207,9 @@ definitions:
                 example: 200
                 format: int64
                 minimum: 0
-        description: ReadResponseBody result type (default view)
+        description: ArchiveResponseBody result type (default view)
         example:
-            body: Ad beatae incidunt consequuntur aperiam aliquid.
+            body: Alias ipsa eum laborum ut quod.
             href: /archive/1
             status: 200
         required:
