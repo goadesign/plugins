@@ -457,6 +457,7 @@ func New(
 	if fileSystemFileJSON == nil {
 		fileSystemFileJSON = http.Dir(".")
 	}
+	fileSystemFileJSON = appendPrefix(fileSystemFileJSON, "/")
 	return &Server{
 		Mounts: []*MountPoint{
 			{"CORS", "OPTIONS", "/file.json"},
@@ -566,6 +567,7 @@ func New(
 	if fileSystemIndexHTML == nil {
 		fileSystemIndexHTML = http.Dir(".")
 	}
+	fileSystemIndexHTML = appendPrefix(fileSystemIndexHTML, "/")
 	return &Server{
 		Mounts: []*MountPoint{
 			{"CORS", "OPTIONS", "/index"},
