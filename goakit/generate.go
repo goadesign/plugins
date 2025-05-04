@@ -212,10 +212,10 @@ const gokitServerInitT = `
   )
   {
     eh := errorHandler(ctx)
-    {{- if needStream .Services }}
+    {{- if needDialer .Services }}
       upgrader := &websocket.Upgrader{}
     {{- end }}
-  {{- range .Services }}
+  {{- range $svc := .Services }}
     {{- if .Endpoints }}
       {{- range .Endpoints }}
         {{ .ServiceVarName }}{{ .Method.VarName }}Handler = kithttp.NewServer(
@@ -231,7 +231,7 @@ const gokitServerInitT = `
           {{- end }}
         )
       {{- end }}
-      {{ .Service.VarName }}Server = {{ .Service.PkgName }}svr.New({{ .Service.VarName }}Endpoints, mux, dec, enc, eh, nil{{ if needStream $.Services }}, upgrader, nil{{ end }}{{ range .Endpoints }}{{ if .MultipartRequestDecoder }}, {{ $.APIPkg }}.{{ .MultipartRequestDecoder.FuncName }}{{ end }}{{ end }})
+      {{ .Service.VarName }}Server = {{ .Service.PkgName }}svr.New({{ .Service.VarName }}Endpoints, mux, dec, enc, eh, nil{{ if hasWebSocket $svc }}, upgrader, nil{{ end }}{{ range .Endpoints }}{{ if .MultipartRequestDecoder }}, {{ $.APIPkg }}.{{ .MultipartRequestDecoder.FuncName }}{{ end }}{{ end }})
     {{-  else }}
       {{ .Service.VarName }}Server = {{ .Service.PkgName }}svr.New(nil, mux, dec, enc, eh, nil)
     {{-  end }}
