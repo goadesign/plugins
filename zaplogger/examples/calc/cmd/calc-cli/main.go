@@ -24,6 +24,7 @@ func main() {
 	)
 	flag.Usage = usage
 	flag.Parse()
+
 	var (
 		addr    string
 		timeout int
@@ -37,7 +38,7 @@ func main() {
 				addr = "http://localhost:8000/calc"
 			case "production":
 				addr = "https://{version}.goa.design/calc"
-				addr = strings.Replace(addr, "{version}", *versionF, -1)
+				addr = strings.ReplaceAll(addr, "{version}", *versionF)
 			default:
 				fmt.Fprintf(os.Stderr, "invalid host argument: %q (valid hosts: development|production)\n", *hostF)
 				os.Exit(1)
@@ -60,6 +61,7 @@ func main() {
 		scheme = u.Scheme
 		host = u.Host
 	}
+
 	var (
 		endpoint goa.Endpoint
 		payload  any
@@ -121,5 +123,5 @@ func indent(s string) string {
 	if s == "" {
 		return ""
 	}
-	return "    " + strings.Replace(s, "\n", "\n    ", -1)
+	return "    " + strings.ReplaceAll(s, "\n", "\n    ")
 }

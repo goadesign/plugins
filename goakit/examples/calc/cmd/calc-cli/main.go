@@ -23,6 +23,7 @@ func main() {
 	)
 	flag.Usage = usage
 	flag.Parse()
+
 	var (
 		addr    string
 		timeout int
@@ -56,6 +57,7 @@ func main() {
 		scheme = u.Scheme
 		host = u.Host
 	}
+
 	var (
 		endpoint endpoint.Endpoint
 		payload  any
@@ -116,5 +118,5 @@ func indent(s string) string {
 	if s == "" {
 		return ""
 	}
-	return "    " + strings.Replace(s, "\n", "\n    ", -1)
+	return "    " + strings.ReplaceAll(s, "\n", "\n    ")
 }

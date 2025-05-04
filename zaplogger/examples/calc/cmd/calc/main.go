@@ -117,7 +117,7 @@ func main() {
 	case "production":
 		{
 			addr := "https://{version}.goa.design/calc"
-			addr = strings.Replace(addr, "{version}", *versionF, -1)
+			addr = strings.ReplaceAll(addr, "{version}", *versionF)
 			u, err := url.Parse(addr)
 			if err != nil {
 				log.Fatalf(ctx, err, "invalid URL %#v\n", addr)
