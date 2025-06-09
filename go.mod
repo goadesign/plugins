@@ -13,7 +13,7 @@ require (
 	go.uber.org/zap v1.27.0
 	goa.design/clue v1.2.0
 	goa.design/goa/v3 v3.21.1
-	goa.design/model v1.11.1
+	goa.design/model v1.11.2
 )
 
 require (
