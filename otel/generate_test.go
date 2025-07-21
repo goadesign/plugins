@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
 	httpcodegen "goa.design/goa/v3/http/codegen"
 	"goa.design/plugins/v3/otel/testdata"
@@ -29,7 +30,8 @@ func TestOtel(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			root := codegen.RunDSL(t, c.DSL)
-			serverFiles := httpcodegen.ServerFiles("gen", root)
+			services := httpcodegen.NewServicesData(service.NewServicesData(root))
+			serverFiles := httpcodegen.ServerFiles("gen", services)
 			require.Len(t, serverFiles, 2)
 			fs, err := Generate("", []eval.Root{root}, serverFiles)
 			assert.NoError(t, err)

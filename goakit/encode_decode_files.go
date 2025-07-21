@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
 )
@@ -12,20 +13,21 @@ import (
 // EncodeDecodeFiles produces a set of go-kit transport encoders and decoders
 // that wrap the corresponding generated goa functions.
 func EncodeDecodeFiles(genpkg string, root *expr.RootExpr) []*codegen.File {
+	services := httpcodegen.NewServicesData(service.NewServicesData(root))
 	fw := make([]*codegen.File, 2*len(root.API.HTTP.Services))
 	for i, r := range root.API.HTTP.Services {
-		fw[i] = serverEncodeDecode(genpkg, r)
+		fw[i] = serverEncodeDecode(genpkg, r, services)
 	}
 	for i, r := range root.API.HTTP.Services {
-		fw[i+len(root.API.HTTP.Services)] = clientEncodeDecode(genpkg, r)
+		fw[i+len(root.API.HTTP.Services)] = clientEncodeDecode(genpkg, r, services)
 	}
 	return fw
 }
 
 // serverEncodeDecode returns the file defining the go-kit HTTP server encoding
 // and decoding logic.
-func serverEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr) *codegen.File {
-	data := httpcodegen.HTTPServices.Get(svc.Name())
+func serverEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr, services *httpcodegen.ServicesData) *codegen.File {
+	data := services.Get(svc.Name())
 	svcName := data.Service.PathName
 	path := filepath.Join(codegen.Gendir, "http", svcName, "kitserver", "encode_decode.go")
 	title := fmt.Sprintf("%s go-kit HTTP server encoders and decoders", svc.Name())
@@ -70,8 +72,8 @@ func serverEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr) *codegen.File 
 
 // clientEncodeDecode returns the file defining the go-kit HTTP client encoding
 // and decoding logic.
-func clientEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr) *codegen.File {
-	data := httpcodegen.HTTPServices.Get(svc.Name())
+func clientEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr, services *httpcodegen.ServicesData) *codegen.File {
+	data := services.Get(svc.Name())
 	svcName := data.Service.PathName
 	path := filepath.Join(codegen.Gendir, "http", svcName, "kitclient", "encode_decode.go")
 	title := fmt.Sprintf("%s go-kit HTTP client encoders and decoders", svc.Name())

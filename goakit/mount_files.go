@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
 )
@@ -13,17 +14,18 @@ import (
 // MountFiles produces the files containing the HTTP handler mount functions
 // that configure the mux to serve the requests.
 func MountFiles(root *expr.RootExpr) []*codegen.File {
+	services := httpcodegen.NewServicesData(service.NewServicesData(root))
 	fw := make([]*codegen.File, len(root.API.HTTP.Services))
 	for i, svc := range root.API.HTTP.Services {
-		fw[i] = mountFile(svc)
+		fw[i] = mountFile(svc, services)
 	}
 	return fw
 }
 
 // mountFile returns the file defining the mount handler functions for the given
 // service.
-func mountFile(svc *expr.HTTPServiceExpr) *codegen.File {
-	data := httpcodegen.HTTPServices.Get(svc.Name())
+func mountFile(svc *expr.HTTPServiceExpr, services *httpcodegen.ServicesData) *codegen.File {
+	data := services.Get(svc.Name())
 	path := filepath.Join(codegen.Gendir, "http", data.Service.PathName, "kitserver", "mount.go")
 	title := fmt.Sprintf("%s go-kit HTTP server encoders and decoders", svc.Name())
 	sections := []*codegen.SectionTemplate{

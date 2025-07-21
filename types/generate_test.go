@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
-	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
 
 	"goa.design/plugins/v3/types/testdata"
@@ -37,7 +36,6 @@ func TestTypes(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			service.Services = make(service.ServicesData)
 			root := codegen.RunDSL(t, c.DSL)
 			fs, err := Generate("", []eval.Root{root}, nil)
 			require.NoError(t, err)

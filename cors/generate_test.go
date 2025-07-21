@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
 	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
@@ -43,7 +44,8 @@ func NewCORSHandler() http.Handler {
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
-			fs := httpcodegen.ServerFiles("", expr.Root)
+			services := httpcodegen.NewServicesData(service.NewServicesData(expr.Root))
+			fs := httpcodegen.ServerFiles("", services)
 			require.Len(t, fs, c.CodeGenCount)
 			cors.Generate("", []eval.Root{expr.Root}, fs)
 			expectedCodeIndex := -1

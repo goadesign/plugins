@@ -64,7 +64,8 @@ func typesFile(genpkg string, r *expr.RootExpr) *codegen.File {
 	}
 
 	// Generate the code and retrieve the relevant sections.
-	files := service.Files(genpkg, svc, make(map[string][]string))
+	services := service.NewServicesData(r)
+	files := service.Files(genpkg, svc, services, make(map[string][]string))
 	for _, f := range files {
 		for _, section := range f.SectionTemplates {
 			sn := section.Name
