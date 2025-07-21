@@ -90,7 +90,7 @@ paths:
                         text/plain:
                             schema:
                                 type: string
-                                example: Aut nulla cumque ad rem asperiores inventore.
+                                example: Asperiores inventore.
                             example: Id facilis fuga vel.
 components:
     schemas:
@@ -100,7 +100,7 @@ components:
                 body:
                     type: string
                     description: HTTP response body content
-                    example: Aliquid aut culpa quia aliquam cupiditate similique.
+                    example: Voluptatem aliquam nihil rerum rem.
                 status:
                     type: integer
                     description: HTTP status
@@ -108,7 +108,7 @@ components:
                     format: int64
                     minimum: 0
             example:
-                body: Aliquam nihil rerum rem.
+                body: Consequatur et sint cumque dolorum corrupti.
                 status: 200
             required:
                 - status
@@ -139,9 +139,9 @@ components:
                 timeout:
                     type: boolean
                     description: Is the error a timeout?
-                    example: false
+                    example: true
             example:
-                fault: true
+                fault: false
                 id: 123abc
                 message: parameter 'p' must be an integer
                 name: bad_request
@@ -160,7 +160,7 @@ components:
                 body:
                     type: string
                     description: HTTP response body content
-                    example: Consequatur et sint cumque dolorum corrupti.
+                    example: Ut consequuntur laboriosam nobis.
                 href:
                     type: string
                     description: The archive resouce href
@@ -174,7 +174,7 @@ components:
                     minimum: 0
             description: Archive is an HTTP response archive
             example:
-                body: Ut consequuntur laboriosam nobis.
+                body: Qui delectus ut esse.
                 href: /archive/1
                 status: 200
             required:

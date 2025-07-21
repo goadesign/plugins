@@ -89,7 +89,7 @@ definitions:
             body:
                 type: string
                 description: HTTP response body content
-                example: Numquam qui qui eligendi doloribus.
+                example: Placeat aspernatur ullam qui numquam quis numquam.
             status:
                 type: integer
                 description: HTTP status
@@ -97,7 +97,7 @@ definitions:
                 format: int64
                 minimum: 0
         example:
-            body: Placeat aspernatur ullam qui numquam quis numquam.
+            body: Quia cum qui numquam soluta iusto.
             status: 200
         required:
             - status
@@ -125,18 +125,18 @@ definitions:
             temporary:
                 type: boolean
                 description: Is the error temporary?
-                example: true
+                example: false
             timeout:
                 type: boolean
                 description: Is the error a timeout?
-                example: false
+                example: true
         description: read_bad_request_response_body result type (default view)
         example:
             fault: false
             id: 123abc
             message: parameter 'p' must be an integer
             name: bad_request
-            temporary: false
+            temporary: true
             timeout: true
         required:
             - name
@@ -180,7 +180,7 @@ definitions:
             message: parameter 'p' must be an integer
             name: bad_request
             temporary: true
-            timeout: true
+            timeout: false
         required:
             - name
             - id
@@ -195,7 +195,7 @@ definitions:
             body:
                 type: string
                 description: HTTP response body content
-                example: Harum autem mollitia optio.
+                example: Alias ipsa eum laborum ut quod.
             href:
                 type: string
                 description: The archive resouce href
@@ -209,7 +209,7 @@ definitions:
                 minimum: 0
         description: ArchiveResponseBody result type (default view)
         example:
-            body: Alias ipsa eum laborum ut quod.
+            body: Numquam qui qui eligendi doloribus.
             href: /archive/1
             status: 200
         required:

@@ -20,9 +20,9 @@ paths:
                   schema:
                     type: integer
                     description: Left operand
-                    example: 1698882017578366363
+                    example: 6747375795581831989
                     format: int64
-                  example: 6747375795581831989
+                  example: 5855163322465186600
                 - name: right
                   in: path
                   description: Right operand
@@ -30,9 +30,9 @@ paths:
                   schema:
                     type: integer
                     description: Right operand
-                    example: 5855163322465186600
+                    example: 1385266597691519195
                     format: int64
-                  example: 1385266597691519195
+                  example: 686605435966370186
             responses:
                 "101":
                     description: Switching Protocols response.
@@ -40,9 +40,9 @@ paths:
                         application/json:
                             schema:
                                 type: integer
-                                example: 4212629202012168060
+                                example: 1698882017578366363
                                 format: int64
-                            example: 686605435966370186
+                            example: 8228676432890045784
     /swagger.json:
         get:
             tags:
@@ -60,16 +60,16 @@ components:
                 a:
                     type: integer
                     description: Left operand
-                    example: 8803302123552712831
+                    example: 5401762099778430809
                     format: int64
                 b:
                     type: integer
                     description: Right operand
-                    example: 5401762099778430809
+                    example: 1918630006328122782
                     format: int64
             example:
-                a: 1918630006328122782
-                b: 4288748512599820841
+                a: 4288748512599820841
+                b: 4212629202012168060
             required:
                 - a
                 - b

@@ -61,8 +61,8 @@ paths:
                         text/plain:
                             schema:
                                 type: string
-                                example: Natus beatae cupiditate impedit ad autem quis.
-                            example: Doloremque quia ut nisi ea esse.
+                                example: Ad autem quis laboriosam ut cumque sequi.
+                            example: Ea esse aut.
 components:
     schemas:
         Error:
@@ -87,7 +87,7 @@ components:
                 temporary:
                     type: boolean
                     description: Is the error temporary?
-                    example: false
+                    example: true
                 timeout:
                     type: boolean
                     description: Is the error a timeout?
@@ -98,7 +98,7 @@ components:
                 message: parameter 'p' must be an integer
                 name: bad_request
                 temporary: false
-                timeout: true
+                timeout: false
             required:
                 - name
                 - id
