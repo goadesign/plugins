@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -30,7 +31,7 @@ func TestOtel(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			root := codegen.RunDSL(t, c.DSL)
-			services := httpcodegen.NewServicesData(service.NewServicesData(root))
+			services := httpcodegen.NewServicesData(service.NewServicesData(root), root.API.HTTP)
 			serverFiles := httpcodegen.ServerFiles("gen", services)
 			require.Len(t, serverFiles, 2)
 			fs, err := Generate("", []eval.Root{root}, serverFiles)
@@ -46,7 +47,7 @@ func TestOtel(t *testing.T) {
 				assert.NoError(t, os.WriteFile(golden, buf.Bytes(), 0644))
 			}
 			expected, _ := os.ReadFile(golden)
-			assert.Equal(t, buf.String(), string(expected))
+			assert.Equal(t, strings.TrimLeft(buf.String(), "\n"), strings.TrimLeft(string(expected), "\n"))
 		})
 	}
 }

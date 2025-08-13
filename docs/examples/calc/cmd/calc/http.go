@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"goa.design/clue/debug"
 	"goa.design/clue/log"
 	goahttp "goa.design/goa/v3/http"
@@ -50,8 +49,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, calcEndpoints *calc.Endpo
 	)
 	{
 		eh := errorHandler(ctx)
-		upgrader := &websocket.Upgrader{}
-		calcServer = calcsvr.New(calcEndpoints, mux, dec, enc, eh, nil, upgrader, nil, nil)
+		calcServer = calcsvr.New(calcEndpoints, mux, dec, enc, eh, nil, nil)
 	}
 
 	// Configure the mux.

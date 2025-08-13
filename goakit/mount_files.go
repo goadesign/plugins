@@ -14,7 +14,7 @@ import (
 // MountFiles produces the files containing the HTTP handler mount functions
 // that configure the mux to serve the requests.
 func MountFiles(root *expr.RootExpr) []*codegen.File {
-	services := httpcodegen.NewServicesData(service.NewServicesData(root))
+	services := httpcodegen.NewServicesData(service.NewServicesData(root), root.API.HTTP)
 	fw := make([]*codegen.File, len(root.API.HTTP.Services))
 	for i, svc := range root.API.HTTP.Services {
 		fw[i] = mountFile(svc, services)

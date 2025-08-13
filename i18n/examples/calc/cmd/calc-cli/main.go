@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"net/url"
 	"os"
+	"slices"
+	"sort"
 	"strings"
 
 	goa "goa.design/goa/v3/pkg"
@@ -74,7 +75,7 @@ func main() {
 		}
 	}
 	if err != nil {
-		if errors.Is(err, flag.ErrHelp) {
+		if err == flag.ErrHelp {
 			os.Exit(0)
 		}
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -95,6 +96,10 @@ func main() {
 }
 
 func usage() {
+	var usageCommands []string
+	usageCommands = append(usageCommands, httpUsageCommands()...)
+	sort.Strings(usageCommands)
+	usageCommands = slices.Compact(usageCommands)
 	fmt.Fprintf(os.Stderr, `%s is a command line client for the calc API.
 
 Usage:
@@ -112,7 +117,7 @@ Additional help:
 
 Example:
 %s
-`, os.Args[0], os.Args[0], indent(httpUsageCommands()), os.Args[0], indent(httpUsageExamples()))
+`, os.Args[0], os.Args[0], indent(strings.Join(usageCommands, "\n")), os.Args[0], indent(httpUsageExamples()))
 }
 
 func indent(s string) string {

@@ -13,7 +13,7 @@ import (
 // EncodeDecodeFiles produces a set of go-kit transport encoders and decoders
 // that wrap the corresponding generated goa functions.
 func EncodeDecodeFiles(genpkg string, root *expr.RootExpr) []*codegen.File {
-	services := httpcodegen.NewServicesData(service.NewServicesData(root))
+	services := httpcodegen.NewServicesData(service.NewServicesData(root), root.API.HTTP)
 	fw := make([]*codegen.File, 2*len(root.API.HTTP.Services))
 	for i, r := range root.API.HTTP.Services {
 		fw[i] = serverEncodeDecode(genpkg, r, services)

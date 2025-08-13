@@ -16,14 +16,6 @@ func NewCalc() calc.Service {
 }
 
 // Add implements add.
-func (s *calcsrvc) Add(ctx context.Context, p *calc.AddPayload, stream calc.AddServerStream) error {
-	defer stream.Close()
-	if err := stream.Send(p.Left + p.Right); err != nil {
-		return err
-	}
-	data, err := stream.Recv()
-	for err != nil {
-		return err
-	}
-	return stream.Send(data.A + data.B)
+func (s *calcsrvc) Add(ctx context.Context, p *calc.AddPayload) (int, error) {
+	return p.Left + p.Right, nil
 }

@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"net/url"
 	"os"
+	"slices"
+	"sort"
 	"strings"
 
 	goa "goa.design/goa/v3/pkg"
@@ -15,10 +16,10 @@ import (
 
 func main() {
 	var (
-		hostF = flag.String("host", "development", "Server host (valid values: development, production)")
-		addrF = flag.String("url", "", "URL to service host")
-
+		hostF    = flag.String("host", "development", "Server host (valid values: development, production)")
+		addrF    = flag.String("url", "", "URL to service host")
 		versionF = flag.String("version", "v1", "API version")
+
 		verboseF = flag.Bool("verbose", false, "Print request and response details")
 		vF       = flag.Bool("v", false, "Print request and response details")
 		timeoutF = flag.Int("timeout", 30, "Maximum number of seconds to wait for response")
@@ -78,7 +79,7 @@ func main() {
 		}
 	}
 	if err != nil {
-		if errors.Is(err, flag.ErrHelp) {
+		if err == flag.ErrHelp {
 			os.Exit(0)
 		}
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -99,6 +100,10 @@ func main() {
 }
 
 func usage() {
+	var usageCommands []string
+	usageCommands = append(usageCommands, httpUsageCommands()...)
+	sort.Strings(usageCommands)
+	usageCommands = slices.Compact(usageCommands)
 	fmt.Fprintf(os.Stderr, `%s is a command line client for the calc API.
 
 Usage:
@@ -117,7 +122,7 @@ Additional help:
 
 Example:
 %s
-`, os.Args[0], os.Args[0], indent(httpUsageCommands()), os.Args[0], indent(httpUsageExamples()))
+`, os.Args[0], os.Args[0], indent(strings.Join(usageCommands, "\n")), os.Args[0], indent(httpUsageExamples()))
 }
 
 func indent(s string) string {

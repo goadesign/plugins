@@ -44,7 +44,7 @@ func NewCORSHandler() http.Handler {
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			httpcodegen.RunHTTPDSL(t, c.DSL)
-			services := httpcodegen.NewServicesData(service.NewServicesData(expr.Root))
+			services := httpcodegen.NewServicesData(service.NewServicesData(expr.Root), expr.Root.API.HTTP)
 			fs := httpcodegen.ServerFiles("", services)
 			require.Len(t, fs, c.CodeGenCount)
 			cors.Generate("", []eval.Root{expr.Root}, fs)
