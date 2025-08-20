@@ -218,8 +218,6 @@ func buildMethodTargets(root *expr.RootExpr, svc *expr.ServiceExpr, m *expr.Meth
 		case md.IsJSONRPCSSE:
 			targets = append(targets, &suiteTarget{IsJSONRPCSSE: true, IsServerStream: true})
 		}
-		if md.IsJSONRPCSSE {
-		}
 		if md.IsJSONRPCWebSocket {
 			ws := &suiteTarget{IsJSONRPCWS: true}
 			switch m.Stream {
