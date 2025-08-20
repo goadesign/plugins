@@ -1,0 +1,365 @@
+openapi: 3.0.3
+info:
+    title: Goa API
+    version: 0.0.1
+servers:
+    - url: http://localhost:80
+      description: Default server for calculator
+paths:
+    /add:
+        post:
+            tags:
+                - calculator
+            summary: add calculator
+            description: Add two numbers
+            operationId: calculator#add
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AddRequestBody'
+                        example:
+                            a: 0.48385320048391656
+                            b: 0.9771980381809557
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AddResponseBody'
+                            example:
+                                operation: Eaque rerum nam quia.
+                                result: 0.773011939229645
+    /batch/add:
+        get:
+            tags:
+                - calculator
+            summary: batch_add calculator
+            description: Add multiple pairs of numbers using streaming
+            operationId: calculator#batch_add
+            responses:
+                "101":
+                    description: Switching Protocols response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BatchAddResponseBody'
+                            example:
+                                index: 8134626810564669109
+                                result: 0.22570322529056652
+    /divide:
+        post:
+            tags:
+                - calculator
+            summary: divide calculator
+            description: Divide two numbers
+            operationId: calculator#divide
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DivideRequestBody'
+                        example:
+                            dividend: 0.3381157086007379
+                            divisor: 0.10085904223482155
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AddResponseBody'
+                            example:
+                                operation: Velit debitis omnis qui consequatur.
+                                result: 0.8978518180181319
+                "400":
+                    description: 'division_by_zero: Cannot divide by zero'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CalculatorError'
+                            example:
+                                code: Iure in ullam consequuntur et.
+                                message: Molestiae accusamus.
+    /factorial:
+        post:
+            tags:
+                - calculator
+            summary: factorial calculator
+            description: Calculate factorial of a number
+            operationId: calculator#factorial
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/FactorialRequestBody'
+                        example:
+                            "n": 13
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FactorialResponseBody'
+                            example:
+                                computation_time_ms: 6829611744525323227
+                                operation: Nisi dolorem.
+                                result: 5854456288989740176
+                "400":
+                    description: 'invalid_input: Input must be between 0 and 20'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CalculatorError'
+                            example:
+                                code: Qui voluptate neque necessitatibus incidunt.
+                                message: Doloremque vitae excepturi corporis omnis id quia.
+    /statistics:
+        post:
+            tags:
+                - calculator
+            summary: statistics calculator
+            description: Calculate statistics for a list of numbers
+            operationId: calculator#statistics
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/StatisticsRequestBody'
+                        example:
+                            numbers:
+                                - 0.8678700718070149
+                                - 0.1307058221039593
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StatisticsResponseBody'
+                            example:
+                                count: 6600796599509098298
+                                max: 0.519236748548347
+                                mean: 0.5566619723489756
+                                median: 0.2733721708658389
+                                min: 0.1204543205519432
+                                sum: 0.7491691210375645
+                "400":
+                    description: 'empty_list: List cannot be empty'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CalculatorError'
+                            example:
+                                code: Aliquam vero nihil neque quos autem.
+                                message: Exercitationem quia.
+components:
+    schemas:
+        AddRequestBody:
+            type: object
+            properties:
+                a:
+                    type: number
+                    description: First number
+                    example: 0.37325416144795265
+                    format: double
+                b:
+                    type: number
+                    description: Second number
+                    example: 0.7301853220345266
+                    format: double
+            example:
+                a: 0.29729191048186143
+                b: 0.9867042417279527
+            required:
+                - a
+                - b
+        AddResponseBody:
+            type: object
+            properties:
+                operation:
+                    type: string
+                    description: Operation performed
+                    example: Veritatis expedita sequi officia asperiores ea.
+                result:
+                    type: number
+                    description: Sum of a and b
+                    example: 0.28176396681310417
+                    format: double
+            example:
+                operation: Facere dolorem minus quidem.
+                result: 0.5529570918203803
+            required:
+                - result
+                - operation
+        BatchAddResponseBody:
+            type: object
+            properties:
+                index:
+                    type: integer
+                    description: Operation index
+                    example: 1714914565971966639
+                    format: int64
+                result:
+                    type: number
+                    description: Sum
+                    example: 0.22358037317965293
+                    format: double
+            example:
+                index: 7917721569154069432
+                result: 0.9357296827903688
+            required:
+                - result
+                - index
+        CalculatorError:
+            type: object
+            properties:
+                code:
+                    type: string
+                    description: Error code
+                    example: Aut consequatur qui enim quis tempore illo.
+                message:
+                    type: string
+                    description: Error message
+                    example: Est dolore sed voluptas.
+            description: Calculator operation error
+            example:
+                code: Sunt id qui est odio architecto.
+                message: Consequatur qui fuga fuga animi.
+            required:
+                - message
+                - code
+        DivideRequestBody:
+            type: object
+            properties:
+                dividend:
+                    type: number
+                    description: Number to divide
+                    example: 0.816259358648213
+                    format: double
+                divisor:
+                    type: number
+                    description: Number to divide by
+                    example: 0.6556157216339713
+                    format: double
+            example:
+                dividend: 0.372150544448051
+                divisor: 0.5228870111246902
+            required:
+                - dividend
+                - divisor
+        FactorialRequestBody:
+            type: object
+            properties:
+                "n":
+                    type: integer
+                    description: Number to calculate factorial of
+                    example: 1
+                    format: int64
+                    minimum: 0
+                    maximum: 20
+            example:
+                "n": 17
+            required:
+                - "n"
+        FactorialResponseBody:
+            type: object
+            properties:
+                computation_time_ms:
+                    type: integer
+                    description: Time taken in milliseconds
+                    example: 5261662638956423644
+                    format: int64
+                operation:
+                    type: string
+                    description: Operation performed
+                    example: Autem quia sit et non tenetur earum.
+                result:
+                    type: integer
+                    description: Factorial result
+                    example: 417552389187586387
+                    format: int64
+            example:
+                computation_time_ms: 3869760259095449557
+                operation: Minima est sint nesciunt non debitis quas.
+                result: 596411252200358909
+            required:
+                - result
+                - operation
+                - computation_time_ms
+        StatisticsRequestBody:
+            type: object
+            properties:
+                numbers:
+                    type: array
+                    items:
+                        type: number
+                        example: 0.7596200238167663
+                        format: double
+                    description: List of numbers
+                    example:
+                        - 0.4949858031535961
+                    minItems: 1
+            example:
+                numbers:
+                    - 0.01660948832881857
+                    - 0.7320761105755836
+                    - 0.7192825875438703
+            required:
+                - numbers
+        StatisticsResponseBody:
+            type: object
+            properties:
+                count:
+                    type: integer
+                    description: Number of values
+                    example: 8904861888759614967
+                    format: int64
+                max:
+                    type: number
+                    description: Maximum value
+                    example: 0.7574082018526362
+                    format: double
+                mean:
+                    type: number
+                    description: Average of numbers
+                    example: 0.5843299417333512
+                    format: double
+                median:
+                    type: number
+                    description: Median value
+                    example: 0.5185546285454544
+                    format: double
+                min:
+                    type: number
+                    description: Minimum value
+                    example: 0.4359089776498559
+                    format: double
+                sum:
+                    type: number
+                    description: Sum of all values
+                    example: 0.8489749638520645
+                    format: double
+            example:
+                count: 6750028252849433506
+                max: 0.2566669709507907
+                mean: 0.8100516090346208
+                median: 0.2754458115059533
+                min: 0.7207615088247141
+                sum: 0.3407807650548764
+            required:
+                - mean
+                - median
+                - min
+                - max
+                - count
+                - sum
+tags:
+    - name: calculator
+      description: A simple calculator service to demonstrate testing plugin features

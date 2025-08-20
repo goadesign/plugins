@@ -1,0 +1,180 @@
+# Test scenarios for calculator service
+validators:
+  package: testvalidators
+  path: goa.design/plugins/v3/testing/examples/calculator/testvalidators
+
+scenarios:
+  - name: "simple_addition"
+    description: "Basic addition test"
+    steps:
+      - method: add
+        payload:
+          a: 5
+          b: 3
+        expect:
+          result:
+            Result: 8
+
+  - name: "addition_via_grpc"
+    description: "Test addition using gRPC transport"
+    transport: grpc
+    steps:
+      - method: add
+        payload:
+          a: 10
+          b: 20
+        expect:
+          result:
+            Result: 30
+
+  - name: "division_by_zero_error"
+    description: "Test division by zero error"
+    steps:
+      - method: divide
+        payload:
+          dividend: 10
+          divisor: 0
+        expect:
+          error: "Calculator operation error"
+
+  - name: "successful_division"
+    description: "Test successful division"
+    steps:
+      - method: divide
+        payload:
+          dividend: 100
+          divisor: 4
+        expect:
+          result:
+            Result: 25
+
+  - name: "division_with_validation"
+    description: "Test division with custom validation"
+    steps:
+      - method: divide
+        payload:
+          dividend: 100
+          divisor: 3
+        expect:
+          result: {}
+          validator: ValidatePrecision
+
+  - name: "fast_factorial"
+    description: "Test factorial with small number"
+    timeout: "1s"
+    steps:
+      - method: factorial
+        payload:
+          n: 5
+        expect:
+          result:
+            Result: 120
+
+  - name: "large_factorial"
+    description: "Test factorial with larger number"
+    timeout: "5s"
+    steps:
+      - method: factorial
+        payload:
+          n: 15
+        expect:
+          result:
+            Result: 1307674368000
+          validator: ValidateFactorialTiming
+
+  - name: "statistics_validation"
+    description: "Test statistics calculation"
+    steps:
+      - method: statistics
+        payload:
+          numbers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        expect:
+          result:
+            Mean: 5.5
+            Median: 5.5
+            Min: 1
+            Max: 10
+            Count: 10
+            Sum: 55
+          validator: ValidateStatisticsAccuracy
+
+  - name: "edge_cases"
+    description: "Test edge cases"
+    steps:
+      - method: factorial
+        payload:
+          n: 0
+        expect:
+          result:
+            Result: 1
+            
+      - method: statistics
+        payload:
+          numbers: [42]
+        expect:
+          result:
+            Mean: 42
+            Median: 42
+            Min: 42
+            Max: 42
+            Count: 1
+            Sum: 42
+            
+      - method: add
+        payload:
+          a: -10
+          b: 10
+        expect:
+          result:
+            Result: 0
+
+  - name: "calculation_workflow"
+    description: "Test a workflow of calculations"
+    timeout: "10s"
+    steps:
+      - method: add
+        payload:
+          a: 10
+          b: 5
+        expect:
+          result:
+            Result: 15
+            
+      - method: divide
+        payload:
+          dividend: 15
+          divisor: 3
+        expect:
+          result:
+            Result: 5
+            
+      - method: factorial
+        payload:
+          n: 5
+        expect:
+          result:
+            Result: 120
+
+  - name: "statistics_outliers"
+    description: "Test statistics with outliers"
+    steps:
+      - method: statistics
+        payload:
+          numbers: [1, 2, 3, 4, 100]
+        expect:
+          result:
+            Mean: 22
+            Median: 3
+            Min: 1
+            Max: 100
+          validator: ValidateOutliers
+
+  - name: "floating_point_precision"
+    description: "Test floating point precision"
+    steps:
+      - method: add
+        payload:
+          a: 0.1
+          b: 0.2
+        expect:
+          validator: ValidateFloatingPoint
