@@ -1,0 +1,22 @@
+# Test scenarios for test-http-grpc service
+validators:
+  package: validators
+  path: goa.design/plugins/v3/testing/examples/httpgrpc/validators
+scenarios:
+  - name: "test_with_validation"
+    steps:
+      - method: http_no_stream
+        payload:
+          msg: "hello world"
+        expect:
+          result:
+            out: "hello world"
+          validator: ValidateHTTPNoStream
+      
+      - method: mixed_no_stream
+        payload:
+          msg: "foo bar"
+        expect:
+          result:
+            out: "foo bar"
+          validator: ValidateMixedResult

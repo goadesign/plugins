@@ -1,0 +1,102 @@
+// Code generated with goa v3.22.1, DO NOT EDIT.
+//
+// calculator protocol buffer definition
+//
+// Command:
+// $ goa gen goa.design/plugins/v3/testing/examples/calculator/design
+
+syntax = "proto3";
+
+package calculator;
+
+option go_package = "/calculatorpb";
+
+// A simple calculator service to demonstrate testing plugin features
+service Calculator {
+	// Add two numbers
+	rpc Add (AddRequest) returns (AddResponse);
+	// Divide two numbers
+	rpc Divide (DivideRequest) returns (DivideResponse);
+	// Calculate factorial of a number
+	rpc Factorial (FactorialRequest) returns (FactorialResponse);
+	// Calculate statistics for a list of numbers
+	rpc Statistics (StatisticsRequest) returns (StatisticsResponse);
+	// Add multiple pairs of numbers using streaming
+	rpc BatchAdd (stream BatchAddStreamingRequest) returns (stream BatchAddResponse);
+}
+
+message AddRequest {
+	// First number
+	double a = 1;
+	// Second number
+	double b = 2;
+}
+
+message AddResponse {
+	// Sum of a and b
+	double result = 1;
+	// Operation performed
+	string operation = 2;
+}
+
+message DivideRequest {
+	// Number to divide
+	double dividend = 1;
+	// Number to divide by
+	double divisor = 2;
+}
+
+message DivideResponse {
+	// Division result
+	double result = 1;
+	// Operation performed
+	string operation = 2;
+}
+
+message FactorialRequest {
+	// Number to calculate factorial of
+	sint32 n = 1;
+}
+
+message FactorialResponse {
+	// Factorial result
+	sint64 result = 1;
+	// Operation performed
+	string operation = 2;
+	// Time taken in milliseconds
+	sint32 computation_time_ms = 3;
+}
+
+message StatisticsRequest {
+	// List of numbers
+	repeated double numbers = 1;
+}
+
+message StatisticsResponse {
+	// Average of numbers
+	double mean = 1;
+	// Median value
+	double median = 2;
+	// Minimum value
+	double min = 3;
+	// Maximum value
+	double max = 4;
+	// Number of values
+	sint32 count = 5;
+	// Sum of all values
+	double sum = 6;
+}
+
+message BatchAddStreamingRequest {
+	// First number
+	double a = 1;
+	// Second number
+	double b = 2;
+}
+
+message BatchAddResponse {
+	// Sum
+	double result = 1;
+	// Operation index
+	sint32 index = 2;
+}

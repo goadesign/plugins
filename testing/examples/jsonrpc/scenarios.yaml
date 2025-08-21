@@ -1,0 +1,55 @@
+# Example test scenarios for test-jsonrpc service
+# This file demonstrates the YAML scenario testing capability.
+# Customize these scenarios to match your testing needs.
+
+# Optional: Configure global validator settings
+# validators:
+#   package: myvalidators  # Package containing validator functions
+#   path: myapp/testing/validators  # Import path for the package
+
+scenarios:
+  # Basic CRUD lifecycle test
+  - name: "basic_lifecycle"
+    description: "Tests basic service functionality"
+    transport: jsonrpc
+    steps:
+      # Example step for jsonrpc_no_stream method
+      - method: jsonrpc_no_stream
+        payload:
+          # Add your test payload here
+          # Example: name: "test"
+        expect:
+          result:
+            # Add expected result fields here
+            # Example: status: "success"
+          # Optional: specify custom validator function
+          # validator: ValidateCustomResult  # Function name in current package
+          # validator_pkg: myvalidators     # Or specify different package
+
+  # Transport-specific testing
+
+  # Error handling test
+  - name: "error_handling"
+    description: "Tests error conditions"
+    steps:
+
+# Note: The scenario runner performs basic smoke testing.
+# For detailed assertions and complex test logic, write custom Go tests.
+
+# Transport values (based on your service configuration):
+#
+# - auto
+#
+# - jsonrpc
+#
+# - jsonrpc-sse
+#
+# - jsonrpc-ws
+#
+
+# Available methods and their transports:
+#
+# - jsonrpc_no_stream: jsonrpc
+#
+# - jsonrpc_no_stream_error: jsonrpc
+#

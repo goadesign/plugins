@@ -1,0 +1,111 @@
+// Code generated with goa v3.22.1, DO NOT EDIT.
+//
+// test-http-grpc protocol buffer definition
+//
+// Command:
+// $ goa gen goa.design/plugins/v3/testing/examples/httpgrpc/design
+
+syntax = "proto3";
+
+package test_http_grpc;
+
+option go_package = "/test_http_grpcpb";
+
+// Testing plugin matrix across HTTP and gRPC transports
+service TestHTTPGrpc {
+	// GrpcNoStream implements grpc_no_stream.
+	rpc GrpcNoStream (GrpcNoStreamRequest) returns (GrpcNoStreamResponse);
+	// GrpcNoStreamErrorDivByZero implements grpc_no_stream_error_div_by_zero.
+	rpc GrpcNoStreamErrorDivByZero (GrpcNoStreamErrorDivByZeroRequest) returns (GrpcNoStreamErrorDivByZeroResponse);
+	// GrpcServerStream implements grpc_server_stream.
+	rpc GrpcServerStream (GrpcServerStreamRequest) returns (stream GrpcServerStreamResponse);
+	// GrpcClientStream implements grpc_client_stream.
+	rpc GrpcClientStream (stream GrpcClientStreamStreamingRequest) returns (GrpcClientStreamResponse);
+	// GrpcBidiStream implements grpc_bidi_stream.
+	rpc GrpcBidiStream (stream GrpcBidiStreamStreamingRequest) returns (stream GrpcBidiStreamResponse);
+	// MixedNoStream implements mixed_no_stream.
+	rpc MixedNoStream (MixedNoStreamRequest) returns (MixedNoStreamResponse);
+	// MixedServerStream implements mixed_server_stream.
+	rpc MixedServerStream (MixedServerStreamRequest) returns (stream MixedServerStreamResponse);
+	// MixedClientStreamWsGrpc implements mixed_client_stream_ws_grpc.
+	rpc MixedClientStreamWsGrpc (stream MixedClientStreamWsGrpcStreamingRequest) returns (MixedClientStreamWsGrpcResponse);
+	// MixedBidiStreamWsGrpc implements mixed_bidi_stream_ws_grpc.
+	rpc MixedBidiStreamWsGrpc (stream MixedBidiStreamWsGrpcStreamingRequest) returns (stream MixedBidiStreamWsGrpcResponse);
+}
+
+message GrpcNoStreamRequest {
+	string msg = 1;
+}
+
+message GrpcNoStreamResponse {
+	string out = 1;
+}
+
+message GrpcNoStreamErrorDivByZeroDivisionByZeroError {
+	// division by zero error message
+	string message_ = 1;
+}
+
+message GrpcNoStreamErrorDivByZeroRequest {
+	double dividend = 1;
+	double divisor = 2;
+}
+
+message GrpcNoStreamErrorDivByZeroResponse {
+	double quotient = 1;
+}
+
+message GrpcServerStreamRequest {
+	sint32 from = 1;
+}
+
+message GrpcServerStreamResponse {
+	sint32 value = 1;
+}
+
+message GrpcClientStreamStreamingRequest {
+	sint32 value = 1;
+}
+
+message GrpcClientStreamResponse {
+	sint32 sum = 1;
+}
+
+message GrpcBidiStreamStreamingRequest {
+	string in = 1;
+}
+
+message GrpcBidiStreamResponse {
+	string out = 1;
+}
+
+message MixedNoStreamRequest {
+	string msg = 1;
+}
+
+message MixedNoStreamResponse {
+	string out = 1;
+}
+
+message MixedServerStreamRequest {
+}
+
+message MixedServerStreamResponse {
+	string event = 1;
+}
+
+message MixedClientStreamWsGrpcStreamingRequest {
+	string message_ = 1;
+}
+
+message MixedClientStreamWsGrpcResponse {
+	string out = 1;
+}
+
+message MixedBidiStreamWsGrpcStreamingRequest {
+	string message_ = 1;
+}
+
+message MixedBidiStreamWsGrpcResponse {
+	string message_ = 1;
+}
