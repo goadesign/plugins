@@ -256,9 +256,9 @@ scenarios:                          # Required: List of test scenarios
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `name` | string | ✅ | Unique identifier for the scenario |
-| `description` | string | ❌ | Human-readable description for documentation |
-| `transport` | string | ❌ | Default transport: `auto`, `http`, `grpc`, `jsonrpc`, `http-ws`, `http-sse`, `jsonrpc-ws`, `jsonrpc-sse` |
-| `timeout` | duration | ❌ | Default timeout for all steps (e.g., `10s`, `500ms`, `1m`) |
+| `description` | string |   | Human-readable description for documentation |
+| `transport` | string |   | Default transport: `auto`, `http`, `grpc`, `jsonrpc`, `http-ws`, `http-sse`, `jsonrpc-ws`, `jsonrpc-sse` |
+| `timeout` | duration |   | Default timeout for all steps (e.g., `10s`, `500ms`, `1m`) |
 | `steps` | []Step | ✅ | Ordered list of test steps to execute |
 
 #### Step Fields
@@ -266,22 +266,22 @@ scenarios:                          # Required: List of test scenarios
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `method` | string | ✅ | Service method name as defined in DSL |
-| `transport` | string | ❌ | Override scenario's default transport |
-| `timeout` | duration | ❌ | Override scenario's default timeout |
-| `payload` | object | ❌ | Input data matching your DSL payload structure |
-| `stream` | bool | ❌ | Use streaming variant for mixed endpoints |
-| `send` | []object | ❌ | Messages to send (client/bidi streaming) |
-| `receive` | []object | ❌ | Expected received messages (server/bidi streaming) |
-| `expect` | Expectation | ❌ | Expected outcome (see below) |
+| `transport` | string |   | Override scenario's default transport |
+| `timeout` | duration |   | Override scenario's default timeout |
+| `payload` | object |   | Input data matching your DSL payload structure |
+| `stream` | bool |   | Use streaming variant for mixed endpoints |
+| `send` | []object |   | Messages to send (client/bidi streaming) |
+| `receive` | []object |   | Expected received messages (server/bidi streaming) |
+| `expect` | Expectation |   | Expected outcome (see below) |
 
 #### Expectation Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `result` | object | ❌ | Expected response fields (partial match) |
-| `error` | string | ❌ | Expected error message substring |
-| `stream` | []object | ❌ | Expected stream messages in order |
-| `validator` | string | ❌ | Custom validator function name |
+| `result` | object |   | Expected response fields (partial match) |
+| `error` | string |   | Expected error message substring |
+| `stream` | []object |   | Expected stream messages in order |
+| `validator` | string |   | Custom validator function name |
 
 ### Transport Options Explained
 
