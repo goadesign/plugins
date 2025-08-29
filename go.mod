@@ -8,11 +8,12 @@ require (
 	github.com/aws/aws-lambda-go v1.49.0
 	github.com/go-kit/kit v0.13.0
 	github.com/go-kit/log v0.2.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 	go.uber.org/zap v1.27.0
 	goa.design/clue v1.2.2
 	goa.design/goa/v3 v3.22.1
 	goa.design/model v1.12.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -40,5 +41,4 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250811230008-5f3141c8851a // indirect
 	google.golang.org/grpc v1.74.2 // indirect
 	google.golang.org/protobuf v1.36.7 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
