@@ -26,9 +26,9 @@ func TestPrepare(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			os.Setenv("GOA_I18N", c.Locales)
-			httpcodegen.RunHTTPDSL(t, c.DSL)
+			root := httpcodegen.RunHTTPDSL(t, c.DSL)
 
-			roots, _ := eval.Context.Roots()
+			roots := []eval.Root{root}
 
 			// Expect Description to be empty
 			checkExpr(roots, &expr.ServiceExpr{}, func(se interface{}) {
@@ -63,11 +63,11 @@ func checkExpr(roots []eval.Root, t interface{}, cb func(se interface{})) {
 func TestGenerate(t *testing.T) {
 	os.Setenv("GOA_I18N", "en,nl")
 
-	httpcodegen.RunHTTPDSL(t, testdata.SimpleI18nDSL)
-	roots, _ := eval.Context.Roots()
+	root := httpcodegen.RunHTTPDSL(t, testdata.SimpleI18nDSL)
+	roots := []eval.Root{root}
 	i18n.Prepare("", roots)
 
-	fs, _ := httpcodegen.OpenAPIFiles(expr.Root)
+	fs, _ := httpcodegen.OpenAPIFiles(root)
 	gfs, _ := i18n.Generate("", roots, fs)
 
 	if len(gfs) != 8 {

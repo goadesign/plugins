@@ -10,7 +10,6 @@ import (
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/generator"
 	"goa.design/goa/v3/eval"
-	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
 	"goa.design/plugins/v3/goakit/testdata"
 )
@@ -25,8 +24,8 @@ func TestGenerate(t *testing.T) {
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			httpcodegen.RunHTTPDSL(t, c.DSL)
-			roots := []eval.Root{expr.Root}
+			root := httpcodegen.RunHTTPDSL(t, c.DSL)
+			roots := []eval.Root{root}
 			files := generateFiles(t, roots)
 			newFiles, err := Generate("", roots, files)
 			if err != nil {
@@ -49,8 +48,8 @@ func TestGoakitify(t *testing.T) {
 	}
 	for name, dsl := range cases {
 		t.Run(name, func(t *testing.T) {
-			httpcodegen.RunHTTPDSL(t, dsl)
-			roots := []eval.Root{expr.Root}
+			root := httpcodegen.RunHTTPDSL(t, dsl)
+			roots := []eval.Root{root}
 			files := generateFiles(t, roots)
 			newFiles, err := Goakitify("", roots, files)
 			require.NoError(t, err)
@@ -111,8 +110,8 @@ func TestGoakitifyExample(t *testing.T) {
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			httpcodegen.RunHTTPDSL(t, c.DSL)
-			roots := []eval.Root{expr.Root}
+			root := httpcodegen.RunHTTPDSL(t, c.DSL)
+			roots := []eval.Root{root}
 			files := generateExamples(t, roots)
 			files, err := GoakitifyExample("", roots, files)
 			require.NoError(t, err)

@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
-	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
 
 	"goa.design/plugins/v3/goakit/testdata"
@@ -67,8 +66,8 @@ func TestServerEncodeDecode(t *testing.T) {
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			httpcodegen.RunHTTPDSL(t, c.DSL)
-			fs := EncodeDecodeFiles("", expr.Root)
+			root := httpcodegen.RunHTTPDSL(t, c.DSL)
+			fs := EncodeDecodeFiles("", root)
 			require.Len(t, fs, 2)
 			var found bool
 			for _, f := range fs {
@@ -126,8 +125,8 @@ func TestClientEncodeDecode(t *testing.T) {
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			httpcodegen.RunHTTPDSL(t, c.DSL)
-			fs := EncodeDecodeFiles("", expr.Root)
+			root := httpcodegen.RunHTTPDSL(t, c.DSL)
+			fs := EncodeDecodeFiles("", root)
 			require.Len(t, fs, 2)
 			var found bool
 			for _, f := range fs {
