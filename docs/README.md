@@ -98,16 +98,14 @@ agnostic documentation in the form of a JSON document structured as follows:
 
 ## Enabling the Plugin
 
-To enable the plugin simply import both the `docs` package as follows:
+To enable the plugin, import the docs DSL package in your design. Importing the DSL also registers the plugin automatically:
 
 ```go
 import (
-  _ "goa.design/plugins/v3/docs"
+  . "goa.design/plugins/v3/docs/dsl"
   . "goa.design/goa/v3/dsl"
 )
 ```
-Note the use of blank identifier to import the `docs` package which is necessary
-as the package is imported solely for its side-effects (initialization).
 
 ## Effects on Code Generation
 
@@ -121,3 +119,34 @@ If `goa gen` is invoked with a custom output path (i.e. with the `-o` argument)
 then the plugin appends to any pre-existing `doc.json` file instead of
 overwriting. Make sure to delete the file prior to running `goa gen` when using
 the `-o` option.
+
+### Using JSON tags as field names
+
+By default, the generated documentation uses attribute names as field names in definitions and examples. To instead use JSON struct tags declared via the `Meta("struct:tag:json", ...)` DSL, enable it in your design using the docs DSL (which also registers the plugin):
+
+```go
+import (
+  . "goa.design/plugins/v3/docs/dsl"
+  . "goa.design/goa/v3/dsl"
+)
+
+func init() {
+  UseJSONTags()
+}
+```
+
+When enabled, object property names in `definitions`, payloads, results, and error schemas/examples are renamed to match their JSON tag (the part before the first comma, e.g. `name,omitempty` becomes `name`). Fields tagged with `"-"` are ignored for renaming and keep their original names. The transformation does not mutate the Goa OpenAPI global definitions.
+
+### Inlining $refs in JSON Schema
+
+To inline `$ref` schemas where possible (while preserving cycles), enable it via the docs DSL:
+
+```go
+import (
+  . "goa.design/plugins/v3/docs/dsl"
+)
+
+func init() {
+  InlineRefs()
+}
+```
