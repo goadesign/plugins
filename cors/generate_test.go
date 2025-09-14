@@ -9,7 +9,6 @@ import (
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
-	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
 
 	"goa.design/plugins/v3/cors"
@@ -43,11 +42,11 @@ func NewCORSHandler() http.Handler {
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			httpcodegen.RunHTTPDSL(t, c.DSL)
-			services := httpcodegen.NewServicesData(service.NewServicesData(expr.Root), expr.Root.API.HTTP)
+			root := httpcodegen.RunHTTPDSL(t, c.DSL)
+			services := httpcodegen.NewServicesData(service.NewServicesData(root), root.API.HTTP)
 			fs := httpcodegen.ServerFiles("", services)
 			require.Len(t, fs, c.CodeGenCount)
-			cors.Generate("", []eval.Root{expr.Root}, fs)
+			cors.Generate("", []eval.Root{root}, fs)
 			expectedCodeIndex := -1
 			for _, f := range fs {
 				if filepath.Base(f.Path) != "server.go" {

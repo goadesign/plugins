@@ -3,7 +3,6 @@ package goakit
 import (
 	"testing"
 
-	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
 	"goa.design/plugins/v3/goakit/testdata"
 )
@@ -49,8 +48,8 @@ func TestMountFiles(t *testing.T) {
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			httpcodegen.RunHTTPDSL(t, c.DSL)
-			fs := MountFiles(expr.Root)
+			root := httpcodegen.RunHTTPDSL(t, c.DSL)
+			fs := MountFiles(root)
 			if len(fs) != 1 {
 				t.Fatalf("got %d files, expected 1", len(fs))
 			}
