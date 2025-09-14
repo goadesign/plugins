@@ -30,16 +30,45 @@ func init() { Register() }
 
 // Generate produces the documentation JSON file.
 func Generate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
+	// First, build a complete map of all definitions from all roots.
+	// This ensures that cross-package type references can be resolved.
+	allDefs := make(map[string]*openapi.Schema)
 	for _, root := range roots {
 		if r, ok := root.(*expr.RootExpr); ok {
-			files = append(files, docsFile(r))
+			// Create a temporary, isolated context for each root to avoid global state pollution.
+			prev := openapi.Definitions
+			openapi.Definitions = make(map[string]*openapi.Schema)
+
+			for _, tpe := range r.Types {
+				if ut, ok := tpe.(*expr.UserTypeExpr); ok {
+					openapi.GenerateTypeDefinition(r.API, ut)
+				}
+			}
+			for _, rt := range r.ResultTypes {
+				openapi.GenerateResultTypeDefinition(r.API, rt, expr.DefaultView)
+			}
+
+			// Merge the generated definitions into the global map.
+			for n, s := range openapi.Definitions {
+				if _, exists := allDefs[n]; !exists {
+					allDefs[n] = dupSchema(s)
+				}
+			}
+
+			// Restore the original global definitions to maintain isolation.
+			openapi.Definitions = prev
+		}
+	}
+
+	for _, root := range roots {
+		if r, ok := root.(*expr.RootExpr); ok {
+			files = append(files, docsFile(r, allDefs))
 		}
 	}
 	return files, nil
 }
 
-func docsFile(r *expr.RootExpr) *codegen.File {
-
+func docsFile(r *expr.RootExpr, allDefs map[string]*openapi.Schema) *codegen.File {
 	docs := &data{
 		API:      apiDocs(r.API),
 		Services: servicesDocs(r),
@@ -47,11 +76,13 @@ func docsFile(r *expr.RootExpr) *codegen.File {
 
 	// Default behavior: use global OpenAPI definitions to preserve ordering and
 	// compatibility with existing golden tests.
-	defs := openapi.Definitions
+	defs := allDefs
 
 	// If either option is enabled, build a local definition map for this root
 	// and apply transforms/inlining as needed, isolating from global state.
-	if plugexpr.Root.UseJSONTags || plugexpr.Root.InlineRefs {
+	if plugexpr.Root.UseJSONTags {
+		// Re-scope the definitions to only those present in the current root,
+		// but use the globally-aware `allDefs` for lookups during transforms.
 		local := make(map[string]*openapi.Schema)
 		prev := openapi.Definitions
 		openapi.Definitions = make(map[string]*openapi.Schema)
@@ -63,8 +94,10 @@ func docsFile(r *expr.RootExpr) *codegen.File {
 		for _, rt := range r.ResultTypes {
 			openapi.GenerateResultTypeDefinition(r.API, rt, expr.DefaultView)
 		}
-		for n, s := range openapi.Definitions {
-			local[n] = dupSchema(s)
+		for n := range openapi.Definitions {
+			if def, ok := allDefs[n]; ok {
+				local[n] = dupSchema(def)
+			}
 		}
 		openapi.Definitions = prev
 
@@ -92,31 +125,38 @@ func docsFile(r *expr.RootExpr) *codegen.File {
 
 	// Inline $refs if requested via DSL flag.
 	if plugexpr.Root.InlineRefs {
+		// When inlining, use the complete set of definitions from all roots
+		// to ensure cross-package references can be resolved.
+		inliningDefs := allDefs
+		if plugexpr.Root.UseJSONTags {
+			inliningDefs = transformDefinitionsWithJSONTagsHybrid(r, allDefs, nil)
+		}
+
 		// Inline inside service payloads/results/errors.
 		for _, svc := range docs.Services {
 			for _, m := range svc.Methods {
 				if m.Payload != nil && m.Payload.Type != nil {
-					inlineRefsInSchema(m.Payload.Type, defs, make(map[string]bool))
+					inlineRefsInSchema(m.Payload.Type, inliningDefs, make(map[string]bool))
 				}
 				if m.StreamingPayload != nil && m.StreamingPayload.Type != nil {
-					inlineRefsInSchema(m.StreamingPayload.Type, defs, make(map[string]bool))
+					inlineRefsInSchema(m.StreamingPayload.Type, inliningDefs, make(map[string]bool))
 				}
 				if m.Result != nil && m.Result.Type != nil {
-					inlineRefsInSchema(m.Result.Type, defs, make(map[string]bool))
+					inlineRefsInSchema(m.Result.Type, inliningDefs, make(map[string]bool))
 				}
 				if m.StreamingResult != nil && m.StreamingResult.Type != nil {
-					inlineRefsInSchema(m.StreamingResult.Type, defs, make(map[string]bool))
+					inlineRefsInSchema(m.StreamingResult.Type, inliningDefs, make(map[string]bool))
 				}
 				for _, e := range m.Errors {
 					if e != nil && e.Type != nil {
-						inlineRefsInSchema(e.Type, defs, make(map[string]bool))
+						inlineRefsInSchema(e.Type, inliningDefs, make(map[string]bool))
 					}
 				}
 			}
 		}
 		// Inline inside definitions themselves (properties that refer to other defs).
 		for _, def := range defs {
-			inlineRefsInSchema(def, defs, make(map[string]bool))
+			inlineRefsInSchema(def, inliningDefs, make(map[string]bool))
 		}
 	}
 
