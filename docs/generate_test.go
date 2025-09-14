@@ -291,3 +291,45 @@ func TestJSONTagsAndInlineRefs_Complex(t *testing.T) {
 		t.Fatalf("expected required array in result type, got: %#v", rt)
 	}
 }
+
+func TestInlineRefs_CrossService(t *testing.T) {
+	t.Cleanup(func() { plugexpr.Root.UseJSONTags = false; plugexpr.Root.InlineRefs = false })
+	docsMap := genDocs(t, func() {
+		InlineRefs()
+		API("Test", func() {})
+		var SharedType = Type("SharedType", func() {
+			Field(1, "A", String)
+			Required("A")
+		})
+		Service("S1", func() {
+			Method("M1", func() {
+				Payload(SharedType)
+				HTTP(func() { GET("/") })
+				GRPC(func() {})
+			})
+		})
+		Service("S2", func() {
+			Method("M2", func() {
+				Payload(SharedType)
+				HTTP(func() { GET("/s2") })
+				GRPC(func() {})
+			})
+		})
+	})
+
+	// Check S1
+	s1 := docsMap["services"].(map[string]any)["S1"].(map[string]any)
+	m1 := s1["methods"].(map[string]any)["M1"].(map[string]any)
+	pt1 := m1["payload"].(map[string]any)["type"].(map[string]any)
+	if _, hasRef := pt1["$ref"]; hasRef {
+		t.Fatalf("S1: expected inlined payload schema for shared type, found $ref: %#v", pt1)
+	}
+
+	// Check S2
+	s2 := docsMap["services"].(map[string]any)["S2"].(map[string]any)
+	m2 := s2["methods"].(map[string]any)["M2"].(map[string]any)
+	pt2 := m2["payload"].(map[string]any)["type"].(map[string]any)
+	if _, hasRef := pt2["$ref"]; hasRef {
+		t.Fatalf("S2: expected inlined payload schema for shared type, found $ref: %#v", pt2)
+	}
+}
