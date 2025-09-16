@@ -223,22 +223,6 @@ func (h *Harness) HTTPRequest(method, path string, body any) *http.Request {
 	return req
 }
 
-// HTTPWSURL builds a websocket URL from the base HTTP URL and path.
-func (h *Harness) HTTPWSURL(path string) string {
-	base := h.HTTPURL()
-	u, err := url.Parse(base)
-	if err != nil {
-		h.t.Fatalf("invalid base URL: %v", err)
-	}
-	if u.Scheme == "https" {
-		u.Scheme = "wss"
-	} else {
-		u.Scheme = "ws"
-	}
-	u.Path = path
-	return u.String()
-}
-
 // HTTPDo performs an HTTP request and returns the response.
 func (h *Harness) HTTPDo(req *http.Request) *http.Response {
 	h.t.Helper()

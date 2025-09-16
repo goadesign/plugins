@@ -114,6 +114,7 @@ func (h *Harness) HTTPRequest(method, path string, body any) *http.Request {
 	return req
 }
 
+{{- if .HasStreams }}
 {{ printf "HTTPWSURL builds a websocket URL from the base HTTP URL and path." | comment }}
 func (h *Harness) HTTPWSURL(path string) string {
 	base := h.HTTPURL()
@@ -129,6 +130,7 @@ func (h *Harness) HTTPWSURL(path string) string {
 	u.Path = path
 	return u.String()
 }
+{{- end }}
 
 {{ printf "HTTPDo performs an HTTP request and returns the response." | comment }}
 func (h *Harness) HTTPDo(req *http.Request) *http.Response {
