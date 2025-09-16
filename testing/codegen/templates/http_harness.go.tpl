@@ -5,11 +5,13 @@ func (h *Harness) setupHTTP() {
 	
 	// Create HTTP handler
 	mux := goahttp.NewMuxer()
+	{{- if .HasStreams }}
 	// Create WebSocket upgrader for streaming endpoints
 	upgrader := &websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
-	server := httpsvr.New(endpoints, mux, goahttp.RequestDecoder, goahttp.ResponseEncoder, nil, nil, upgrader, nil)
+	{{- end }}
+	server := httpsvr.New(endpoints, mux, goahttp.RequestDecoder, goahttp.ResponseEncoder, nil, nil{{ if .HasStreams }}, upgrader, nil{{ end }})
 	httpsvr.Mount(mux, server)
 	
 	// Create test server
@@ -40,10 +42,12 @@ func (h *Harness) getHTTPClientImpl() *httpcli.Client {
     }
     scheme := u.Scheme
     host := u.Host
+    {{- if .HasStreams }}
     // Create WebSocket dialer for streaming endpoints
     wsDialer := &websocket.Dialer{
         Proxy: http.ProxyFromEnvironment,
     }
+    {{- end }}
     
     return httpcli.NewClient(
         scheme,
@@ -52,8 +56,10 @@ func (h *Harness) getHTTPClientImpl() *httpcli.Client {
         goahttp.RequestEncoder,
         goahttp.ResponseDecoder,
         false,
+        {{- if .HasStreams }}
         wsDialer,
         nil,
+        {{- end }}
     )
 }
 
