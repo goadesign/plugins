@@ -33,50 +33,50 @@ func (h *Harness) HTTPClient() *http.Client {
 
 {{ printf "getHTTPClientImpl returns the underlying HTTP client implementation." | comment }}
 func (h *Harness) getHTTPClientImpl() *httpcli.Client {
-    if h.httpSvr == nil || h.httpCli == nil {
-        h.t.Fatal("HTTP transport not configured")
-    }
-    u, err := url.Parse(h.httpSvr.URL)
-    if err != nil {
-        h.t.Fatalf("invalid test server URL: %v", err)
-    }
-    scheme := u.Scheme
-    host := u.Host
-    {{- if .HasStreams }}
-    // Create WebSocket dialer for streaming endpoints
-    wsDialer := &websocket.Dialer{
-        Proxy: http.ProxyFromEnvironment,
-    }
-    {{- end }}
-    
-    return httpcli.NewClient(
-        scheme,
-        host,
-        h.httpCli,
-        goahttp.RequestEncoder,
-        goahttp.ResponseDecoder,
-        false,
-        {{- if .HasStreams }}
-        wsDialer,
-        nil,
-        {{- end }}
-    )
+	if h.httpSvr == nil || h.httpCli == nil {
+		h.t.Fatal("HTTP transport not configured")
+	}
+	u, err := url.Parse(h.httpSvr.URL)
+	if err != nil {
+		h.t.Fatalf("invalid test server URL: %v", err)
+	}
+	scheme := u.Scheme
+	host := u.Host
+	{{- if .HasStreams }}
+	// Create WebSocket dialer for streaming endpoints
+	wsDialer := &websocket.Dialer{
+		Proxy: http.ProxyFromEnvironment,
+	}
+	{{- end }}
+
+	return httpcli.NewClient(
+		scheme,
+		host,
+		h.httpCli,
+		goahttp.RequestEncoder,
+		goahttp.ResponseDecoder,
+		false,
+		{{- if .HasStreams }}
+		wsDialer,
+		nil,
+		{{- end }}
+	)
 }
 
 {{ printf "HTTPClientEndpoints creates HTTP client endpoints for the service." | comment }}
 func (h *Harness) HTTPClientEndpoints() *{{ .PkgName }}.Endpoints {
-    c := h.getHTTPClientImpl()
-    return &{{ .PkgName }}.Endpoints{
-        {{- range .Methods }}
-        {{- $method := . }}
-        {{- range .Targets }}
-        {{- if or .IsHTTPPlain .IsHTTPServerSent .IsHTTPWebSocket }}
-        {{ $method.VarName }}: c.{{ $method.VarName }}(),
-        {{- break }}
-        {{- end }}
-        {{- end }}
-        {{- end }}
-    }
+	c := h.getHTTPClientImpl()
+	return &{{ .PkgName }}.Endpoints{
+		{{- range .Methods }}
+		{{- $method := . }}
+		{{- range .Targets }}
+		{{- if or .IsHTTPPlain .IsHTTPServerSent .IsHTTPWebSocket }}
+		{{ $method.VarName }}: c.{{ $method.VarName }}(),
+		{{- break }}
+		{{- end }}
+		{{- end }}
+		{{- end }}
+	}
 }
 
 {{ printf "HTTPURL returns the base URL of the test HTTP server." | comment }}
