@@ -5,11 +5,13 @@ func (h *Harness) setupHTTP() {
 	
 	// Create HTTP handler
 	mux := goahttp.NewMuxer()
+	{{- if .HasStreams }}
 	// Create WebSocket upgrader for streaming endpoints
 	upgrader := &websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
-	server := httpsvr.New(endpoints, mux, goahttp.RequestDecoder, goahttp.ResponseEncoder, nil, nil, upgrader, nil)
+	{{- end }}
+	server := httpsvr.New(endpoints, mux, goahttp.RequestDecoder, goahttp.ResponseEncoder, nil, nil{{ if .HasStreams }}, upgrader, nil{{ end }})
 	httpsvr.Mount(mux, server)
 	
 	// Create test server
@@ -31,46 +33,50 @@ func (h *Harness) HTTPClient() *http.Client {
 
 {{ printf "getHTTPClientImpl returns the underlying HTTP client implementation." | comment }}
 func (h *Harness) getHTTPClientImpl() *httpcli.Client {
-    if h.httpSvr == nil || h.httpCli == nil {
-        h.t.Fatal("HTTP transport not configured")
-    }
-    u, err := url.Parse(h.httpSvr.URL)
-    if err != nil {
-        h.t.Fatalf("invalid test server URL: %v", err)
-    }
-    scheme := u.Scheme
-    host := u.Host
-    // Create WebSocket dialer for streaming endpoints
-    wsDialer := &websocket.Dialer{
-        Proxy: http.ProxyFromEnvironment,
-    }
-    
-    return httpcli.NewClient(
-        scheme,
-        host,
-        h.httpCli,
-        goahttp.RequestEncoder,
-        goahttp.ResponseDecoder,
-        false,
-        wsDialer,
-        nil,
-    )
+	if h.httpSvr == nil || h.httpCli == nil {
+		h.t.Fatal("HTTP transport not configured")
+	}
+	u, err := url.Parse(h.httpSvr.URL)
+	if err != nil {
+		h.t.Fatalf("invalid test server URL: %v", err)
+	}
+	scheme := u.Scheme
+	host := u.Host
+	{{- if .HasStreams }}
+	// Create WebSocket dialer for streaming endpoints
+	wsDialer := &websocket.Dialer{
+		Proxy: http.ProxyFromEnvironment,
+	}
+	{{- end }}
+
+	return httpcli.NewClient(
+		scheme,
+		host,
+		h.httpCli,
+		goahttp.RequestEncoder,
+		goahttp.ResponseDecoder,
+		false,
+		{{- if .HasStreams }}
+		wsDialer,
+		nil,
+		{{- end }}
+	)
 }
 
 {{ printf "HTTPClientEndpoints creates HTTP client endpoints for the service." | comment }}
 func (h *Harness) HTTPClientEndpoints() *{{ .PkgName }}.Endpoints {
-    c := h.getHTTPClientImpl()
-    return &{{ .PkgName }}.Endpoints{
-        {{- range .Methods }}
-        {{- $method := . }}
-        {{- range .Targets }}
-        {{- if or .IsHTTPPlain .IsHTTPServerSent .IsHTTPWebSocket }}
-        {{ $method.VarName }}: c.{{ $method.VarName }}(),
-        {{- break }}
-        {{- end }}
-        {{- end }}
-        {{- end }}
-    }
+	c := h.getHTTPClientImpl()
+	return &{{ .PkgName }}.Endpoints{
+		{{- range .Methods }}
+		{{- $method := . }}
+		{{- range .Targets }}
+		{{- if or .IsHTTPPlain .IsHTTPServerSent .IsHTTPWebSocket }}
+		{{ $method.VarName }}: c.{{ $method.VarName }}(),
+		{{- break }}
+		{{- end }}
+		{{- end }}
+		{{- end }}
+	}
 }
 
 {{ printf "HTTPURL returns the base URL of the test HTTP server." | comment }}
@@ -108,6 +114,7 @@ func (h *Harness) HTTPRequest(method, path string, body any) *http.Request {
 	return req
 }
 
+{{- if .HasStreams }}
 {{ printf "HTTPWSURL builds a websocket URL from the base HTTP URL and path." | comment }}
 func (h *Harness) HTTPWSURL(path string) string {
 	base := h.HTTPURL()
@@ -123,6 +130,7 @@ func (h *Harness) HTTPWSURL(path string) string {
 	u.Path = path
 	return u.String()
 }
+{{- end }}
 
 {{ printf "HTTPDo performs an HTTP request and returns the response." | comment }}
 func (h *Harness) HTTPDo(req *http.Request) *http.Response {

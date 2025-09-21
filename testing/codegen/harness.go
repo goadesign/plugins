@@ -206,7 +206,7 @@ func testingPath(_ string, svc *expr.ServiceExpr) string {
 // hasStreams checks if the service has streaming methods.
 func hasStreams(svc *expr.ServiceExpr) bool {
 	for _, m := range svc.Methods {
-		if m.Stream != expr.NoStreamKind {
+		if m.IsStreaming() {
 			return true
 		}
 	}
