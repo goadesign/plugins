@@ -2,7 +2,9 @@ package codegen
 
 import (
 	"fmt"
+	"maps"
 	"path/filepath"
+	"slices"
 	"text/template"
 
 	"goa.design/goa/v3/codegen"
@@ -91,8 +93,8 @@ func buildErrorsData(svcData *service.Data, svc *expr.ServiceExpr) *errorsData {
 	}
 
 	// Convert map to slice
-	for _, e := range errorMap {
-		data.Errors = append(data.Errors, e)
+	for _, k := range slices.Sorted(maps.Keys(errorMap)) {
+		data.Errors = append(data.Errors, errorMap[k])
 	}
 
 	return data
