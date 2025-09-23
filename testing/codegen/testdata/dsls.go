@@ -4,6 +4,33 @@ import (
 	. "goa.design/goa/v3/dsl"
 )
 
+var WithResultDSL = func() {
+	Service("WithResultService", func() {
+		Method("WithResultMethod", func() {
+			Result(func() {
+				Field(1, "Attribute", String)
+			})
+			HTTP(func() {
+				GET("/")
+			})
+			GRPC(func() {})
+			JSONRPC(func() {})
+		})
+	})
+}
+
+var WithoutResultDSL = func() {
+	Service("WithoutResultService", func() {
+		Method("WithoutResultMethod", func() {
+			HTTP(func() {
+				GET("/")
+			})
+			GRPC(func() {})
+			JSONRPC(func() {})
+		})
+	})
+}
+
 var WithStreamDSL = func() {
 	Service("WithStreamService", func() {
 		Method("WithStreamMethod", func() {
