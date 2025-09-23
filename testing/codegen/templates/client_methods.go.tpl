@@ -64,7 +64,8 @@ func (c *Client) {{ $method.VarName }}(ctx context.Context{{- if $method.Payload
 		}
 		return res.(*{{ $.PkgName }}.{{ $method.Result }}), nil
 		{{- else }}
-		return endpoint(ctx{{- if $method.PayloadRef }}, p{{ end }})
+		_, err := endpoint(ctx, {{- if $method.PayloadRef }}p{{ else }}nil{{ end }})
+		return err
 		{{- end }}
 		{{- end }}
 	{{- end }}
@@ -89,7 +90,8 @@ func (c *Client) {{ $method.VarName }}(ctx context.Context{{- if $method.Payload
 		}
 		return res.(*{{ $.PkgName }}.{{ $method.Result }}), nil
 		{{- else }}
-		return endpoint(ctx{{- if $method.PayloadRef }}, p{{ end }})
+		_, err := endpoint(ctx, {{- if $method.PayloadRef }}p{{ else }}nil{{ end }})
+		return err
 		{{- end }}
 		{{- end }}
 	{{- end }}
@@ -129,7 +131,8 @@ func (c *Client) {{ $method.VarName }}(ctx context.Context{{- if $method.Payload
 		}
 		return res.(*{{ $.PkgName }}.{{ $method.Result }}), nil
 		{{- else }}
-		return endpoint(ctx{{- if $method.PayloadRef }}, p{{ end }})
+		_, err := endpoint(ctx, {{- if $method.PayloadRef }}p{{ else }}nil{{ end }})
+		return err
 		{{- end }}
 		{{- end }}
 	{{- end }}

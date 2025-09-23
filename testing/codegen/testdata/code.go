@@ -76,19 +76,22 @@ func (c *Client) WithoutResultMethod(ctx context.Context) error {
 			return fmt.Errorf("HTTP transport not configured")
 		}
 		endpoint := c.httpClient.WithoutResultMethod()
-		return endpoint(ctx)
+		_, err := endpoint(ctx, nil)
+		return err
 	case GRPCTransport:
 		if c.grpcClient == nil {
 			return fmt.Errorf("gRPC transport not configured")
 		}
 		endpoint := c.grpcClient.WithoutResultMethod()
-		return endpoint(ctx)
+		_, err := endpoint(ctx, nil)
+		return err
 	case JSONRPCTransport:
 		if c.jsonrpcClient == nil {
 			return fmt.Errorf("JSON-RPC transport not configured")
 		}
 		endpoint := c.jsonrpcClient.WithoutResultMethod()
-		return endpoint(ctx)
+		_, err := endpoint(ctx, nil)
+		return err
 
 	default:
 		return fmt.Errorf("no transport available for WithoutResultMethod")
