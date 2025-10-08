@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package types;
+
+option go_package = "example.com/test/types";
+
+message ArrayItem {
+  repeated string names = 1;
+}
+
+message ArrayArray {
+  repeated ArrayItem array = 1;
+}
+

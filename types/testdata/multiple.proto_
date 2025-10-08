@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package types;
+
+option go_package = "example.com/test/types";
+
+message AType {
+  string attr = 1;
+}
+
+message OtherType {
+  string attr = 1;
+}
+
+message Composite {
+  optional AType attr = 1;
+  optional OtherType other = 2;
+}
+

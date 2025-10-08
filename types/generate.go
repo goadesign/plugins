@@ -25,6 +25,7 @@ const Gendir = "types"
 // init registers the plugin generator function.
 func init() {
 	codegen.RegisterPlugin("types", "gen", nil, Generate)
+	codegen.RegisterPlugin("types-proto", "gen", nil, GenerateProto)
 }
 
 // Generate produces the documentation JSON file.
