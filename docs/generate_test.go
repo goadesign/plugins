@@ -68,7 +68,8 @@ func TestDocs(t *testing.T) {
 			require.NoError(t, fs[0].SectionTemplates[0].Write(&buf))
 			golden := filepath.Join("testdata", fmt.Sprintf("%s.json", c.Name))
 			if *update {
-				os.WriteFile(golden, buf.Bytes(), 0644)
+				err := os.WriteFile(golden, buf.Bytes(), 0644)
+				require.NoError(t, err)
 				return
 			}
 			expected, err := os.ReadFile(golden)
@@ -301,6 +302,108 @@ func TestBothOptions(t *testing.T) {
 		if xreq, ok := xdef["required"].([]any); ok {
 			assert.Contains(t, xreq, any("aa"))
 		}
+	}
+}
+
+func TestOpenAPIGenerate_ServiceLevelDisabled(t *testing.T) {
+	t.Cleanup(func() { plugexpr.Root.UseJSONTags = false; plugexpr.Root.InlineRefs = false })
+
+	docsMap := genDocs(t, func() {
+		API("Test", func() {})
+		Service("S1", func() {
+			Method("M1", func() {
+				HTTP(func() { GET("/") })
+				GRPC(func() {})
+			})
+		})
+		Service("S2", func() {
+			Meta("openapi:generate", "false")
+			Method("M2", func() {
+				HTTP(func() { GET("/s2") })
+				GRPC(func() {})
+			})
+		})
+	})
+
+	services := docsMap["services"].(map[string]any)
+	if _, ok := services["S1"]; !ok {
+		t.Fatalf("expected service S1 to be present")
+	}
+	if _, ok := services["S2"]; ok {
+		t.Fatalf("expected service S2 to be omitted when openapi:generate=false")
+	}
+}
+
+func TestOpenAPIGenerate_MethodLevelDisabled(t *testing.T) {
+	t.Cleanup(func() { plugexpr.Root.UseJSONTags = false; plugexpr.Root.InlineRefs = false })
+
+	docsMap := genDocs(t, func() {
+		API("Test", func() {})
+		Service("S", func() {
+			Method("M1", func() {
+				HTTP(func() { GET("/") })
+				GRPC(func() {})
+			})
+			Method("M2", func() {
+				Meta("openapi:generate", "false")
+				HTTP(func() { GET("/m2") })
+				GRPC(func() {})
+			})
+		})
+	})
+
+	svc := docsMap["services"].(map[string]any)["S"].(map[string]any)
+	methods := svc["methods"].(map[string]any)
+	if _, ok := methods["M1"]; !ok {
+		t.Fatalf("expected method M1 to be present")
+	}
+	if _, ok := methods["M2"]; ok {
+		t.Fatalf("expected method M2 to be omitted when openapi:generate=false")
+	}
+}
+
+func TestOpenAPIGenerate_HTTPMeta_ServiceAndMethodDisabled(t *testing.T) {
+	t.Cleanup(func() { plugexpr.Root.UseJSONTags = false; plugexpr.Root.InlineRefs = false })
+
+	docsMap := genDocs(t, func() {
+		API("Test", func() {})
+		// Service disabled via HTTP-level meta
+		Service("SHTTP", func() {
+			HTTP(func() {
+				Meta("openapi:generate", "false")
+			})
+			Method("M", func() {
+				HTTP(func() { GET("/sh") })
+				GRPC(func() {})
+			})
+		})
+		// Method disabled via HTTP-level meta
+		Service("S", func() {
+			Method("M1", func() {
+				HTTP(func() { GET("/") })
+				GRPC(func() {})
+			})
+			Method("M2", func() {
+				HTTP(func() {
+					Meta("openapi:generate", "false")
+					GET("/m2")
+				})
+				GRPC(func() {})
+			})
+		})
+	})
+
+	services := docsMap["services"].(map[string]any)
+	if _, ok := services["SHTTP"]; ok {
+		t.Fatalf("expected service SHTTP to be omitted when HTTP-level openapi:generate=false")
+	}
+	svc := services["S"].(map[string]any)
+	methods := svc["methods"].(map[string]any)
+	if _, ok := methods["M1"]; !ok {
+		t.Fatalf("expected method M1 to be present")
+	}
+	if _, ok := methods["M2"]; ok {
+		t.Fatalf("expected method M2 to be omitted when HTTP-level openapi:generate=false")
 	}
 }
 

@@ -113,6 +113,41 @@ Enabling the plugin changes the behavior of the `gen` command of the `goa` tool.
 The command generates an additional `docs.json` at the top level containing the
 documentation.
 
+### Respecting openapi:generate metadata
+
+The docs plugin respects Goa's `Meta("openapi:generate", "false")` (and legacy `"swagger:generate"`) to control documentation generation:
+
+- Service-level: adding `Meta("openapi:generate", "false")` to a `Service` excludes that service from `docs.json`.
+- Method-level: adding `Meta("openapi:generate", "false")` to a `Method` excludes that method from `docs.json`.
+- HTTP-level: the same meta can be set inside `HTTP(...)` blocks for services or methods and will be honored.
+
+This mirrors Goa's OpenAPI generation semantics.
+
+### Disabling docs.json per service or method
+
+To disable inclusion in `docs.json` without affecting OpenAPI generation, use the docs DSL `DisableDocs()` inside a service or method DSL:
+
+```go
+import (
+  . "goa.design/plugins/v3/docs/dsl"
+  . "goa.design/goa/v3/dsl"
+)
+
+var _ = Service("front", func() {
+  DisableDocs() // service omitted from docs.json, OpenAPI still generated
+  Method("about", func() { /* ... */ })
+})
+
+var _ = Service("S", func() {
+  Method("M1", func() {
+    DisableDocs() // method omitted from docs.json, OpenAPI still generated
+    /* ... */
+  })
+})
+```
+
+Under the hood, `DisableDocs()` sets `Meta("docs:generate", "false")`; the plugin filters those out when building docs.json.
+
 ## Known Limitations
 
 If `goa gen` is invoked with a custom output path (i.e. with the `-o` argument)
