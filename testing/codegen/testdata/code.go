@@ -1,5 +1,104 @@
 package testdata
 
+var WithResultCode = `// WithResultMethod calls the WithResultMethod method using the configured
+// transport.
+func (c *Client) WithResultMethod(ctx context.Context) (*withresultservice.WithResultMethodResult, error) {
+	// Determine which transport to use
+	transport := c.transport
+	if transport == AutoTransport {
+		// Use the first available transport
+		if c.httpClient != nil {
+			transport = HTTPTransport
+		} else if c.grpcClient != nil {
+			transport = GRPCTransport
+		} else if c.jsonrpcClient != nil {
+			transport = JSONRPCTransport
+		}
+	}
+
+	switch transport {
+	case HTTPTransport:
+		if c.httpClient == nil {
+			return nil, fmt.Errorf("HTTP transport not configured")
+		}
+		endpoint := c.httpClient.WithResultMethod()
+		res, err := endpoint(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return res.(*withresultservice.WithResultMethodResult), nil
+	case GRPCTransport:
+		if c.grpcClient == nil {
+			return nil, fmt.Errorf("gRPC transport not configured")
+		}
+		endpoint := c.grpcClient.WithResultMethod()
+		res, err := endpoint(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return res.(*withresultservice.WithResultMethodResult), nil
+	case JSONRPCTransport:
+		if c.jsonrpcClient == nil {
+			return nil, fmt.Errorf("JSON-RPC transport not configured")
+		}
+		endpoint := c.jsonrpcClient.WithResultMethod()
+		res, err := endpoint(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return res.(*withresultservice.WithResultMethodResult), nil
+
+	default:
+		return nil, fmt.Errorf("no transport available for WithResultMethod")
+	}
+}
+`
+
+var WithoutResultCode = `// WithoutResultMethod calls the WithoutResultMethod method using the
+// configured transport.
+func (c *Client) WithoutResultMethod(ctx context.Context) error {
+	// Determine which transport to use
+	transport := c.transport
+	if transport == AutoTransport {
+		// Use the first available transport
+		if c.httpClient != nil {
+			transport = HTTPTransport
+		} else if c.grpcClient != nil {
+			transport = GRPCTransport
+		} else if c.jsonrpcClient != nil {
+			transport = JSONRPCTransport
+		}
+	}
+
+	switch transport {
+	case HTTPTransport:
+		if c.httpClient == nil {
+			return fmt.Errorf("HTTP transport not configured")
+		}
+		endpoint := c.httpClient.WithoutResultMethod()
+		_, err := endpoint(ctx, nil)
+		return err
+	case GRPCTransport:
+		if c.grpcClient == nil {
+			return fmt.Errorf("gRPC transport not configured")
+		}
+		endpoint := c.grpcClient.WithoutResultMethod()
+		_, err := endpoint(ctx, nil)
+		return err
+	case JSONRPCTransport:
+		if c.jsonrpcClient == nil {
+			return fmt.Errorf("JSON-RPC transport not configured")
+		}
+		endpoint := c.jsonrpcClient.WithoutResultMethod()
+		_, err := endpoint(ctx, nil)
+		return err
+
+	default:
+		return fmt.Errorf("no transport available for WithoutResultMethod")
+	}
+}
+`
+
 var WithStreamCode = `// setupHTTP initializes the HTTP test server and client.
 func (h *Harness) setupHTTP() {
 	// Create endpoints
