@@ -257,10 +257,78 @@ func apiDocs(api *expr.APIExpr) *apiData {
 	return data
 }
 
+// mustGenerateService returns false if the service (or its HTTP service) is
+// marked with Meta("openapi:generate", "false") or legacy
+// Meta("swagger:generate", "false").
+func mustGenerateService(r *expr.RootExpr, svc *expr.ServiceExpr) bool {
+	// Explicit docs DSL can disable docs.json without impacting OpenAPI
+	if vals, ok := svc.Meta["docs:generate"]; ok && len(vals) > 0 && strings.EqualFold(vals[len(vals)-1], "false") {
+		return false
+	}
+	if !openapi.MustGenerate(svc.Meta) {
+		return false
+	}
+	if r != nil && r.API != nil && r.API.HTTP != nil {
+		for _, hs := range r.API.HTTP.Services {
+			if hs != nil && hs.ServiceExpr == svc {
+				if !openapi.MustGenerate(hs.Meta) {
+					return false
+				}
+				break
+			}
+		}
+	}
+	return true
+}
+
+// mustGenerateMethod returns false if the method is marked with
+// Meta("openapi:generate", "false") or legacy Meta("swagger:generate",
+// "false"). If HTTP endpoints exist for the method, then the method is only
+// considered generatable if at least one endpoint is also generatable (mirrors
+// Goa behavior where endpoint-level meta gates individual operations).
+func mustGenerateMethod(r *expr.RootExpr, meth *expr.MethodExpr) bool { //nolint:cyclop
+	if vals, ok := meth.Meta["docs:generate"]; ok && len(vals) > 0 && strings.EqualFold(vals[len(vals)-1], "false") {
+		return false
+	}
+	if !openapi.MustGenerate(meth.Meta) {
+		return false
+	}
+	// If there is HTTP configuration for this method, require at least one
+	// endpoint to be marked generatable; otherwise keep default true.
+	if r != nil && r.API != nil && r.API.HTTP != nil && meth != nil && meth.Service != nil {
+		for _, hs := range r.API.HTTP.Services {
+			if hs == nil || hs.ServiceExpr != meth.Service {
+				continue
+			}
+			// Found the HTTP service matching the method's service.
+			hasEndpoint := false
+			for _, e := range hs.HTTPEndpoints {
+				if e == nil || e.MethodExpr != meth {
+					continue
+				}
+				hasEndpoint = true
+				if openapi.MustGenerate(e.Meta) {
+					// At least one endpoint is generatable - keep the method.
+					return true
+				}
+			}
+			// If endpoints exist but none are generatable, skip the method.
+			if hasEndpoint {
+				return false
+			}
+			break
+		}
+	}
+	return true
+}
+
 func servicesDocs(r *expr.RootExpr, state *genState) map[string]*serviceData {
 	svcs := make(map[string]*serviceData, len(r.Services))
 
 	for _, svc := range r.Services {
+		if !mustGenerateService(r, svc) {
+			continue
+		}
 		n := svc.Name
 		svcs[n] = &serviceData{
 			Name:        n,
@@ -269,6 +337,9 @@ func servicesDocs(r *expr.RootExpr, state *genState) map[string]*serviceData {
 
 		svcs[n].Methods = make(map[string]*methodData, len(svc.Methods))
 		for _, meth := range svc.Methods {
+			if !mustGenerateMethod(r, meth) {
+				continue
+			}
 			svcs[n].Methods[meth.Name] = generateMethod(r.API, meth, state)
 		}
 
