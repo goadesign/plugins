@@ -38,7 +38,6 @@ func protoFile(genpkg string, r *expr.RootExpr) *codegen.File {
 
 	// Check if we need any imports
 	needsAny := false
-	needsTimestamp := false
 
 	for _, t := range r.Types {
 		if hasAnyType(t.Attribute()) {
@@ -49,9 +48,6 @@ func protoFile(genpkg string, r *expr.RootExpr) *codegen.File {
 
 	if needsAny {
 		buf.WriteString("import \"google/protobuf/any.proto\";\n\n")
-	}
-	if needsTimestamp {
-		buf.WriteString("import \"google/protobuf/timestamp.proto\";\n\n")
 	}
 
 	// Generate messages for each type
