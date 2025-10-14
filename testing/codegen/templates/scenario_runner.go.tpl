@@ -165,7 +165,7 @@ func (r *ScenarioRunner) executeMethod(ctx context.Context, client *Client, meth
 			return nil, fmt.Errorf("invalid payload for {{ .Name }}: %w", err)
 		}
 		{{- end }}
-		return client.{{ .VarName }}(ctx{{ if .PayloadRef }}, p{{ end }})
+		return {{ if not .ResultRef }}nil, {{ end }}client.{{ .VarName }}(ctx{{ if .PayloadRef }}, p{{ end }})
 	{{- end }}
 	default:
 		return nil, fmt.Errorf("unknown method: %s", method)

@@ -784,7 +784,7 @@ func (r *ScenarioRunner) runStep(t *testing.T, client *Client, step Step) {
 func (r *ScenarioRunner) executeMethod(ctx context.Context, client *Client, method string, payload map[string]any) (any, error) {
 	switch method {
 	case "WithoutResultMethod":
-		return client.WithoutResultMethod(ctx)
+		return nil, client.WithoutResultMethod(ctx)
 	default:
 		return nil, fmt.Errorf("unknown method: %s", method)
 	}
