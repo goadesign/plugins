@@ -18,14 +18,14 @@ func TestGenerateClient(t *testing.T) {
 		"with-result": {
 			DSL: testdata.WithResultDSL,
 			Code: map[string][]string{
-				"client-methods": {testdata.WithResultCode},
+				"client-methods": {testdata.ClientMethodsWithResultCode},
 			},
 			Path: "gen/with_result_service/with_result_servicetest/client.go",
 		},
 		"without-result": {
 			DSL: testdata.WithoutResultDSL,
 			Code: map[string][]string{
-				"client-methods": {testdata.WithoutResultCode},
+				"client-methods": {testdata.ClientMethodsWithoutResultCode},
 			},
 			Path: "gen/without_result_service/without_result_servicetest/client.go",
 		},

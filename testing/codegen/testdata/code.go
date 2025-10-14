@@ -1,6 +1,6 @@
 package testdata
 
-var WithResultCode = `// WithResultMethod calls the WithResultMethod method using the configured
+var ClientMethodsWithResultCode = `// WithResultMethod calls the WithResultMethod method using the configured
 // transport.
 func (c *Client) WithResultMethod(ctx context.Context) (*withresultservice.WithResultMethodResult, error) {
 	// Determine which transport to use
@@ -54,7 +54,7 @@ func (c *Client) WithResultMethod(ctx context.Context) (*withresultservice.WithR
 }
 `
 
-var WithoutResultCode = `// WithoutResultMethod calls the WithoutResultMethod method using the
+var ClientMethodsWithoutResultCode = `// WithoutResultMethod calls the WithoutResultMethod method using the
 // configured transport.
 func (c *Client) WithoutResultMethod(ctx context.Context) error {
 	// Determine which transport to use
