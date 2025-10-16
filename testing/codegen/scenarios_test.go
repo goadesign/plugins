@@ -9,7 +9,7 @@ import (
 	"goa.design/plugins/v3/testing/codegen/testdata"
 )
 
-func TestGenerateClient(t *testing.T) {
+func TestGenerateScenarios(t *testing.T) {
 	cases := map[string]struct {
 		DSL  func()
 		Code map[string][]string
@@ -18,16 +18,16 @@ func TestGenerateClient(t *testing.T) {
 		"with-result": {
 			DSL: testdata.WithResultDSL,
 			Code: map[string][]string{
-				"client-methods": {testdata.ClientMethodsWithResultCode},
+				"scenario-runner": {testdata.ScenarioRunnerWithResultCode},
 			},
-			Path: "gen/with_result_service/with_result_servicetest/client.go",
+			Path: "gen/with_result_service/with_result_servicetest/scenarios.go",
 		},
 		"without-result": {
 			DSL: testdata.WithoutResultDSL,
 			Code: map[string][]string{
-				"client-methods": {testdata.ClientMethodsWithoutResultCode},
+				"scenario-runner": {testdata.ScenarioRunnerWithoutResultCode},
 			},
-			Path: "gen/without_result_service/without_result_servicetest/client.go",
+			Path: "gen/without_result_service/without_result_servicetest/scenarios.go",
 		},
 	}
 	for name, c := range cases {
@@ -36,7 +36,8 @@ func TestGenerateClient(t *testing.T) {
 			services := service.NewServicesData(root)
 			svc := root.Services[0]
 			svcData := services.Get(svc.Name)
-			f := generateClient("", svcData, root, svc)
+			fs := generateScenarios("", svcData, root, svc)
+			f := fs[0]
 			assert.Equal(t, c.Path, f.Path)
 			for sec, secCode := range c.Code {
 				testCode(t, f, sec, secCode)

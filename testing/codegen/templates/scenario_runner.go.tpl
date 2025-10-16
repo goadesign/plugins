@@ -164,10 +164,8 @@ func (r *ScenarioRunner) executeMethod(ctx context.Context, client *Client, meth
 		if err := r.mapToStruct(payload, p); err != nil {
 			return nil, fmt.Errorf("invalid payload for {{ .Name }}: %w", err)
 		}
-		return client.{{ .VarName }}(ctx, p)
-		{{- else }}
-		return client.{{ .VarName }}(ctx)
 		{{- end }}
+		return {{ if not .ResultRef }}nil, {{ end }}client.{{ .VarName }}(ctx{{ if .PayloadRef }}, p{{ end }})
 	{{- end }}
 	default:
 		return nil, fmt.Errorf("unknown method: %s", method)
