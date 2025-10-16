@@ -1,35 +1,11 @@
-package main
-
-import (
-    "context"
-    "flag"
-    "fmt"
-    "net/http"
-    "net/http/httptrace"
-    "os"
-    "os/signal"
-    "sync"
-    "syscall"
-    "time"
-
-    "go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
-    "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-    "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
-    "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-    "goa.design/clue/clue"
-    "goa.design/clue/debug"
-    "goa.design/clue/health"
-    "goa.design/clue/log"
-    goahttp "goa.design/goa/v3/http"
-    {{- if .HasAnyWebSocket }}
-    "github.com/gorilla/websocket"
-    {{- end }}
-    "google.golang.org/grpc/credentials/insecure"
-)
-
 func main() {
     var (
+        {{- if .HasHTTP }}
         httpaddr    = flag.String("http-addr", ":8080", "HTTP listen address")
+        {{- end }}
+        {{- if .HasGRPC }}
+        grpcaddr    = flag.String("grpc-addr", ":9090", "gRPC listen address")
+        {{- end }}
         metricsAddr = flag.String("metrics-addr", ":8081", "metrics listen address")
         coladdr     = flag.String("otel-addr", ":4317", "OpenTelemetry collector listen address")
         debugf      = flag.Bool("debug", false, "Enable debug logs")
@@ -126,6 +102,7 @@ func main() {
     {{ .EpVar }}.Use(log.Endpoint)
     {{- end }}
 
+    {{- if .HasHTTP }}
     // 6. Create HTTP transport
     mux := goahttp.NewMuxer()
     debug.MountDebugLogEnabler(debug.Adapt(mux))
@@ -139,6 +116,7 @@ func main() {
     {{- end }}
 
     {{- range .Services }}
+    {{- if .HasHTTP }}
     // {{ .Name }} HTTP server
     {{- if .HasWebSocket }}
     {{ .SrvVar }} := {{ .GenHTTPPkg }}.New({{ .EpVar }}, mux, goahttp.RequestDecoder, goahttp.ResponseEncoder, nil, nil, upgrader, nil)
@@ -150,10 +128,37 @@ func main() {
         log.Print(ctx, log.KV{K: "method", V: m.Method}, log.KV{K: "endpoint", V: m.Verb + " " + m.Pattern})
     }
     {{- end }}
+    {{- end }}
 
     httpServer := &http.Server{Addr: *httpaddr, Handler: handler}
+    {{- end }}
 
-    // 7. Start HTTP servers (graceful shutdown)
+    {{- if .HasGRPC }}
+    // 6b. Create gRPC server with interceptors
+    var grpcServerOpts []grpc.ServerOption
+    grpcServerOpts = append(grpcServerOpts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
+    grpcServerOpts = append(grpcServerOpts, grpc.ChainUnaryInterceptor(
+        log.UnaryServerInterceptor(ctx),
+        debug.UnaryServerInterceptor(),
+    ))
+    grpcServerOpts = append(grpcServerOpts, grpc.ChainStreamInterceptor(
+        log.StreamServerInterceptor(ctx),
+        debug.StreamServerInterceptor(),
+    ))
+    grpcServer := grpc.NewServer(grpcServerOpts...)
+
+    {{- range .Services }}
+    {{- if .HasGRPC }}
+    // {{ .Name }} gRPC server
+    {{ .SvcVar }}GRPCServer := {{ .GenGRPCPkg }}.New({{ .EpVar }}, nil)
+    {{ .GenGRPCPbPkg }}.Register{{ .StructName }}Server(grpcServer, {{ .SvcVar }}GRPCServer)
+    {{- end }}
+    {{- end }}
+
+    reflection.Register(grpcServer)
+    {{- end }}
+
+    // 7. Start servers (graceful shutdown)
     errc := make(chan error)
     go func() {
         c := make(chan os.Signal, 1)
@@ -167,10 +172,24 @@ func main() {
     go func() {
         defer wg.Done()
 
+        {{- if .HasHTTP }}
         go func() {
             log.Printf(ctx, "HTTP server listening on %s", *httpaddr)
             errc <- httpServer.ListenAndServe()
         }()
+        {{- end }}
+
+        {{- if .HasGRPC }}
+        go func() {
+            lis, err := net.Listen("tcp", *grpcaddr)
+            if err != nil {
+                errc <- err
+                return
+            }
+            log.Printf(ctx, "gRPC server listening on %s", *grpcaddr)
+            errc <- grpcServer.Serve(lis)
+        }()
+        {{- end }}
 
         go func() {
             log.Printf(ctx, "Metrics server listening on %s", *metricsAddr)
@@ -178,7 +197,7 @@ func main() {
         }()
 
         <-ctx.Done()
-        log.Printf(ctx, "shutting down HTTP servers")
+        log.Printf(ctx, "shutting down servers")
 
         // Shutdown gracefully with a 30s timeout.
         sctx, scancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -192,9 +211,16 @@ func main() {
         }
         {{- end }}
 
+        {{- if .HasHTTP }}
         if err := httpServer.Shutdown(sctx); err != nil {
             log.Errorf(sctx, err, "failed to shutdown HTTP server")
         }
+        {{- end }}
+
+        {{- if .HasGRPC }}
+        grpcServer.GracefulStop()
+        {{- end }}
+
         if err := metricsServer.Shutdown(sctx); err != nil {
             log.Errorf(sctx, err, "failed to shutdown metrics server")
         }
