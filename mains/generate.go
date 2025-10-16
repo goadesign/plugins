@@ -31,6 +31,8 @@ type srvInfo struct {
     APIPkg     string
     Services   []*service.Data
     HasWS      bool
+    HasHTTP    bool
+    HasGRPC    bool
     ServerName string
 }
 
@@ -43,7 +45,11 @@ type svcT struct {
     SrvVar       string
     GenPkg       string
     GenHTTPPkg   string
+    GenGRPCPkg   string
+    GenGRPCPbPkg string
     HasWebSocket bool
+    HasHTTP      bool
+    HasGRPC      bool
 }
 
 // Register the plugin for the example phase.
@@ -109,9 +115,20 @@ func generateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([
         apipkg := apiPkgAlias(genpkg, roots)
         if info, ok := srvMap[dir]; ok {
             info.HasWS = hasWS
+            info.HasHTTP = true
             if info.APIPkg == "" { info.APIPkg = apipkg }
         } else {
-            srvMap[dir] = &srvInfo{Dir: dir, APIPkg: apipkg, Services: svcs, HasWS: hasWS}
+            srvMap[dir] = &srvInfo{Dir: dir, APIPkg: apipkg, Services: svcs, HasWS: hasWS, HasHTTP: true}
+        }
+    }
+    // Detect gRPC servers from grpc.go files
+    for _, f := range files {
+        if filepath.Base(f.Path) != "grpc.go" { continue }
+        segs := strings.Split(filepath.ToSlash(f.Path), "/")
+        if len(segs) < 3 || segs[0] != "cmd" { continue }
+        dir := segs[1]
+        if info, ok := srvMap[dir]; ok {
+            info.HasGRPC = true
         }
     }
 
@@ -119,11 +136,11 @@ func generateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([
         return files, nil
     }
 
-    // Filter out default example mains and http.go; we'll add our own mains.
+    // Filter out default example mains, http.go, and grpc.go; we'll add our own mains.
     var out []*codegen.File
     for _, f := range files {
         base := filepath.Base(f.Path)
-        if strings.HasPrefix(f.Path, "cmd/") && (base == "main.go" || base == "http.go") {
+        if strings.HasPrefix(f.Path, "cmd/") && (base == "main.go" || base == "http.go" || base == "grpc.go") {
             continue
         }
         out = append(out, f)
@@ -156,6 +173,14 @@ func generateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([
             codegen.GoaNamedImport("http", "goahttp"),
             {Path: "google.golang.org/grpc/credentials/insecure"},
         }
+        if info.HasGRPC {
+            specs = append(specs,
+                &codegen.ImportSpec{Path: "net"},
+                &codegen.ImportSpec{Path: "google.golang.org/grpc"},
+                &codegen.ImportSpec{Path: "google.golang.org/grpc/reflection"},
+                &codegen.ImportSpec{Path: "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"},
+            )
+        }
         if info.HasWS {
             specs = append(specs, &codegen.ImportSpec{Path: "github.com/gorilla/websocket"})
         }
@@ -164,19 +189,45 @@ func generateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([
 
         scope := codegen.NewNameScope()
         var svcsData []svcT
+        httpBySvc := httpServicesByName(roots)
+        grpcBySvc := grpcServicesByName(roots)
         wsBySvc := httpWebSocketByService(roots)
         hasAnyWS := false
+        hasAnyHTTP := false
+        hasAnyGRPC := false
         for _, sd := range info.Services {
             genAlias := scope.Unique(sd.PkgName, "svc")
-            httpAlias := scope.Unique(sd.PkgName+"svr", "svr")
-            specs = append(specs,
-                &codegen.ImportSpec{Path: path.Join(genpkg, sd.PathName), Name: genAlias},
-                &codegen.ImportSpec{Path: path.Join(genpkg, "http", sd.PathName, "server"), Name: httpAlias},
-            )
+            hasHTTP := httpBySvc[sd.Name]
+            hasGRPC := grpcBySvc[sd.Name]
             hws := wsBySvc[sd.Name]
+
+            var httpAlias, grpcAlias, grpcPbAlias string
+
+            // Always add the base service package
+            specs = append(specs, &codegen.ImportSpec{Path: path.Join(genpkg, sd.PathName), Name: genAlias})
+
+            // Conditionally add HTTP server imports
+            if hasHTTP {
+                httpAlias = scope.Unique(sd.PkgName+"svr", "svr")
+                specs = append(specs, &codegen.ImportSpec{Path: path.Join(genpkg, "http", sd.PathName, "server"), Name: httpAlias})
+                hasAnyHTTP = true
+            }
+
+            // Conditionally add gRPC server imports
+            if hasGRPC {
+                grpcAlias = scope.Unique(sd.PkgName+"grpc", "grpcsvc")
+                grpcPbAlias = scope.Unique(sd.PkgName+"pb", "pb")
+                specs = append(specs,
+                    &codegen.ImportSpec{Path: path.Join(genpkg, "grpc", sd.PathName, "server"), Name: grpcAlias},
+                    &codegen.ImportSpec{Path: path.Join(genpkg, "grpc", sd.PathName, "pb"), Name: grpcPbAlias},
+                )
+                hasAnyGRPC = true
+            }
+
             if hws {
                 hasAnyWS = true
             }
+
             svcsData = append(svcsData, svcT{
                 Name:         sd.Name,
                 StructName:   sd.StructName,
@@ -185,7 +236,11 @@ func generateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([
                 SrvVar:       sd.VarName + "Server",
                 GenPkg:       genAlias,
                 GenHTTPPkg:   httpAlias,
+                GenGRPCPkg:   grpcAlias,
+                GenGRPCPbPkg: grpcPbAlias,
                 HasWebSocket: hws,
+                HasHTTP:      hasHTTP,
+                HasGRPC:      hasGRPC,
             })
         }
 
@@ -195,6 +250,8 @@ func generateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([
                 "APIPkg":          info.APIPkg,
                 "Services":        svcsData,
                 "HasAnyWebSocket": hasAnyWS,
+                "HasHTTP":         hasAnyHTTP,
+                "HasGRPC":         hasAnyGRPC,
                 "ServiceCount":    len(svcsData),
                 "ServerLabel":     serverLabel(roots),
             }},
@@ -265,7 +322,8 @@ func httpWebSocketByService(roots []eval.Root) map[string]bool {
                 if e.SSE != nil {
                     continue
                 }
-                if e.MethodExpr != nil && e.MethodExpr.Stream != expr.NoStreamKind {
+                // Stream is 0 when no streaming is defined, and >= NoStreamKind (1) when streaming is used
+                if e.MethodExpr != nil && e.MethodExpr.Stream != 0 {
                     hasWS[svc.Name()] = true
                     break
                 }
@@ -285,4 +343,38 @@ func rootServer(roots []eval.Root) *expr.ServerExpr {
         }
     }
     return nil
+}
+
+// httpServicesByName returns map of service names that have HTTP endpoints.
+func httpServicesByName(roots []eval.Root) map[string]bool {
+    hasHTTP := map[string]bool{}
+    for _, r := range roots {
+        root, ok := r.(*expr.RootExpr)
+        if !ok || root.API == nil || root.API.HTTP == nil {
+            continue
+        }
+        for _, svc := range root.API.HTTP.Services {
+            if len(svc.HTTPEndpoints) > 0 {
+                hasHTTP[svc.Name()] = true
+            }
+        }
+    }
+    return hasHTTP
+}
+
+// grpcServicesByName returns map of service names that have gRPC endpoints.
+func grpcServicesByName(roots []eval.Root) map[string]bool {
+    hasGRPC := map[string]bool{}
+    for _, r := range roots {
+        root, ok := r.(*expr.RootExpr)
+        if !ok || root.API == nil || root.API.GRPC == nil {
+            continue
+        }
+        for _, svc := range root.API.GRPC.Services {
+            if len(svc.GRPCEndpoints) > 0 {
+                hasGRPC[svc.Name()] = true
+            }
+        }
+    }
+    return hasGRPC
 }
