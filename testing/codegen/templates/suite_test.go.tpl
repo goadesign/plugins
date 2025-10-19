@@ -1,5 +1,5 @@
-{{- printf "Run%sHarness exercises the generated harness against your service implementation." .Service.Name | comment }}
-{{- printf "Call this helper from your test, passing your service implementation." | comment }}
+{{ printf "Run%sHarness exercises the generated harness against your service implementation." .Service.Name | comment }}
+{{ printf "Call this helper from your test, passing your service implementation." | comment }}
 func Run{{ .Service.StructName }}Harness(t *testing.T, svc {{ .Service.PkgName }}.Service) {
 	t.Helper()
 {{- if .UseCtx }}
@@ -15,11 +15,7 @@ func Run{{ .Service.StructName }}Harness(t *testing.T, svc {{ .Service.PkgName }
 {{- range .NonStream }}
 	{{- $m := . }}
 	t.Run("{{ $m.Method.Name }}", func(t *testing.T) {
-	{{- if $m.Method.PayloadEx }}
-		result, err := h.Client.{{ $m.Method.VarName }}({{ if $.UseCtx }}ctx{{ else }}context.Background(){{ end }}, td.Valid{{ goify $m.Method.Name true }}Payload())
-	{{- else }}
-		result, err := h.Client.{{ $m.Method.VarName }}({{ if $.UseCtx }}ctx{{ else }}context.Background(){{ end }})
-	{{- end }}
+		{{ if $m.Method.ResultRef }}result, {{ end }}err := h.Client.{{ $m.Method.VarName }}({{ if $.UseCtx }}ctx{{ else }}context.Background(){{ end }}{{- if $m.Method.PayloadEx }}, td.Valid{{ goify $m.Method.Name true }}Payload(){{ end }})
 		if err != nil {
 			t.Errorf("{{ $m.Method.Name }} failed: %v", err)
 		}

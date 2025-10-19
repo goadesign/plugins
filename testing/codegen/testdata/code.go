@@ -912,3 +912,48 @@ func (r *ScenarioRunner) selectTransport(client *Client, transport string) *Clie
 	}
 }
 `
+
+var SuiteTestWithResultCode = `// RunWithResultServiceHarness exercises the generated harness against your
+// service implementation.
+// Call this helper from your test, passing your service implementation.
+func RunWithResultServiceHarness(t *testing.T, svc withresultservice.Service) {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	h := withResultServicetest.NewHarness(t, svc)
+	defer h.Close()
+
+	td := withResultServicetest.NewTestData()
+	t.Run("WithResultMethod", func(t *testing.T) {
+		result, err := h.Client.WithResultMethod(ctx)
+		if err != nil {
+			t.Errorf("WithResultMethod failed: %v", err)
+		}
+		if result == nil {
+			t.Error("WithResultMethod returned nil result")
+		}
+	})
+}
+`
+
+var SuiteTestWithoutResultCode = `// RunWithoutResultServiceHarness exercises the generated harness against your
+// service implementation.
+// Call this helper from your test, passing your service implementation.
+func RunWithoutResultServiceHarness(t *testing.T, svc withoutresultservice.Service) {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	h := withoutResultServicetest.NewHarness(t, svc)
+	defer h.Close()
+
+	td := withoutResultServicetest.NewTestData()
+	t.Run("WithoutResultMethod", func(t *testing.T) {
+		err := h.Client.WithoutResultMethod(ctx)
+		if err != nil {
+			t.Errorf("WithoutResultMethod failed: %v", err)
+		}
+	})
+}
+`
