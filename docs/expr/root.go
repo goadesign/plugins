@@ -18,6 +18,9 @@ type (
 		// replacing them with copies of their referenced definitions where
 		// possible. Cycles are preserved by leaving $ref in place when needed.
 		InlineRefs bool
+
+		// IncludedTypes are the user types to force-emit into definitions.
+		IncludedTypes []expr.UserType
 	}
 )
 
@@ -39,3 +42,12 @@ func (*RootExpr) DependsOn() []eval.Root { return []eval.Root{expr.Root} }
 // This is used to skip frames that point to files in these packages when
 // computing the location of errors.
 func (*RootExpr) Packages() []string { return []string{"goa.design/plugins/v3/docs/dsl"} }
+
+// IncludeTypes registers the given user types for forced definition emission.
+func (r *RootExpr) IncludeTypes(ts ...expr.UserType) {
+	for _, t := range ts {
+		if t != nil {
+			r.IncludedTypes = append(r.IncludedTypes, t)
+		}
+	}
+}
