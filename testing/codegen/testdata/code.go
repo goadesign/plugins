@@ -948,7 +948,7 @@ func RunWithoutResultServiceHarness(t *testing.T, svc withoutresultservice.Servi
 
 	td := withoutResultServicetest.NewTestData()
 	t.Run("WithoutResultMethod", func(t *testing.T) {
-		result, err := h.Client.WithoutResultMethod(ctx)
+		err := h.Client.WithoutResultMethod(ctx)
 		if err != nil {
 			t.Errorf("WithoutResultMethod failed: %v", err)
 		}
