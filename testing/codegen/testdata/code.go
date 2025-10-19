@@ -914,7 +914,8 @@ func (r *ScenarioRunner) selectTransport(client *Client, transport string) *Clie
 `
 
 var SuiteTestWithResultCode = `// RunWithResultServiceHarness exercises the generated harness against your
-// service implementation.// Call this helper from your test, passing your service implementation.
+// service implementation.
+// Call this helper from your test, passing your service implementation.
 func RunWithResultServiceHarness(t *testing.T, svc withresultservice.Service) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -937,7 +938,8 @@ func RunWithResultServiceHarness(t *testing.T, svc withresultservice.Service) {
 `
 
 var SuiteTestWithoutResultCode = `// RunWithoutResultServiceHarness exercises the generated harness against your
-// service implementation.// Call this helper from your test, passing your service implementation.
+// service implementation.
+// Call this helper from your test, passing your service implementation.
 func RunWithoutResultServiceHarness(t *testing.T, svc withoutresultservice.Service) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

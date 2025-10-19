@@ -1,5 +1,5 @@
-{{- printf "Run%sHarness exercises the generated harness against your service implementation." .Service.Name | comment }}
-{{- printf "Call this helper from your test, passing your service implementation." | comment }}
+{{ printf "Run%sHarness exercises the generated harness against your service implementation." .Service.Name | comment }}
+{{ printf "Call this helper from your test, passing your service implementation." | comment }}
 func Run{{ .Service.StructName }}Harness(t *testing.T, svc {{ .Service.PkgName }}.Service) {
 	t.Helper()
 {{- if .UseCtx }}
