@@ -235,9 +235,6 @@ func walkDeps(att *goaexpr.AttributeExpr, add func(goaexpr.UserType)) {
 		for _, nat := range *t {
 			walkDeps(nat.Attribute, add)
 		}
-	case *goaexpr.ResultTypeExpr:
-		add(t)
-		walkDeps(t.AttributeExpr, add)
 	case *goaexpr.Union:
 		for _, v := range t.Values {
 			walkDeps(v.Attribute, add)
