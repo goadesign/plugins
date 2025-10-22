@@ -107,9 +107,6 @@ func (u typeUsage) String() string {
 }
 
 func (ts *toolSetData) addTool(entry *toolEntry) {
-	if entry == nil {
-		return
-	}
 	entry.SetData = ts
 	ts.Tools = append(ts.Tools, entry)
 	ts.addType(entry.Payload)
@@ -252,9 +249,6 @@ func (g *generator) collect() error {
 		tsData := g.ensureToolSetData(ts, svcData, svcName)
 		for _, tool := range ts.Tools {
 			executeToolDSL(tool)
-			if tool.Method == nil {
-				return fmt.Errorf("tools: tool %q missing method expression", tool.Name)
-			}
 			payload, err := g.typeFor(tool, tool.Method.Payload, usagePayload, svcData)
 			if err != nil {
 				return err
