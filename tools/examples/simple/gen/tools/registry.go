@@ -12,6 +12,36 @@ import "goa.design/plugins/v3/tools"
 // ToolRegistry enumerates all generated tool specifications.
 var ToolRegistry = []tools.ToolSpec{
 	{
+		Name:    "ReserveStock",
+		Service: "inventory",
+		Set:     "inventory_method_tools",
+		Payload: tools.TypeSpec{
+			Name:   "ReserveStockPayload",
+			Schema: reserveStockPayloadSchema,
+			Codec:  reserveStockPayloadCodec,
+		},
+		Result: tools.TypeSpec{
+			Name:   "ReserveStockResult",
+			Schema: reserveStockResultSchema,
+			Codec:  reserveStockResultCodec,
+		},
+	},
+	{
+		Name:    "SyncWarehouse",
+		Service: "inventory",
+		Set:     "inventory_method_tools",
+		Payload: tools.TypeSpec{
+			Name:   "SyncWarehousePayload",
+			Schema: syncWarehousePayloadSchema,
+			Codec:  syncWarehousePayloadCodec,
+		},
+		Result: tools.TypeSpec{
+			Name:   "SyncWarehouseResult",
+			Schema: syncWarehouseResultSchema,
+			Codec:  syncWarehouseResultCodec,
+		},
+	},
+	{
 		Name:    "list_recent_items",
 		Service: "inventory",
 		Set:     "inventory_tools",

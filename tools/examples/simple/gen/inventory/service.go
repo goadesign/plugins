@@ -7,8 +7,19 @@
 
 package inventory
 
+import (
+	"context"
+
+	syncpayload "github.com/example/tools-simple/gen/inventory/syncpayload"
+	syncresult "github.com/example/tools-simple/gen/inventory/syncresult"
+)
+
 // Inventory service exposing tools for asset lookups
 type Service interface {
+	// Reserve inventory units for a pending order
+	ReserveStock(context.Context, *ReserveStockPayload) (res *ReserveStockResult, err error)
+	// Synchronize stock levels with an external warehouse system
+	SyncWarehouse(context.Context, *syncpayload.SyncWarehousePayload) (res *syncresult.SyncWarehouseResult, err error)
 }
 
 // APIName is the name of the API as defined in the design.
@@ -25,4 +36,20 @@ const ServiceName = "inventory"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [0]string{}
+var MethodNames = [2]string{"ReserveStock", "SyncWarehouse"}
+
+// Order reservation parameters
+type ReserveStockPayload struct {
+	// Inventory SKU to reserve
+	Sku string
+	// Number of units to reserve
+	Quantity int
+}
+
+// Reservation outcome details
+type ReserveStockResult struct {
+	// True when the reservation succeeded
+	Reserved bool
+	// Identifier assigned to the reservation
+	ReservationID *string
+}

@@ -238,8 +238,8 @@ func (g *generator) ensureDerivedType(tool *toolsexpr.ToolExpr, att *expr.Attrib
 		typeName = svcData.Scope.GoTypeName(att)
 	}
 	pkgName := packageName(loc, svcData)
-	if typeRef == "" {
-		typeRef = svcData.Scope.GoFullTypeRef(att, pkgName)
+	if scopedRef := svcData.Scope.GoFullTypeRef(att, pkgName); scopedRef != "" {
+		typeRef = scopedRef
 	}
 	if typeRef == "" {
 		return nil, fmt.Errorf("tools: unable to compute type reference for tool %q %s", tool.Name, usage)

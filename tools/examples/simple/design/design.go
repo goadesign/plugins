@@ -13,6 +13,46 @@ var _ = API("tool_example", func() {
 var _ = Service("inventory", func() {
 	Description("Inventory service exposing tools for asset lookups")
 
+	Method("ReserveStock", func() {
+		Description("Reserve inventory units for a pending order")
+		Payload(func() {
+			Description("Order reservation parameters")
+			Attribute("sku", String, "Inventory SKU to reserve", func() {
+				MinLength(1)
+			})
+			Attribute("quantity", Int, "Number of units to reserve", func() {
+				Minimum(1)
+			})
+			Required("sku", "quantity")
+		})
+		Result(func() {
+			Description("Reservation outcome details")
+			Attribute("reserved", Boolean, "True when the reservation succeeded")
+			Attribute("reservation_id", String, "Identifier assigned to the reservation")
+			Required("reserved")
+		})
+	})
+
+	Method("SyncWarehouse", func() {
+		Description("Synchronize stock levels with an external warehouse system")
+		Payload(func() {
+			Description("Warehouse synchronization payload")
+			Attribute("warehouse_id", String, "External warehouse identifier", func() {
+				MinLength(1)
+			})
+			Attribute("items", MapOf(String, Int), "Per-item stock counts to reconcile")
+			Required("warehouse_id", "items")
+			Meta("struct:pkg:path", "inventory/syncpayload")
+		})
+		Result(func() {
+			Description("Synchronization response summary")
+			Attribute("accepted", Boolean, "True when the update is accepted")
+			Attribute("errors", ArrayOf(String), "Optional per-item validation errors")
+			Required("accepted")
+			Meta("struct:pkg:path", "inventory/syncresult")
+		})
+	})
+
 	ToolSet("inventory_tools", func() {
 		Tool("lookup_item", func() {
 			Description("Retrieve an item from inventory")
@@ -47,5 +87,10 @@ var _ = Service("inventory", func() {
 				Required("items")
 			})
 		})
+	})
+
+	ToolSet("inventory_method_tools", func() {
+		ToolFromMethod("ReserveStock")
+		ToolFromMethod("SyncWarehouse")
 	})
 })

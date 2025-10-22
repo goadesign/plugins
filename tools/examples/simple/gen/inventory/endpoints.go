@@ -8,18 +8,46 @@
 package inventory
 
 import (
+	"context"
+
+	syncpayload "github.com/example/tools-simple/gen/inventory/syncpayload"
 	goa "goa.design/goa/v3/pkg"
 )
 
 // Endpoints wraps the "inventory" service endpoints.
 type Endpoints struct {
+	ReserveStock  goa.Endpoint
+	SyncWarehouse goa.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "inventory" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
-	return &Endpoints{}
+	return &Endpoints{
+		ReserveStock:  NewReserveStockEndpoint(s),
+		SyncWarehouse: NewSyncWarehouseEndpoint(s),
+	}
 }
 
 // Use applies the given middleware to all the "inventory" service endpoints.
 func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
+	e.ReserveStock = m(e.ReserveStock)
+	e.SyncWarehouse = m(e.SyncWarehouse)
+}
+
+// NewReserveStockEndpoint returns an endpoint function that calls the method
+// "ReserveStock" of service "inventory".
+func NewReserveStockEndpoint(s Service) goa.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*ReserveStockPayload)
+		return s.ReserveStock(ctx, p)
+	}
+}
+
+// NewSyncWarehouseEndpoint returns an endpoint function that calls the method
+// "SyncWarehouse" of service "inventory".
+func NewSyncWarehouseEndpoint(s Service) goa.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*syncpayload.SyncWarehousePayload)
+		return s.SyncWarehouse(ctx, p)
+	}
 }

@@ -9,15 +9,27 @@ package tools
 
 var (
 	lookupItemPayloadSchema = []byte(`
-{"$schema":"http://json-schema.org/draft-04/hyper-schema","type":"object","properties":{"sku":{"type":"string","description":"Inventory SKU","example":"j6s","minLength":1}},"required":["sku"]}
+{"$schema":"http://json-schema.org/draft-04/hyper-schema","type":"object","properties":{"sku":{"type":"string","description":"Inventory SKU","example":"n1","minLength":1}},"required":["sku"]}
 `)
 	lookupItemResultSchema = []byte(`
-{"$schema":"http://json-schema.org/draft-04/hyper-schema","type":"object","properties":{"description":{"type":"string","description":"Optional item description","example":"Non voluptate fugit porro est qui nesciunt."},"found":{"type":"boolean","description":"True when the item exists","example":false}},"required":["found"]}
+{"$schema":"http://json-schema.org/draft-04/hyper-schema","type":"object","properties":{"description":{"type":"string","description":"Optional item description","example":"Vitae incidunt vel nulla eos."},"found":{"type":"boolean","description":"True when the item exists","example":true}},"required":["found"]}
 `)
 	listRecentItemsPayloadSchema = []byte(`
-{"$schema":"http://json-schema.org/draft-04/hyper-schema","type":"object","properties":{"limit":{"type":"integer","description":"Maximum number of items to return","example":82,"format":"int64","minimum":1,"maximum":100}},"required":["limit"]}
+{"$schema":"http://json-schema.org/draft-04/hyper-schema","type":"object","properties":{"limit":{"type":"integer","description":"Maximum number of items to return","example":85,"format":"int64","minimum":1,"maximum":100}},"required":["limit"]}
 `)
 	listRecentItemsResultSchema = []byte(`
-{"$schema":"http://json-schema.org/draft-04/hyper-schema","type":"object","properties":{"items":{"type":"array","items":{"type":"string","example":"Alias autem aut vel quia."},"description":"Item identifiers returned","example":["Voluptatum minima odio eveniet.","Illo ullam ex."]}},"required":["items"]}
+{"$schema":"http://json-schema.org/draft-04/hyper-schema","type":"object","properties":{"items":{"type":"array","items":{"type":"string","example":"Aliquid rem dolor qui ea."},"description":"Item identifiers returned","example":["Officia voluptatem culpa voluptas officia.","Sed beatae.","Maxime repellendus tempora impedit quam.","Voluptatem quia architecto voluptatum aliquid."]}},"required":["items"]}
+`)
+	reserveStockPayloadSchema = []byte(`
+{"definitions":{"ReserveStockPayload":{"title":"ReserveStockPayload","type":"object","properties":{"quantity":{"type":"integer","description":"Number of units to reserve","example":5760793744126917699,"format":"int64","minimum":1},"sku":{"type":"string","description":"Inventory SKU to reserve","example":"ymx","minLength":1}},"description":"Order reservation parameters","example":{"quantity":2838755936440631599,"sku":"ee2"},"required":["sku","quantity"]}},"$ref":"#/definitions/ReserveStockPayload","required":["sku","quantity"]}
+`)
+	reserveStockResultSchema = []byte(`
+{"definitions":{"ReserveStockResult":{"title":"ReserveStockResult","type":"object","properties":{"reservation_id":{"type":"string","description":"Identifier assigned to the reservation","example":"Quaerat et."},"reserved":{"type":"boolean","description":"True when the reservation succeeded","example":false}},"description":"Reservation outcome details","example":{"reservation_id":"Et rerum aut dolore.","reserved":false},"required":["reserved"]}},"$ref":"#/definitions/ReserveStockResult","required":["reserved"]}
+`)
+	syncWarehousePayloadSchema = []byte(`
+{"definitions":{"SyncWarehousePayload":{"title":"SyncWarehousePayload","type":"object","properties":{"items":{"type":"object","description":"Per-item stock counts to reconcile","example":{"Quam at nisi.":7158872375764949747,"Quisquam corrupti unde et asperiores adipisci nisi.":8074543976303454708},"additionalProperties":{"type":"integer","example":1488969389166130598,"format":"int64"}},"warehouse_id":{"type":"string","description":"External warehouse identifier","example":"1u","minLength":1}},"description":"Warehouse synchronization payload","example":{"items":{"Asperiores odio tenetur voluptates.":5160452444422071266,"Et consequatur inventore.":3013847612433387077,"Veritatis ut.":6143868172080706479},"warehouse_id":"xd"},"required":["warehouse_id","items"]}},"$ref":"#/definitions/SyncWarehousePayload","required":["warehouse_id","items"]}
+`)
+	syncWarehouseResultSchema = []byte(`
+{"definitions":{"SyncWarehouseResult":{"title":"SyncWarehouseResult","type":"object","properties":{"accepted":{"type":"boolean","description":"True when the update is accepted","example":false},"errors":{"type":"array","items":{"type":"string","example":"Ut velit vitae omnis."},"description":"Optional per-item validation errors","example":["Est at.","Esse nostrum."]}},"description":"Synchronization response summary","example":{"accepted":false,"errors":["Possimus non.","Libero et.","Iusto reiciendis molestiae.","Rerum dolores nam voluptatem minus aperiam."]},"required":["accepted"]}},"$ref":"#/definitions/SyncWarehouseResult","required":["accepted"]}
 `)
 )
