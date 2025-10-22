@@ -9,7 +9,8 @@ func init() {
 	codegen.RegisterPlugin("tools", "gen", nil, Generate)
 }
 
-// Generate emits the tool metadata, schemas, and codec files under gen/tools.
+// Generate emits the tool metadata, schemas, and codec files under per-toolset
+// packages scoped by service (gen/<service>/tools/<toolset>/).
 func Generate(genpkg string, _ []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	g, err := newGenerator(genpkg)
 	if err != nil {
