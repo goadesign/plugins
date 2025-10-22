@@ -3,6 +3,7 @@ package tools
 import (
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"goa.design/goa/v3/codegen"
 )
@@ -24,106 +25,102 @@ type (
 )
 
 func (g *generator) render() []*codegen.File {
-	if len(g.toolsetOrder) == 0 {
+	if len(g.tools) == 0 {
 		return nil
 	}
 	var files []*codegen.File
-	for _, ts := range g.toolsetOrder {
-		files = append(files, g.renderToolSet(ts)...)
+	if f := g.renderTypes(); f != nil {
+		files = append(files, f)
+	}
+	if f := g.renderSchemas(); f != nil {
+		files = append(files, f)
+	}
+	if f := g.renderCodecs(); f != nil {
+		files = append(files, f)
+	}
+	if f := g.renderRegistry(); f != nil {
+		files = append(files, f)
 	}
 	return files
 }
 
-func (g *generator) renderToolSet(ts *toolSetData) []*codegen.File {
-	var files []*codegen.File
-	baseDir := toolSetOutputDir(ts)
-
-	if pure := ts.pureTypes(); len(pure) > 0 {
-		header := codegen.Header("Tool Types", ts.PackageName, ts.typeImports())
-		files = append(files, &codegen.File{
-			Path: filepath.Join(baseDir, "types.go"),
-			SectionTemplates: []*codegen.SectionTemplate{
-				header,
-				{
-					Name:   "tools-types",
-					Source: toolsTemplates.Read(typesT),
-					Data:   &typesTemplateData{Types: pure},
-				},
-			},
-		})
+func (g *generator) renderTypes() *codegen.File {
+	var pure []*typeInfo
+	for _, info := range g.ordered {
+		if info.NeedType {
+			pure = append(pure, info)
+		}
 	}
-
-	if schemas := ts.schemaTypes(); len(schemas) > 0 {
-		header := codegen.Header("Tool Schemas", ts.PackageName, nil)
-		files = append(files, &codegen.File{
-			Path: filepath.Join(baseDir, "schemas.go"),
-			SectionTemplates: []*codegen.SectionTemplate{
-				header,
-				{
-					Name:   "tools-schemas",
-					Source: toolsTemplates.Read(schemasT),
-					Data:   &schemasTemplateData{Types: schemas},
-				},
-			},
-		})
-	}
-
-	if codecsFile := g.renderToolSetCodecs(ts, baseDir); codecsFile != nil {
-		files = append(files, codecsFile)
-	}
-
-	if registryFile := g.renderToolSetRegistry(ts, baseDir); registryFile != nil {
-		files = append(files, registryFile)
-	}
-
-	return files
-}
-
-func (g *generator) renderToolSetCodecs(ts *toolSetData, baseDir string) *codegen.File {
-	if len(ts.Tools) == 0 {
+	if len(pure) == 0 {
 		return nil
 	}
+	header := codegen.Header("Tool Types", "tools", g.typeImportList())
+	return &codegen.File{
+		Path: filepath.Join(codegen.Gendir, "tools", "types.go"),
+		SectionTemplates: []*codegen.SectionTemplate{
+			header,
+			{
+				Name:   "tools-types",
+				Source: toolsTemplates.Read(typesT),
+				Data:   &typesTemplateData{Types: pure},
+			},
+		},
+	}
+}
+
+func (g *generator) renderSchemas() *codegen.File {
+	var schemas []*typeInfo
+	for _, info := range g.ordered {
+		if info.SchemaLiteral != "" {
+			schemas = append(schemas, info)
+		}
+	}
+	if len(schemas) == 0 {
+		return nil
+	}
+	header := codegen.Header("Tool Schemas", "tools", nil)
+	return &codegen.File{
+		Path: filepath.Join(codegen.Gendir, "tools", "schemas.go"),
+		SectionTemplates: []*codegen.SectionTemplate{
+			header,
+			{
+				Name:   "tools-schemas",
+				Source: toolsTemplates.Read(schemasT),
+				Data:   &schemasTemplateData{Types: schemas},
+			},
+		},
+	}
+}
+
+func (g *generator) renderCodecs() *codegen.File {
 	imports := []*codegen.ImportSpec{
 		codegen.SimpleImport("encoding/json"),
 		codegen.SimpleImport("fmt"),
 		codegen.SimpleImport("goa.design/plugins/v3/tools"),
 	}
-	if ts.needsUnicodeImport() {
+	if g.needsUnicodeImport() {
 		imports = append(imports, codegen.SimpleImport("unicode/utf8"))
 	}
-	if ts.needsGoa() {
+	if g.needsGoa {
 		imports = append(imports, codegen.GoaImport(""))
 	}
-
-	extra := make(map[string]*codegen.ImportSpec)
-	for _, info := range ts.types() {
-		if info.Import != nil && info.Import.Path != "" {
-			extra[info.Import.Path] = info.Import
-		}
-		for _, im := range info.TypeImports {
-			if im != nil && im.Path != "" {
-				extra[im.Path] = im
-			}
-		}
-	}
-	if len(extra) > 0 {
-		paths := make([]string, 0, len(extra))
-		for p := range extra {
+	if len(g.imports) > 0 {
+		paths := make([]string, 0, len(g.imports))
+		for p := range g.imports {
 			paths = append(paths, p)
 		}
 		sort.Strings(paths)
 		for _, p := range paths {
-			imports = append(imports, extra[p])
+			imports = append(imports, g.imports[p])
 		}
 	}
-
-	header := codegen.Header("Tool Codecs", ts.PackageName, imports)
+	header := codegen.Header("Tool Codecs", "tools", imports)
 	data := &codecsTemplateData{
-		Types: ts.types(),
-		Tools: ts.Tools,
+		Types: g.ordered,
+		Tools: g.tools,
 	}
 	return &codegen.File{
-		Path: filepath.Join(baseDir, "codecs.go"),
+		Path: filepath.Join(codegen.Gendir, "tools", "codecs.go"),
 		SectionTemplates: []*codegen.SectionTemplate{
 			header,
 			{
@@ -135,29 +132,47 @@ func (g *generator) renderToolSetCodecs(ts *toolSetData, baseDir string) *codege
 	}
 }
 
-func (g *generator) renderToolSetRegistry(ts *toolSetData, baseDir string) *codegen.File {
-	if len(ts.Tools) == 0 {
+func (g *generator) renderRegistry() *codegen.File {
+	if len(g.tools) == 0 {
 		return nil
 	}
-	header := codegen.Header("Tool Registry", ts.PackageName, []*codegen.ImportSpec{
+	header := codegen.Header("Tool Registry", "tools", []*codegen.ImportSpec{
 		codegen.SimpleImport("goa.design/plugins/v3/tools"),
 	})
 	return &codegen.File{
-		Path: filepath.Join(baseDir, "registry.go"),
+		Path: filepath.Join(codegen.Gendir, "tools", "registry.go"),
 		SectionTemplates: []*codegen.SectionTemplate{
 			header,
 			{
 				Name:   "tools-registry",
 				Source: toolsTemplates.Read(registryT),
-				Data:   &registryTemplateData{Tools: ts.Tools},
+				Data:   &registryTemplateData{Tools: g.tools},
 			},
 		},
 	}
 }
 
-func toolSetOutputDir(ts *toolSetData) string {
-	if ts.ServicePath != "" {
-		return filepath.Join(codegen.Gendir, ts.ServicePath, "tools", ts.DirName)
+func (g *generator) typeImportList() []*codegen.ImportSpec {
+	if len(g.typeImports) == 0 {
+		return nil
 	}
-	return filepath.Join(codegen.Gendir, "tools", ts.DirName)
+	paths := make([]string, 0, len(g.typeImports))
+	for p := range g.typeImports {
+		paths = append(paths, p)
+	}
+	sort.Strings(paths)
+	imports := make([]*codegen.ImportSpec, 0, len(paths))
+	for _, p := range paths {
+		imports = append(imports, g.typeImports[p])
+	}
+	return imports
+}
+
+func (g *generator) needsUnicodeImport() bool {
+	for _, info := range g.ordered {
+		if info.HasValidation && strings.Contains(info.Validation, "utf8.") {
+			return true
+		}
+	}
+	return false
 }

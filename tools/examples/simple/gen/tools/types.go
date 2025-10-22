@@ -5,7 +5,7 @@
 // Command:
 // $ goa gen github.com/example/tools-simple/design
 
-package inventory_tools
+package tools
 
 type (
 	// LookupItemPayload defines the JSON payload for the lookup_item tool.

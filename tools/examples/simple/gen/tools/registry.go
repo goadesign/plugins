@@ -5,7 +5,7 @@
 // Command:
 // $ goa gen github.com/example/tools-simple/design
 
-package inventory_method_tools
+package tools
 
 import "goa.design/plugins/v3/tools"
 
@@ -39,6 +39,36 @@ var ToolRegistry = []tools.ToolSpec{
 			Name:   "SyncWarehouseResult",
 			Schema: syncWarehouseResultSchema,
 			Codec:  syncWarehouseResultCodec,
+		},
+	},
+	{
+		Name:    "list_recent_items",
+		Service: "inventory",
+		Set:     "inventory_tools",
+		Payload: tools.TypeSpec{
+			Name:   "ListRecentItemsPayload",
+			Schema: listRecentItemsPayloadSchema,
+			Codec:  listRecentItemsPayloadCodec,
+		},
+		Result: tools.TypeSpec{
+			Name:   "ListRecentItemsResult",
+			Schema: listRecentItemsResultSchema,
+			Codec:  listRecentItemsResultCodec,
+		},
+	},
+	{
+		Name:    "lookup_item",
+		Service: "inventory",
+		Set:     "inventory_tools",
+		Payload: tools.TypeSpec{
+			Name:   "LookupItemPayload",
+			Schema: lookupItemPayloadSchema,
+			Codec:  lookupItemPayloadCodec,
+		},
+		Result: tools.TypeSpec{
+			Name:   "LookupItemResult",
+			Schema: lookupItemResultSchema,
+			Codec:  lookupItemResultCodec,
 		},
 	},
 }

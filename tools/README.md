@@ -23,20 +23,18 @@ Define the tool once, regenerate, and every consumer speaks the same schema.
 
 ## Generated assets
 
-Running `goa gen` produces, for each tool set, a dedicated package under
-`gen/<service>/tools/<toolset>/` (or `gen/tools/<toolset>/` when the set isn't
-service-scoped). Each package contains:
+Running `goa gen` produces the following files under `gen/tools/`:
 
 | File          | Purpose                                                                                           |
 |---------------|---------------------------------------------------------------------------------------------------|
-| `types.go`    | Go structs for pure tools defined in the set. Method-derived tools reuse the service codegen types. |
+| `types.go`    | Go structs for tool payload/result values defined via the DSL (pure tools only).                  |
 | `schemas.go`  | Embedded JSON Schema literals for every payload/result.                                           |
 | `codecs.go`   | Typed marshal/unmarshal helpers with inlined Goa validation, plus name-driven generic codecs.     |
 | `registry.go` | A catalogue of `tools.ToolSpec` entries (name, service, set, codecs, schemas) with helper queries. |
 
 Runtime helpers (`tools/codec.go`, `tools/toolspec.go`) live in this module, so
-generated code simply imports `goa.design/plugins/v3/tools` alongside the
-tool-set package that was generated for the service.
+generated code simply imports `goa.design/plugins/v3/tools` for codecs or the
+registry types.
 
 ## DSL overview
 
@@ -74,13 +72,13 @@ reuse the service-generated types, including custom `struct:pkg:path` locations.
 ## Consuming the generated artefacts
 
 ```go
-import inventorytools "github.com/example/project/gen/inventory/tools/inventory_tools"
+import tooldefs "github.com/example/project/gen/tools"
 
-codec, ok := inventorytools.PayloadCodec("lookup_item")
+codec, ok := tooldefs.PayloadCodec("lookup_item")
 if !ok {
     return fmt.Errorf("unknown tool")
 }
-raw, err := codec.ToJSON(&inventorytools.LookupItemPayload{Sku: "ABC"})
+raw, err := codec.ToJSON(&tooldefs.LookupItemPayload{Sku: "ABC"})
 ```
 
 - `PayloadCodec` / `ResultCodec` provide generic JSON codecs backed by the typed helpers.
