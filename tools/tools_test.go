@@ -101,10 +101,11 @@ func TestGenerateRegistry(t *testing.T) {
 		return
 	}
 
-	typesPath := filepath.Join(codegen.Gendir, "tools", "types.go")
-	schemasPath := filepath.Join(codegen.Gendir, "tools", "schemas.go")
-	codecsPath := filepath.Join(codegen.Gendir, "tools", "codecs.go")
-	registryPath := filepath.Join(codegen.Gendir, "tools", "registry.go")
+	toolsetDir := filepath.Join(codegen.Gendir, "toolsvc", "tools", "ada_tools")
+	typesPath := filepath.Join(toolsetDir, "types.go")
+	schemasPath := filepath.Join(toolsetDir, "schemas.go")
+	codecsPath := filepath.Join(toolsetDir, "codecs.go")
+	registryPath := filepath.Join(toolsetDir, "registry.go")
 
 	filesByPath := map[string]*codegen.File{}
 	for _, f := range files {
@@ -135,6 +136,7 @@ func TestGenerateRegistry(t *testing.T) {
 		}
 	}
 	typesOut := typeBuf.String()
+	assert.Contains(t, typesOut, "package ada_tools")
 	assert.Contains(t, typesOut, "type (")
 	assert.Contains(t, typesOut, "GetKeyEventsPayload defines the JSON payload")
 	assert.NotContains(t, typesOut, "ListDevicesPayload defines the JSON payload")
@@ -156,8 +158,11 @@ func TestGenerateRegistry(t *testing.T) {
 		}
 	}
 	codecOut := codecBuf.String()
+	assert.Contains(t, codecOut, "package ada_tools")
 	assert.Contains(t, codecOut, "import (\n\t\"encoding/json\"")
+	assert.Contains(t, codecOut, "\"example.com/gen/toolsvc\"")
 	assert.Contains(t, codecOut, "GetKeyEventsPayloadCodec = tools.JSONCodec[*GetKeyEventsPayload]")
+	assert.Contains(t, codecOut, "toolsvc.ListDevicesPayload")
 	assert.Contains(t, codecOut, "func MarshalGetKeyEventsPayload")
 
 	var registryBuf bytes.Buffer
@@ -167,6 +172,7 @@ func TestGenerateRegistry(t *testing.T) {
 		}
 	}
 	registryOut := registryBuf.String()
+	assert.Contains(t, registryOut, "package ada_tools")
 	assert.Contains(t, registryOut, "var ToolRegistry = []tools.ToolSpec")
 	assert.Contains(t, registryOut, "Payload: tools.TypeSpec{")
 }

@@ -5,16 +5,13 @@
 // Command:
 // $ goa gen github.com/example/tools-simple/design
 
-package tools
+package inventory_tools
 
 import (
 	"encoding/json"
 	"fmt"
 	"unicode/utf8"
 
-	"github.com/example/tools-simple/gen/inventory"
-	"github.com/example/tools-simple/gen/inventory/syncpayload"
-	"github.com/example/tools-simple/gen/inventory/syncresult"
 	goa "goa.design/goa/v3/pkg"
 	"goa.design/plugins/v3/tools"
 )
@@ -39,26 +36,6 @@ var (
 	ListRecentItemsResultCodec = tools.JSONCodec[*ListRecentItemsResult]{
 		ToJSON:   MarshalListRecentItemsResult,
 		FromJSON: UnmarshalListRecentItemsResult,
-	}
-	// ReserveStockPayloadCodec serializes values of type *inventory.ReserveStockPayload to canonical JSON.
-	ReserveStockPayloadCodec = tools.JSONCodec[*inventory.ReserveStockPayload]{
-		ToJSON:   MarshalReserveStockPayload,
-		FromJSON: UnmarshalReserveStockPayload,
-	}
-	// ReserveStockResultCodec serializes values of type *inventory.ReserveStockResult to canonical JSON.
-	ReserveStockResultCodec = tools.JSONCodec[*inventory.ReserveStockResult]{
-		ToJSON:   MarshalReserveStockResult,
-		FromJSON: UnmarshalReserveStockResult,
-	}
-	// SyncWarehousePayloadCodec serializes values of type *syncpayload.SyncWarehousePayload to canonical JSON.
-	SyncWarehousePayloadCodec = tools.JSONCodec[*syncpayload.SyncWarehousePayload]{
-		ToJSON:   MarshalSyncWarehousePayload,
-		FromJSON: UnmarshalSyncWarehousePayload,
-	}
-	// SyncWarehouseResultCodec serializes values of type *syncresult.SyncWarehouseResult to canonical JSON.
-	SyncWarehouseResultCodec = tools.JSONCodec[*syncresult.SyncWarehouseResult]{
-		ToJSON:   MarshalSyncWarehouseResult,
-		FromJSON: UnmarshalSyncWarehouseResult,
 	}
 	// lookupItemPayloadCodec provides an untyped codec for *LookupItemPayload.
 	lookupItemPayloadCodec = tools.JSONCodec[any]{
@@ -112,66 +89,10 @@ var (
 			return UnmarshalListRecentItemsResult(data)
 		},
 	}
-	// reserveStockPayloadCodec provides an untyped codec for *inventory.ReserveStockPayload.
-	reserveStockPayloadCodec = tools.JSONCodec[any]{
-		ToJSON: func(v any) ([]byte, error) {
-			typed, ok := v.(*inventory.ReserveStockPayload)
-			if !ok {
-				return nil, fmt.Errorf("expected *inventory.ReserveStockPayload, got %T", v)
-			}
-			return MarshalReserveStockPayload(typed)
-		},
-		FromJSON: func(data []byte) (any, error) {
-			return UnmarshalReserveStockPayload(data)
-		},
-	}
-	// reserveStockResultCodec provides an untyped codec for *inventory.ReserveStockResult.
-	reserveStockResultCodec = tools.JSONCodec[any]{
-		ToJSON: func(v any) ([]byte, error) {
-			typed, ok := v.(*inventory.ReserveStockResult)
-			if !ok {
-				return nil, fmt.Errorf("expected *inventory.ReserveStockResult, got %T", v)
-			}
-			return MarshalReserveStockResult(typed)
-		},
-		FromJSON: func(data []byte) (any, error) {
-			return UnmarshalReserveStockResult(data)
-		},
-	}
-	// syncWarehousePayloadCodec provides an untyped codec for *syncpayload.SyncWarehousePayload.
-	syncWarehousePayloadCodec = tools.JSONCodec[any]{
-		ToJSON: func(v any) ([]byte, error) {
-			typed, ok := v.(*syncpayload.SyncWarehousePayload)
-			if !ok {
-				return nil, fmt.Errorf("expected *syncpayload.SyncWarehousePayload, got %T", v)
-			}
-			return MarshalSyncWarehousePayload(typed)
-		},
-		FromJSON: func(data []byte) (any, error) {
-			return UnmarshalSyncWarehousePayload(data)
-		},
-	}
-	// syncWarehouseResultCodec provides an untyped codec for *syncresult.SyncWarehouseResult.
-	syncWarehouseResultCodec = tools.JSONCodec[any]{
-		ToJSON: func(v any) ([]byte, error) {
-			typed, ok := v.(*syncresult.SyncWarehouseResult)
-			if !ok {
-				return nil, fmt.Errorf("expected *syncresult.SyncWarehouseResult, got %T", v)
-			}
-			return MarshalSyncWarehouseResult(typed)
-		},
-		FromJSON: func(data []byte) (any, error) {
-			return UnmarshalSyncWarehouseResult(data)
-		},
-	}
 )
 
 func PayloadCodec(name string) (*tools.JSONCodec[any], bool) {
 	switch name {
-	case "ReserveStock":
-		return &reserveStockPayloadCodec, true
-	case "SyncWarehouse":
-		return &syncWarehousePayloadCodec, true
 	case "list_recent_items":
 		return &listRecentItemsPayloadCodec, true
 	case "lookup_item":
@@ -183,10 +104,6 @@ func PayloadCodec(name string) (*tools.JSONCodec[any], bool) {
 
 func ResultCodec(name string) (*tools.JSONCodec[any], bool) {
 	switch name {
-	case "ReserveStock":
-		return &reserveStockResultCodec, true
-	case "SyncWarehouse":
-		return &syncWarehouseResultCodec, true
 	case "list_recent_items":
 		return &listRecentItemsResultCodec, true
 	case "lookup_item":
@@ -308,115 +225,5 @@ func ValidateListRecentItemsResult(body *ListRecentItemsResult) (err error) {
 	if body.Items == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("items", "body"))
 	}
-	return
-}
-func MarshalReserveStockPayload(v *inventory.ReserveStockPayload) ([]byte, error) {
-	if v == nil {
-		return nil, fmt.Errorf("reserveStockPayload is nil")
-	}
-	if err := ValidateReserveStockPayload(v); err != nil {
-		return nil, fmt.Errorf("validate reserveStockPayload: %w", err)
-	}
-	return json.Marshal(v)
-}
-
-func UnmarshalReserveStockPayload(data []byte) (*inventory.ReserveStockPayload, error) {
-	if len(data) == 0 {
-		return nil, fmt.Errorf("reserveStockPayload JSON is empty")
-	}
-	var v inventory.ReserveStockPayload
-	if err := json.Unmarshal(data, &v); err != nil {
-		return nil, fmt.Errorf("decode reserveStockPayload: %w", err)
-	}
-	if err := ValidateReserveStockPayload(&v); err != nil {
-		return nil, fmt.Errorf("validate reserveStockPayload: %w", err)
-	}
-	return &v, nil
-}
-
-func ValidateReserveStockPayload(body *inventory.ReserveStockPayload) (err error) {
-	if utf8.RuneCountInString(body.Sku) < 1 {
-		err = goa.MergeErrors(err, goa.InvalidLengthError("body.sku", body.Sku, utf8.RuneCountInString(body.Sku), 1, true))
-	}
-	if body.Quantity < 1 {
-		err = goa.MergeErrors(err, goa.InvalidRangeError("body.quantity", body.Quantity, 1, true))
-	}
-	return
-}
-func MarshalReserveStockResult(v *inventory.ReserveStockResult) ([]byte, error) {
-	if v == nil {
-		return nil, fmt.Errorf("reserveStockResult is nil")
-	}
-	return json.Marshal(v)
-}
-
-func UnmarshalReserveStockResult(data []byte) (*inventory.ReserveStockResult, error) {
-	if len(data) == 0 {
-		return nil, fmt.Errorf("reserveStockResult JSON is empty")
-	}
-	var v inventory.ReserveStockResult
-	if err := json.Unmarshal(data, &v); err != nil {
-		return nil, fmt.Errorf("decode reserveStockResult: %w", err)
-	}
-	return &v, nil
-}
-
-func ValidateReserveStockResult(body *inventory.ReserveStockResult) (err error) {
-	_ = body
-	return
-}
-func MarshalSyncWarehousePayload(v *syncpayload.SyncWarehousePayload) ([]byte, error) {
-	if v == nil {
-		return nil, fmt.Errorf("syncWarehousePayload is nil")
-	}
-	if err := ValidateSyncWarehousePayload(v); err != nil {
-		return nil, fmt.Errorf("validate syncWarehousePayload: %w", err)
-	}
-	return json.Marshal(v)
-}
-
-func UnmarshalSyncWarehousePayload(data []byte) (*syncpayload.SyncWarehousePayload, error) {
-	if len(data) == 0 {
-		return nil, fmt.Errorf("syncWarehousePayload JSON is empty")
-	}
-	var v syncpayload.SyncWarehousePayload
-	if err := json.Unmarshal(data, &v); err != nil {
-		return nil, fmt.Errorf("decode syncWarehousePayload: %w", err)
-	}
-	if err := ValidateSyncWarehousePayload(&v); err != nil {
-		return nil, fmt.Errorf("validate syncWarehousePayload: %w", err)
-	}
-	return &v, nil
-}
-
-func ValidateSyncWarehousePayload(body *syncpayload.SyncWarehousePayload) (err error) {
-	if body.Items == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("items", "body"))
-	}
-	if utf8.RuneCountInString(body.WarehouseID) < 1 {
-		err = goa.MergeErrors(err, goa.InvalidLengthError("body.warehouse_id", body.WarehouseID, utf8.RuneCountInString(body.WarehouseID), 1, true))
-	}
-	return
-}
-func MarshalSyncWarehouseResult(v *syncresult.SyncWarehouseResult) ([]byte, error) {
-	if v == nil {
-		return nil, fmt.Errorf("syncWarehouseResult is nil")
-	}
-	return json.Marshal(v)
-}
-
-func UnmarshalSyncWarehouseResult(data []byte) (*syncresult.SyncWarehouseResult, error) {
-	if len(data) == 0 {
-		return nil, fmt.Errorf("syncWarehouseResult JSON is empty")
-	}
-	var v syncresult.SyncWarehouseResult
-	if err := json.Unmarshal(data, &v); err != nil {
-		return nil, fmt.Errorf("decode syncWarehouseResult: %w", err)
-	}
-	return &v, nil
-}
-
-func ValidateSyncWarehouseResult(body *syncresult.SyncWarehouseResult) (err error) {
-	_ = body
 	return
 }
