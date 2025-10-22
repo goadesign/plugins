@@ -88,9 +88,6 @@ func (t *ToolExpr) EvalName() string {
 // even if they are not explicitly referenced by a service method.
 func (t *ToolSetExpr) Finalize() {
 	for _, tool := range t.Tools {
-		if tool == nil || tool.Method == nil {
-			continue
-		}
 		if tool.Method.Payload != nil {
 			tool.Method.Payload.AddMeta("type:generate:force", "true")
 		}

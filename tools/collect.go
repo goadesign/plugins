@@ -15,15 +15,13 @@ import (
 )
 
 type generator struct {
-	genpkg      string
-	services    *service.ServicesData
-	typeScope   *codegen.NameScope
-	types       map[string]*typeInfo
-	ordered     []*typeInfo
-	tools       []*toolEntry
-	imports     map[string]*codegen.ImportSpec
-	needsGoa    bool
-	typeImports map[string]*codegen.ImportSpec
+	genpkg       string
+	services     *service.ServicesData
+	typeScope    *codegen.NameScope
+	types        map[string]*typeInfo
+	ordered      []*typeInfo
+	toolsets     map[string]*toolSetData
+	toolsetOrder []*toolSetData
 }
 
 type toolEntry struct {
@@ -33,6 +31,18 @@ type toolEntry struct {
 	Method  *string
 	Payload *typeInfo
 	Result  *typeInfo
+	SetData *toolSetData
+}
+
+type toolSetData struct {
+	Name        string
+	ServiceName string
+	ServicePath string
+	PackageName string
+	DirName     string
+	Tools       []*toolEntry
+	typeMap     map[string]*typeInfo
+	typeOrder   []*typeInfo
 }
 
 type typeInfo struct {
@@ -63,6 +73,7 @@ type typeInfo struct {
 	ValidateError string
 	EmptyError    string
 	Usage         typeUsage
+	TypeImports   []*codegen.ImportSpec
 }
 
 type typeUsage string
@@ -72,19 +83,151 @@ const (
 	usageResult  typeUsage = "result"
 )
 
+func toolSetKey(service, set string) string {
+	return service + ":" + set
+}
+
+func toolSetDirName(name string) string {
+	if name == "" {
+		return "toolset"
+	}
+	return codegen.SnakeCase(codegen.Goify(name, true))
+}
+
+func toolSetPkgName(name string) string {
+	dir := toolSetDirName(name)
+	if dir == "" {
+		return "toolset"
+	}
+	return dir
+}
+
 func (u typeUsage) String() string {
 	return string(u)
 }
 
+func (ts *toolSetData) addTool(entry *toolEntry) {
+	entry.SetData = ts
+	ts.Tools = append(ts.Tools, entry)
+	ts.addType(entry.Payload)
+	ts.addType(entry.Result)
+}
+
+func (ts *toolSetData) addType(info *typeInfo) {
+	if info == nil {
+		return
+	}
+	if ts.typeMap == nil {
+		ts.typeMap = make(map[string]*typeInfo)
+	}
+	if _, ok := ts.typeMap[info.Key]; ok {
+		return
+	}
+	ts.typeMap[info.Key] = info
+	ts.typeOrder = append(ts.typeOrder, info)
+}
+
+func (ts *toolSetData) types() []*typeInfo {
+	return ts.typeOrder
+}
+
+func (ts *toolSetData) pureTypes() []*typeInfo {
+	var out []*typeInfo
+	for _, info := range ts.typeOrder {
+		if info.NeedType {
+			out = append(out, info)
+		}
+	}
+	return out
+}
+
+func (ts *toolSetData) schemaTypes() []*typeInfo {
+	var out []*typeInfo
+	for _, info := range ts.typeOrder {
+		if info.SchemaLiteral != "" {
+			out = append(out, info)
+		}
+	}
+	return out
+}
+
+func (ts *toolSetData) needsGoa() bool {
+	for _, info := range ts.typeOrder {
+		if info.HasValidation {
+			return true
+		}
+	}
+	return false
+}
+
+func (ts *toolSetData) needsUnicodeImport() bool {
+	for _, info := range ts.typeOrder {
+		if info.HasValidation && strings.Contains(info.Validation, "utf8.") {
+			return true
+		}
+	}
+	return false
+}
+
+func (ts *toolSetData) typeImports() []*codegen.ImportSpec {
+	if len(ts.typeOrder) == 0 {
+		return nil
+	}
+	uniq := make(map[string]*codegen.ImportSpec)
+	for _, info := range ts.typeOrder {
+		for _, im := range info.TypeImports {
+			if im == nil || im.Path == "" {
+				continue
+			}
+			uniq[im.Path] = im
+		}
+	}
+	if len(uniq) == 0 {
+		return nil
+	}
+	paths := make([]string, 0, len(uniq))
+	for p := range uniq {
+		paths = append(paths, p)
+	}
+	sort.Strings(paths)
+	imports := make([]*codegen.ImportSpec, 0, len(paths))
+	for _, p := range paths {
+		imports = append(imports, uniq[p])
+	}
+	return imports
+}
+
 func newGenerator(genpkg string) (*generator, error) {
 	return &generator{
-		genpkg:      genpkg,
-		services:    service.NewServicesData(expr.Root),
-		typeScope:   codegen.NewNameScope(),
-		types:       make(map[string]*typeInfo),
-		imports:     make(map[string]*codegen.ImportSpec),
-		typeImports: make(map[string]*codegen.ImportSpec),
+		genpkg:    genpkg,
+		services:  service.NewServicesData(expr.Root),
+		typeScope: codegen.NewNameScope(),
+		types:     make(map[string]*typeInfo),
+		toolsets:  make(map[string]*toolSetData),
 	}, nil
+}
+
+func (g *generator) ensureToolSetData(ts *toolsexpr.ToolSetExpr, svcData *service.Data, svcName string) *toolSetData {
+	key := toolSetKey(svcName, ts.Name)
+	if existing := g.toolsets[key]; existing != nil {
+		return existing
+	}
+	servicePath := ""
+	if svcData != nil {
+		servicePath = svcData.PathName
+	}
+	dirName := toolSetDirName(ts.Name)
+	pkgName := toolSetPkgName(ts.Name)
+	data := &toolSetData{
+		Name:        ts.Name,
+		ServiceName: svcName,
+		ServicePath: servicePath,
+		PackageName: pkgName,
+		DirName:     dirName,
+	}
+	g.toolsets[key] = data
+	g.toolsetOrder = append(g.toolsetOrder, data)
+	return data
 }
 
 func (g *generator) collect() error {
@@ -103,11 +246,9 @@ func (g *generator) collect() error {
 				return fmt.Errorf("tools: service %q not found in design", svcName)
 			}
 		}
+		tsData := g.ensureToolSetData(ts, svcData, svcName)
 		for _, tool := range ts.Tools {
 			executeToolDSL(tool)
-			if tool.Method == nil {
-				return fmt.Errorf("tools: tool %q missing method expression", tool.Name)
-			}
 			payload, err := g.typeFor(tool, tool.Method.Payload, usagePayload, svcData)
 			if err != nil {
 				return err
@@ -127,15 +268,20 @@ func (g *generator) collect() error {
 				method := tool.Method.Name
 				entry.Method = &method
 			}
-			g.tools = append(g.tools, entry)
+			tsData.addTool(entry)
 		}
 	}
-	sort.Slice(g.tools, func(i, j int) bool {
-		if g.tools[i].Service == g.tools[j].Service {
-			return g.tools[i].Name < g.tools[j].Name
+	sort.Slice(g.toolsetOrder, func(i, j int) bool {
+		if g.toolsetOrder[i].ServiceName == g.toolsetOrder[j].ServiceName {
+			return g.toolsetOrder[i].Name < g.toolsetOrder[j].Name
 		}
-		return g.tools[i].Service < g.tools[j].Service
+		return g.toolsetOrder[i].ServiceName < g.toolsetOrder[j].ServiceName
 	})
+	for _, tsData := range g.toolsetOrder {
+		sort.Slice(tsData.Tools, func(i, j int) bool {
+			return tsData.Tools[i].Name < tsData.Tools[j].Name
+		})
+	}
 	return nil
 }
 
@@ -196,11 +342,8 @@ func (g *generator) ensurePureType(tool *toolsexpr.ToolExpr, att *expr.Attribute
 		ValidateError: fmt.Sprintf("validate %s", lowerCamel(typeName)),
 		EmptyError:    fmt.Sprintf("%s JSON is empty", lowerCamel(typeName)),
 		Usage:         usage,
+		TypeImports:   gatherAttributeImports(g.genpkg, att),
 	}
-	if info.HasValidation {
-		g.needsGoa = true
-	}
-	g.addTypeImports(att)
 	finalizeTypeInfo(info)
 	g.types[key] = info
 	g.ordered = append(g.ordered, info)
@@ -278,14 +421,10 @@ func (g *generator) ensureDerivedType(tool *toolsexpr.ToolExpr, att *expr.Attrib
 		EmptyError:    fmt.Sprintf("%s JSON is empty", lowerCamel(typeName)),
 		Usage:         usage,
 	}
-	if info.HasValidation {
-		g.needsGoa = true
-	}
 	finalizeTypeInfo(info)
 	if importPath := importPath(loc, svcData, g.genpkg); importPath != "" {
 		spec := &codegen.ImportSpec{Path: importPath}
 		info.Import = spec
-		g.imports[importPath] = spec
 	}
 	g.types[key] = info
 	g.ordered = append(g.ordered, info)
@@ -313,15 +452,6 @@ func importPath(loc *codegen.Location, svc *service.Data, genpkg string) string 
 		return ""
 	}
 	return path.Join(genpkg, svc.PathName)
-}
-
-func (g *generator) addTypeImports(att *expr.AttributeExpr) {
-	for _, im := range gatherAttributeImports(g.genpkg, att) {
-		if im == nil || im.Path == "" {
-			continue
-		}
-		g.typeImports[im.Path] = im
-	}
 }
 
 func gatherAttributeImports(genpkg string, att *expr.AttributeExpr) []*codegen.ImportSpec {
