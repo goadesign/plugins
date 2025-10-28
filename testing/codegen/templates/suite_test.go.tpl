@@ -10,7 +10,9 @@ func Run{{ .Service.StructName }}Harness(t *testing.T, svc {{ .Service.PkgName }
 	h := {{ .TestPkg }}.NewHarness(t, svc)
 	defer h.Close()
 	
+{{ if .HasPayloads }}
 	td := {{ .TestPkg }}.NewTestData()
+{{- end }}
 
 {{- range .NonStream }}
 	{{- $m := . }}

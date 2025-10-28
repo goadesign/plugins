@@ -1282,7 +1282,6 @@ func RunWithResultServiceHarness(t *testing.T, svc withresultservice.Service) {
 	h := withResultServicetest.NewHarness(t, svc)
 	defer h.Close()
 
-	td := withResultServicetest.NewTestData()
 	t.Run("WithResultMethod", func(t *testing.T) {
 		result, err := h.Client.WithResultMethod(ctx)
 		if err != nil {
@@ -1306,7 +1305,6 @@ func RunWithoutPayloadResultServiceHarness(t *testing.T, svc withoutpayloadresul
 	h := withoutPayloadResultServicetest.NewHarness(t, svc)
 	defer h.Close()
 
-	td := withoutPayloadResultServicetest.NewTestData()
 	t.Run("WithoutPayloadResultMethod", func(t *testing.T) {
 		err := h.Client.WithoutPayloadResultMethod(ctx)
 		if err != nil {
