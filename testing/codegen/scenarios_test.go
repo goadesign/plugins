@@ -15,6 +15,13 @@ func TestGenerateScenarios(t *testing.T) {
 		Code map[string][]string
 		Path string
 	}{
+		"with-payload": {
+			DSL: testdata.WithPayloadDSL,
+			Code: map[string][]string{
+				"scenario-runner": {testdata.ScenarioRunnerWithPayloadCode},
+			},
+			Path: "gen/with_payload_service/with_payload_servicetest/scenarios.go",
+		},
 		"with-result": {
 			DSL: testdata.WithResultDSL,
 			Code: map[string][]string{

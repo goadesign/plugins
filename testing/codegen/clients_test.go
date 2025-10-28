@@ -15,6 +15,13 @@ func TestGenerateClient(t *testing.T) {
 		Code map[string][]string
 		Path string
 	}{
+		"with-payload": {
+			DSL: testdata.WithPayloadDSL,
+			Code: map[string][]string{
+				"client-methods": {testdata.ClientMethodsWithPayloadCode},
+			},
+			Path: "gen/with_payload_service/with_payload_servicetest/client.go",
+		},
 		"with-result": {
 			DSL: testdata.WithResultDSL,
 			Code: map[string][]string{

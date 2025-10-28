@@ -14,6 +14,13 @@ func TestGenerateSuiteTopLevel(t *testing.T) {
 		Code map[string][]string
 		Path string
 	}{
+		"with-payload": {
+			DSL: testdata.WithPayloadDSL,
+			Code: map[string][]string{
+				"suite-test": {testdata.SuiteTestWithPayloadCode},
+			},
+			Path: "with_payload_service_suite_test.go",
+		},
 		"with-result": {
 			DSL: testdata.WithResultDSL,
 			Code: map[string][]string{
