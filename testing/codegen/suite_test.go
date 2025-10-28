@@ -21,12 +21,12 @@ func TestGenerateSuiteTopLevel(t *testing.T) {
 			},
 			Path: "with_result_service_suite_test.go",
 		},
-		"without-result": {
-			DSL: testdata.WithoutResultDSL,
+		"without-payload-result": {
+			DSL: testdata.WithoutPayloadResultDSL,
 			Code: map[string][]string{
-				"suite-test": {testdata.SuiteTestWithoutResultCode},
+				"suite-test": {testdata.SuiteTestWithoutPayloadResultCode},
 			},
-			Path: "without_result_service_suite_test.go",
+			Path: "without_payload_result_service_suite_test.go",
 		},
 	}
 	for name, c := range cases {

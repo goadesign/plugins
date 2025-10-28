@@ -54,9 +54,9 @@ func (c *Client) WithResultMethod(ctx context.Context) (*withresultservice.WithR
 }
 `
 
-var ClientMethodsWithoutResultCode = `// WithoutResultMethod calls the WithoutResultMethod method using the
-// configured transport.
-func (c *Client) WithoutResultMethod(ctx context.Context) error {
+var ClientMethodsWithoutPayloadResultCode = `// WithoutPayloadResultMethod calls the WithoutPayloadResultMethod method using
+// the configured transport.
+func (c *Client) WithoutPayloadResultMethod(ctx context.Context) error {
 	// Determine which transport to use
 	transport := c.transport
 	if transport == AutoTransport {
@@ -75,26 +75,26 @@ func (c *Client) WithoutResultMethod(ctx context.Context) error {
 		if c.httpClient == nil {
 			return fmt.Errorf("HTTP transport not configured")
 		}
-		endpoint := c.httpClient.WithoutResultMethod()
+		endpoint := c.httpClient.WithoutPayloadResultMethod()
 		_, err := endpoint(ctx, nil)
 		return err
 	case GRPCTransport:
 		if c.grpcClient == nil {
 			return fmt.Errorf("gRPC transport not configured")
 		}
-		endpoint := c.grpcClient.WithoutResultMethod()
+		endpoint := c.grpcClient.WithoutPayloadResultMethod()
 		_, err := endpoint(ctx, nil)
 		return err
 	case JSONRPCTransport:
 		if c.jsonrpcClient == nil {
 			return fmt.Errorf("JSON-RPC transport not configured")
 		}
-		endpoint := c.jsonrpcClient.WithoutResultMethod()
+		endpoint := c.jsonrpcClient.WithoutPayloadResultMethod()
 		_, err := endpoint(ctx, nil)
 		return err
 
 	default:
-		return fmt.Errorf("no transport available for WithoutResultMethod")
+		return fmt.Errorf("no transport available for WithoutPayloadResultMethod")
 	}
 }
 `
@@ -625,7 +625,7 @@ func (r *ScenarioRunner) selectTransport(client *Client, transport string) *Clie
 }
 `
 
-var ScenarioRunnerWithoutResultCode = `// ScenarioRunner executes test scenarios.
+var ScenarioRunnerWithoutPayloadResultCode = `// ScenarioRunner executes test scenarios.
 type ScenarioRunner struct {
 	scenarios  []Scenario
 	validators Validators // Global validator configuration
@@ -783,8 +783,8 @@ func (r *ScenarioRunner) runStep(t *testing.T, client *Client, step Step) {
 
 func (r *ScenarioRunner) executeMethod(ctx context.Context, client *Client, method string, payload map[string]any) (any, error) {
 	switch method {
-	case "WithoutResultMethod":
-		return nil, client.WithoutResultMethod(ctx)
+	case "WithoutPayloadResultMethod":
+		return nil, client.WithoutPayloadResultMethod(ctx)
 	default:
 		return nil, fmt.Errorf("unknown method: %s", method)
 	}
@@ -838,7 +838,7 @@ func (r *ScenarioRunner) callValidator(t *testing.T, method string, result any, 
 	_ = validatorName // avoid unused variable in case no validators are defined
 
 	switch method {
-	case "WithoutResultMethod":
+	case "WithoutPayloadResultMethod":
 		t.Errorf("method %q has no result to validate", method)
 	default:
 		t.Errorf("unknown method: %s", method)
@@ -937,22 +937,22 @@ func RunWithResultServiceHarness(t *testing.T, svc withresultservice.Service) {
 }
 `
 
-var SuiteTestWithoutResultCode = `// RunWithoutResultServiceHarness exercises the generated harness against your
-// service implementation.
+var SuiteTestWithoutPayloadResultCode = `// RunWithoutPayloadResultServiceHarness exercises the generated harness
+// against your service implementation.
 // Call this helper from your test, passing your service implementation.
-func RunWithoutResultServiceHarness(t *testing.T, svc withoutresultservice.Service) {
+func RunWithoutPayloadResultServiceHarness(t *testing.T, svc withoutpayloadresultservice.Service) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	h := withoutResultServicetest.NewHarness(t, svc)
+	h := withoutPayloadResultServicetest.NewHarness(t, svc)
 	defer h.Close()
 
-	td := withoutResultServicetest.NewTestData()
-	t.Run("WithoutResultMethod", func(t *testing.T) {
-		err := h.Client.WithoutResultMethod(ctx)
+	td := withoutPayloadResultServicetest.NewTestData()
+	t.Run("WithoutPayloadResultMethod", func(t *testing.T) {
+		err := h.Client.WithoutPayloadResultMethod(ctx)
 		if err != nil {
-			t.Errorf("WithoutResultMethod failed: %v", err)
+			t.Errorf("WithoutPayloadResultMethod failed: %v", err)
 		}
 	})
 }

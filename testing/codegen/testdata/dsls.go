@@ -19,9 +19,9 @@ var WithResultDSL = func() {
 	})
 }
 
-var WithoutResultDSL = func() {
-	Service("WithoutResultService", func() {
-		Method("WithoutResultMethod", func() {
+var WithoutPayloadResultDSL = func() {
+	Service("WithoutPayloadResultService", func() {
+		Method("WithoutPayloadResultMethod", func() {
 			HTTP(func() {
 				GET("/")
 			})
