@@ -264,7 +264,7 @@ func hasMethodJSONRPC(root *expr.RootExpr, svc *expr.ServiceExpr, m *expr.Method
 	return false
 }
 
-// hasStreams checks if the service has streaming methods.
+// hasPayloads checks if the service has methods with payloads.
 func hasPayloads(svc *expr.ServiceExpr) bool {
 	for _, m := range svc.Methods {
 		if m.Payload.Type != expr.Empty || m.StreamingPayload.Type != expr.Empty {
