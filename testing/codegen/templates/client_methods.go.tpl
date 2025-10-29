@@ -5,7 +5,7 @@
 {{- if or $method.ServerStream $method.ClientStream }}
 func (c *Client) {{ $method.VarName }}(ctx context.Context{{- if and $method.PayloadRef (not $method.StreamingPayload) }}, p *{{ $.PkgName }}.{{ $method.Payload }}{{- end }}) ({{ $.PkgName }}.{{ $method.ClientStream.Interface }}, error) {
 {{- else }}
-func (c *Client) {{ $method.VarName }}(ctx context.Context{{- if $method.PayloadRef }}, p *{{ $.PkgName }}.{{ $method.Payload }}{{- end }}) ({{- if $method.ResultRef }}*{{ $.PkgName }}.{{ $method.Result }}, {{ end }}error) {
+func (c *Client) {{ $method.VarName }}(ctx context.Context{{- if $method.PayloadRef }}, p *{{ $.PkgName }}.{{ $method.Payload }}{{- end }}) ({{- if $method.PkgResultRef }}{{ $method.PkgResultRef }}, {{ end }}error) {
 {{- end }}
 	// Determine which transport to use
 	transport := c.transport
@@ -62,7 +62,7 @@ func (c *Client) {{ $method.VarName }}(ctx context.Context{{- if $method.Payload
 		if err != nil {
 			return nil, err
 		}
-		return res.(*{{ $.PkgName }}.{{ $method.Result }}), nil
+		return res.({{ $method.PkgResultRef }}), nil
 		{{- else }}
 		_, err := endpoint(ctx, {{- if $method.PayloadRef }}p{{ else }}nil{{ end }})
 		return err
@@ -88,7 +88,7 @@ func (c *Client) {{ $method.VarName }}(ctx context.Context{{- if $method.Payload
 		if err != nil {
 			return nil, err
 		}
-		return res.(*{{ $.PkgName }}.{{ $method.Result }}), nil
+		return res.({{ $method.PkgResultRef }}), nil
 		{{- else }}
 		_, err := endpoint(ctx, {{- if $method.PayloadRef }}p{{ else }}nil{{ end }})
 		return err
@@ -129,7 +129,7 @@ func (c *Client) {{ $method.VarName }}(ctx context.Context{{- if $method.Payload
 		if err != nil {
 			return nil, err
 		}
-		return res.(*{{ $.PkgName }}.{{ $method.Result }}), nil
+		return res.({{ $method.PkgResultRef }}), nil
 		{{- else }}
 		_, err := endpoint(ctx, {{- if $method.PayloadRef }}p{{ else }}nil{{ end }})
 		return err
