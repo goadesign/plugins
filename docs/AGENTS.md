@@ -47,6 +47,3 @@
 - Conventional commits: `feat(docs): ...`, `fix(docs): ...`, `chore: ...`.
 - PRs include description, rationale, linked issues, and testing notes; keep changes small and scoped.
 - If generation output changes, run `make gen` and commit relevant updates under `examples/calc/gen/` and `testdata/`.
-
-## Current Status
-- WIP: the per-toolset tools generator refactor still lacks correct service imports and helper validation integration when exercised from external repositories (e.g., `~/src/aura`). Further generator work is required before adoption.
