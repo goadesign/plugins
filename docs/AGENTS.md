@@ -19,6 +19,8 @@
 - Keep files focused and reasonably small; one main construct per file.
 - Prefer `any` over `interface{}` in new code; exported identifiers use CamelCase; packages are short, lower-case.
 - Never edit generated code in `examples/calc/gen/`; fix generators/templates instead.
+- Every exported type, function, method, and interface must have a GoDoc-quality comment beginning with its name. Private declarations also get a short comment describing their role. Public struct fields need field comments.
+- Avoid redundant defensive checks—only guard against nil/empty values at genuine system boundaries (e.g., external inputs). Inside our code paths assume invariants already validated.
 
 ## Curly Braces Rules
 - Default: use multi-line braces for all code blocks (Go and Goa DSL).
