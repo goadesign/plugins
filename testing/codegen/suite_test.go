@@ -14,6 +14,13 @@ func TestGenerateSuiteTopLevel(t *testing.T) {
 		Code map[string][]string
 		Path string
 	}{
+		"with-payload": {
+			DSL: testdata.WithPayloadDSL,
+			Code: map[string][]string{
+				"suite-test": {testdata.SuiteTestWithPayloadCode},
+			},
+			Path: "with_payload_service_suite_test.go",
+		},
 		"with-result": {
 			DSL: testdata.WithResultDSL,
 			Code: map[string][]string{
@@ -21,12 +28,12 @@ func TestGenerateSuiteTopLevel(t *testing.T) {
 			},
 			Path: "with_result_service_suite_test.go",
 		},
-		"without-result": {
-			DSL: testdata.WithoutResultDSL,
+		"without-payload-result": {
+			DSL: testdata.WithoutPayloadResultDSL,
 			Code: map[string][]string{
-				"suite-test": {testdata.SuiteTestWithoutResultCode},
+				"suite-test": {testdata.SuiteTestWithoutPayloadResultCode},
 			},
-			Path: "without_result_service_suite_test.go",
+			Path: "without_payload_result_service_suite_test.go",
 		},
 	}
 	for name, c := range cases {

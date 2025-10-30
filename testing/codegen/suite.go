@@ -12,19 +12,20 @@ import (
 type (
 	// suiteData contains data for generating test suite.
 	suiteData struct {
-		Package    string
-		Service    *service.Data
-		ImportPath string
-		TestPkg    string // Package alias for the test harness
-		NonStream  []*suiteMethodData
-		Stream     []*suiteMethodData
-		HasErrors  bool
-		HasStreams bool
-		HasHTTP    bool
-		HasGRPC    bool
-		HasJSONRPC bool
-		UseTD      bool
-		UseCtx     bool
+		Package     string
+		Service     *service.Data
+		ImportPath  string
+		TestPkg     string // Package alias for the test harness
+		NonStream   []*suiteMethodData
+		Stream      []*suiteMethodData
+		HasErrors   bool
+		HasStreams  bool
+		HasHTTP     bool
+		HasGRPC     bool
+		HasJSONRPC  bool
+		HasPayloads bool
+		UseTD       bool
+		UseCtx      bool
 	}
 
 	// suiteTarget describes one transport/mode target to exercise for a method.
@@ -64,7 +65,7 @@ func generateSuiteTopLevel(genpkg string, examplePkg string, root *expr.RootExpr
 		{Path: "testing"},
 		{Path: "time"},
 		{Path: filepath.Join(genpkg, data.Service.PathName), Name: data.Service.PkgName},
-		{Path: filepath.Join(genpkg, data.Service.PathName, data.Service.PathName+"test"), Name: data.Service.VarName+"test"},
+		{Path: filepath.Join(genpkg, data.Service.PathName, data.Service.PathName+"test"), Name: data.Service.VarName + "test"},
 	}
 	sections := []*codegen.SectionTemplate{
 		// Use empty title to generate header without "DO NOT EDIT" comment, like Goa examples
@@ -89,17 +90,18 @@ func generateSuiteTopLevel(genpkg string, examplePkg string, root *expr.RootExpr
 func buildSuiteData(genpkg, pkg string, root *expr.RootExpr, svc *expr.ServiceExpr) *suiteData {
 	sd := service.NewServicesData(root).Get(svc.Name)
 	data := &suiteData{
-		Package:    pkg,
-		Service:    sd,
-		ImportPath: filepath.Join(genpkg, sd.PathName),
-		TestPkg:    sd.VarName + "test",
-		NonStream:  make([]*suiteMethodData, 0, len(svc.Methods)),
-		Stream:     make([]*suiteMethodData, 0, len(svc.Methods)),
-		HasErrors:  hasErrors(svc),
-		HasStreams: hasStreams(svc),
-		HasHTTP:    hasHTTPTransport(root, svc),
-		HasGRPC:    hasGRPCTransport(root, svc),
-		HasJSONRPC: hasJSONRPCTransport(root, svc),
+		Package:     pkg,
+		Service:     sd,
+		ImportPath:  filepath.Join(genpkg, sd.PathName),
+		TestPkg:     sd.VarName + "test",
+		NonStream:   make([]*suiteMethodData, 0, len(svc.Methods)),
+		Stream:      make([]*suiteMethodData, 0, len(svc.Methods)),
+		HasErrors:   hasErrors(svc),
+		HasStreams:  hasStreams(svc),
+		HasHTTP:     hasHTTPTransport(root, svc),
+		HasGRPC:     hasGRPCTransport(root, svc),
+		HasJSONRPC:  hasJSONRPCTransport(root, svc),
+		HasPayloads: hasPayloads(svc),
 	}
 	for _, m := range svc.Methods {
 		md := &suiteMethodData{Method: sd.Method(m.Name)}

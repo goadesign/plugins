@@ -15,6 +15,13 @@ func TestGenerateScenarios(t *testing.T) {
 		Code map[string][]string
 		Path string
 	}{
+		"with-payload": {
+			DSL: testdata.WithPayloadDSL,
+			Code: map[string][]string{
+				"scenario-runner": {testdata.ScenarioRunnerWithPayloadCode},
+			},
+			Path: "gen/with_payload_service/with_payload_servicetest/scenarios.go",
+		},
 		"with-result": {
 			DSL: testdata.WithResultDSL,
 			Code: map[string][]string{
@@ -22,12 +29,12 @@ func TestGenerateScenarios(t *testing.T) {
 			},
 			Path: "gen/with_result_service/with_result_servicetest/scenarios.go",
 		},
-		"without-result": {
-			DSL: testdata.WithoutResultDSL,
+		"without-payload-result": {
+			DSL: testdata.WithoutPayloadResultDSL,
 			Code: map[string][]string{
-				"scenario-runner": {testdata.ScenarioRunnerWithoutResultCode},
+				"scenario-runner": {testdata.ScenarioRunnerWithoutPayloadResultCode},
 			},
-			Path: "gen/without_result_service/without_result_servicetest/scenarios.go",
+			Path: "gen/without_payload_result_service/without_payload_result_servicetest/scenarios.go",
 		},
 	}
 	for name, c := range cases {

@@ -15,6 +15,13 @@ func TestGenerateClient(t *testing.T) {
 		Code map[string][]string
 		Path string
 	}{
+		"with-payload": {
+			DSL: testdata.WithPayloadDSL,
+			Code: map[string][]string{
+				"client-methods": {testdata.ClientMethodsWithPayloadCode},
+			},
+			Path: "gen/with_payload_service/with_payload_servicetest/client.go",
+		},
 		"with-result": {
 			DSL: testdata.WithResultDSL,
 			Code: map[string][]string{
@@ -22,12 +29,12 @@ func TestGenerateClient(t *testing.T) {
 			},
 			Path: "gen/with_result_service/with_result_servicetest/client.go",
 		},
-		"without-result": {
-			DSL: testdata.WithoutResultDSL,
+		"without-payload-result": {
+			DSL: testdata.WithoutPayloadResultDSL,
 			Code: map[string][]string{
-				"client-methods": {testdata.ClientMethodsWithoutResultCode},
+				"client-methods": {testdata.ClientMethodsWithoutPayloadResultCode},
 			},
-			Path: "gen/without_result_service/without_result_servicetest/client.go",
+			Path: "gen/without_payload_result_service/without_payload_result_servicetest/client.go",
 		},
 	}
 	for name, c := range cases {
