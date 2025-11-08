@@ -119,9 +119,9 @@ func main() {
     {{- if .HasHTTP }}
     // {{ .Name }} HTTP server
     {{- if .HasWebSocket }}
-    {{ .SrvVar }} := {{ .GenHTTPPkg }}.New({{ .EpVar }}, mux, goahttp.RequestDecoder, goahttp.ResponseEncoder, nil, nil, upgrader, nil)
+    {{ .SrvVar }} := {{ .GenHTTPPkg }}.New({{ .EpVar }}, mux, goahttp.RequestDecoder, goahttp.ResponseEncoder, nil, nil, upgrader, nil{{- range .FileServerNils }}, nil{{- end }})
     {{- else }}
-    {{ .SrvVar }} := {{ .GenHTTPPkg }}.New({{ .EpVar }}, mux, goahttp.RequestDecoder, goahttp.ResponseEncoder, nil, nil)
+    {{ .SrvVar }} := {{ .GenHTTPPkg }}.New({{ .EpVar }}, mux, goahttp.RequestDecoder, goahttp.ResponseEncoder, nil, nil{{- range .FileServerNils }}, nil{{- end }})
     {{- end }}
     {{ .GenHTTPPkg }}.Mount(mux, {{ .SrvVar }})
     for _, m := range {{ .SrvVar }}.Mounts {
@@ -234,4 +234,3 @@ func main() {
     wg.Wait()
     log.Printf(ctx, "exited")
 }
-

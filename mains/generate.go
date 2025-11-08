@@ -34,6 +34,8 @@ type srvInfo struct {
     HasHTTP    bool
     HasGRPC    bool
     ServerName string
+    // FSCounts maps service name to the number of HTTP file servers.
+    FSCounts   map[string]int
 }
 
 // svcT provides template data for each service imported by a server.
@@ -50,6 +52,9 @@ type svcT struct {
     HasWebSocket bool
     HasHTTP      bool
     HasGRPC      bool
+    // FileServerNils is used by the template to emit one trailing
+    // nil argument per HTTP file server in the service.
+    FileServerNils []int
 }
 
 // Register the plugin for the example phase.
@@ -110,15 +115,26 @@ func generateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([
         }
         if len(httpSvcs) == 0 { continue }
         var svcs []*service.Data
-        for _, sd := range httpSvcs { if sd != nil && sd.Service != nil { svcs = append(svcs, sd.Service) } }
+        fsCounts := map[string]int{}
+        for _, sd := range httpSvcs {
+            if sd == nil || sd.Service == nil {
+                continue
+            }
+            svcs = append(svcs, sd.Service)
+            if sd.FileServers != nil {
+                fsCounts[sd.Service.Name] = len(sd.FileServers)
+            }
+        }
         hasWS := httpcodegen.NeedDialer(httpSvcs)
         apipkg := apiPkgAlias(genpkg, roots)
         if info, ok := srvMap[dir]; ok {
             info.HasWS = hasWS
             info.HasHTTP = true
             if info.APIPkg == "" { info.APIPkg = apipkg }
+            if info.FSCounts == nil { info.FSCounts = map[string]int{} }
+            for k, v := range fsCounts { info.FSCounts[k] = v }
         } else {
-            srvMap[dir] = &srvInfo{Dir: dir, APIPkg: apipkg, Services: svcs, HasWS: hasWS, HasHTTP: true}
+            srvMap[dir] = &srvInfo{Dir: dir, APIPkg: apipkg, Services: svcs, HasWS: hasWS, HasHTTP: true, FSCounts: fsCounts}
         }
     }
     // Detect gRPC servers from grpc.go files
@@ -228,6 +244,12 @@ func generateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([
                 hasAnyWS = true
             }
 
+            // Determine file server count: prefer extracted counts from example
+            // HTTP files, fallback to design counts when missing.
+            fsn, ok := info.FSCounts[sd.Name]
+            if !ok {
+                fsn = httpFileServerCounts(roots)[sd.Name]
+            }
             svcsData = append(svcsData, svcT{
                 Name:         sd.Name,
                 StructName:   sd.StructName,
@@ -241,6 +263,7 @@ func generateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([
                 HasWebSocket: hws,
                 HasHTTP:      hasHTTP,
                 HasGRPC:      hasGRPC,
+                FileServerNils: func(n int) []int { if n <= 0 { return nil }; s := make([]int, n); for i := range s { s[i] = i }; return s }(fsn),
             })
         }
 
@@ -354,7 +377,7 @@ func httpServicesByName(roots []eval.Root) map[string]bool {
             continue
         }
         for _, svc := range root.API.HTTP.Services {
-            if len(svc.HTTPEndpoints) > 0 {
+            if len(svc.HTTPEndpoints) > 0 || len(svc.FileServers) > 0 {
                 hasHTTP[svc.Name()] = true
             }
         }
@@ -377,4 +400,23 @@ func grpcServicesByName(roots []eval.Root) map[string]bool {
         }
     }
     return hasGRPC
+}
+
+// httpFileServerCounts returns a map from service name to the number of
+// HTTP Files() endpoints defined for that service.
+func httpFileServerCounts(roots []eval.Root) map[string]int {
+    counts := map[string]int{}
+    for _, r := range roots {
+        root, ok := r.(*expr.RootExpr)
+        if !ok || root.API == nil || root.API.HTTP == nil {
+            continue
+        }
+        for _, svc := range root.API.HTTP.Services {
+            if svc == nil {
+                continue
+            }
+            counts[svc.Name()] = len(svc.FileServers)
+        }
+    }
+    return counts
 }

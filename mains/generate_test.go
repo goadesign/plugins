@@ -1,11 +1,12 @@
 package mains
 
 import (
+    "bytes"
+    "regexp"
     "testing"
 
     "github.com/stretchr/testify/assert"
     "github.com/stretchr/testify/require"
-    "bytes"
     "goa.design/goa/v3/codegen"
     "goa.design/goa/v3/codegen/example"
     "goa.design/goa/v3/codegen/service"
@@ -93,4 +94,37 @@ func TestWebSocketMainIncludesUpgrader(t *testing.T) {
     code := buf.String()
     assert.Contains(t, code, "github.com/gorilla/websocket")
     assert.Contains(t, code, "websocket.Upgrader")
+}
+
+func TestMainsAddsFileServerNils(t *testing.T) {
+    root := codegen.RunDSL(t, testdata.FileServerServiceDSL)
+    svcs := service.NewServicesData(root)
+    httpSvcs := httpcodegen.NewServicesData(svcs, root.API.HTTP)
+    files := append(example.ServerFiles("gen", root, svcs), httpcodegen.ExampleServerFiles("gen", httpSvcs)...)
+
+    out, err := Generate("gen", []eval.Root{root}, files)
+    require.NoError(t, err)
+
+    // Expect relocated main under services/static/cmd/static/main.go
+    var mainFile *codegen.File
+    for _, f := range out {
+        if f.Path == "services/static/cmd/static/main.go" {
+            mainFile = f
+            break
+        }
+    }
+    require.NotNil(t, mainFile)
+
+    // Render the mains section and look for exactly 2 (errhandler, formatter)
+    // + 3 (file servers) nil arguments at the end of the New(...) call.
+    sections := mainFile.Section("mains-main")
+    require.Greater(t, len(sections), 0)
+    var buf bytes.Buffer
+    require.NoError(t, sections[0].Write(&buf))
+    code := buf.String()
+
+    // Match a New(...) call that ends with five consecutive `, nil` args
+    // (2 standard + 3 file servers)
+    re := regexp.MustCompile(`New\([\s\S]*,\s*nil(?:,\s*nil){4}\)`) // total 5 nils
+    assert.Regexp(t, re, code)
 }
