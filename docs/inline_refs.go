@@ -52,7 +52,8 @@ func inlineRefs(s *openapi.Schema, defs map[string]*openapi.Schema, stack map[st
 	}
 
 	if s.Ref != "" {
-		const prefix = "#/definitions/"
+		// JSON Schema 2020-12 uses $defs for local schema definitions.
+		const prefix = "#/$defs/"
 		if !strings.HasPrefix(s.Ref, prefix) {
 			// Unexpected external ref; leave intact.
 			return
@@ -96,8 +97,8 @@ func inlineRefs(s *openapi.Schema, defs map[string]*openapi.Schema, stack map[st
 			inlineRefs(a, defs, stack)
 		}
 	}
-	if len(s.Definitions) > 0 {
-		for _, d := range s.Definitions {
+	if len(s.Defs) > 0 {
+		for _, d := range s.Defs {
 			inlineRefs(d, defs, stack)
 		}
 	}
