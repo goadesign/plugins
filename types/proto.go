@@ -169,9 +169,20 @@ func generateProtoField(buf *strings.Builder, nat *expr.NamedAttributeExpr, fiel
 	buf.WriteString(codegen.Goify(nat.Name, false))
 	buf.WriteString(" = ")
 	buf.WriteString(fmt.Sprintf("%d", *fieldNum))
+	buf.WriteString(protoJSONOption(nat.Attribute))
 	buf.WriteString(";\n")
 
 	*fieldNum++
+}
+
+func protoJSONOption(att *expr.AttributeExpr) string {
+	if att == nil || att.Meta == nil {
+		return ""
+	}
+	if names := att.Meta["proto:tag:json"]; len(names) > 0 && names[0] != "" {
+		return fmt.Sprintf(" [json_name = %q]", names[0])
+	}
+	return ""
 }
 
 func protoType(dt expr.DataType) string {

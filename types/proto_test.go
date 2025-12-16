@@ -29,6 +29,7 @@ func TestProto(t *testing.T) {
 		{"alias", testdata.Alias},
 		{"array", testdata.Array},
 		{"recArray", testdata.ArrayArray},
+		{"protojson", testdata.ProtoJSON},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {

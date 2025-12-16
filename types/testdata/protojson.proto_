@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package types;
+
+option go_package = "example.com/test/types";
+
+message ProtoJSON {
+  string value = 1 [json_name = "customValue"];
+}
+
