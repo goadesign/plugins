@@ -146,3 +146,74 @@ func TestProtoTypeMapping(t *testing.T) {
 		})
 	}
 }
+
+func TestProtoFieldNaming(t *testing.T) {
+	tests := []struct {
+		name          string
+		dsl           func()
+		expectedField string
+	}{
+		{
+			"simple field",
+			func() {
+				Type("TestType", func() {
+					Attribute("field", String)
+				})
+			},
+			"string field = 1;",
+		},
+		{
+			"camelCase field",
+			func() {
+				Type("TestType", func() {
+					Attribute("myField", String)
+				})
+			},
+			"string my_field = 1;",
+		},
+		{
+			"PascalCase field",
+			func() {
+				Type("TestType", func() {
+					Attribute("MyField", String)
+				})
+			},
+			"string my_field = 1;",
+		},
+		{
+			"multiple words",
+			func() {
+				Type("TestType", func() {
+					Attribute("thisIsALongFieldName", String)
+				})
+			},
+			"string this_is_a_long_field_name = 1;",
+		},
+		{
+			"acronyms",
+			func() {
+				Type("TestType", func() {
+					Attribute("HTTPServer", String)
+				})
+			},
+			"string http_server = 1;",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := codegen.RunDSL(t, tt.dsl)
+			fs, err := GenerateProto("test", []eval.Root{root}, nil)
+			require.NoError(t, err)
+			require.NotEmpty(t, fs)
+
+			var buf bytes.Buffer
+			for _, s := range fs[0].SectionTemplates {
+				require.NoError(t, s.Write(&buf))
+			}
+
+			got := buf.String()
+			assert.Contains(t, got, tt.expectedField, "Proto should use snake_case for field names")
+		})
+	}
+}

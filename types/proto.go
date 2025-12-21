@@ -166,7 +166,7 @@ func generateProtoField(buf *strings.Builder, nat *expr.NamedAttributeExpr, fiel
 	}
 
 	buf.WriteString(" ")
-	buf.WriteString(codegen.Goify(nat.Name, false))
+	buf.WriteString(codegen.SnakeCase(nat.Name))
 	buf.WriteString(" = ")
 	buf.WriteString(fmt.Sprintf("%d", *fieldNum))
 	buf.WriteString(protoJSONOption(nat.Attribute))
