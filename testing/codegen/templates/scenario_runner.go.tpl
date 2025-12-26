@@ -222,8 +222,8 @@ func (r *ScenarioRunner) callValidator(t *testing.T, method string, result any, 
 	switch method {
 	{{- range .Methods }}
 	case "{{ .Name }}":
-		{{- if .ResultRef }}
-		typedResult := result.(*{{ $.PkgName }}.{{ .Result }})
+		{{- if .ResultTypeRef }}
+		typedResult := result.({{ .ResultTypeRef }})
 		{{- $validators := index $.Validators .Name }}
 		{{- if $validators }}
 		
