@@ -203,7 +203,7 @@ func dupSchema(s *openapi.Schema) *openapi.Schema {
 		Required:             s.Required,
 		AdditionalProperties: s.AdditionalProperties,
 		Properties:           make(map[string]*openapi.Schema, len(s.Properties)),
-		Definitions:          make(map[string]*openapi.Schema, len(s.Definitions)),
+		Defs:                 make(map[string]*openapi.Schema, len(s.Defs)),
 		AnyOf:                nil,
 		Example:              s.Example,
 		Extensions:           s.Extensions,
@@ -214,8 +214,8 @@ func dupSchema(s *openapi.Schema) *openapi.Schema {
 	if s.Items != nil {
 		js.Items = dupSchema(s.Items)
 	}
-	for n, d := range s.Definitions {
-		js.Definitions[n] = dupSchema(d)
+	for n, d := range s.Defs {
+		js.Defs[n] = dupSchema(d)
 	}
 	if len(s.AnyOf) > 0 {
 		js.AnyOf = make([]*openapi.Schema, len(s.AnyOf))

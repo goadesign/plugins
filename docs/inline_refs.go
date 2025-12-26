@@ -52,12 +52,17 @@ func inlineRefs(s *openapi.Schema, defs map[string]*openapi.Schema, stack map[st
 	}
 
 	if s.Ref != "" {
-		const prefix = "#/definitions/"
-		if !strings.HasPrefix(s.Ref, prefix) {
+		// Support both legacy "#/definitions/" and JSON Schema 2020-12 "#/$defs/" prefixes.
+		var name string
+		switch {
+		case strings.HasPrefix(s.Ref, "#/$defs/"):
+			name = strings.TrimPrefix(s.Ref, "#/$defs/")
+		case strings.HasPrefix(s.Ref, "#/definitions/"):
+			name = strings.TrimPrefix(s.Ref, "#/definitions/")
+		default:
 			// Unexpected external ref; leave intact.
 			return
 		}
-		name := strings.TrimPrefix(s.Ref, prefix)
 		if name == "" {
 			return
 		}
@@ -96,8 +101,8 @@ func inlineRefs(s *openapi.Schema, defs map[string]*openapi.Schema, stack map[st
 			inlineRefs(a, defs, stack)
 		}
 	}
-	if len(s.Definitions) > 0 {
-		for _, d := range s.Definitions {
+	if len(s.Defs) > 0 {
+		for _, d := range s.Defs {
 			inlineRefs(d, defs, stack)
 		}
 	}
