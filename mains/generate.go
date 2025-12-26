@@ -125,7 +125,17 @@ func generateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([
                 fsCounts[sd.Service.Name] = len(sd.FileServers)
             }
         }
-        hasWS := httpcodegen.NeedDialer(httpSvcs)
+        // Detect WebSocket usage from HTTP endpoints (streaming without SSE).
+        // NeedDialer() is for client dialers, but here we're generating server mains
+        // and need to know whether to import gorilla/websocket for the upgrader.
+        hasWS := false
+        wsBySvc := httpWebSocketByService(roots)
+        for _, sd := range httpSvcs {
+            if sd != nil && sd.Service != nil && wsBySvc[sd.Service.Name] {
+                hasWS = true
+                break
+            }
+        }
         apipkg := apiPkgAlias(genpkg, roots)
         if info, ok := srvMap[dir]; ok {
             info.HasWS = hasWS

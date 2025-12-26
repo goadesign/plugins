@@ -46,6 +46,21 @@ var WithoutPayloadResultDSL = func() {
 	})
 }
 
+var WithArrayResultDSL = func() {
+	var AccessControl = ResultType("AccessControl", func() {
+		Attribute("id", String)
+		Required("id")
+	})
+	Service("WithArrayResultService", func() {
+		Method("ListAccessControl", func() {
+			Result(ArrayOf(AccessControl))
+			HTTP(func() {
+				GET("/")
+			})
+		})
+	})
+}
+
 var WithStreamDSL = func() {
 	Service("WithStreamService", func() {
 		Method("WithStreamMethod", func() {

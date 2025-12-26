@@ -5,10 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"gopkg.in/yaml.v3"
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/expr"
+	"gopkg.in/yaml.v3"
 )
 
 // generateScenarios generates the scenario runner for a service.
@@ -33,7 +33,7 @@ func generateScenarios(genpkg string, svcData *service.Data, root *expr.RootExpr
 		{Path: "gopkg.in/yaml.v3", Name: "yaml"},
 		{Path: filepath.Join(genpkg, codegen.SnakeCase(svc.Name)), Name: svcData.PkgName},
 	}
-	
+
 	// Add validator package import if specified in YAML
 	// Only add if it's different from the current package
 	currentPkgPath := filepath.Join(genpkg, codegen.SnakeCase(svc.Name), codegen.SnakeCase(svc.Name)+"test")
@@ -101,26 +101,30 @@ type (
 		*service.MethodData
 		// Transports lists valid transport strings for YAML
 		Transports []string
+		// ResultTypeRef is the fully qualified Go reference to the result type
+		// as seen from the generated test package (e.g. "*svc.Foo", "[]*svc.Bar").
+		// This is used in generated type assertions for custom validators.
+		ResultTypeRef string
 	}
 )
 
 // generateExampleScenarios generates an example scenarios.yaml file for a service.
 func generateExampleScenarios(_ string, root *expr.RootExpr, svc *expr.ServiceExpr) *codegen.File {
 	path := filepath.Join(codegen.Gendir, "..", "scenarios.yaml")
-	
+
 	svcData := service.NewServicesData(root).Get(svc.Name)
 	if svcData == nil {
 		return nil
 	}
-	
+
 	data := buildScenariosData(svcData, root, svc)
-	
+
 	// For YAML files, we need to read the template directly since it's not a .go.tpl file
 	tmplContent, err := templateFS.ReadFile("templates/example_scenarios.yaml.tpl")
 	if err != nil {
 		panic(fmt.Sprintf("failed to read example_scenarios.yaml.tpl: %v", err))
 	}
-	
+
 	sections := []*codegen.SectionTemplate{
 		{
 			Name:   "example-scenarios",
@@ -128,7 +132,7 @@ func generateExampleScenarios(_ string, root *expr.RootExpr, svc *expr.ServiceEx
 			Data:   data,
 		},
 	}
-	
+
 	return &codegen.File{
 		Path:             path,
 		SectionTemplates: sections,
@@ -139,20 +143,20 @@ func generateExampleScenarios(_ string, root *expr.RootExpr, svc *expr.ServiceEx
 func buildScenariosData(svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr) *scenariosData {
 	// Extract validator info from YAML
 	validatorInfo := ExtractValidatorsFromYAML()
-	
+
 	data := &scenariosData{
-		Data:           svcData,
-		ServiceExpr:    svc,
-		Methods:        make([]*scenarioMethodData, 0),
-		HasHTTP:        hasHTTPTransport(root, svc),
-		HasGRPC:        hasGRPCTransport(root, svc),
-		HasJSONRPC:     hasJSONRPCTransport(root, svc),
+		Data:            svcData,
+		ServiceExpr:     svc,
+		Methods:         make([]*scenarioMethodData, 0),
+		HasHTTP:         hasHTTPTransport(root, svc),
+		HasGRPC:         hasGRPCTransport(root, svc),
+		HasJSONRPC:      hasJSONRPCTransport(root, svc),
 		ValidTransports: make([]string, 0),
-		Validators:     validatorInfo.Validators,
-		ValidatorPkg:   "",  // Will be set below if it's a different package
-		ValidatorPath:  validatorInfo.Path,
+		Validators:      validatorInfo.Validators,
+		ValidatorPkg:    "", // Will be set below if it's a different package
+		ValidatorPath:   validatorInfo.Path,
 	}
-	
+
 	// Build list of valid transports
 	transportSet := make(map[string]bool)
 	transportSet["auto"] = true
@@ -176,15 +180,21 @@ func buildScenariosData(svcData *service.Data, root *expr.RootExpr, svc *expr.Se
 	// Build method data with available transports
 	for i, m := range svc.Methods {
 		methodData := svcData.Methods[i]
-		
+
 		// Build targets for this method using shared function
 		targets := buildMethodTargets(root, svc, m, methodData)
-		
+
 		md := &scenarioMethodData{
 			MethodData: methodData,
 			Transports: make([]string, 0),
 		}
-		
+		// Compute fully qualified result type reference for type assertions.
+		// This properly handles composite types like ArrayOf(...) without producing
+		// invalid Go like "svc.[]T" (see issue #234).
+		if m.Result != nil && m.Result.Type != expr.Empty {
+			md.ResultTypeRef = svcData.Scope.GoFullTypeRef(m.Result, svcData.PkgName)
+		}
+
 		// Build list of valid transport strings based on targets
 		transportSet := make(map[string]bool)
 		for _, target := range targets {
@@ -205,15 +215,15 @@ func buildScenariosData(svcData *service.Data, root *expr.RootExpr, svc *expr.Se
 				transportSet["jsonrpc-ws"] = true
 			}
 		}
-		
+
 		// Convert set to sorted list
 		for transport := range transportSet {
 			md.Transports = append(md.Transports, transport)
 		}
-		
+
 		data.Methods = append(data.Methods, md)
 	}
-	
+
 	return data
 }
 
@@ -230,19 +240,19 @@ func ExtractValidatorsFromYAML() ValidatorInfo {
 		Validators: make(map[string][]string),
 		Package:    "", // Empty means use current package
 	}
-	
+
 	// Try to read scenarios.yaml from current directory
 	data, err := os.ReadFile("scenarios.yaml")
 	if err != nil {
 		// File doesn't exist or can't be read, that's OK
 		return info
 	}
-	
+
 	if len(data) == 0 {
 		// Empty file
 		return info
 	}
-	
+
 	var config struct {
 		Validators struct {
 			Package string `yaml:"package"`
@@ -257,16 +267,16 @@ func ExtractValidatorsFromYAML() ValidatorInfo {
 			} `yaml:"steps"`
 		} `yaml:"scenarios"`
 	}
-	
+
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		// Invalid YAML, skip
 		return info
 	}
-	
+
 	// Extract package info
 	info.Package = config.Validators.Package
 	info.Path = config.Validators.Path
-	
+
 	// Extract unique validators per method
 	for _, scenario := range config.Scenarios {
 		if scenario.Steps == nil {
@@ -289,6 +299,6 @@ func ExtractValidatorsFromYAML() ValidatorInfo {
 			}
 		}
 	}
-	
+
 	return info
 }

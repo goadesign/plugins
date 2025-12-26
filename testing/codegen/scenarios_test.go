@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/service"
 	httpcodegen "goa.design/goa/v3/http/codegen"
 	"goa.design/plugins/v3/testing/codegen/testdata"
@@ -51,4 +52,28 @@ func TestGenerateScenarios(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGenerateScenarios_ArrayResultTypeAssertion(t *testing.T) {
+	root := httpcodegen.RunHTTPDSL(t, testdata.WithArrayResultDSL)
+	services := service.NewServicesData(root)
+	svc := root.Services[0]
+	svcData := services.Get(svc.Name)
+	fs := generateScenarios("", svcData, root, svc)
+	f := fs[0]
+
+	sections := f.Section("scenario-runner")
+	if len(sections) != 1 {
+		t.Fatalf("expected 1 scenario-runner section, got %d", len(sections))
+	}
+	code := codegen.SectionCode(t, sections[0])
+
+	// This is the canonical fully-qualified Go type reference that should be used
+	// in the generated type assertion.
+	wantRef := svcData.Scope.GoFullTypeRef(svc.Methods[0].Result, svcData.PkgName)
+	assert.Contains(t, code, "typedResult := result.("+wantRef+")")
+
+	// Regression guard for invalid formatting like "pkg.[]T" (issue #234).
+	assert.NotContains(t, code, svcData.PkgName+".[]")
+	assert.NotContains(t, code, "*"+svcData.PkgName+".[]")
 }

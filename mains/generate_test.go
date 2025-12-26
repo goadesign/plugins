@@ -86,14 +86,19 @@ func TestWebSocketMainIncludesUpgrader(t *testing.T) {
     }
     require.NotNil(t, mainFile)
 
-    // Extract code for our section and assert WS import and upgrader usage
-    sections := mainFile.Section("mains-main")
-    require.Greater(t, len(sections), 0)
-    var buf bytes.Buffer
-    require.NoError(t, sections[0].Write(&buf))
-    code := buf.String()
-    assert.Contains(t, code, "github.com/gorilla/websocket")
-    assert.Contains(t, code, "websocket.Upgrader")
+    // Assert WS import is present in the generated header.
+    header := mainFile.Section("source-header")
+    require.Greater(t, len(header), 0)
+    var hbuf bytes.Buffer
+    require.NoError(t, header[0].Write(&hbuf))
+    assert.Contains(t, hbuf.String(), "github.com/gorilla/websocket")
+
+    // Assert upgrader usage is present in the main body.
+    body := mainFile.Section("mains-main")
+    require.Greater(t, len(body), 0)
+    var bbuf bytes.Buffer
+    require.NoError(t, body[0].Write(&bbuf))
+    assert.Contains(t, bbuf.String(), "websocket.Upgrader")
 }
 
 func TestMainsAddsFileServerNils(t *testing.T) {
