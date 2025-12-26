@@ -40,6 +40,8 @@ type (
 		HasGRPC     bool // Method has gRPC transport
 		HasJSONRPC  bool // Method has JSON-RPC transport (any variant)
 		IsStreaming bool // Method has streaming
+		// PkgResultRef is the package-qualified result type reference
+		PkgResultRef string
 	}
 )
 
@@ -123,6 +125,9 @@ func buildClientData(svcData *service.Data, root *expr.RootExpr, svc *expr.Servi
 		Methods:     make([]*clientMethodData, 0, len(svcData.Methods)),
 	}
 
+	// Create a name scope for type reference generation
+	scope := codegen.NewNameScope()
+
 	// Build method data with client-specific extensions
 	for i, m := range svc.Methods {
 		md := svcData.Methods[i]
@@ -135,6 +140,12 @@ func buildClientData(svcData *service.Data, root *expr.RootExpr, svc *expr.Servi
 			MethodData:  md,
 			Targets:     targets,
 			IsStreaming: md.StreamKind != expr.NoStreamKind,
+		}
+
+		// Compute package-qualified result reference using Goa's GoFullTypeRef
+		// This properly handles arrays, maps, primitives, and user types
+		if m.Result != nil && m.Result.Type != expr.Empty {
+			cmd.PkgResultRef = scope.GoFullTypeRef(m.Result, svcData.PkgName)
 		}
 
 		// Analyze targets to determine available transports

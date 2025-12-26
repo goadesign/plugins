@@ -90,3 +90,11 @@ var ArrayArray = func() {
 		Required("array")
 	})
 }
+
+var ProtoJSON = func() {
+	var _ = Type("ProtoJSON", func() {
+		Attribute("value", String, func() {
+			Meta("proto:tag:json", "customValue")
+		})
+	})
+}

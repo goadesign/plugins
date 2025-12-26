@@ -11,7 +11,7 @@ import (
 
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/eval"
-	"goa.design/goa/v3/expr"
+	goaexpr "goa.design/goa/v3/expr"
 	"goa.design/goa/v3/http/codegen/openapi"
 	plugexpr "goa.design/plugins/v3/docs/expr"
 )
@@ -41,7 +41,7 @@ func Generate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.Fi
 	var agg *data
 
 	for _, root := range roots {
-		r, ok := root.(*expr.RootExpr)
+		r, ok := root.(*goaexpr.RootExpr)
 		if !ok {
 			continue
 		}
@@ -104,7 +104,7 @@ func Generate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.Fi
 // docsDataForRoot builds the docs data for a single root while scoping
 // openapi.Definitions to that root only. The global definitions map is restored
 // before returning.
-func docsDataForRoot(r *expr.RootExpr) *data {
+func docsDataForRoot(r *goaexpr.RootExpr) *data {
 	prev := openapi.Definitions
 	openapi.Definitions = make(map[string]*openapi.Schema)
 	defer func() { openapi.Definitions = prev }()
@@ -117,7 +117,7 @@ func docsDataForRoot(r *expr.RootExpr) *data {
 	return d
 }
 
-func docsFile(r *expr.RootExpr) *codegen.File {
+func docsFile(r *goaexpr.RootExpr) *codegen.File {
 	// Per-run generation state
 	state := newGenState()
 	docs := &data{
@@ -130,6 +130,14 @@ func docsFile(r *expr.RootExpr) *codegen.File {
 	defs := make(map[string]*openapi.Schema, len(openapi.Definitions))
 	for n, d := range openapi.Definitions {
 		defs[n] = dupSchema(d)
+	}
+
+	// Force-emit definitions for explicitly included user types (and deps).
+	if its := plugexpr.Root.IncludedTypes; len(its) > 0 {
+		forced := forcedDefinitions(r.API, its, state)
+		for n, s := range forced {
+			defs[n] = s
+		}
 	}
 
 	// Apply JSON tag transforms if requested.
@@ -171,6 +179,72 @@ func docsFile(r *expr.RootExpr) *codegen.File {
 	return &codegen.File{
 		Path:             jsonPath,
 		SectionTemplates: []*codegen.SectionTemplate{jsonSection},
+	}
+}
+
+// forcedDefinitions builds JSON Schemas for the given user types and their
+// transitive dependencies and returns a name->schema map suitable for inclusion
+// in the top-level definitions object.
+func forcedDefinitions(api *goaexpr.APIExpr, uts []goaexpr.UserType, state *genState) map[string]*openapi.Schema { //nolint:cyclop
+	seen := make(map[string]*goaexpr.UserTypeExpr)
+
+	var addUT func(goaexpr.UserType)
+	addUT = func(ut goaexpr.UserType) {
+		if ut == nil {
+			return
+		}
+		if ute, ok := ut.(*goaexpr.UserTypeExpr); ok {
+			name := ute.TypeName
+			if _, ok := seen[name]; ok {
+				return
+			}
+			seen[name] = ute
+			walkDeps(ute.AttributeExpr, addUT)
+		}
+	}
+
+	for _, ut := range uts {
+		addUT(ut)
+	}
+
+	out := make(map[string]*openapi.Schema, len(seen))
+	for name, ute := range seen {
+		sch := schemaForAttribute(api, ute.AttributeExpr, state)
+		out[name] = dupSchema(sch)
+	}
+	return out
+}
+
+// walkDeps recursively visits attribute data types and invokes add on any
+// discovered user types (including result types). It follows bases and
+// references to mirror behavior elsewhere in the plugin.
+func walkDeps(att *goaexpr.AttributeExpr, add func(goaexpr.UserType)) {
+	if att == nil || att.Type == nil {
+		return
+	}
+	switch t := att.Type.(type) {
+	case goaexpr.UserType:
+		add(t)
+		walkDeps(t.Attribute(), add)
+	case *goaexpr.Array:
+		walkDeps(t.ElemType, add)
+	case *goaexpr.Map:
+		walkDeps(t.KeyType, add)
+		walkDeps(t.ElemType, add)
+	case *goaexpr.Object:
+		for _, nat := range *t {
+			walkDeps(nat.Attribute, add)
+		}
+	case *goaexpr.Union:
+		for _, v := range t.Values {
+			walkDeps(v.Attribute, add)
+		}
+	}
+	for _, b := range att.Bases {
+		walkDeps(&goaexpr.AttributeExpr{Type: b}, add)
+	}
+	for _, r := range att.References {
+		walkDeps(&goaexpr.AttributeExpr{Type: r}, add)
 	}
 }
 
@@ -226,7 +300,7 @@ func dupSchema(s *openapi.Schema) *openapi.Schema {
 	return &js
 }
 
-func apiDocs(api *expr.APIExpr) *apiData {
+func apiDocs(api *goaexpr.APIExpr) *apiData {
 	data := &apiData{
 		Name:        api.Name,
 		Title:       api.Title,
@@ -260,7 +334,7 @@ func apiDocs(api *expr.APIExpr) *apiData {
 // mustGenerateService returns false if the service (or its HTTP service) is
 // marked with Meta("openapi:generate", "false") or legacy
 // Meta("swagger:generate", "false").
-func mustGenerateService(r *expr.RootExpr, svc *expr.ServiceExpr) bool {
+func mustGenerateService(r *goaexpr.RootExpr, svc *goaexpr.ServiceExpr) bool {
 	// Explicit docs DSL can disable docs.json without impacting OpenAPI
 	if vals, ok := svc.Meta["docs:generate"]; ok && len(vals) > 0 && strings.EqualFold(vals[len(vals)-1], "false") {
 		return false
@@ -286,7 +360,7 @@ func mustGenerateService(r *expr.RootExpr, svc *expr.ServiceExpr) bool {
 // "false"). If HTTP endpoints exist for the method, then the method is only
 // considered generatable if at least one endpoint is also generatable (mirrors
 // Goa behavior where endpoint-level meta gates individual operations).
-func mustGenerateMethod(r *expr.RootExpr, meth *expr.MethodExpr) bool { //nolint:cyclop
+func mustGenerateMethod(r *goaexpr.RootExpr, meth *goaexpr.MethodExpr) bool { //nolint:cyclop
 	if vals, ok := meth.Meta["docs:generate"]; ok && len(vals) > 0 && strings.EqualFold(vals[len(vals)-1], "false") {
 		return false
 	}
@@ -322,7 +396,7 @@ func mustGenerateMethod(r *expr.RootExpr, meth *expr.MethodExpr) bool { //nolint
 	return true
 }
 
-func servicesDocs(r *expr.RootExpr, state *genState) map[string]*serviceData {
+func servicesDocs(r *goaexpr.RootExpr, state *genState) map[string]*serviceData {
 	svcs := make(map[string]*serviceData, len(r.Services))
 
 	for _, svc := range r.Services {
@@ -351,7 +425,7 @@ func servicesDocs(r *expr.RootExpr, state *genState) map[string]*serviceData {
 	return svcs
 }
 
-func generateServer(s *expr.ServerExpr) *serverData {
+func generateServer(s *goaexpr.ServerExpr) *serverData {
 	data := &serverData{
 		Name:        s.Name,
 		Description: s.Description,
@@ -371,7 +445,7 @@ func generateServer(s *expr.ServerExpr) *serverData {
 					data.Hosts[h.Name].URIs[i] = string(u)
 				}
 			}
-			if o := expr.AsObject(h.Variables.Type); o != nil {
+			if o := goaexpr.AsObject(h.Variables.Type); o != nil {
 				data.Hosts[h.Name].Variables = make([]*variableData, len(*o))
 				for i, na := range *o {
 					var def string
@@ -393,7 +467,7 @@ func generateServer(s *expr.ServerExpr) *serverData {
 	return data
 }
 
-func generateRequirement(req *expr.SecurityExpr) *requirementData {
+func generateRequirement(req *goaexpr.SecurityExpr) *requirementData {
 	r := &requirementData{Scopes: req.Scopes}
 	if len(req.Schemes) > 0 {
 		r.Schemes = make([]*schemeData, len(req.Schemes))
@@ -416,14 +490,14 @@ func generateRequirement(req *expr.SecurityExpr) *requirementData {
 	return r
 }
 
-func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr, state *genState) *methodData {
+func generateMethod(api *goaexpr.APIExpr, meth *goaexpr.MethodExpr, state *genState) *methodData {
 	m := &methodData{
 		Name:             meth.Name,
 		Description:      meth.Description,
 		Payload:          generatePayload(api, meth.Payload, state),
 		StreamingPayload: generatePayload(api, meth.StreamingPayload, state),
 	}
-	if meth.Stream == expr.BidirectionalStreamKind || meth.Stream == expr.ServerStreamKind {
+	if meth.Stream == goaexpr.BidirectionalStreamKind || meth.Stream == goaexpr.ServerStreamKind {
 		m.StreamingResult = generatePayload(api, meth.Result, state)
 	} else {
 		m.Result = generatePayload(api, meth.Result, state)
@@ -439,9 +513,9 @@ func generateMethod(api *expr.APIExpr, meth *expr.MethodExpr, state *genState) *
 	return m
 }
 
-func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, state *genState) *payloadData {
+func generatePayload(api *goaexpr.APIExpr, att *goaexpr.AttributeExpr, state *genState) *payloadData {
 	// Do not generate payload for Empty
-	if ut, ok := att.Type.(*expr.UserTypeExpr); ok && ut == expr.Empty {
+	if ut, ok := att.Type.(*goaexpr.UserTypeExpr); ok && ut == goaexpr.Empty {
 		return nil
 	}
 
@@ -459,7 +533,7 @@ func generatePayload(api *expr.APIExpr, att *expr.AttributeExpr, state *genState
 	}
 }
 
-func generateError(api *expr.APIExpr, er *expr.ErrorExpr, state *genState) *errorData {
+func generateError(api *goaexpr.APIExpr, er *goaexpr.ErrorExpr, state *genState) *errorData {
 	_, temporary := er.Meta["goa:error:temporary"]
 	_, timeout := er.Meta["goa:error:timeout"]
 	_, fault := er.Meta["goa:error:fault"]
@@ -489,7 +563,7 @@ func mustJSON(d interface{}) string {
 // inline $ref logic removed
 
 // transformDefinitionsWithJSONTagsHybrid tries Root.UserType lookup.
-func transformDefinitionsWithJSONTagsHybrid(r *expr.RootExpr, defs map[string]*openapi.Schema) map[string]*openapi.Schema {
+func transformDefinitionsWithJSONTagsHybrid(r *goaexpr.RootExpr, defs map[string]*openapi.Schema) map[string]*openapi.Schema {
 	if len(defs) == 0 {
 		return defs
 	}
@@ -507,7 +581,7 @@ func transformDefinitionsWithJSONTagsHybrid(r *expr.RootExpr, defs map[string]*o
 // applyJSONTagsToSchema mutates s to use JSON tag names from Meta on the given
 // attribute and its descendants. It preserves required field semantics and
 // updates examples when present.
-func applyJSONTagsToSchema(att *expr.AttributeExpr, s *openapi.Schema) {
+func applyJSONTagsToSchema(att *goaexpr.AttributeExpr, s *openapi.Schema) {
 	if att == nil || s == nil {
 		return
 	}
@@ -519,10 +593,10 @@ func applyJSONTagsToSchema(att *expr.AttributeExpr, s *openapi.Schema) {
 	// Unwrap user/result types to their underlying attributes before processing.
 	for {
 		switch t := att.Type.(type) {
-		case *expr.ResultTypeExpr:
+		case *goaexpr.ResultTypeExpr:
 			att = t.AttributeExpr
 			continue
-		case expr.UserType:
+		case goaexpr.UserType:
 			att = t.Attribute()
 			continue
 		}
@@ -531,15 +605,15 @@ func applyJSONTagsToSchema(att *expr.AttributeExpr, s *openapi.Schema) {
 
 	// Recurse into composite types first so nested structures are handled.
 	switch t := att.Type.(type) {
-	case *expr.Array:
+	case *goaexpr.Array:
 		if s.Items != nil {
 			applyJSONTagsToSchema(t.ElemType, s.Items)
 		}
-	case *expr.Map:
+	case *goaexpr.Map:
 		if as, ok := s.AdditionalProperties.(*openapi.Schema); ok {
 			applyJSONTagsToSchema(t.ElemType, as)
 		}
-	case *expr.Union:
+	case *goaexpr.Union:
 		for i, v := range t.Values {
 			if i < len(s.AnyOf) {
 				applyJSONTagsToSchema(v.Attribute, s.AnyOf[i])
@@ -549,11 +623,11 @@ func applyJSONTagsToSchema(att *expr.AttributeExpr, s *openapi.Schema) {
 
 	// Handle object property renaming and example/required updates.
 	// If multiple fields resolve to the same JSON tag, the first seen wins.
-	if obj := expr.AsObject(att.Type); obj != nil && s.Properties != nil {
+	if obj := goaexpr.AsObject(att.Type); obj != nil && s.Properties != nil {
 		// Build new properties map using JSON tag names. Use walkAttribute so bases/references are included.
 		newProps := make(map[string]*openapi.Schema, len(s.Properties))
 		nameMap := make(map[string]string, len(*obj))
-		_ = walkAttribute(att, func(oldName string, child *expr.AttributeExpr) error {
+		_ = walkAttribute(att, func(oldName string, child *goaexpr.AttributeExpr) error {
 			jsonName := jsonTagName(child)
 			if jsonName == "" || jsonName == "-" {
 				jsonName = oldName
@@ -597,13 +671,13 @@ func applyJSONTagsToSchema(att *expr.AttributeExpr, s *openapi.Schema) {
 // walkAttribute iterates over the given attribute, its bases and references (if any),
 // calling the iterator for each field of object types. This mirrors goa's internal
 // expr.walkAttribute to ensure bases and references are considered when transforming.
-func walkAttribute(att *expr.AttributeExpr, it func(name string, a *expr.AttributeExpr) error) error { //nolint:cyclop
+func walkAttribute(att *goaexpr.AttributeExpr, it func(name string, a *goaexpr.AttributeExpr) error) error { //nolint:cyclop
 	switch dt := att.Type.(type) {
-	case expr.UserType:
+	case goaexpr.UserType:
 		if err := walkAttribute(dt.Attribute(), it); err != nil {
 			return err
 		}
-	case *expr.Object:
+	case *goaexpr.Object:
 		for _, nat := range *dt {
 			if err := it(nat.Name, nat.Attribute); err != nil {
 				return err
@@ -611,12 +685,12 @@ func walkAttribute(att *expr.AttributeExpr, it func(name string, a *expr.Attribu
 		}
 	}
 	for _, b := range att.Bases {
-		if err := walkAttribute(&expr.AttributeExpr{Type: b}, it); err != nil {
+		if err := walkAttribute(&goaexpr.AttributeExpr{Type: b}, it); err != nil {
 			return err
 		}
 	}
 	for _, r := range att.References {
-		if err := walkAttribute(&expr.AttributeExpr{Type: r}, it); err != nil {
+		if err := walkAttribute(&goaexpr.AttributeExpr{Type: r}, it); err != nil {
 			return err
 		}
 	}
@@ -625,7 +699,7 @@ func walkAttribute(att *expr.AttributeExpr, it func(name string, a *expr.Attribu
 
 // jsonTagName extracts the JSON tag field name from the attribute Meta if set.
 // It supports values like "name,omitempty" and returns "name".
-func jsonTagName(att *expr.AttributeExpr) string {
+func jsonTagName(att *goaexpr.AttributeExpr) string {
 	if att == nil || att.Meta == nil {
 		return ""
 	}
@@ -642,16 +716,16 @@ func jsonTagName(att *expr.AttributeExpr) string {
 // transformExampleWithJSONTags rewrites example map keys to match JSON tags from
 // Meta. It recurses through objects and arrays. For user and result types it
 // recurses into the underlying attribute.
-func transformExampleWithJSONTags(att *expr.AttributeExpr, ex any) any {
+func transformExampleWithJSONTags(att *goaexpr.AttributeExpr, ex any) any {
 	if att == nil || ex == nil {
 		return ex
 	}
 	switch t := att.Type.(type) {
-	case *expr.ResultTypeExpr:
+	case *goaexpr.ResultTypeExpr:
 		return transformExampleWithJSONTags(t.AttributeExpr, ex)
-	case expr.UserType:
+	case goaexpr.UserType:
 		return transformExampleWithJSONTags(t.Attribute(), ex)
-	case *expr.Object:
+	case *goaexpr.Object:
 		m, ok := ex.(map[string]any)
 		if !ok {
 			return ex
@@ -668,7 +742,7 @@ func transformExampleWithJSONTags(att *expr.AttributeExpr, ex any) any {
 			}
 		}
 		return res
-	case *expr.Array:
+	case *goaexpr.Array:
 		if arr, ok := ex.([]any); ok {
 			out := make([]any, len(arr))
 			for i := range arr {
@@ -677,7 +751,7 @@ func transformExampleWithJSONTags(att *expr.AttributeExpr, ex any) any {
 			return out
 		}
 		return ex
-	case *expr.Map:
+	case *goaexpr.Map:
 		// Only transform element values.
 		switch m := ex.(type) {
 		case map[string]any:
@@ -695,7 +769,7 @@ func transformExampleWithJSONTags(att *expr.AttributeExpr, ex any) any {
 		default:
 			return ex
 		}
-	case *expr.Union:
+	case *goaexpr.Union:
 		// Attempt best-effort transform by applying first variant.
 		if len(t.Values) > 0 {
 			return transformExampleWithJSONTags(t.Values[0].Attribute, ex)

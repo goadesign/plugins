@@ -52,17 +52,13 @@ func inlineRefs(s *openapi.Schema, defs map[string]*openapi.Schema, stack map[st
 	}
 
 	if s.Ref != "" {
-		// Support both legacy "#/definitions/" and JSON Schema 2020-12 "#/$defs/" prefixes.
-		var name string
-		switch {
-		case strings.HasPrefix(s.Ref, "#/$defs/"):
-			name = strings.TrimPrefix(s.Ref, "#/$defs/")
-		case strings.HasPrefix(s.Ref, "#/definitions/"):
-			name = strings.TrimPrefix(s.Ref, "#/definitions/")
-		default:
+		// JSON Schema 2020-12 uses $defs for local schema definitions.
+		const prefix = "#/$defs/"
+		if !strings.HasPrefix(s.Ref, prefix) {
 			// Unexpected external ref; leave intact.
 			return
 		}
+		name := strings.TrimPrefix(s.Ref, prefix)
 		if name == "" {
 			return
 		}

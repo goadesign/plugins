@@ -63,3 +63,20 @@ var WebSocketServiceDSL = func() {
         })
     })
 }
+
+// Single service with only Files() endpoints; used to validate mains adds the
+// correct number of http.FileSystem arguments to the HTTP server constructor.
+var FileServerServiceDSL = func() {
+    API("fsapi", func() {
+        Server("edge", func() {
+            Services("static")
+            Host("dev", func() { URI("http://localhost:8080") })
+        })
+    })
+    Service("static", func() {
+        HTTP(func() { Path("/") })
+        Files("/f1.json", "/assets/f1.json")
+        Files("/f2.json", "/assets/f2.json")
+        Files("/f3.json", "/assets/f3.json")
+    })
+}

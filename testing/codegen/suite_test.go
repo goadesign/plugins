@@ -4,12 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"goa.design/goa/v3/codegen/service"
 	httpcodegen "goa.design/goa/v3/http/codegen"
 	"goa.design/plugins/v3/testing/codegen/testdata"
 )
 
-func TestGenerateClient(t *testing.T) {
+func TestGenerateSuiteTopLevel(t *testing.T) {
 	cases := map[string]struct {
 		DSL  func()
 		Code map[string][]string
@@ -18,32 +17,30 @@ func TestGenerateClient(t *testing.T) {
 		"with-payload": {
 			DSL: testdata.WithPayloadDSL,
 			Code: map[string][]string{
-				"client-methods": {testdata.ClientMethodsWithPayloadCode},
+				"suite-test": {testdata.SuiteTestWithPayloadCode},
 			},
-			Path: "gen/with_payload_service/with_payload_servicetest/client.go",
+			Path: "with_payload_service_suite_test.go",
 		},
 		"with-result": {
 			DSL: testdata.WithResultDSL,
 			Code: map[string][]string{
-				"client-methods": {testdata.ClientMethodsWithResultCode},
+				"suite-test": {testdata.SuiteTestWithResultCode},
 			},
-			Path: "gen/with_result_service/with_result_servicetest/client.go",
+			Path: "with_result_service_suite_test.go",
 		},
 		"without-payload-result": {
 			DSL: testdata.WithoutPayloadResultDSL,
 			Code: map[string][]string{
-				"client-methods": {testdata.ClientMethodsWithoutPayloadResultCode},
+				"suite-test": {testdata.SuiteTestWithoutPayloadResultCode},
 			},
-			Path: "gen/without_payload_result_service/without_payload_result_servicetest/client.go",
+			Path: "without_payload_result_service_suite_test.go",
 		},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			root := httpcodegen.RunHTTPDSL(t, c.DSL)
-			services := service.NewServicesData(root)
 			svc := root.Services[0]
-			svcData := services.Get(svc.Name)
-			f := generateClient("", svcData, root, svc)
+			f := generateSuiteTopLevel("", "", root, svc)
 			assert.Equal(t, c.Path, f.Path)
 			for sec, secCode := range c.Code {
 				testCode(t, f, sec, secCode)
