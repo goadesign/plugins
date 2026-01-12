@@ -10,7 +10,7 @@ require (
 	go.uber.org/zap v1.27.1
 	goa.design/clue v1.2.3
 	goa.design/goa/v3 v3.23.4
-	goa.design/model v1.13.0
+	goa.design/model v1.14.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
