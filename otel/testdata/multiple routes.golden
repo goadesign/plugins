@@ -7,6 +7,12 @@ func MountMethodHandler(mux goahttp.Muxer, h http.Handler) {
 			h.ServeHTTP(w, r)
 		}
 	}
-	mux.Handle("GET", "/", f)
-	mux.Handle("GET", "/other", f)
+	mux.Handle("GET", "/", func(w http.ResponseWriter, r *http.Request) {
+		trace.SpanFromContext(r.Context()).SetAttributes(semconv.HTTPRoute("/"))
+		f(w, r)
+	})
+	mux.Handle("GET", "/other", func(w http.ResponseWriter, r *http.Request) {
+		trace.SpanFromContext(r.Context()).SetAttributes(semconv.HTTPRoute("/other"))
+		f(w, r)
+	})
 }

@@ -37,10 +37,6 @@ func TestOtel(t *testing.T) {
 			fs, err := Generate("", []eval.Root{root}, serverFiles)
 			assert.NoError(t, err)
 			require.Len(t, fs, 2)
-			// Generate is a no-op: the returned files must be identical
-			// to the input server files.
-			assert.Same(t, serverFiles[0], fs[0])
-			assert.Same(t, serverFiles[1], fs[1])
 			sections := fs[0].Section("server-handler")
 			require.Len(t, sections, 1)
 			section := sections[0]
