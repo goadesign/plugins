@@ -1,9 +1,16 @@
+// Package otel was a Goa plugin that instrumented HTTP handlers with
+// otelhttp.WithRouteTag to set the http.route attribute on spans and metrics.
+//
+// Deprecated: As of Goa v3.x.x the default HTTP muxer sets r.Pattern on every
+// matched request, which otelhttp (v0.65.0+) reads automatically to tag spans
+// and metrics with the matched route. This plugin is no longer necessary and
+// will be removed in a future release. Remove the blank import from your
+// design package:
+//
+//	import _ "goa.design/plugins/v3/otel" // ← delete this line
 package otel
 
 import (
-	"path/filepath"
-	"strings"
-
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/eval"
 )
@@ -13,27 +20,10 @@ func init() {
 	codegen.RegisterPluginLast("otel", "gen", nil, Generate)
 }
 
-// Generate generates the call to otelhttp.WithRouteTag
-func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
-	for _, f := range files {
-		if filepath.Base(f.Path) == "server.go" {
-			for _, s := range f.SectionTemplates {
-				if s.Name == "server-handler" {
-					s.Source = strings.Replace(
-						s.Source,
-						`mux.Handle("{{ .Verb }}", "{{ .Path }}", f)`,
-						`mux.Handle("{{ .Verb }}", "{{ .Path }}", otelhttp.WithRouteTag("{{ .Path }}", f).ServeHTTP)`,
-						1,
-					)
-				}
-			}
-			imports := f.SectionTemplates[0].Data.(map[string]any)["Imports"].([]*codegen.ImportSpec)
-			imports = append(imports, &codegen.ImportSpec{
-				Path: "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp",
-				Name: "otelhttp",
-			})
-			f.SectionTemplates[0].Data.(map[string]any)["Imports"] = imports
-		}
-	}
+// Generate is a no-op kept for backward compatibility. The Goa HTTP muxer now
+// sets r.Pattern on every request, making explicit route tagging unnecessary.
+//
+// Deprecated: Remove the otel plugin import from your design package.
+func Generate(_ string, _ []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
 	return files, nil
 }
