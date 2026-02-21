@@ -27,7 +27,7 @@ import (
 //
 // Example:
 //
-//	import cors "goa.design/plugins/v3/cors"
+//	import cors "goa.design/plugins/v3/cors/dsl"
 //
 //	var _ = API("calc", func() {
 //	    cors.Origin("http://swagger.goa.design", func() { // Define CORS policy, may be prefixed with "*" wildcard

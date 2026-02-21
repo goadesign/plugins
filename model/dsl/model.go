@@ -16,7 +16,7 @@ import (
 //
 // Example:
 //
-//	import . "goa.design/plugins/v3/model"
+//	import . "goa.design/plugins/v3/model/dsl"
 //
 //	var _ = API("calc", func() {
 //	   Model("goa.design/model/examples/basic/model", "calc")
@@ -34,7 +34,7 @@ func Model(path, systemName string) {
 //
 // Example:
 //
-//	import . "goa.design/plugins/v3/model"
+//	import . "goa.design/plugins/v3/model/dsl"
 //
 //	var _ = API("calc", func() {
 //	   Model("goa.design/model/examples/basic/model", "calc")
@@ -52,7 +52,7 @@ func ModelContainerFormat(format string) {
 //
 // Example:
 //
-//	import . "goa.design/plugins/v3/model"
+//	import . "goa.design/plugins/v3/model/dsl"
 //
 //	var _ = API("calc", func() {
 //	   Model("goa.design/model/examples/basic/model", "calc")
@@ -70,7 +70,7 @@ func ModelExcludedTags(tags ...string) {
 //
 // Example:
 //
-//	import . "goa.design/plugins/v3/model"
+//	import . "goa.design/plugins/v3/model/dsl"
 //
 //	var _ = API("calc", func() {
 //	   Model("goa.design/model/examples/basic/model", "calc")
@@ -86,7 +86,7 @@ func ModelComplete() {
 //
 // Example:
 //
-//	import . "goa.design/plugins/v3/model"
+//	import . "goa.design/plugins/v3/model/dsl"
 //
 //	var _ = API("calc", func() {
 //		Service("adder", func() {
@@ -108,7 +108,7 @@ func ModelContainer(name string) {
 //
 // Example:
 //
-//	import . "goa.design/plugins/v3/model"
+//	import . "goa.design/plugins/v3/model/dsl"
 //
 //	var _ = API("calc", func() {
 //		Service("adder", func() {
