@@ -3,7 +3,7 @@ module goa.design/plugins/v3
 go 1.25.0
 
 require (
-	github.com/aws/aws-lambda-go v1.53.0
+	github.com/aws/aws-lambda-go v1.54.0
 	github.com/go-kit/kit v0.13.0
 	github.com/go-kit/log v0.2.1
 	github.com/stretchr/testify v1.11.1
