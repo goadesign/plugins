@@ -1,6 +1,6 @@
 module goa.design/plugins/v3
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/aws/aws-lambda-go v1.54.0
@@ -9,7 +9,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.1
 	goa.design/clue v1.2.5
-	goa.design/goa/v3 v3.25.3
+	goa.design/goa/v3 v3.26.0
 	goa.design/model v1.14.2
 	gopkg.in/yaml.v3 v3.0.1
 )

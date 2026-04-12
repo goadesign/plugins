@@ -31,7 +31,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/GoaArchive'
                             example:
-                                body: Asperiores quas quas mollitia tempora expedita.
+                                body: Dolorum corrupti voluptas ut consequuntur.
                                 href: /archive/1
                                 status: 200
     /archive/{id}:
@@ -49,10 +49,10 @@ paths:
                   schema:
                     type: integer
                     description: ID of archive
-                    example: 2733011097816237953
+                    example: 7652698986899289396
                     format: int64
                     minimum: 0
-                  example: 3205850005448560570
+                  example: 441380701666746609
             responses:
                 "200":
                     description: OK response.
@@ -61,7 +61,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/GoaArchive'
                             example:
-                                body: Provident at explicabo cum odit.
+                                body: Qui delectus ut esse.
                                 href: /archive/1
                                 status: 200
                 "400":
@@ -90,8 +90,8 @@ paths:
                         text/plain:
                             schema:
                                 type: string
-                                example: Asperiores inventore.
-                            example: Id facilis fuga vel.
+                                example: Et sint.
+                            example: Debitis aut nulla cumque ad rem asperiores.
 components:
     schemas:
         ArchivePayload:
@@ -100,7 +100,7 @@ components:
                 body:
                     type: string
                     description: HTTP response body content
-                    example: Voluptatem aliquam nihil rerum rem.
+                    example: Soluta iusto vel ad.
                 status:
                     type: integer
                     description: HTTP status
@@ -108,7 +108,7 @@ components:
                     format: int64
                     minimum: 0
             example:
-                body: Consequatur et sint cumque dolorum corrupti.
+                body: Incidunt consequuntur aperiam.
                 status: 200
             required:
                 - status
@@ -139,13 +139,13 @@ components:
                 timeout:
                     type: boolean
                     description: Is the error a timeout?
-                    example: true
+                    example: false
             example:
                 fault: false
                 id: 123abc
                 message: parameter 'p' must be an integer
                 name: bad_request
-                temporary: false
+                temporary: true
                 timeout: false
             required:
                 - name
@@ -160,7 +160,7 @@ components:
                 body:
                     type: string
                     description: HTTP response body content
-                    example: Ut consequuntur laboriosam nobis.
+                    example: Aut culpa.
                 href:
                     type: string
                     description: The archive resouce href
@@ -174,7 +174,7 @@ components:
                     minimum: 0
             description: Archive is an HTTP response archive
             example:
-                body: Qui delectus ut esse.
+                body: Aliquam cupiditate similique.
                 href: /archive/1
                 status: 200
             required:

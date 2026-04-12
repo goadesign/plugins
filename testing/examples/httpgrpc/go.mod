@@ -1,6 +1,6 @@
 module goa.design/plugins/v3/testing/examples/httpgrpc
 
-go 1.24.4
+go 1.26.0
 
 require (
 	github.com/gorilla/websocket v1.5.3
