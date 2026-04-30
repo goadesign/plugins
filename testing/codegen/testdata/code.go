@@ -379,6 +379,67 @@ func (h *Harness) HTTPDo(req *http.Request) *http.Response {
 }
 `
 
+var ScenarioTypesWithPayloadCode = `// Scenario defines a test scenario that can be loaded from YAML.
+type Scenario struct {
+	Name        string ` + "`yaml:\"name\"`" + `
+	Description string ` + "`yaml:\"description,omitempty\"`" + `
+	Transport   string ` + "`yaml:\"transport,omitempty\"`" + ` // Default transport for all steps
+	Timeout     string ` + "`yaml:\"timeout,omitempty\"`" + `   // Default timeout for all steps
+	Steps       []Step ` + "`yaml:\"steps\"`" + `
+}
+
+// Step defines a single step in a test scenario.
+type Step struct {
+	Method    string           ` + "`yaml:\"method\"`" + `
+	Transport string           ` + "`yaml:\"transport,omitempty\"`" + ` // Override transport for this step
+	Payload   map[string]any   ` + "`yaml:\"payload,omitempty\"`" + `
+	Stream    bool             ` + "`yaml:\"stream,omitempty\"`" + `  // For mixed results, use streaming variant
+	Send      []map[string]any ` + "`yaml:\"send,omitempty\"`" + `    // For client/bidi streaming
+	Receive   []map[string]any ` + "`yaml:\"receive,omitempty\"`" + ` // For server/bidi streaming
+	Expect    Expectation      ` + "`yaml:\"expect,omitempty\"`" + `
+	Timeout   string           ` + "`yaml:\"timeout,omitempty\"`" + ` // Timeout duration (e.g., '10s', '1m')
+}
+
+// Expectation defines expected outcomes for a step.
+type Expectation struct {
+	Result       map[string]any   ` + "`yaml:\"result,omitempty\"`" + `
+	Error        string           ` + "`yaml:\"error,omitempty\"`" + `
+	Stream       []map[string]any ` + "`yaml:\"stream,omitempty\"`" + `        // Expected stream messages
+	Validator    string           ` + "`yaml:\"validator,omitempty\"`" + `     // Custom validator function name
+	ValidatorPkg string           ` + "`yaml:\"validator_pkg,omitempty\"`" + ` // Package containing validator (defaults to service package)
+}
+
+// ScenarioConfig holds scenarios loaded from YAML.
+type ScenarioConfig struct {
+	Scenarios  []Scenario ` + "`yaml:\"scenarios\"`" + `
+	Validators Validators ` + "`yaml:\"validators,omitempty\"`" + ` // Global validator configuration
+}
+
+// Validators defines custom validation functions to use.
+type Validators struct {
+	Package string ` + "`yaml:\"package,omitempty\"`" + ` // Default package for validators
+	Path    string ` + "`yaml:\"path,omitempty\"`" + `    // Import path for validator package
+}
+
+// Valid transport values for scenarios based on service configuration.
+// Methods may support different combinations of these transports.
+var ValidTransports = []string{
+	"auto",        // Use default/first available
+	"http",        // HTTP plain (non-streaming methods only)
+	"http-sse",    // HTTP Server-Sent Events (server streaming)
+	"http-ws",     // HTTP WebSocket (client/server/bidi streaming)
+	"grpc",        // gRPC (all streaming modes)
+	"jsonrpc",     // JSON-RPC over HTTP (non-streaming)
+	"jsonrpc-sse", // JSON-RPC over SSE (server streaming)
+	"jsonrpc-ws",  // JSON-RPC over WebSocket (streaming only)
+}
+
+// TransportAvailability documents which transports each method supports.
+var TransportAvailability = map[string][]string{
+	"WithPayloadMethod": {"grpc", "http", "jsonrpc"},
+}
+`
+
 var ScenarioRunnerWithPayloadCode = `// ScenarioRunner executes test scenarios.
 type ScenarioRunner struct {
 	scenarios  []Scenario
@@ -672,6 +733,67 @@ func (r *ScenarioRunner) selectTransport(client *Client, transport string) *Clie
 }
 `
 
+var ScenarioTypesWithResultCode = `// Scenario defines a test scenario that can be loaded from YAML.
+type Scenario struct {
+	Name        string ` + "`yaml:\"name\"`" + `
+	Description string ` + "`yaml:\"description,omitempty\"`" + `
+	Transport   string ` + "`yaml:\"transport,omitempty\"`" + ` // Default transport for all steps
+	Timeout     string ` + "`yaml:\"timeout,omitempty\"`" + `   // Default timeout for all steps
+	Steps       []Step ` + "`yaml:\"steps\"`" + `
+}
+
+// Step defines a single step in a test scenario.
+type Step struct {
+	Method    string           ` + "`yaml:\"method\"`" + `
+	Transport string           ` + "`yaml:\"transport,omitempty\"`" + ` // Override transport for this step
+	Payload   map[string]any   ` + "`yaml:\"payload,omitempty\"`" + `
+	Stream    bool             ` + "`yaml:\"stream,omitempty\"`" + `  // For mixed results, use streaming variant
+	Send      []map[string]any ` + "`yaml:\"send,omitempty\"`" + `    // For client/bidi streaming
+	Receive   []map[string]any ` + "`yaml:\"receive,omitempty\"`" + ` // For server/bidi streaming
+	Expect    Expectation      ` + "`yaml:\"expect,omitempty\"`" + `
+	Timeout   string           ` + "`yaml:\"timeout,omitempty\"`" + ` // Timeout duration (e.g., '10s', '1m')
+}
+
+// Expectation defines expected outcomes for a step.
+type Expectation struct {
+	Result       map[string]any   ` + "`yaml:\"result,omitempty\"`" + `
+	Error        string           ` + "`yaml:\"error,omitempty\"`" + `
+	Stream       []map[string]any ` + "`yaml:\"stream,omitempty\"`" + `        // Expected stream messages
+	Validator    string           ` + "`yaml:\"validator,omitempty\"`" + `     // Custom validator function name
+	ValidatorPkg string           ` + "`yaml:\"validator_pkg,omitempty\"`" + ` // Package containing validator (defaults to service package)
+}
+
+// ScenarioConfig holds scenarios loaded from YAML.
+type ScenarioConfig struct {
+	Scenarios  []Scenario ` + "`yaml:\"scenarios\"`" + `
+	Validators Validators ` + "`yaml:\"validators,omitempty\"`" + ` // Global validator configuration
+}
+
+// Validators defines custom validation functions to use.
+type Validators struct {
+	Package string ` + "`yaml:\"package,omitempty\"`" + ` // Default package for validators
+	Path    string ` + "`yaml:\"path,omitempty\"`" + `    // Import path for validator package
+}
+
+// Valid transport values for scenarios based on service configuration.
+// Methods may support different combinations of these transports.
+var ValidTransports = []string{
+	"auto",        // Use default/first available
+	"http",        // HTTP plain (non-streaming methods only)
+	"http-sse",    // HTTP Server-Sent Events (server streaming)
+	"http-ws",     // HTTP WebSocket (client/server/bidi streaming)
+	"grpc",        // gRPC (all streaming modes)
+	"jsonrpc",     // JSON-RPC over HTTP (non-streaming)
+	"jsonrpc-sse", // JSON-RPC over SSE (server streaming)
+	"jsonrpc-ws",  // JSON-RPC over WebSocket (streaming only)
+}
+
+// TransportAvailability documents which transports each method supports.
+var TransportAvailability = map[string][]string{
+	"WithResultMethod": {"grpc", "http", "jsonrpc"},
+}
+`
+
 var ScenarioRunnerWithResultCode = `// ScenarioRunner executes test scenarios.
 type ScenarioRunner struct {
 	scenarios  []Scenario
@@ -959,6 +1081,67 @@ func (r *ScenarioRunner) selectTransport(client *Client, transport string) *Clie
 	default:
 		return client // auto or unknown - use default
 	}
+}
+`
+
+var ScenarioTypesWithoutPayloadResultCode = `// Scenario defines a test scenario that can be loaded from YAML.
+type Scenario struct {
+	Name        string ` + "`yaml:\"name\"`" + `
+	Description string ` + "`yaml:\"description,omitempty\"`" + `
+	Transport   string ` + "`yaml:\"transport,omitempty\"`" + ` // Default transport for all steps
+	Timeout     string ` + "`yaml:\"timeout,omitempty\"`" + `   // Default timeout for all steps
+	Steps       []Step ` + "`yaml:\"steps\"`" + `
+}
+
+// Step defines a single step in a test scenario.
+type Step struct {
+	Method    string           ` + "`yaml:\"method\"`" + `
+	Transport string           ` + "`yaml:\"transport,omitempty\"`" + ` // Override transport for this step
+	Payload   map[string]any   ` + "`yaml:\"payload,omitempty\"`" + `
+	Stream    bool             ` + "`yaml:\"stream,omitempty\"`" + `  // For mixed results, use streaming variant
+	Send      []map[string]any ` + "`yaml:\"send,omitempty\"`" + `    // For client/bidi streaming
+	Receive   []map[string]any ` + "`yaml:\"receive,omitempty\"`" + ` // For server/bidi streaming
+	Expect    Expectation      ` + "`yaml:\"expect,omitempty\"`" + `
+	Timeout   string           ` + "`yaml:\"timeout,omitempty\"`" + ` // Timeout duration (e.g., '10s', '1m')
+}
+
+// Expectation defines expected outcomes for a step.
+type Expectation struct {
+	Result       map[string]any   ` + "`yaml:\"result,omitempty\"`" + `
+	Error        string           ` + "`yaml:\"error,omitempty\"`" + `
+	Stream       []map[string]any ` + "`yaml:\"stream,omitempty\"`" + `        // Expected stream messages
+	Validator    string           ` + "`yaml:\"validator,omitempty\"`" + `     // Custom validator function name
+	ValidatorPkg string           ` + "`yaml:\"validator_pkg,omitempty\"`" + ` // Package containing validator (defaults to service package)
+}
+
+// ScenarioConfig holds scenarios loaded from YAML.
+type ScenarioConfig struct {
+	Scenarios  []Scenario ` + "`yaml:\"scenarios\"`" + `
+	Validators Validators ` + "`yaml:\"validators,omitempty\"`" + ` // Global validator configuration
+}
+
+// Validators defines custom validation functions to use.
+type Validators struct {
+	Package string ` + "`yaml:\"package,omitempty\"`" + ` // Default package for validators
+	Path    string ` + "`yaml:\"path,omitempty\"`" + `    // Import path for validator package
+}
+
+// Valid transport values for scenarios based on service configuration.
+// Methods may support different combinations of these transports.
+var ValidTransports = []string{
+	"auto",        // Use default/first available
+	"http",        // HTTP plain (non-streaming methods only)
+	"http-sse",    // HTTP Server-Sent Events (server streaming)
+	"http-ws",     // HTTP WebSocket (client/server/bidi streaming)
+	"grpc",        // gRPC (all streaming modes)
+	"jsonrpc",     // JSON-RPC over HTTP (non-streaming)
+	"jsonrpc-sse", // JSON-RPC over SSE (server streaming)
+	"jsonrpc-ws",  // JSON-RPC over WebSocket (streaming only)
+}
+
+// TransportAvailability documents which transports each method supports.
+var TransportAvailability = map[string][]string{
+	"WithoutPayloadResultMethod": {"grpc", "http", "jsonrpc"},
 }
 `
 

@@ -19,6 +19,7 @@ func TestGenerateScenarios(t *testing.T) {
 		"with-payload": {
 			DSL: testdata.WithPayloadDSL,
 			Code: map[string][]string{
+				"scenario-types":  {testdata.ScenarioTypesWithPayloadCode},
 				"scenario-runner": {testdata.ScenarioRunnerWithPayloadCode},
 			},
 			Path: "gen/with_payload_service/with_payload_servicetest/scenarios.go",
@@ -26,6 +27,7 @@ func TestGenerateScenarios(t *testing.T) {
 		"with-result": {
 			DSL: testdata.WithResultDSL,
 			Code: map[string][]string{
+				"scenario-types":  {testdata.ScenarioTypesWithResultCode},
 				"scenario-runner": {testdata.ScenarioRunnerWithResultCode},
 			},
 			Path: "gen/with_result_service/with_result_servicetest/scenarios.go",
@@ -33,6 +35,7 @@ func TestGenerateScenarios(t *testing.T) {
 		"without-payload-result": {
 			DSL: testdata.WithoutPayloadResultDSL,
 			Code: map[string][]string{
+				"scenario-types":  {testdata.ScenarioTypesWithoutPayloadResultCode},
 				"scenario-runner": {testdata.ScenarioRunnerWithoutPayloadResultCode},
 			},
 			Path: "gen/without_payload_result_service/without_payload_result_servicetest/scenarios.go",
