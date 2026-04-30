@@ -2,8 +2,10 @@ package codegen
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/service"
@@ -217,9 +219,7 @@ func buildScenariosData(svcData *service.Data, root *expr.RootExpr, svc *expr.Se
 		}
 
 		// Convert set to sorted list
-		for transport := range transportSet {
-			md.Transports = append(md.Transports, transport)
-		}
+		md.Transports = slices.Sorted(maps.Keys(transportSet))
 
 		data.Methods = append(data.Methods, md)
 	}
