@@ -2,8 +2,10 @@ package codegen
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/service"
@@ -173,9 +175,7 @@ func buildScenariosData(svcData *service.Data, root *expr.RootExpr, svc *expr.Se
 		transportSet["jsonrpc-sse"] = true
 		transportSet["jsonrpc-ws"] = true
 	}
-	for t := range transportSet {
-		data.ValidTransports = append(data.ValidTransports, t)
-	}
+	data.ValidTransports = slices.Sorted(maps.Keys(transportSet))
 
 	// Build method data with available transports
 	for i, m := range svc.Methods {
@@ -217,9 +217,7 @@ func buildScenariosData(svcData *service.Data, root *expr.RootExpr, svc *expr.Se
 		}
 
 		// Convert set to sorted list
-		for transport := range transportSet {
-			md.Transports = append(md.Transports, transport)
-		}
+		md.Transports = slices.Sorted(maps.Keys(transportSet))
 
 		data.Methods = append(data.Methods, md)
 	}

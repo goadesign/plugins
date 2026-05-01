@@ -1,9 +1,11 @@
 package codegen
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/service"
 	httpcodegen "goa.design/goa/v3/http/codegen"
@@ -19,6 +21,7 @@ func TestGenerateScenarios(t *testing.T) {
 		"with-payload": {
 			DSL: testdata.WithPayloadDSL,
 			Code: map[string][]string{
+				"scenario-types":  {testdata.ScenarioTypesWithPayloadCode},
 				"scenario-runner": {testdata.ScenarioRunnerWithPayloadCode},
 			},
 			Path: "gen/with_payload_service/with_payload_servicetest/scenarios.go",
@@ -26,6 +29,7 @@ func TestGenerateScenarios(t *testing.T) {
 		"with-result": {
 			DSL: testdata.WithResultDSL,
 			Code: map[string][]string{
+				"scenario-types":  {testdata.ScenarioTypesWithResultCode},
 				"scenario-runner": {testdata.ScenarioRunnerWithResultCode},
 			},
 			Path: "gen/with_result_service/with_result_servicetest/scenarios.go",
@@ -33,6 +37,7 @@ func TestGenerateScenarios(t *testing.T) {
 		"without-payload-result": {
 			DSL: testdata.WithoutPayloadResultDSL,
 			Code: map[string][]string{
+				"scenario-types":  {testdata.ScenarioTypesWithoutPayloadResultCode},
 				"scenario-runner": {testdata.ScenarioRunnerWithoutPayloadResultCode},
 			},
 			Path: "gen/without_payload_result_service/without_payload_result_servicetest/scenarios.go",
@@ -76,4 +81,47 @@ func TestGenerateScenarios_ArrayResultTypeAssertion(t *testing.T) {
 	// Regression guard for invalid formatting like "pkg.[]T" (issue #234).
 	assert.NotContains(t, code, svcData.PkgName+".[]")
 	assert.NotContains(t, code, "*"+svcData.PkgName+".[]")
+}
+
+func TestGenerateExampleScenarios(t *testing.T) {
+	cases := map[string]struct {
+		DSL  func()
+		Code map[string][]string
+	}{
+		"with-payload": {
+			DSL: testdata.WithPayloadDSL,
+			Code: map[string][]string{
+				"example-scenarios": {testdata.ExampleScenariosWithPayloadCode},
+			},
+		},
+		"with-result": {
+			DSL: testdata.WithResultDSL,
+			Code: map[string][]string{
+				"example-scenarios": {testdata.ExampleScenariosWithResultCode},
+			},
+		},
+		"without-payload-result": {
+			DSL: testdata.WithoutPayloadResultDSL,
+			Code: map[string][]string{
+				"example-scenarios": {testdata.ExampleScenariosWithoutPayloadResultCode},
+			},
+		},
+	}
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			root := httpcodegen.RunHTTPDSL(t, c.DSL)
+			svc := root.Services[0]
+			f := generateExampleScenarios("", root, svc)
+			assert.Equal(t, "scenarios.yaml", f.Path)
+			for sec, secCode := range c.Code {
+				sections := f.Section(sec)
+				require.Len(t, sections, len(secCode))
+				for i, c := range secCode {
+					var buf bytes.Buffer
+					assert.NoError(t, sections[i].Write(&buf))
+					assert.Equal(t, c, buf.String())
+				}
+			}
+		})
+	}
 }
