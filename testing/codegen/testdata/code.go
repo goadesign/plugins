@@ -1433,6 +1433,208 @@ func (r *ScenarioRunner) selectTransport(client *Client, transport string) *Clie
 }
 `
 
+var ExampleScenariosWithPayloadCode = `# Example test scenarios for WithPayloadService service
+# This file demonstrates the YAML scenario testing capability.
+# Customize these scenarios to match your testing needs.
+
+# Optional: Configure global validator settings
+# validators:
+#   package: myvalidators  # Package containing validator functions
+#   path: myapp/testing/validators  # Import path for the package
+
+scenarios:
+  # Basic CRUD lifecycle test
+  - name: "basic_lifecycle"
+    description: "Tests basic service functionality"
+    transport: http  # Optional: specify default transport (http, grpc, jsonrpc)
+    steps:
+      # Example step for WithPayloadMethod method
+      - method: WithPayloadMethod
+        payload:
+          # Add your test payload here
+          # Example: name: "test"
+
+  # Transport-specific testing
+  - name: "http_specific"
+    description: "Tests HTTP-specific behavior"
+    transport: http
+    steps:
+      - method: WithPayloadMethod
+        payload: {}
+  - name: "grpc_specific"
+    description: "Tests gRPC-specific behavior"
+    transport: grpc
+    steps:
+      - method: WithPayloadMethod
+        payload: {}
+
+  # Error handling test
+  - name: "error_handling"
+    description: "Tests error conditions"
+    steps:
+
+# Note: The scenario runner performs basic smoke testing.
+# For detailed assertions and complex test logic, write custom Go tests.
+
+# Transport values (based on your service configuration):
+#
+# - auto
+#
+# - grpc
+#
+# - http
+#
+# - http-sse
+#
+# - http-ws
+#
+# - jsonrpc
+#
+# - jsonrpc-sse
+#
+# - jsonrpc-ws
+#
+
+# Available methods and their transports:
+#
+# - WithPayloadMethod: grpc, http, jsonrpc
+#`
+
+var ExampleScenariosWithResultCode = `# Example test scenarios for WithResultService service
+# This file demonstrates the YAML scenario testing capability.
+# Customize these scenarios to match your testing needs.
+
+# Optional: Configure global validator settings
+# validators:
+#   package: myvalidators  # Package containing validator functions
+#   path: myapp/testing/validators  # Import path for the package
+
+scenarios:
+  # Basic CRUD lifecycle test
+  - name: "basic_lifecycle"
+    description: "Tests basic service functionality"
+    transport: http  # Optional: specify default transport (http, grpc, jsonrpc)
+    steps:
+      # Example step for WithResultMethod method
+      - method: WithResultMethod
+        expect:
+          result:
+            # Add expected result fields here
+            # Example: status: "success"
+          # Optional: specify custom validator function
+          # validator: ValidateCustomResult  # Function name in current package
+          # validator_pkg: myvalidators     # Or specify different package
+
+  # Transport-specific testing
+  - name: "http_specific"
+    description: "Tests HTTP-specific behavior"
+    transport: http
+    steps:
+      - method: WithResultMethod
+        expect:
+          result: {}
+  - name: "grpc_specific"
+    description: "Tests gRPC-specific behavior"
+    transport: grpc
+    steps:
+      - method: WithResultMethod
+        expect:
+          result: {}
+
+  # Error handling test
+  - name: "error_handling"
+    description: "Tests error conditions"
+    steps:
+
+# Note: The scenario runner performs basic smoke testing.
+# For detailed assertions and complex test logic, write custom Go tests.
+
+# Transport values (based on your service configuration):
+#
+# - auto
+#
+# - grpc
+#
+# - http
+#
+# - http-sse
+#
+# - http-ws
+#
+# - jsonrpc
+#
+# - jsonrpc-sse
+#
+# - jsonrpc-ws
+#
+
+# Available methods and their transports:
+#
+# - WithResultMethod: grpc, http, jsonrpc
+#`
+
+var ExampleScenariosWithoutPayloadResultCode = `# Example test scenarios for WithoutPayloadResultService service
+# This file demonstrates the YAML scenario testing capability.
+# Customize these scenarios to match your testing needs.
+
+# Optional: Configure global validator settings
+# validators:
+#   package: myvalidators  # Package containing validator functions
+#   path: myapp/testing/validators  # Import path for the package
+
+scenarios:
+  # Basic CRUD lifecycle test
+  - name: "basic_lifecycle"
+    description: "Tests basic service functionality"
+    transport: http  # Optional: specify default transport (http, grpc, jsonrpc)
+    steps:
+      # Example step for WithoutPayloadResultMethod method
+      - method: WithoutPayloadResultMethod
+
+  # Transport-specific testing
+  - name: "http_specific"
+    description: "Tests HTTP-specific behavior"
+    transport: http
+    steps:
+      - method: WithoutPayloadResultMethod
+  - name: "grpc_specific"
+    description: "Tests gRPC-specific behavior"
+    transport: grpc
+    steps:
+      - method: WithoutPayloadResultMethod
+
+  # Error handling test
+  - name: "error_handling"
+    description: "Tests error conditions"
+    steps:
+
+# Note: The scenario runner performs basic smoke testing.
+# For detailed assertions and complex test logic, write custom Go tests.
+
+# Transport values (based on your service configuration):
+#
+# - auto
+#
+# - grpc
+#
+# - http
+#
+# - http-sse
+#
+# - http-ws
+#
+# - jsonrpc
+#
+# - jsonrpc-sse
+#
+# - jsonrpc-ws
+#
+
+# Available methods and their transports:
+#
+# - WithoutPayloadResultMethod: grpc, http, jsonrpc
+#`
+
 var SuiteTestWithPayloadCode = `// RunWithPayloadServiceHarness exercises the generated harness against your
 // service implementation.
 // Call this helper from your test, passing your service implementation.
