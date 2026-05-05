@@ -35,6 +35,4 @@ require (
 	google.golang.org/protobuf v1.36.10 // indirect
 )
 
-replace goa.design/goa/v3 => /Users/raphael/src/goa
-
 replace goa.design/plugins/v3 => ../../..

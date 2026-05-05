@@ -35,6 +35,4 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251014184007-4626949a642f // indirect
 )
 
-replace goa.design/goa/v3 => /Users/raphael/src/goa
-
-replace goa.design/plugins/v3 => /Users/raphael/go/src/goa.design/plugins
+replace goa.design/plugins/v3 => ../../..
