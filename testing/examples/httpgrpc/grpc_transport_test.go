@@ -79,7 +79,7 @@ func TestGRPCTransport(t *testing.T) {
 			// Send multiple values
 			values := []int{5, 10, 15}
 			expectedSum := 30
-			
+
 			for _, v := range values {
 				err := stream.Send(&testhttpgrpc.GrpcClientStreamStreamingPayload{
 					Value: v,
@@ -88,7 +88,7 @@ func TestGRPCTransport(t *testing.T) {
 					t.Errorf("failed to send value %d: %v", v, err)
 				}
 			}
-			
+
 			res, err := stream.CloseAndRecv()
 			if err != nil {
 				t.Errorf("failed to close and receive: %v", err)
@@ -112,10 +112,10 @@ func TestGRPCTransport(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to send: %v", err)
 			}
-			
+
 			// Try to receive (may get EOF if server doesn't echo)
 			_, _ = stream.Recv()
-			
+
 			// Close the stream
 			err = stream.Close()
 			if err != nil {

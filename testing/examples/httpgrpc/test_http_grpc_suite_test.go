@@ -11,7 +11,8 @@ import (
 )
 
 // Runtest-http-grpcHarness exercises the generated harness against your
-// service implementation.// Call this helper from your test, passing your service implementation.
+// service implementation.
+// Call this helper from your test, passing your service implementation.
 func RunTestHTTPGrpcHarness(t *testing.T, svc testhttpgrpc.Service) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

@@ -1,9 +1,10 @@
-// Code generated with goa v3.22.6, DO NOT EDIT.
+// Code generated with goa, DO NOT EDIT.
 //
 // calculator protocol buffer definition
 //
 // Command:
-// $ goa gen goa.design/plugins/v3/testing/examples/calculator/design
+// $ goa gen goa.design/plugins/v3/testing/examples/calculator/design -o
+// $(GOPATH)/src/goa.design/plugins/testing//examples/calculator
 
 syntax = "proto3";
 

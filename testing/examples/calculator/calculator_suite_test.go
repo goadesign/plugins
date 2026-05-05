@@ -11,7 +11,8 @@ import (
 )
 
 // RuncalculatorHarness exercises the generated harness against your service
-// implementation.// Call this helper from your test, passing your service implementation.
+// implementation.
+// Call this helper from your test, passing your service implementation.
 func RunCalculatorHarness(t *testing.T, svc calculator.Service) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
