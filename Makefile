@@ -25,7 +25,8 @@ PLUGINS=\
 	zaplogger \
 	zerologger \
 	arnz \
-	tscap
+	tscap \
+	testing
 
 PROTOC_VERSION=27.1
 ifeq ($(GOOS),linux)
