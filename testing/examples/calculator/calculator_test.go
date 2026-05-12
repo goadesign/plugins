@@ -17,13 +17,13 @@ func TestCalculatorScenarios(t *testing.T) {
 	service := NewCalculator()
 	h := calculatortest.NewHarness(t, service)
 	defer h.Close()
-	
+
 	// Load scenarios from YAML
 	runner, err := calculatortest.LoadScenarios("scenarios.yaml")
 	if err != nil {
 		t.Fatalf("failed to load scenarios: %v", err)
 	}
-	
+
 	// Run all scenarios
 	runner.Run(t, h.Client)
 }
@@ -34,13 +34,13 @@ func TestSpecificScenario(t *testing.T) {
 	service := NewCalculator()
 	h := calculatortest.NewHarness(t, service)
 	defer h.Close()
-	
+
 	// Load scenarios
 	runner, err := calculatortest.LoadScenarios("scenarios.yaml")
 	if err != nil {
 		t.Fatalf("failed to load scenarios: %v", err)
 	}
-	
+
 	// Run specific scenario
 	runner.RunNamed(t, h.Client, "division_with_validation")
 }

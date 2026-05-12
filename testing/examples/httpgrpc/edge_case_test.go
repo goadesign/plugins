@@ -23,12 +23,12 @@ func TestEdgeCaseGenerators(t *testing.T) {
 		if payload == nil {
 			t.Fatal("expected valid payload, got nil")
 		}
-		
+
 		// The valid payload should have non-zero divisor
 		if payload.Divisor == 0 {
 			t.Error("valid payload should not have zero divisor")
 		}
-		
+
 		// Should succeed with valid payload
 		res, err := harness.Client.GrpcNoStreamErrorDivByZero(ctx, payload)
 		if err != nil {
@@ -45,12 +45,12 @@ func TestEdgeCaseGenerators(t *testing.T) {
 		// We manually create a zero divisor payload for testing.
 		payload := td.ValidGrpcNoStreamErrorDivByZeroPayload()
 		payload.Divisor = 0 // Manually set to trigger the error
-		
+
 		_, err := harness.Client.GrpcNoStreamErrorDivByZero(ctx, payload)
 		if err == nil {
 			t.Error("expected division by zero error")
 		}
-		
+
 		// Verify it's the right error type
 		if _, ok := err.(*testhttpgrpc.DivisionByZeroError); !ok {
 			t.Errorf("expected DivisionByZeroError, got %T", err)
@@ -60,7 +60,7 @@ func TestEdgeCaseGenerators(t *testing.T) {
 	t.Run("MinValuesEdgeCase", func(t *testing.T) {
 		// Use the generated edge case method
 		payload := td.GrpcNoStreamErrorDivByZeroPayloadWithMinValues()
-		
+
 		// Verify minimum values were applied
 		if payload.Dividend != -1000.0 {
 			t.Errorf("expected dividend -1000, got %f", payload.Dividend)
@@ -68,7 +68,7 @@ func TestEdgeCaseGenerators(t *testing.T) {
 		if payload.Divisor != -100.0 {
 			t.Errorf("expected divisor -100, got %f", payload.Divisor)
 		}
-		
+
 		res, err := harness.Client.GrpcNoStreamErrorDivByZero(ctx, payload)
 		if err != nil {
 			t.Fatalf("unexpected error with min values: %v", err)
@@ -76,7 +76,7 @@ func TestEdgeCaseGenerators(t *testing.T) {
 		if res == nil {
 			t.Error("expected result with min values")
 		}
-		
+
 		// Result should be 10.0 (-1000 / -100)
 		if res.Quotient != 10.0 {
 			t.Errorf("expected quotient 10.0, got %f", res.Quotient)
@@ -86,7 +86,7 @@ func TestEdgeCaseGenerators(t *testing.T) {
 	t.Run("MaxValuesEdgeCase", func(t *testing.T) {
 		// Use the generated edge case method
 		payload := td.GrpcNoStreamErrorDivByZeroPayloadWithMaxValues()
-		
+
 		// Verify maximum values were applied
 		if payload.Dividend != 1000.0 {
 			t.Errorf("expected dividend 1000, got %f", payload.Dividend)
@@ -94,7 +94,7 @@ func TestEdgeCaseGenerators(t *testing.T) {
 		if payload.Divisor != 100.0 {
 			t.Errorf("expected divisor 100, got %f", payload.Divisor)
 		}
-		
+
 		res, err := harness.Client.GrpcNoStreamErrorDivByZero(ctx, payload)
 		if err != nil {
 			t.Fatalf("unexpected error with max values: %v", err)
@@ -102,7 +102,7 @@ func TestEdgeCaseGenerators(t *testing.T) {
 		if res == nil {
 			t.Error("expected result with max values")
 		}
-		
+
 		// Result should be 10.0 (1000 / 100)
 		if res.Quotient != 10.0 {
 			t.Errorf("expected quotient 10.0, got %f", res.Quotient)

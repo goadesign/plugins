@@ -27,7 +27,7 @@ func TestDataGenerators(t *testing.T) {
 			if payload.Msg == "" {
 				t.Error("expected non-empty message in payload")
 			}
-			
+
 			// Use the valid payload in a call
 			res, err := harness.Client.HTTPNoStream(ctx, payload)
 			if err != nil {
@@ -47,7 +47,7 @@ func TestDataGenerators(t *testing.T) {
 			if payload.Divisor == 0 {
 				t.Error("valid payload should not have zero divisor")
 			}
-			
+
 			// Use the valid payload - should succeed
 			res, err := harness.Client.GrpcNoStreamErrorDivByZero(ctx, payload)
 			if err != nil {
@@ -65,10 +65,10 @@ func TestDataGenerators(t *testing.T) {
 			// Start with a valid payload and customize it
 			builder := td.NewHTTPNoStreamPayloadBuilder()
 			payload := builder.Build()
-			
+
 			// Manually customize after building
 			payload.Msg = "custom message"
-			
+
 			res, err := harness.Client.HTTPNoStream(ctx, payload)
 			if err != nil {
 				t.Fatalf("call failed: %v", err)
@@ -97,7 +97,7 @@ func TestDataGenerators(t *testing.T) {
 	// NOTE: Edge case generators should also be available
 	t.Run("MissingEdgeCaseGenerators", func(t *testing.T) {
 		t.Skip("Edge case generators are not implemented yet")
-		
+
 		// This is what SHOULD be available:
 		// payload := td.GrpcNoStreamErrorDivByZeroPayloadWithZeroDivisor()
 		// payload := td.HTTPNoStreamPayloadWithEmptyString()
@@ -179,13 +179,13 @@ func TestDataForStreamingMethods(t *testing.T) {
 func TestInterestingDataPoints(t *testing.T) {
 	t.Run("NumericEdgeCases", func(t *testing.T) {
 		t.Skip("Not implemented yet - should generate min/max/zero values")
-		
+
 		// Should have generators for numeric edge cases:
 		// - Zero values
 		// - Minimum values (negative for signed types)
 		// - Maximum values
 		// - Common edge cases (1, -1, etc.)
-		
+
 		// Example of what should be available:
 		// payload := td.GrpcServerStreamPayloadWithZeroFrom()
 		// payload := td.GrpcServerStreamPayloadWithMaxFrom()
@@ -194,14 +194,14 @@ func TestInterestingDataPoints(t *testing.T) {
 
 	t.Run("StringEdgeCases", func(t *testing.T) {
 		t.Skip("Not implemented yet - should generate empty/long/special strings")
-		
+
 		// Should have generators for string edge cases:
 		// - Empty strings
 		// - Single character
 		// - Very long strings (if max length defined)
 		// - Strings with special characters
 		// - Unicode strings
-		
+
 		// Example of what should be available:
 		// payload := td.HTTPNoStreamPayloadWithEmptyMsg()
 		// payload := td.HTTPNoStreamPayloadWithLongMsg()
@@ -210,12 +210,12 @@ func TestInterestingDataPoints(t *testing.T) {
 
 	t.Run("OptionalFields", func(t *testing.T) {
 		t.Skip("Not implemented yet - should handle optional fields")
-		
+
 		// Should have generators for optional field combinations:
 		// - All optional fields nil
 		// - All optional fields populated
 		// - Various combinations
-		
+
 		// Example of what should be available:
 		// payload := td.SomePayloadWithNoOptionalFields()
 		// payload := td.SomePayloadWithAllOptionalFields()
@@ -223,13 +223,13 @@ func TestInterestingDataPoints(t *testing.T) {
 
 	t.Run("ValidationBoundaries", func(t *testing.T) {
 		t.Skip("Not implemented yet - should test validation boundaries")
-		
+
 		// Should generate data at validation boundaries:
 		// - Minimum length strings
 		// - Maximum length strings
 		// - Values at min/max constraints
 		// - Pattern-matching edge cases
-		
+
 		// Example of what should be available:
 		// payload := td.SomePayloadAtMinValidation()
 		// payload := td.SomePayloadAtMaxValidation()
@@ -242,19 +242,19 @@ func TestCustomTestData(t *testing.T) {
 
 	// Users can create custom test data by starting with valid data
 	// and modifying it for their specific test cases
-	
+
 	t.Run("CreateInvalidData", func(t *testing.T) {
 		// Start with valid data
 		payload := td.ValidGrpcNoStreamErrorDivByZeroPayload()
-		
+
 		// Modify to create invalid data for error testing
-		payload.Divisor = 0  // Create division by zero scenario
-		
+		payload.Divisor = 0 // Create division by zero scenario
+
 		// Now we have a payload that will trigger an error
 		svc := NewTestHTTPGrpc()
 		harness := testHTTPGrpctest.NewHarness(t, svc)
 		defer harness.Close()
-		
+
 		_, err := harness.Client.GrpcNoStreamErrorDivByZero(context.Background(), payload)
 		if err == nil {
 			t.Error("expected division by zero error")
@@ -268,12 +268,12 @@ func TestCustomTestData(t *testing.T) {
 			td.ValidGrpcClientStreamPayload(),
 			td.ValidGrpcClientStreamPayload(),
 		}
-		
+
 		// Modify to create a specific sequence
 		for i := range payloads {
-			payloads[i].Value = i + 1  // Sequential values: 1, 2, 3
+			payloads[i].Value = i + 1 // Sequential values: 1, 2, 3
 		}
-		
+
 		// Use in test...
 		if len(payloads) != 3 {
 			t.Error("expected 3 payloads")

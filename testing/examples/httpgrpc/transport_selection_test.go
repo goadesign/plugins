@@ -24,12 +24,12 @@ func TestTransportSelection(t *testing.T) {
 		payload := &testhttpgrpc.MixedNoStreamPayload{
 			Msg: "test HTTP",
 		}
-		
+
 		res, err := harness.Client.HTTP().MixedNoStream(ctx, payload)
 		if err != nil {
 			t.Fatalf("HTTP forced call failed: %v", err)
 		}
-		
+
 		if res == nil {
 			t.Error("expected result, got nil")
 		}
@@ -40,12 +40,12 @@ func TestTransportSelection(t *testing.T) {
 		payload := &testhttpgrpc.MixedNoStreamPayload{
 			Msg: "test gRPC",
 		}
-		
+
 		res, err := harness.Client.GRPC().MixedNoStream(ctx, payload)
 		if err != nil {
 			t.Fatalf("gRPC forced call failed: %v", err)
 		}
-		
+
 		if res == nil {
 			t.Error("expected result, got nil")
 		}
@@ -57,7 +57,7 @@ func TestTransportSelection(t *testing.T) {
 		if err != nil {
 			t.Fatalf("HTTP SSE forced call failed: %v", err)
 		}
-		
+
 		if stream != nil {
 			// Try to receive from the stream
 			_, err := stream.Recv()
@@ -73,7 +73,7 @@ func TestTransportSelection(t *testing.T) {
 		if err != nil {
 			t.Fatalf("gRPC stream forced call failed: %v", err)
 		}
-		
+
 		if stream != nil {
 			// Try to receive from the stream
 			_, err := stream.Recv()
@@ -82,14 +82,14 @@ func TestTransportSelection(t *testing.T) {
 			}
 		}
 	})
-	
+
 	t.Run("MixedClientStreamHTTP", func(t *testing.T) {
 		// Test forcing HTTP WebSocket for mixed client stream
 		stream, err := harness.Client.HTTP().MixedClientStreamWsGrpc(ctx)
 		if err != nil {
 			t.Fatalf("HTTP WebSocket client stream failed: %v", err)
 		}
-		
+
 		if stream != nil {
 			// Send some data and close
 			err := stream.Send(&testhttpgrpc.MixedClientStreamWsGrpcStreamingPayload{
@@ -98,21 +98,21 @@ func TestTransportSelection(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to send: %v", err)
 			}
-			
+
 			_, err = stream.CloseAndRecv()
 			if err != nil {
 				t.Errorf("failed to close and receive: %v", err)
 			}
 		}
 	})
-	
+
 	t.Run("MixedClientStreamGRPC", func(t *testing.T) {
 		// Test forcing gRPC for mixed client stream
 		stream, err := harness.Client.GRPC().MixedClientStreamWsGrpc(ctx)
 		if err != nil {
 			t.Fatalf("gRPC client stream failed: %v", err)
 		}
-		
+
 		if stream != nil {
 			// Send some data and close
 			err := stream.Send(&testhttpgrpc.MixedClientStreamWsGrpcStreamingPayload{
@@ -121,21 +121,21 @@ func TestTransportSelection(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to send: %v", err)
 			}
-			
+
 			_, err = stream.CloseAndRecv()
 			if err != nil {
 				t.Errorf("failed to close and receive: %v", err)
 			}
 		}
 	})
-	
+
 	t.Run("MixedBidiStreamHTTP", func(t *testing.T) {
 		// Test forcing HTTP WebSocket for mixed bidirectional stream
 		stream, err := harness.Client.HTTP().MixedBidiStreamWsGrpc(ctx)
 		if err != nil {
 			t.Fatalf("HTTP WebSocket bidi stream failed: %v", err)
 		}
-		
+
 		if stream != nil {
 			// Send and receive
 			err := stream.Send(&testhttpgrpc.MixedBidiStreamWsGrpcStreamingPayload{
@@ -144,26 +144,26 @@ func TestTransportSelection(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to send: %v", err)
 			}
-			
+
 			_, err = stream.Recv()
 			if err != nil && err != io.EOF {
 				t.Errorf("failed to receive: %v", err)
 			}
-			
+
 			err = stream.Close()
 			if err != nil {
 				t.Errorf("failed to close: %v", err)
 			}
 		}
 	})
-	
+
 	t.Run("MixedBidiStreamGRPC", func(t *testing.T) {
 		// Test forcing gRPC for mixed bidirectional stream
 		stream, err := harness.Client.GRPC().MixedBidiStreamWsGrpc(ctx)
 		if err != nil {
 			t.Fatalf("gRPC bidi stream failed: %v", err)
 		}
-		
+
 		if stream != nil {
 			// Send and receive
 			err := stream.Send(&testhttpgrpc.MixedBidiStreamWsGrpcStreamingPayload{
@@ -172,12 +172,12 @@ func TestTransportSelection(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to send: %v", err)
 			}
-			
+
 			_, err = stream.Recv()
 			if err != nil && err != io.EOF {
 				t.Errorf("failed to receive: %v", err)
 			}
-			
+
 			err = stream.Close()
 			if err != nil {
 				t.Errorf("failed to close: %v", err)

@@ -28,7 +28,7 @@ var _ = Service("test-http-grpc", func() {
 		Payload(func() { Field(1, "msg", String); Required("msg") })
 		Result(func() { Field(1, "out", String); Required("out") })
 		Error("division_by_zero", DivisionByZeroError, "Division by zero error")
-		HTTP(func() { 
+		HTTP(func() {
 			POST("/http/no-stream-error")
 			Response("division_by_zero", StatusBadRequest, func() {
 				Description("Division by zero error")
@@ -38,7 +38,7 @@ var _ = Service("test-http-grpc", func() {
 
 	// gRPC non-stream with error - includes validation for testing edge cases
 	Method("grpc_no_stream_error_div_by_zero", func() {
-		Payload(func() { 
+		Payload(func() {
 			Field(1, "dividend", Float64, func() {
 				Minimum(-1000)
 				Maximum(1000)
