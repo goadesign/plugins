@@ -1,8 +1,6 @@
 package testing
 
 import (
-	"strings"
-
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
@@ -52,9 +50,25 @@ func GenerateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([
 			continue
 		}
 		for _, svc := range r.Services {
-			// Derive example implementation package name deterministically like Goa example generator
-			snake := codegen.SnakeCase(svc.Name)
-			apipkg := strings.ReplaceAll(snake, "_", "") + "api"
+			// Get example implementation package name from actual file header
+			var apipkg string
+			for _, f := range files {
+				for _, section := range f.Section("source-header") {
+					header, ok := section.Data.(map[string]any)
+					if !ok {
+						continue
+					}
+					p, ok := header["Pkg"].(string)
+					if !ok {
+						continue
+					}
+					apipkg = p
+					break
+				}
+				if apipkg != "" {
+					break
+				}
+			}
 			if f := testcodegen.GenerateSuiteTopLevel(genpkg, apipkg, r, svc); f != nil {
 				files = append(files, f)
 			}
