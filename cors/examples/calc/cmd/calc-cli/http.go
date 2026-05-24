@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -20,7 +21,7 @@ func doHTTP(scheme, host string, timeout int, debug bool) (goa.Endpoint, any, er
 		}
 	}
 
-	return cli.ParseEndpoint(
+	endpoint, payload, err := cli.ParseEndpoint(
 		scheme,
 		host,
 		doer,
@@ -28,6 +29,10 @@ func doHTTP(scheme, host string, timeout int, debug bool) (goa.Endpoint, any, er
 		goahttp.ResponseDecoder,
 		debug,
 	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("parse endpoint: %w", err)
+	}
+	return endpoint, payload, nil
 }
 
 func httpUsageCommands() []string {

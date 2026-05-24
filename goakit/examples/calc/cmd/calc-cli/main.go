@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"net/url"
@@ -75,7 +76,7 @@ func main() {
 		}
 	}
 	if err != nil {
-		if err == flag.ErrHelp {
+		if errors.Is(err, flag.ErrHelp) {
 			os.Exit(0)
 		}
 		fmt.Fprintln(os.Stderr, err.Error())
