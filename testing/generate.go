@@ -51,10 +51,17 @@ func GenerateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([
 		if !ok {
 			continue
 		}
+		services := service.NewServicesData(r)
+		scope := codegen.NewNameScope()
 		for _, svc := range r.Services {
-			// Derive example implementation package name deterministically like Goa example generator
-			snake := codegen.SnakeCase(svc.Name)
-			apipkg := strings.ReplaceAll(snake, "_", "") + "api"
+			s := services.Get(svc.Name)
+			if s == nil {
+				continue
+			}
+			scope.Unique(s.PkgName)
+		}
+		apipkg := scope.Unique(strings.ToLower(codegen.Goify(r.API.Name, false)), "api")
+		for _, svc := range r.Services {
 			if f := testcodegen.GenerateSuiteTopLevel(genpkg, apipkg, r, svc); f != nil {
 				files = append(files, f)
 			}
