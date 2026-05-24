@@ -7,6 +7,7 @@
 
 # Include the common plugin makefile
 PLUGIN_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+PLUGIN_CUSTOM_TEST := 1
 include ../plugins.mk
 
 gen:

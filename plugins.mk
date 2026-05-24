@@ -10,6 +10,9 @@
 # - build-examples: build the plugin examples binaries
 # - clean: clean the plugin examples binaries
 #
+# Set PLUGIN_CUSTOM_TEST=1 before including this file when the plugin Makefile
+# defines its own test target.
+#
 # Targets:
 # - "all" calls "gen", "test", "lint", "build-examples" and "clean"
 # - "lint" runs the linter and checks the code format using goimports
@@ -17,8 +20,10 @@
 
 all: gen test lint build-examples clean
 
+ifndef PLUGIN_CUSTOM_TEST
 test:
 	@go test ./...
+endif
 
 lint:
 	$(eval GO_FILES := $(shell find . -type f -name '*.go' ! -name '*.pb.go'))
