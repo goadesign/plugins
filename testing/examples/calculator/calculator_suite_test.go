@@ -10,7 +10,7 @@ import (
 	calculatortest "goa.design/plugins/v3/testing/examples/calculator/gen/calculator/calculatortest"
 )
 
-// RuncalculatorHarness exercises the generated harness against your service
+// RunCalculatorHarness exercises the generated harness against your service
 // implementation.
 // Call this helper from your test, passing your service implementation.
 func RunCalculatorHarness(t *testing.T, svc calculator.Service) {

@@ -9,7 +9,7 @@ import (
 	testJsonrpctest "goa.design/plugins/v3/testing/examples/jsonrpc/gen/test_jsonrpc/test_jsonrpctest"
 )
 
-// Runtest-jsonrpcHarness exercises the generated harness against your service
+// RunTestJsonrpcHarness exercises the generated harness against your service
 // implementation.
 // Call this helper from your test, passing your service implementation.
 func RunTestJsonrpcHarness(t *testing.T, svc testjsonrpc.Service) {
