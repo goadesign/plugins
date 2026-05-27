@@ -10,8 +10,8 @@ import (
 	testHTTPGrpctest "goa.design/plugins/v3/testing/examples/httpgrpc/gen/test_http_grpc/test_http_grpctest"
 )
 
-// Runtest-http-grpcHarness exercises the generated harness against your
-// service implementation.
+// RunTestHTTPGrpcHarness exercises the generated harness against your service
+// implementation.
 // Call this helper from your test, passing your service implementation.
 func RunTestHTTPGrpcHarness(t *testing.T, svc testhttpgrpc.Service) {
 	t.Helper()
