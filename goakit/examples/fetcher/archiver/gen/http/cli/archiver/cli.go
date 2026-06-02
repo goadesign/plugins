@@ -32,7 +32,7 @@ func UsageCommands() []string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + " " + "archiver archive --body '{\n      \"body\": \"Unde sed nulla.\",\n      \"status\": 200\n   }'" + "\n" +
+	return os.Args[0] + " " + "archiver archive --body '{\n      \"body\": \"Esse soluta repellat repellendus.\",\n      \"status\": 200\n   }'" + "\n" +
 		os.Args[0] + " " + "health show" + "\n" +
 		""
 }
@@ -188,7 +188,7 @@ func archiverArchiveUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "archiver archive --body '{\n      \"body\": \"Unde sed nulla.\",\n      \"status\": 200\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "archiver archive --body '{\n      \"body\": \"Esse soluta repellat repellendus.\",\n      \"status\": 200\n   }'")
 }
 
 func archiverReadUsage() {
@@ -206,7 +206,7 @@ func archiverReadUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "archiver read --id 7904528753725778865")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "archiver read --id 7421807053867881696")
 }
 
 // healthUsage displays the usage of the health command and its subcommands.

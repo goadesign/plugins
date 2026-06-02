@@ -25,7 +25,7 @@ func BuildArchivePayload(archiverArchiveBody string) (*archiver.ArchivePayload, 
 	{
 		err = json.Unmarshal([]byte(archiverArchiveBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"body\": \"Unde sed nulla.\",\n      \"status\": 200\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"body\": \"Esse soluta repellat repellendus.\",\n      \"status\": 200\n   }'")
 		}
 		if body.Status < 0 {
 			err = goa.MergeErrors(err, goa.InvalidRangeError("body.status", body.Status, 0, true))

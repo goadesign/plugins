@@ -195,7 +195,7 @@ definitions:
             body:
                 type: string
                 description: HTTP response body content
-                example: Officia omnis sint delectus beatae est.
+                example: Sint delectus beatae est itaque.
             href:
                 type: string
                 description: The archive resouce href
@@ -209,7 +209,7 @@ definitions:
                 minimum: 0
         description: ArchiveResponseBody result type (default view)
         example:
-            body: Harum autem mollitia optio.
+            body: Autem mollitia optio.
             href: /archive/1
             status: 200
         required:

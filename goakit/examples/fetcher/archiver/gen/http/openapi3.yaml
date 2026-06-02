@@ -21,7 +21,7 @@ paths:
                         schema:
                             $ref: '#/components/schemas/ArchivePayload'
                         example:
-                            body: Unde sed nulla.
+                            body: Esse soluta repellat repellendus.
                             status: 200
             responses:
                 "200":
