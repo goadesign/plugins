@@ -7,13 +7,14 @@ require (
 	goa.design/clue v1.2.6
 	goa.design/goa/v3 v3.28.0
 	goa.design/plugins/v3 v3.0.0
-	google.golang.org/grpc v1.81.1
+	google.golang.org/grpc v1.82.1
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
 	github.com/aws/smithy-go v1.27.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dimfeld/httppath v0.0.0-20170720192232-ee938bf73598 // indirect
 	github.com/go-chi/chi/v5 v5.3.0 // indirect
