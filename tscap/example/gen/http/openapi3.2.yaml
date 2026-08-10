@@ -1,0 +1,122 @@
+openapi: 3.2.0
+info:
+    title: Tailscale Capabilities Example API
+    description: An example API demonstrating Tailscale app capabilities authorization
+    version: 0.0.1
+servers:
+    - url: http://localhost:80
+      name: tscap_example
+      description: Default server for tscap_example
+paths:
+    /health:
+        get:
+            tags:
+                - tscap
+            summary: health tscap
+            description: Health check - no capability required
+            operationId: tscap#health
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Est exercitationem amet.
+                            example: Est exercitationem amet.
+    /items:
+        get:
+            tags:
+                - tscap
+            summary: list tscap
+            description: List items - requires read capability
+            operationId: tscap#list
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: string
+                                    example: Provident sit.
+                                example:
+                                    - Provident sit.
+                                    - Dolores eveniet.
+                                    - Sit molestiae deleniti.
+                            example:
+                                - Provident sit.
+                                - Dolores eveniet.
+                                - Sit molestiae deleniti.
+        post:
+            tags:
+                - tscap
+            summary: create tscap
+            description: Create an item - requires write capability
+            operationId: tscap#create
+            requestBody:
+                description: Request body for create.
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateRequestBody'
+                        example:
+                            name: Quod libero reprehenderit.
+            responses:
+                "201":
+                    description: Created response.
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Voluptas omnis ea.
+                            example: Voluptas omnis ea.
+    /items/{id}:
+        delete:
+            tags:
+                - tscap
+            summary: admin tscap
+            description: Admin action - requires admin capability
+            operationId: tscap#admin
+            parameters:
+                - name: id
+                  in: path
+                  description: Item ID
+                  required: true
+                  schema:
+                    type: string
+                    description: Item ID
+                    example: Quidem est repellat omnis voluptatem veniam.
+                  example: Inventore aliquam et.
+            responses:
+                "204":
+                    description: No Content response.
+    /openapi.json:
+        get:
+            tags:
+                - openapi
+            summary: Download gen/http/openapi3.json
+            operationId: openapi#/openapi.json
+            responses:
+                "200":
+                    description: File downloaded
+components:
+    schemas:
+        CreateRequestBody:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Item name
+                    example: Quod libero reprehenderit.
+            description: Request body for create.
+            example:
+                name: Quod libero reprehenderit.
+            required:
+                - name
+tags:
+    - name: openapi
+    - name: tscap
+      description: A service demonstrating Tailscale app capabilities

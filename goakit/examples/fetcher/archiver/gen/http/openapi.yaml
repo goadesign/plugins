@@ -89,7 +89,7 @@ definitions:
             body:
                 type: string
                 description: HTTP response body content
-                example: Alias ipsa eum laborum ut quod.
+                example: Neque sunt.
             status:
                 type: integer
                 description: HTTP status
@@ -97,7 +97,7 @@ definitions:
                 format: int64
                 minimum: 0
         example:
-            body: Numquam qui qui eligendi doloribus.
+            body: Neque sunt.
             status: 200
         required:
             - status
@@ -130,14 +130,14 @@ definitions:
                 type: boolean
                 description: Is the error a timeout?
                 example: true
-        description: read_bad_request_response_body result type (default view)
+        description: Error response result type (default view)
         example:
-            fault: true
+            fault: false
             id: 123abc
             message: parameter 'p' must be an integer
             name: bad_request
             temporary: true
-            timeout: false
+            timeout: true
         required:
             - name
             - id
@@ -172,10 +172,10 @@ definitions:
             timeout:
                 type: boolean
                 description: Is the error a timeout?
-                example: false
-        description: read_not_found_response_body result type (default view)
+                example: true
+        description: Error response result type (default view)
         example:
-            fault: true
+            fault: false
             id: 123abc
             message: parameter 'p' must be an integer
             name: bad_request
@@ -195,7 +195,7 @@ definitions:
             body:
                 type: string
                 description: HTTP response body content
-                example: Sint delectus beatae est itaque.
+                example: Consectetur rem atque quod temporibus vero.
             href:
                 type: string
                 description: The archive resouce href
@@ -207,9 +207,9 @@ definitions:
                 example: 200
                 format: int64
                 minimum: 0
-        description: ArchiveResponseBody result type (default view)
+        description: Archive is an HTTP response archive (default view)
         example:
-            body: Autem mollitia optio.
+            body: Consectetur rem atque quod temporibus vero.
             href: /archive/1
             status: 200
         required:

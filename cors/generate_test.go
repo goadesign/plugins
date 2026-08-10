@@ -42,7 +42,7 @@ func NewCORSHandler() http.Handler {
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			root := httpcodegen.RunHTTPDSL(t, c.DSL)
+			root := codegen.RunDSL(t, c.DSL)
 			services := httpcodegen.NewServicesData(service.NewServicesData(root), root.API.HTTP)
 			fs := httpcodegen.ServerFiles("", services)
 			require.Len(t, fs, c.CodeGenCount)

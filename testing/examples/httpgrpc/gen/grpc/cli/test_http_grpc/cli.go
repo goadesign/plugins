@@ -29,7 +29,7 @@ func UsageCommands() []string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + " " + "test-http-grpc grpc-no-stream --message '{\n      \"msg\": \"Quod sed animi.\"\n   }'" + "\n" +
+	return os.Args[0] + " " + "test-http-grpc grpc-no-stream --message '{\n      \"msg\": \"Nisi unde.\"\n   }'" + "\n" +
 		""
 }
 
@@ -227,7 +227,7 @@ func testHTTPGrpcGrpcNoStreamUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc grpc-no-stream --message '{\n      \"msg\": \"Quod sed animi.\"\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc grpc-no-stream --message '{\n      \"msg\": \"Nisi unde.\"\n   }'")
 }
 
 func testHTTPGrpcGrpcNoStreamErrorDivByZeroUsage() {
@@ -245,7 +245,7 @@ func testHTTPGrpcGrpcNoStreamErrorDivByZeroUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc grpc-no-stream-error-div-by-zero --message '{\n      \"dividend\": 945.4174285671912,\n      \"divisor\": 86.42502765745502\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc grpc-no-stream-error-div-by-zero --message '{\n      \"dividend\": 512.7504790865268,\n      \"divisor\": -75.50495230788519\n   }'")
 }
 
 func testHTTPGrpcGrpcServerStreamUsage() {
@@ -263,7 +263,7 @@ func testHTTPGrpcGrpcServerStreamUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc grpc-server-stream --message '{\n      \"from\": 3838295199258435316\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc grpc-server-stream --message '{\n      \"from\": 417059585657762780\n   }'")
 }
 
 func testHTTPGrpcGrpcClientStreamUsage() {
@@ -313,7 +313,7 @@ func testHTTPGrpcMixedNoStreamUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc mixed-no-stream --message '{\n      \"msg\": \"Laboriosam aliquam ab.\"\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc mixed-no-stream --message '{\n      \"msg\": \"Commodi optio.\"\n   }'")
 }
 
 func testHTTPGrpcMixedServerStreamUsage() {

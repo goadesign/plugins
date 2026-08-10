@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	httpcodegen "goa.design/goa/v3/http/codegen"
+	goacodegen "goa.design/goa/v3/codegen"
 	"goa.design/plugins/v3/testing/codegen/testdata"
 )
 
@@ -38,7 +38,7 @@ func TestGenerateSuiteTopLevel(t *testing.T) {
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			root := httpcodegen.RunHTTPDSL(t, c.DSL)
+			root := goacodegen.RunDSL(t, c.DSL)
 			svc := root.Services[0]
 			f := generateSuiteTopLevel("", "", root, svc)
 			assert.Equal(t, c.Path, f.Path)

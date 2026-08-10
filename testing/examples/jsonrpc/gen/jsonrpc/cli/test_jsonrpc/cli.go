@@ -30,7 +30,7 @@ func UsageCommands() []string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + " " + "test-jsonrpc jsonrpc-no-stream --body '{\n      \"msg\": \"Excepturi est sit quo quam.\"\n   }'" + "\n" +
+	return os.Args[0] + " " + "test-jsonrpc jsonrpc-no-stream --body '{\n      \"msg\": \"Vel optio magni.\"\n   }'" + "\n" +
 		""
 }
 
@@ -164,7 +164,7 @@ func testJsonrpcJsonrpcNoStreamUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-jsonrpc jsonrpc-no-stream --body '{\n      \"msg\": \"Excepturi est sit quo quam.\"\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-jsonrpc jsonrpc-no-stream --body '{\n      \"msg\": \"Vel optio magni.\"\n   }'")
 }
 
 func testJsonrpcJsonrpcNoStreamErrorUsage() {
@@ -182,5 +182,5 @@ func testJsonrpcJsonrpcNoStreamErrorUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-jsonrpc jsonrpc-no-stream-error --body '{\n      \"msg\": \"Fuga illum cum voluptatem.\"\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-jsonrpc jsonrpc-no-stream-error --body '{\n      \"msg\": \"Sit qui sint culpa dolorem officia temporibus.\"\n   }'")
 }

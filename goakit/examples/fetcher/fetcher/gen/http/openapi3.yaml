@@ -22,9 +22,9 @@ paths:
                   schema:
                     type: string
                     description: URL to be fetched
-                    example: http://lemke.org/rachael
+                    example: http://pfeffer.biz/lucile
                     format: uri
-                  example: http://sipes.org/jaron
+                  example: http://nikolaus.com/adan.kemmer
             responses:
                 "200":
                     description: OK response.
@@ -61,8 +61,8 @@ paths:
                         text/plain:
                             schema:
                                 type: string
-                                example: Ad autem quis laboriosam ut cumque sequi.
-                            example: Ea esse aut.
+                                example: Deserunt rerum.
+                            example: Deserunt rerum.
 components:
     schemas:
         Error:
@@ -71,7 +71,7 @@ components:
                 fault:
                     type: boolean
                     description: Is the error a server-side fault?
-                    example: false
+                    example: true
                 id:
                     type: string
                     description: ID is a unique identifier for this particular occurrence of the problem.
@@ -92,12 +92,13 @@ components:
                     type: boolean
                     description: Is the error a timeout?
                     example: false
+            description: Error response result type
             example:
-                fault: false
+                fault: true
                 id: 123abc
                 message: parameter 'p' must be an integer
                 name: bad_request
-                temporary: false
+                temporary: true
                 timeout: false
             required:
                 - name

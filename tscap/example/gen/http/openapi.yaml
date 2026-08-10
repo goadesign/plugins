@@ -41,7 +41,7 @@ paths:
                         type: array
                         items:
                             type: string
-                            example: Asperiores mollitia ad quos minima voluptatibus quia.
+                            example: Est quia repudiandae eos nam necessitatibus.
             schemes:
                 - http
         post:
@@ -104,8 +104,8 @@ definitions:
             name:
                 type: string
                 description: Item name
-                example: Vero beatae quo ad autem.
+                example: Quod libero reprehenderit.
         example:
-            name: Fugiat aut aut et.
+            name: Quod libero reprehenderit.
         required:
             - name

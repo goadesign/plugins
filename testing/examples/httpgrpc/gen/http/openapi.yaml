@@ -73,14 +73,14 @@ paths:
             produces:
                 - text/event-stream
             responses:
-                "101":
-                    description: Switching Protocols response.
+                "200":
+                    description: OK response.
                     schema:
                         $ref: '#/definitions/TestHTTPGrpcHTTPServerStreamSseResponseBody'
                         required:
                             - event
             schemes:
-                - ws
+                - http
     /http/ws/bidi:
         get:
             tags:
@@ -188,14 +188,14 @@ paths:
             produces:
                 - text/event-stream
             responses:
-                "101":
-                    description: Switching Protocols response.
+                "200":
+                    description: OK response.
                     schema:
                         $ref: '#/definitions/TestHTTPGrpcMixedServerStreamResponseBody'
                         required:
                             - event
             schemes:
-                - ws
+                - http
 definitions:
     DivisionByZeroError:
         title: DivisionByZeroError
@@ -204,10 +204,10 @@ definitions:
             message:
                 type: string
                 description: division by zero error message
-                example: Voluptas ipsum praesentium qui quod error sunt.
+                example: Ducimus quae sed et consequatur autem.
         description: Division by zero error
         example:
-            message: Quae qui itaque tempore.
+            message: Ducimus quae sed et consequatur autem.
         required:
             - message
     TestHTTPGrpcHTTPBidiStreamWsResponseBody:
@@ -216,9 +216,9 @@ definitions:
         properties:
             message:
                 type: string
-                example: Sunt nisi qui ipsam quae libero hic.
+                example: Quos ipsam rerum.
         example:
-            message: Esse iure.
+            message: Quos ipsam rerum.
         required:
             - message
     TestHTTPGrpcHTTPClientStreamWsResponseBody:
@@ -227,9 +227,9 @@ definitions:
         properties:
             out:
                 type: string
-                example: Consequuntur facere ducimus.
+                example: Id vel.
         example:
-            out: Saepe sunt eveniet.
+            out: Id vel.
         required:
             - out
     TestHTTPGrpcHTTPNoStreamErrorRequestBody:
@@ -238,9 +238,9 @@ definitions:
         properties:
             msg:
                 type: string
-                example: Ullam quod aliquid accusamus est et.
+                example: Reiciendis consequatur.
         example:
-            msg: Voluptas aut inventore in.
+            msg: Reiciendis consequatur.
         required:
             - msg
     TestHTTPGrpcHTTPNoStreamErrorResponseBody:
@@ -249,9 +249,9 @@ definitions:
         properties:
             out:
                 type: string
-                example: Architecto eligendi ipsum aut deserunt veniam architecto.
+                example: Aut unde laboriosam modi incidunt occaecati sed.
         example:
-            out: Ad quas atque maxime reiciendis omnis.
+            out: Aut unde laboriosam modi incidunt occaecati sed.
         required:
             - out
     TestHTTPGrpcHTTPNoStreamRequestBody:
@@ -260,9 +260,9 @@ definitions:
         properties:
             msg:
                 type: string
-                example: Beatae cupiditate nemo repudiandae tempora harum voluptatem.
+                example: Omnis animi.
         example:
-            msg: Exercitationem est qui.
+            msg: Omnis animi.
         required:
             - msg
     TestHTTPGrpcHTTPNoStreamResponseBody:
@@ -271,9 +271,9 @@ definitions:
         properties:
             out:
                 type: string
-                example: Id in provident incidunt minus cupiditate.
+                example: Inventore libero laudantium veniam sunt aut.
         example:
-            out: Et animi est tenetur id qui atque.
+            out: Inventore libero laudantium veniam sunt aut.
         required:
             - out
     TestHTTPGrpcHTTPServerStreamSseResponseBody:
@@ -282,9 +282,9 @@ definitions:
         properties:
             event:
                 type: string
-                example: Ea quia possimus et dolor.
+                example: Vitae ipsam eum aliquam corporis sed architecto.
         example:
-            event: Commodi necessitatibus sunt beatae beatae.
+            event: Vitae ipsam eum aliquam corporis sed architecto.
         required:
             - event
     TestHTTPGrpcHTTPServerStreamWsResponseBody:
@@ -293,9 +293,9 @@ definitions:
         properties:
             message:
                 type: string
-                example: Quam enim necessitatibus totam facilis est quaerat.
+                example: Modi quaerat.
         example:
-            message: Voluptatem possimus voluptatem aut debitis.
+            message: Modi quaerat.
         required:
             - message
     TestHTTPGrpcMixedBidiStreamWsGrpcResponseBody:
@@ -304,9 +304,9 @@ definitions:
         properties:
             message:
                 type: string
-                example: Ea et dicta et.
+                example: Maiores magni voluptatem consequatur voluptatem sed.
         example:
-            message: Autem mollitia voluptas sed.
+            message: Maiores magni voluptatem consequatur voluptatem sed.
         required:
             - message
     TestHTTPGrpcMixedClientStreamWsGrpcResponseBody:
@@ -315,9 +315,9 @@ definitions:
         properties:
             out:
                 type: string
-                example: Tempore culpa impedit.
+                example: Ipsum et doloremque.
         example:
-            out: Fugit minus reiciendis.
+            out: Ipsum et doloremque.
         required:
             - out
     TestHTTPGrpcMixedNoStreamRequestBody:
@@ -326,9 +326,9 @@ definitions:
         properties:
             msg:
                 type: string
-                example: Impedit ea ut a delectus sequi ut.
+                example: Sequi aut totam eum.
         example:
-            msg: Possimus sint unde eos ipsum.
+            msg: Sequi aut totam eum.
         required:
             - msg
     TestHTTPGrpcMixedNoStreamResponseBody:
@@ -337,9 +337,9 @@ definitions:
         properties:
             out:
                 type: string
-                example: Cumque vero.
+                example: Sunt voluptatum consequatur vitae facere est.
         example:
-            out: Omnis qui tenetur.
+            out: Sunt voluptatum consequatur vitae facere est.
         required:
             - out
     TestHTTPGrpcMixedServerStreamResponseBody:
@@ -348,8 +348,8 @@ definitions:
         properties:
             event:
                 type: string
-                example: Nisi officia ipsum commodi aut.
+                example: Ab est voluptas in et.
         example:
-            event: Libero itaque sint et quas id.
+            event: Ab est voluptas in et.
         required:
             - event

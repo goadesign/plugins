@@ -25,7 +25,7 @@ func BuildGrpcNoStreamPayload(testHTTPGrpcGrpcNoStreamMessage string) (*testhttp
 		if testHTTPGrpcGrpcNoStreamMessage != "" {
 			err = json.Unmarshal([]byte(testHTTPGrpcGrpcNoStreamMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Quod sed animi.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Nisi unde.\"\n   }'")
 			}
 		}
 	}
@@ -45,7 +45,7 @@ func BuildGrpcNoStreamErrorDivByZeroPayload(testHTTPGrpcGrpcNoStreamErrorDivByZe
 		if testHTTPGrpcGrpcNoStreamErrorDivByZeroMessage != "" {
 			err = json.Unmarshal([]byte(testHTTPGrpcGrpcNoStreamErrorDivByZeroMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"dividend\": 945.4174285671912,\n      \"divisor\": 86.42502765745502\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"dividend\": 512.7504790865268,\n      \"divisor\": -75.50495230788519\n   }'")
 			}
 		}
 	}
@@ -66,7 +66,7 @@ func BuildGrpcServerStreamPayload(testHTTPGrpcGrpcServerStreamMessage string) (*
 		if testHTTPGrpcGrpcServerStreamMessage != "" {
 			err = json.Unmarshal([]byte(testHTTPGrpcGrpcServerStreamMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"from\": 3838295199258435316\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"from\": 417059585657762780\n   }'")
 			}
 		}
 	}
@@ -86,7 +86,7 @@ func BuildMixedNoStreamPayload(testHTTPGrpcMixedNoStreamMessage string) (*testht
 		if testHTTPGrpcMixedNoStreamMessage != "" {
 			err = json.Unmarshal([]byte(testHTTPGrpcMixedNoStreamMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Laboriosam aliquam ab.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Commodi optio.\"\n   }'")
 			}
 		}
 	}

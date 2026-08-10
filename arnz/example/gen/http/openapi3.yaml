@@ -20,7 +20,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ResponseBody'
                             example:
-                                action: Voluptas fuga.
+                                action: Quaerat neque commodi cupiditate dignissimos voluptates sed.
         get:
             tags:
                 - Arnz
@@ -34,7 +34,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ResponseBody'
                             example:
-                                action: Atque fugit vero quo aut cupiditate.
+                                action: Nulla dolores est sunt autem et est.
         post:
             tags:
                 - Arnz
@@ -48,7 +48,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ResponseBody'
                             example:
-                                action: Numquam fugit omnis cum ut.
+                                action: Autem eos aut quisquam.
         put:
             tags:
                 - Arnz
@@ -62,7 +62,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ResponseBody'
                             example:
-                                action: Est nam aut dolor id praesentium.
+                                action: Id impedit dolores.
     /health:
         get:
             tags:
@@ -77,7 +77,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ResponseBody'
                             example:
-                                action: Temporibus nostrum modi fugit praesentium aut aliquam.
+                                action: Voluptatem impedit sunt aliquam.
 components:
     schemas:
         ResponseBody:
@@ -85,9 +85,9 @@ components:
             properties:
                 action:
                     type: string
-                    example: Vel sit nihil velit possimus.
+                    example: Autem eos aut quisquam.
             example:
-                action: Provident nulla.
+                action: Autem eos aut quisquam.
             required:
                 - action
 tags:

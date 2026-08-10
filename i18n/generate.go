@@ -3,6 +3,7 @@ package i18n
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"goa.design/goa/v3/codegen"
@@ -100,8 +101,8 @@ func Generate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.Fi
 		fs, _ := httpcodegen.OpenAPIFiles(goaexpr.Root)
 		// Rename the files
 		for _, file := range fs {
-			sp := strings.Split(file.Path, ".")
-			file.Path = fmt.Sprintf("%s_%s.%s", sp[0], locale, sp[1])
+			ext := filepath.Ext(file.Path)
+			file.Path = fmt.Sprintf("%s_%s%s", strings.TrimSuffix(file.Path, ext), locale, ext)
 		}
 		files = append(files, fs...)
 	}

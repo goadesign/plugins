@@ -3,8 +3,10 @@ package i18n_test
 import (
 	"os"
 	"reflect"
+	"slices"
 	"testing"
 
+	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/eval"
 	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
@@ -26,7 +28,7 @@ func TestPrepare(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			os.Setenv("GOA_I18N", c.Locales)
-			root := httpcodegen.RunHTTPDSL(t, c.DSL)
+			root := codegen.RunDSL(t, c.DSL)
 
 			roots := []eval.Root{root}
 
@@ -63,14 +65,26 @@ func checkExpr(roots []eval.Root, t interface{}, cb func(se interface{})) {
 func TestGenerate(t *testing.T) {
 	os.Setenv("GOA_I18N", "en,nl")
 
-	root := httpcodegen.RunHTTPDSL(t, testdata.SimpleI18nDSL)
+	root := codegen.RunDSL(t, testdata.SimpleI18nDSL)
 	roots := []eval.Root{root}
 	i18n.Prepare("", roots)
 
 	fs, _ := httpcodegen.OpenAPIFiles(root)
 	gfs, _ := i18n.Generate("", roots, fs)
 
-	if len(gfs) != 8 {
-		t.Errorf("Expected to generate eight files, received %d", len(gfs))
+	if len(gfs) != 12 {
+		t.Errorf("Expected to generate twelve files, received %d", len(gfs))
+	}
+	paths := make([]string, len(gfs))
+	for i, f := range gfs {
+		paths[i] = f.Path
+	}
+	for _, path := range []string{
+		"gen/http/openapi3.2_nl.json",
+		"gen/http/openapi3.2_nl.yaml",
+	} {
+		if !slices.Contains(paths, path) {
+			t.Errorf("Expected generated files to contain %q, got %v", path, paths)
+		}
 	}
 }

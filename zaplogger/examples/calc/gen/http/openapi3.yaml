@@ -26,9 +26,9 @@ paths:
                   schema:
                     type: integer
                     description: Left operand
-                    example: 8133055152903002499
+                    example: 7101074584653383974
                     format: int64
-                  example: 3219793201326175278
+                  example: 2989948904695875606
                 - name: b
                   in: path
                   description: Right operand
@@ -36,9 +36,9 @@ paths:
                   schema:
                     type: integer
                     description: Right operand
-                    example: 8803302123552712831
+                    example: 5365422230106384248
                     format: int64
-                  example: 5401762099778430809
+                  example: 8103102529540563611
             responses:
                 "200":
                     description: OK response.
@@ -46,9 +46,9 @@ paths:
                         application/json:
                             schema:
                                 type: integer
-                                example: 360622074634248926
+                                example: 6252541931587653406
                                 format: int64
-                            example: 1918630006328122782
+                            example: 6252541931587653406
     /swagger.json:
         get:
             tags:

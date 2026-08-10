@@ -197,7 +197,7 @@ func tscapCreateUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "tscap create --body '{\n      \"name\": \"Voluptatem similique dignissimos.\"\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "tscap create --body '{\n      \"name\": \"Quod libero reprehenderit.\"\n   }'")
 }
 
 func tscapAdminUsage() {
@@ -215,7 +215,7 @@ func tscapAdminUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "tscap admin --id \"Atque consequatur ex voluptas ducimus dolorum quo.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "tscap admin --id \"Quidem est repellat omnis voluptatem veniam.\"")
 }
 
 func tscapHealthUsage() {

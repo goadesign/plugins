@@ -23,7 +23,7 @@ func BuildHTTPNoStreamPayload(testHTTPGrpcHTTPNoStreamBody string) (*testhttpgrp
 	{
 		err = json.Unmarshal([]byte(testHTTPGrpcHTTPNoStreamBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Fuga et qui fuga animi.\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Omnis animi.\"\n   }'")
 		}
 	}
 	v := &testhttpgrpc.HTTPNoStreamPayload{
@@ -41,7 +41,7 @@ func BuildHTTPNoStreamErrorPayload(testHTTPGrpcHTTPNoStreamErrorBody string) (*t
 	{
 		err = json.Unmarshal([]byte(testHTTPGrpcHTTPNoStreamErrorBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Et rerum.\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Reiciendis consequatur.\"\n   }'")
 		}
 	}
 	v := &testhttpgrpc.HTTPNoStreamErrorPayload{
@@ -59,7 +59,7 @@ func BuildMixedNoStreamPayload(testHTTPGrpcMixedNoStreamBody string) (*testhttpg
 	{
 		err = json.Unmarshal([]byte(testHTTPGrpcMixedNoStreamBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Aut autem illo quas ipsum repellat.\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Sequi aut totam eum.\"\n   }'")
 		}
 	}
 	v := &testhttpgrpc.MixedNoStreamPayload{

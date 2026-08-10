@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/service"
-	httpcodegen "goa.design/goa/v3/http/codegen"
 	"goa.design/plugins/v3/testing/codegen/testdata"
 )
 
@@ -45,7 +44,7 @@ func TestGenerateScenarios(t *testing.T) {
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			root := httpcodegen.RunHTTPDSL(t, c.DSL)
+			root := codegen.RunDSL(t, c.DSL)
 			services := service.NewServicesData(root)
 			svc := root.Services[0]
 			svcData := services.Get(svc.Name)
@@ -60,7 +59,7 @@ func TestGenerateScenarios(t *testing.T) {
 }
 
 func TestGenerateScenarios_ArrayResultTypeAssertion(t *testing.T) {
-	root := httpcodegen.RunHTTPDSL(t, testdata.WithArrayResultDSL)
+	root := codegen.RunDSL(t, testdata.WithArrayResultDSL)
 	services := service.NewServicesData(root)
 	svc := root.Services[0]
 	svcData := services.Get(svc.Name)
@@ -109,7 +108,7 @@ func TestGenerateExampleScenarios(t *testing.T) {
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			root := httpcodegen.RunHTTPDSL(t, c.DSL)
+			root := codegen.RunDSL(t, c.DSL)
 			svc := root.Services[0]
 			f := generateExampleScenarios("", root, svc)
 			assert.Equal(t, "scenarios.yaml", f.Path)

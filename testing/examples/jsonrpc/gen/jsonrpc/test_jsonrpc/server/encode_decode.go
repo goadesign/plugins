@@ -10,7 +10,6 @@ package server
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -20,18 +19,6 @@ import (
 	goa "goa.design/goa/v3/pkg"
 	testjsonrpc "goa.design/plugins/v3/testing/examples/jsonrpc/gen/test_jsonrpc"
 )
-
-// EncodeJsonrpcNoStreamResponse returns an encoder for responses returned by
-// the test-jsonrpc jsonrpc_no_stream endpoint.
-func EncodeJsonrpcNoStreamResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
-	return func(ctx context.Context, w http.ResponseWriter, v any) error {
-		res, _ := v.(*testjsonrpc.JsonrpcNoStreamResult)
-		enc := encoder(ctx, w)
-		body := NewJsonrpcNoStreamResponseBody(res)
-		w.WriteHeader(http.StatusOK)
-		return enc.Encode(body)
-	}
-}
 
 // DecodeJsonrpcNoStreamRequest returns a decoder for requests sent to the
 // test-jsonrpc jsonrpc_no_stream endpoint.
@@ -61,18 +48,6 @@ func DecodeJsonrpcNoStreamRequest(mux goahttp.Muxer, decoder func(*http.Request)
 		payload = NewJsonrpcNoStreamPayload(&body)
 
 		return payload, nil
-	}
-}
-
-// EncodeJsonrpcNoStreamErrorResponse returns an encoder for responses returned
-// by the test-jsonrpc jsonrpc_no_stream_error endpoint.
-func EncodeJsonrpcNoStreamErrorResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
-	return func(ctx context.Context, w http.ResponseWriter, v any) error {
-		res, _ := v.(*testjsonrpc.JsonrpcNoStreamErrorResult)
-		enc := encoder(ctx, w)
-		body := NewJsonrpcNoStreamErrorResponseBody(res)
-		w.WriteHeader(http.StatusOK)
-		return enc.Encode(body)
 	}
 }
 

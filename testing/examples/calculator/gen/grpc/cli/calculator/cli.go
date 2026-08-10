@@ -29,7 +29,7 @@ func UsageCommands() []string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + " " + "calculator add --message '{\n      \"a\": 0.5324087495102858,\n      \"b\": 0.3676887822158714\n   }'" + "\n" +
+	return os.Args[0] + " " + "calculator add --message '{\n      \"a\": 0.7564502808463504,\n      \"b\": 0.22116150789969893\n   }'" + "\n" +
 		""
 }
 
@@ -191,7 +191,7 @@ func calculatorAddUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator add --message '{\n      \"a\": 0.5324087495102858,\n      \"b\": 0.3676887822158714\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator add --message '{\n      \"a\": 0.7564502808463504,\n      \"b\": 0.22116150789969893\n   }'")
 }
 
 func calculatorDivideUsage() {
@@ -209,7 +209,7 @@ func calculatorDivideUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator divide --message '{\n      \"dividend\": 0.09668276034025738,\n      \"divisor\": 0.895624710740812\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator divide --message '{\n      \"dividend\": 0.9492693158321226,\n      \"divisor\": 0.7671133810336571\n   }'")
 }
 
 func calculatorFactorialUsage() {
@@ -227,7 +227,7 @@ func calculatorFactorialUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator factorial --message '{\n      \"n\": 5\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator factorial --message '{\n      \"n\": 11\n   }'")
 }
 
 func calculatorStatisticsUsage() {
@@ -245,7 +245,7 @@ func calculatorStatisticsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator statistics --message '{\n      \"numbers\": [\n         0.9092932676423547\n      ]\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator statistics --message '{\n      \"numbers\": [\n         0.9839407167429688,\n         0.3969464125201744,\n         0.8182138429566963\n      ]\n   }'")
 }
 
 func calculatorBatchAddUsage() {

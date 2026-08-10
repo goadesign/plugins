@@ -165,16 +165,16 @@ definitions:
             a:
                 type: number
                 description: First number
-                example: 0.5822864875285534
+                example: 0.7936796293863132
                 format: double
             b:
                 type: number
                 description: Second number
-                example: 0.9122579247007714
+                example: 0.05212966980398518
                 format: double
         example:
-            a: 0.6855891234637396
-            b: 0.6902183502258604
+            a: 0.7936796293863132
+            b: 0.05212966980398518
         required:
             - a
             - b
@@ -185,15 +185,15 @@ definitions:
             operation:
                 type: string
                 description: Operation performed
-                example: Nemo eum aut.
+                example: In deleniti sint.
             result:
                 type: number
                 description: Sum of a and b
-                example: 0.7269881494235838
+                example: 0.04198102650322011
                 format: double
         example:
-            operation: Temporibus non quidem exercitationem.
-            result: 0.45592313716965976
+            operation: In deleniti sint.
+            result: 0.04198102650322011
         required:
             - result
             - operation
@@ -204,16 +204,16 @@ definitions:
             index:
                 type: integer
                 description: Operation index
-                example: 1886316699477631565
+                example: 312737943510911382
                 format: int64
             result:
                 type: number
                 description: Sum
-                example: 0.4643051080345308
+                example: 0.8965135098234011
                 format: double
         example:
-            index: 1190498043252101559
-            result: 0.1437650945689561
+            index: 312737943510911382
+            result: 0.8965135098234011
         required:
             - result
             - index
@@ -224,16 +224,16 @@ definitions:
             dividend:
                 type: number
                 description: Number to divide
-                example: 0.18515492403835837
+                example: 0.5184906879153129
                 format: double
             divisor:
                 type: number
                 description: Number to divide by
-                example: 0.19096690763812
+                example: 0.5616730288110641
                 format: double
         example:
-            dividend: 0.5637655387216421
-            divisor: 0.6971797128752864
+            dividend: 0.5184906879153129
+            divisor: 0.5616730288110641
         required:
             - dividend
             - divisor
@@ -244,15 +244,15 @@ definitions:
             operation:
                 type: string
                 description: Operation performed
-                example: Animi recusandae fuga et.
+                example: Nesciunt consequatur consectetur cupiditate sit.
             result:
                 type: number
                 description: Division result
-                example: 0.44101455761365893
+                example: 0.08459169404214541
                 format: double
         example:
-            operation: Ab perferendis quibusdam.
-            result: 0.17670574146504664
+            operation: Nesciunt consequatur consectetur cupiditate sit.
+            result: 0.08459169404214541
         required:
             - result
             - operation
@@ -263,15 +263,15 @@ definitions:
             code:
                 type: string
                 description: Error code
-                example: Et similique enim sed.
+                example: Dignissimos ut voluptate fuga minus vero omnis.
             message:
                 type: string
                 description: Error message
-                example: Quia est et provident at.
+                example: Repellendus quidem eligendi voluptas quae eius.
         description: Cannot divide by zero
         example:
-            code: Doloremque recusandae corporis doloribus in.
-            message: Dolor perferendis nihil.
+            code: Dignissimos ut voluptate fuga minus vero omnis.
+            message: Repellendus quidem eligendi voluptas quae eius.
         required:
             - message
             - code
@@ -282,7 +282,7 @@ definitions:
             "n":
                 type: integer
                 description: Number to calculate factorial of
-                example: 0
+                example: 10
                 format: int64
                 minimum: 0
                 maximum: 20
@@ -297,21 +297,21 @@ definitions:
             computation_time_ms:
                 type: integer
                 description: Time taken in milliseconds
-                example: 9063384614896753475
+                example: 7430406659417736888
                 format: int64
             operation:
                 type: string
                 description: Operation performed
-                example: Neque amet eius earum voluptas.
+                example: In quo.
             result:
                 type: integer
                 description: Factorial result
-                example: 9135770145502173160
+                example: 2802676607681044054
                 format: int64
         example:
-            computation_time_ms: 7169924634579431694
-            operation: Dicta facilis.
-            result: 3943339354666893251
+            computation_time_ms: 7430406659417736888
+            operation: In quo.
+            result: 2802676607681044054
         required:
             - result
             - operation
@@ -324,18 +324,19 @@ definitions:
                 type: array
                 items:
                     type: number
-                    example: 0.31480425780197624
+                    example: 0.858415483142481
                     format: double
                 description: List of numbers
                 example:
-                    - 0.4376387987328411
-                    - 0.33865881007020904
+                    - 0.5842830148544397
+                    - 0.6757557090818312
+                    - 0.3604039578340141
                 minItems: 1
         example:
             numbers:
-                - 0.24198338232539035
-                - 0.7562492625361671
-                - 0.3004363720253203
+                - 0.5842830148544397
+                - 0.6757557090818312
+                - 0.3604039578340141
         required:
             - numbers
     CalculatorStatisticsResponseBody:
@@ -345,40 +346,40 @@ definitions:
             count:
                 type: integer
                 description: Number of values
-                example: 1498661236401425438
+                example: 7525631923450415662
                 format: int64
             max:
                 type: number
                 description: Maximum value
-                example: 0.7702570357692888
+                example: 0.9702023620235123
                 format: double
             mean:
                 type: number
                 description: Average of numbers
-                example: 0.6753227346276343
+                example: 0.3176589236328283
                 format: double
             median:
                 type: number
                 description: Median value
-                example: 0.31278325148050157
+                example: 0.5259699852027079
                 format: double
             min:
                 type: number
                 description: Minimum value
-                example: 0.556325824397252
+                example: 0.4948460127995459
                 format: double
             sum:
                 type: number
                 description: Sum of all values
-                example: 0.4879789135538508
+                example: 0.7469671830093337
                 format: double
         example:
-            count: 9075380499056270474
-            max: 0.6295158740447375
-            mean: 0.5020243360103577
-            median: 0.6002697939946622
-            min: 0.7378037053373933
-            sum: 0.8244287072532461
+            count: 7525631923450415662
+            max: 0.9702023620235123
+            mean: 0.3176589236328283
+            median: 0.5259699852027079
+            min: 0.4948460127995459
+            sum: 0.7469671830093337
         required:
             - mean
             - median

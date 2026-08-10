@@ -1,0 +1,59 @@
+openapi: 3.2.0
+info:
+    title: Calculator Service
+    version: 0.0.1
+servers:
+    - url: http://localhost:80
+      name: calc
+      description: Default server for calc
+paths:
+    /add/{left}/{right}:
+        get:
+            tags:
+                - calc
+            summary: add calc
+            operationId: calc#add
+            parameters:
+                - name: left
+                  in: path
+                  description: Left operand
+                  required: true
+                  schema:
+                    type: integer
+                    description: Left operand
+                    example: 1292269682895376051
+                    format: int64
+                  example: 7929060683978000797
+                - name: right
+                  in: path
+                  description: Right operand
+                  required: true
+                  schema:
+                    type: integer
+                    description: Right operand
+                    example: 7045955346828763739
+                    format: int64
+                  example: 7586702564123934160
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                type: integer
+                                example: 6252541931587653406
+                                format: int64
+                            example: 6252541931587653406
+    /swagger.json:
+        get:
+            tags:
+                - calc
+            summary: Download ../../gen/http/openapi.json
+            operationId: calc#/swagger.json
+            responses:
+                "200":
+                    description: File downloaded
+components: {}
+tags:
+    - name: calc
+      description: The calc service performs additions on numbers

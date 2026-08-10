@@ -25,7 +25,7 @@ func BuildAddPayload(calculatorAddMessage string) (*calculator.AddPayload, error
 		if calculatorAddMessage != "" {
 			err = json.Unmarshal([]byte(calculatorAddMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"a\": 0.5324087495102858,\n      \"b\": 0.3676887822158714\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"a\": 0.7564502808463504,\n      \"b\": 0.22116150789969893\n   }'")
 			}
 		}
 	}
@@ -46,7 +46,7 @@ func BuildDividePayload(calculatorDivideMessage string) (*calculator.DividePaylo
 		if calculatorDivideMessage != "" {
 			err = json.Unmarshal([]byte(calculatorDivideMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"dividend\": 0.09668276034025738,\n      \"divisor\": 0.895624710740812\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"dividend\": 0.9492693158321226,\n      \"divisor\": 0.7671133810336571\n   }'")
 			}
 		}
 	}
@@ -67,7 +67,7 @@ func BuildFactorialPayload(calculatorFactorialMessage string) (*calculator.Facto
 		if calculatorFactorialMessage != "" {
 			err = json.Unmarshal([]byte(calculatorFactorialMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"n\": 5\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"n\": 11\n   }'")
 			}
 		}
 	}
@@ -87,7 +87,7 @@ func BuildStatisticsPayload(calculatorStatisticsMessage string) (*calculator.Sta
 		if calculatorStatisticsMessage != "" {
 			err = json.Unmarshal([]byte(calculatorStatisticsMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"numbers\": [\n         0.9092932676423547\n      ]\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"numbers\": [\n         0.9839407167429688,\n         0.3969464125201744,\n         0.8182138429566963\n      ]\n   }'")
 			}
 		}
 	}

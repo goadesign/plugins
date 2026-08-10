@@ -87,14 +87,14 @@ definitions:
                 type: boolean
                 description: Is the error a timeout?
                 example: true
-        description: fetch_bad_request_response_body result type (default view)
+        description: Error response result type (default view)
         example:
-            fault: false
+            fault: true
             id: 123abc
             message: parameter 'p' must be an integer
             name: bad_request
             temporary: true
-            timeout: false
+            timeout: true
         required:
             - name
             - id
@@ -129,15 +129,15 @@ definitions:
             timeout:
                 type: boolean
                 description: Is the error a timeout?
-                example: false
-        description: fetch_internal_error_response_body result type (default view)
+                example: true
+        description: Error response result type (default view)
         example:
             fault: true
             id: 123abc
             message: parameter 'p' must be an integer
             name: bad_request
             temporary: true
-            timeout: false
+            timeout: true
         required:
             - name
             - id
@@ -160,7 +160,7 @@ definitions:
                 example: 200
                 format: int64
                 minimum: 0
-        description: FetchResponseBody result type (default view)
+        description: FetchResponse contains the HTTP status code returned by the fetched service and the href to the archived results in the archiver service (default view)
         example:
             archive_href: /archive/1
             status: 200

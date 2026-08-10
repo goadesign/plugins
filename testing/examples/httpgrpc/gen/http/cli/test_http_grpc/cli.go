@@ -30,7 +30,7 @@ func UsageCommands() []string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + " " + "test-http-grpc http-no-stream --body '{\n      \"msg\": \"Fuga et qui fuga animi.\"\n   }'" + "\n" +
+	return os.Args[0] + " " + "test-http-grpc http-no-stream --body '{\n      \"msg\": \"Omnis animi.\"\n   }'" + "\n" +
 		""
 }
 
@@ -240,7 +240,7 @@ func testHTTPGrpcHTTPNoStreamUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc http-no-stream --body '{\n      \"msg\": \"Fuga et qui fuga animi.\"\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc http-no-stream --body '{\n      \"msg\": \"Omnis animi.\"\n   }'")
 }
 
 func testHTTPGrpcHTTPNoStreamErrorUsage() {
@@ -258,7 +258,7 @@ func testHTTPGrpcHTTPNoStreamErrorUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc http-no-stream-error --body '{\n      \"msg\": \"Et rerum.\"\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc http-no-stream-error --body '{\n      \"msg\": \"Reiciendis consequatur.\"\n   }'")
 }
 
 func testHTTPGrpcHTTPServerStreamSseUsage() {
@@ -340,7 +340,7 @@ func testHTTPGrpcMixedNoStreamUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc mixed-no-stream --body '{\n      \"msg\": \"Aut autem illo quas ipsum repellat.\"\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "test-http-grpc mixed-no-stream --body '{\n      \"msg\": \"Sequi aut totam eum.\"\n   }'")
 }
 
 func testHTTPGrpcMixedServerStreamUsage() {

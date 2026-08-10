@@ -30,7 +30,7 @@ func UsageCommands() []string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + " " + "calc add --left 1828520165265779840 --right 6322633713974661021" + "\n" +
+	return os.Args[0] + " " + "calc add --left 1292269682895376051 --right 7045955346828763739" + "\n" +
 		""
 }
 
@@ -155,5 +155,5 @@ func calcAddUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calc add --left 1828520165265779840 --right 6322633713974661021")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calc add --left 1292269682895376051 --right 7045955346828763739")
 }

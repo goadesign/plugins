@@ -13,13 +13,14 @@ paths:
             summary: http_no_stream test-http-grpc
             operationId: test-http-grpc#http_no_stream
             requestBody:
+                description: Request body for http_no_stream.
                 required: true
                 content:
                     application/json:
                         schema:
                             $ref: '#/components/schemas/HTTPNoStreamRequestBody'
                         example:
-                            msg: Fuga et qui fuga animi.
+                            msg: Omnis animi.
             responses:
                 "200":
                     description: OK response.
@@ -28,7 +29,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/HTTPNoStreamResponseBody'
                             example:
-                                out: Dolores minus est quo et.
+                                out: Inventore libero laudantium veniam sunt aut.
     /http/no-stream-error:
         post:
             tags:
@@ -36,13 +37,14 @@ paths:
             summary: http_no_stream_error test-http-grpc
             operationId: test-http-grpc#http_no_stream_error
             requestBody:
+                description: Request body for http_no_stream_error.
                 required: true
                 content:
                     application/json:
                         schema:
                             $ref: '#/components/schemas/HTTPNoStreamRequestBody'
                         example:
-                            msg: Et rerum.
+                            msg: Reiciendis consequatur.
             responses:
                 "200":
                     description: OK response.
@@ -51,7 +53,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/HTTPNoStreamResponseBody'
                             example:
-                                out: Repudiandae in omnis.
+                                out: Aut unde laboriosam modi incidunt occaecati sed.
                 "400":
                     description: 'division_by_zero: Division by zero error'
                     content:
@@ -59,7 +61,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/DivisionByZeroError'
                             example:
-                                message: Quia ipsa tempora unde veritatis.
+                                message: Ducimus quae sed et consequatur autem.
     /http/sse:
         post:
             tags:
@@ -67,14 +69,14 @@ paths:
             summary: http_server_stream_sse test-http-grpc
             operationId: test-http-grpc#http_server_stream_sse
             responses:
-                "101":
-                    description: Switching Protocols response.
+                "200":
+                    description: OK response.
                     content:
                         text/event-stream:
                             schema:
                                 $ref: '#/components/schemas/HTTPServerStreamSseResponseBody'
                             example:
-                                event: Doloribus neque et.
+                                event: Vitae ipsam eum aliquam corporis sed architecto.
     /http/ws/bidi:
         get:
             tags:
@@ -89,7 +91,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/DivisionByZeroError'
                             example:
-                                message: Enim aut.
+                                message: Quos ipsam rerum.
     /http/ws/client:
         get:
             tags:
@@ -104,7 +106,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/HTTPNoStreamResponseBody'
                             example:
-                                out: Voluptatem error repudiandae velit quis.
+                                out: Id vel.
     /http/ws/server:
         get:
             tags:
@@ -119,7 +121,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/DivisionByZeroError'
                             example:
-                                message: Quasi eum dolor distinctio qui.
+                                message: Modi quaerat.
     /mixed/bidi-stream/ws:
         get:
             tags:
@@ -134,7 +136,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/DivisionByZeroError'
                             example:
-                                message: Nam quia.
+                                message: Maiores magni voluptatem consequatur voluptatem sed.
     /mixed/client-stream/ws:
         get:
             tags:
@@ -149,7 +151,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/HTTPNoStreamResponseBody'
                             example:
-                                out: Consequuntur dignissimos vel alias consequatur quia qui.
+                                out: Ipsum et doloremque.
     /mixed/no-stream:
         post:
             tags:
@@ -157,13 +159,14 @@ paths:
             summary: mixed_no_stream test-http-grpc
             operationId: test-http-grpc#mixed_no_stream
             requestBody:
+                description: Request body for mixed_no_stream.
                 required: true
                 content:
                     application/json:
                         schema:
                             $ref: '#/components/schemas/HTTPNoStreamRequestBody'
                         example:
-                            msg: Aut autem illo quas ipsum repellat.
+                            msg: Sequi aut totam eum.
             responses:
                 "200":
                     description: OK response.
@@ -172,7 +175,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/HTTPNoStreamResponseBody'
                             example:
-                                out: Nulla molestiae dolorem.
+                                out: Sunt voluptatum consequatur vitae facere est.
     /mixed/server-stream:
         post:
             tags:
@@ -180,14 +183,14 @@ paths:
             summary: mixed_server_stream test-http-grpc
             operationId: test-http-grpc#mixed_server_stream
             responses:
-                "101":
-                    description: Switching Protocols response.
+                "200":
+                    description: OK response.
                     content:
                         text/event-stream:
                             schema:
                                 $ref: '#/components/schemas/HTTPServerStreamSseResponseBody'
                             example:
-                                event: Adipisci dolores quisquam quos quo.
+                                event: Ab est voluptas in et.
 components:
     schemas:
         DivisionByZeroError:
@@ -196,9 +199,10 @@ components:
                 message:
                     type: string
                     description: division by zero error message
-                    example: Ad quis necessitatibus.
+                    example: Ducimus quae sed et consequatur autem.
+            description: Division by zero error
             example:
-                message: Itaque sed.
+                message: Ducimus quae sed et consequatur autem.
             required:
                 - message
         HTTPNoStreamRequestBody:
@@ -206,9 +210,10 @@ components:
             properties:
                 msg:
                     type: string
-                    example: Placeat debitis placeat voluptatum magni tempore porro.
+                    example: Omnis animi.
+            description: Request body for http_no_stream.
             example:
-                msg: Eum aliquam illum dolor corrupti qui.
+                msg: Omnis animi.
             required:
                 - msg
         HTTPNoStreamResponseBody:
@@ -216,9 +221,9 @@ components:
             properties:
                 out:
                     type: string
-                    example: Suscipit ut nemo.
+                    example: Inventore libero laudantium veniam sunt aut.
             example:
-                out: Modi tenetur quia.
+                out: Inventore libero laudantium veniam sunt aut.
             required:
                 - out
         HTTPServerStreamSseResponseBody:
@@ -226,9 +231,9 @@ components:
             properties:
                 event:
                     type: string
-                    example: Ea aperiam sunt.
+                    example: Vitae ipsam eum aliquam corporis sed architecto.
             example:
-                event: Sunt earum ratione earum.
+                event: Vitae ipsam eum aliquam corporis sed architecto.
             required:
                 - event
 tags:
