@@ -9,7 +9,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.28.0
 	goa.design/clue v1.2.6
-	goa.design/goa/v3 v3.28.1-0.20260613055708-11527bf14be7
+	goa.design/goa/v3 v3.29.0
 	goa.design/model v1.15.0
 	gopkg.in/yaml.v3 v3.0.1
 )
