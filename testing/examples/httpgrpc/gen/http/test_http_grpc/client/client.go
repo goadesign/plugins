@@ -161,7 +161,9 @@ func (c *Client) HTTPNoStreamError() goa.Endpoint {
 // HTTPServerStreamSse returns an endpoint that makes HTTP requests to the
 // test-http-grpc service http_server_stream_sse server.
 func (c *Client) HTTPServerStreamSse() goa.Endpoint {
-	var ()
+	var (
+		decodeResponse = DecodeHTTPServerStreamSseResponse(c.decoder, c.RestoreResponseBody)
+	)
 	return func(ctx context.Context, v any) (any, error) {
 		req, err := c.BuildHTTPServerStreamSseRequest(ctx, v)
 		if err != nil {
@@ -174,8 +176,8 @@ func (c *Client) HTTPServerStreamSse() goa.Endpoint {
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			resp.Body.Close()
-			return nil, fmt.Errorf("unexpected status from SSE endpoint: %d", resp.StatusCode)
+			// Decode designed errors (the decoder closes the response body).
+			return decodeResponse(resp)
 		}
 
 		contentType := resp.Header.Get("Content-Type")
@@ -304,7 +306,9 @@ func (c *Client) MixedNoStream() goa.Endpoint {
 // MixedServerStream returns an endpoint that makes HTTP requests to the
 // test-http-grpc service mixed_server_stream server.
 func (c *Client) MixedServerStream() goa.Endpoint {
-	var ()
+	var (
+		decodeResponse = DecodeMixedServerStreamResponse(c.decoder, c.RestoreResponseBody)
+	)
 	return func(ctx context.Context, v any) (any, error) {
 		req, err := c.BuildMixedServerStreamRequest(ctx, v)
 		if err != nil {
@@ -317,8 +321,8 @@ func (c *Client) MixedServerStream() goa.Endpoint {
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			resp.Body.Close()
-			return nil, fmt.Errorf("unexpected status from SSE endpoint: %d", resp.StatusCode)
+			// Decode designed errors (the decoder closes the response body).
+			return decodeResponse(resp)
 		}
 
 		contentType := resp.Header.Get("Content-Type")

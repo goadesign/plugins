@@ -77,44 +77,6 @@ func (c *Client) WithTimeout(timeout time.Duration) *Client {
 	return &nc
 }
 
-// httpSSEHTTPServerStreamSseWrapper wraps HTTP SSE stream to match service
-// interface.
-type httpSSEHTTPServerStreamSseWrapper struct {
-	stream interface {
-		Recv(context.Context) (*testhttpgrpc.HTTPServerStreamSseResult, error)
-		Close() error
-	}
-}
-
-// Recv implements the service interface.
-func (w *httpSSEHTTPServerStreamSseWrapper) Recv() (*testhttpgrpc.HTTPServerStreamSseResult, error) {
-	return w.stream.Recv(context.Background())
-}
-
-// RecvWithContext implements the service interface.
-func (w *httpSSEHTTPServerStreamSseWrapper) RecvWithContext(ctx context.Context) (*testhttpgrpc.HTTPServerStreamSseResult, error) {
-	return w.stream.Recv(ctx)
-}
-
-// httpSSEMixedServerStreamWrapper wraps HTTP SSE stream to match service
-// interface.
-type httpSSEMixedServerStreamWrapper struct {
-	stream interface {
-		Recv(context.Context) (*testhttpgrpc.MixedServerStreamResult, error)
-		Close() error
-	}
-}
-
-// Recv implements the service interface.
-func (w *httpSSEMixedServerStreamWrapper) Recv() (*testhttpgrpc.MixedServerStreamResult, error) {
-	return w.stream.Recv(context.Background())
-}
-
-// RecvWithContext implements the service interface.
-func (w *httpSSEMixedServerStreamWrapper) RecvWithContext(ctx context.Context) (*testhttpgrpc.MixedServerStreamResult, error) {
-	return w.stream.Recv(ctx)
-}
-
 // HTTPNoStream calls the http_no_stream method using the configured transport.
 func (c *Client) HTTPNoStream(ctx context.Context, p *testhttpgrpc.HTTPNoStreamPayload) (*testhttpgrpc.HTTPNoStreamResult, error) {
 	// Determine which transport to use
@@ -251,11 +213,7 @@ func (c *Client) HTTPServerStreamSse(ctx context.Context) (testhttpgrpc.HTTPServ
 		if err != nil {
 			return nil, err
 		}
-		// Wrap SSE stream to match service interface
-		return &httpSSEHTTPServerStreamSseWrapper{stream: res.(interface {
-			Recv(context.Context) (*testhttpgrpc.HTTPServerStreamSseResult, error)
-			Close() error
-		})}, nil
+		return res.(testhttpgrpc.HTTPServerStreamSseClientStream), nil
 
 	default:
 		return nil, fmt.Errorf("no transport available for http_server_stream_sse")
@@ -501,11 +459,7 @@ func (c *Client) MixedServerStream(ctx context.Context) (testhttpgrpc.MixedServe
 		if err != nil {
 			return nil, err
 		}
-		// Wrap SSE stream to match service interface
-		return &httpSSEMixedServerStreamWrapper{stream: res.(interface {
-			Recv(context.Context) (*testhttpgrpc.MixedServerStreamResult, error)
-			Close() error
-		})}, nil
+		return res.(testhttpgrpc.MixedServerStreamClientStream), nil
 	case GRPCTransport:
 		if c.grpcClient == nil {
 			return nil, fmt.Errorf("gRPC transport not configured")
