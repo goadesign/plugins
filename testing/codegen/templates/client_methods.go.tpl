@@ -40,22 +40,7 @@ func (c *Client) {{ $method.VarName }}(ctx context.Context{{- if $method.Payload
 		if err != nil {
 			return nil, err
 		}
-		{{- /* Check if this is an SSE stream that needs wrapping */ -}}
-		{{- $isSSE := false }}
-		{{- range .Targets }}
-			{{- if .IsHTTPServerSent }}
-				{{- $isSSE = true }}
-			{{- end }}
-		{{- end }}
-		{{- if $isSSE }}
-		// Wrap SSE stream to match service interface
-		return &httpSSE{{ $method.VarName }}Wrapper{stream: res.(interface {
-			Recv(context.Context) (*{{ $.PkgName }}.{{ $method.Result }}, error)
-			Close() error
-		})}, nil
-		{{- else }}
 		return res.({{ $.PkgName }}.{{ $method.ClientStream.Interface }}), nil
-		{{- end }}
 		{{- else }}
 		{{- if $method.ResultRef }}
 		res, err := endpoint(ctx{{- if $method.PayloadRef }}, p{{ end }})
