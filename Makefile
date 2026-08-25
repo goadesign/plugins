@@ -3,15 +3,13 @@
 # Makefile for goa v3 plugins
 
 GOOS=$(shell go env GOOS)
-GOA:=$(shell goa version 2> /dev/null)
+GOA_VERSION:=$(shell go list -m -f '{{.Version}}' goa.design/goa/v3)
 
-# Only list test and build dependencies
-# Standard dependencies are installed via go get
+# These commands install the tools used to build and test the plugins.
 DEPEND=\
 	google.golang.org/protobuf/cmd/protoc-gen-go@latest \
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest \
-	honnef.co/go/tools/cmd/staticcheck@latest \
-	goa.design/goa/v3/cmd/goa@v3
+	honnef.co/go/tools/cmd/staticcheck@latest
 
 # Add new plugins here to enable make
 PLUGINS=\
@@ -64,15 +62,10 @@ depend:
 	fi
 
 check-goa:
-ifdef GOA
+	@# Use the Goa version in go.mod so generation and compilation use the same API.
+	go install goa.design/goa/v3/cmd/goa@$(GOA_VERSION)
 	go mod download
-	@echo $(GOA)
-else
-	go get -u goa.design/goa/v3@v3
-	go get -u goa.design/goa/v3/...@v3
-	go mod download
-	@echo $(GOA)
-endif
+	@echo "Goa $(GOA_VERSION)"
 
 tidy:
 	@go mod tidy
