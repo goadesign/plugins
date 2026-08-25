@@ -17,11 +17,14 @@ import (
 
 // BuildHTTPNoStreamPayload builds the payload for the test-http-grpc
 // http_no_stream endpoint from CLI flags.
-func BuildHTTPNoStreamPayload(testHTTPGrpcHTTPNoStreamBody string) (*testhttpgrpc.HTTPNoStreamPayload, error) {
+func BuildHTTPNoStreamPayload(testHTTPGrpcHTTPNoStreamBody *string) (*testhttpgrpc.HTTPNoStreamPayload, error) {
 	var err error
 	var body HTTPNoStreamRequestBody
 	{
-		err = json.Unmarshal([]byte(testHTTPGrpcHTTPNoStreamBody), &body)
+		if testHTTPGrpcHTTPNoStreamBody == nil {
+			return nil, fmt.Errorf("missing required flag --body")
+		}
+		err = json.Unmarshal([]byte(*testHTTPGrpcHTTPNoStreamBody), &body)
 		if err != nil {
 			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Expedita eum recusandae non.\"\n   }'")
 		}
@@ -35,11 +38,14 @@ func BuildHTTPNoStreamPayload(testHTTPGrpcHTTPNoStreamBody string) (*testhttpgrp
 
 // BuildHTTPNoStreamErrorPayload builds the payload for the test-http-grpc
 // http_no_stream_error endpoint from CLI flags.
-func BuildHTTPNoStreamErrorPayload(testHTTPGrpcHTTPNoStreamErrorBody string) (*testhttpgrpc.HTTPNoStreamErrorPayload, error) {
+func BuildHTTPNoStreamErrorPayload(testHTTPGrpcHTTPNoStreamErrorBody *string) (*testhttpgrpc.HTTPNoStreamErrorPayload, error) {
 	var err error
 	var body HTTPNoStreamErrorRequestBody
 	{
-		err = json.Unmarshal([]byte(testHTTPGrpcHTTPNoStreamErrorBody), &body)
+		if testHTTPGrpcHTTPNoStreamErrorBody == nil {
+			return nil, fmt.Errorf("missing required flag --body")
+		}
+		err = json.Unmarshal([]byte(*testHTTPGrpcHTTPNoStreamErrorBody), &body)
 		if err != nil {
 			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Ipsum asperiores omnis culpa.\"\n   }'")
 		}
@@ -53,11 +59,14 @@ func BuildHTTPNoStreamErrorPayload(testHTTPGrpcHTTPNoStreamErrorBody string) (*t
 
 // BuildMixedNoStreamPayload builds the payload for the test-http-grpc
 // mixed_no_stream endpoint from CLI flags.
-func BuildMixedNoStreamPayload(testHTTPGrpcMixedNoStreamBody string) (*testhttpgrpc.MixedNoStreamPayload, error) {
+func BuildMixedNoStreamPayload(testHTTPGrpcMixedNoStreamBody *string) (*testhttpgrpc.MixedNoStreamPayload, error) {
 	var err error
 	var body MixedNoStreamRequestBody
 	{
-		err = json.Unmarshal([]byte(testHTTPGrpcMixedNoStreamBody), &body)
+		if testHTTPGrpcMixedNoStreamBody == nil {
+			return nil, fmt.Errorf("missing required flag --body")
+		}
+		err = json.Unmarshal([]byte(*testHTTPGrpcMixedNoStreamBody), &body)
 		if err != nil {
 			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Repellendus fuga quisquam sunt eligendi ad praesentium.\"\n   }'")
 		}

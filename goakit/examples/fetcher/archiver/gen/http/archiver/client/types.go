@@ -143,6 +143,51 @@ func NewReadBadRequest(body *ReadBadRequestResponseBody) *goa.ServiceError {
 	return v
 }
 
+// ValidateArchiveResponseBody runs the validations defined on
+// ArchiveResponseBody
+func ValidateArchiveResponseBody(body *ArchiveResponseBody) (err error) {
+	if body.Href == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("href", "body"))
+	}
+	if body.Status == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
+	}
+	if body.Body == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("body", "body"))
+	}
+	if body.Href != nil {
+		err = goa.MergeErrors(err, goa.ValidatePattern("body.href", *body.Href, "^/archive/[0-9]+$"))
+	}
+	if body.Status != nil {
+		if *body.Status < 0 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError("body.status", *body.Status, 0, true))
+		}
+	}
+	return
+}
+
+// ValidateReadResponseBody runs the validations defined on ReadResponseBody
+func ValidateReadResponseBody(body *ReadResponseBody) (err error) {
+	if body.Href == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("href", "body"))
+	}
+	if body.Status == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
+	}
+	if body.Body == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("body", "body"))
+	}
+	if body.Href != nil {
+		err = goa.MergeErrors(err, goa.ValidatePattern("body.href", *body.Href, "^/archive/[0-9]+$"))
+	}
+	if body.Status != nil {
+		if *body.Status < 0 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError("body.status", *body.Status, 0, true))
+		}
+	}
+	return
+}
+
 // ValidateReadNotFoundResponseBody runs the validations defined on
 // ReadNotFoundResponseBody
 func ValidateReadNotFoundResponseBody(body *ReadNotFoundResponseBody) (err error) {

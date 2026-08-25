@@ -34,6 +34,25 @@ func UsageExamples() string {
 		""
 }
 
+// cliStringFlag keeps an omitted command-line flag distinct from an explicitly empty flag.
+type cliStringFlag struct {
+	value *string
+}
+
+// String returns the flag text shown by the standard flag package.
+func (f *cliStringFlag) String() string {
+	if f.value == nil {
+		return ""
+	}
+	return *f.value
+}
+
+// Set records that the user supplied the flag, even when value is empty.
+func (f *cliStringFlag) Set(value string) error {
+	f.value = &value
+	return nil
+}
+
 // ParseEndpoint returns the endpoint and payload as specified on the command
 // line.
 func ParseEndpoint(
@@ -49,10 +68,10 @@ func ParseEndpoint(
 		testHTTPGrpcFlags = flag.NewFlagSet("test-http-grpc", flag.ContinueOnError)
 
 		testHTTPGrpcHTTPNoStreamFlags    = flag.NewFlagSet("http-no-stream", flag.ExitOnError)
-		testHTTPGrpcHTTPNoStreamBodyFlag = testHTTPGrpcHTTPNoStreamFlags.String("body", "REQUIRED", "")
+		testHTTPGrpcHTTPNoStreamBodyFlag = new(cliStringFlag)
 
 		testHTTPGrpcHTTPNoStreamErrorFlags    = flag.NewFlagSet("http-no-stream-error", flag.ExitOnError)
-		testHTTPGrpcHTTPNoStreamErrorBodyFlag = testHTTPGrpcHTTPNoStreamErrorFlags.String("body", "REQUIRED", "")
+		testHTTPGrpcHTTPNoStreamErrorBodyFlag = new(cliStringFlag)
 
 		testHTTPGrpcHTTPServerStreamSseFlags = flag.NewFlagSet("http-server-stream-sse", flag.ExitOnError)
 
@@ -63,7 +82,7 @@ func ParseEndpoint(
 		testHTTPGrpcHTTPBidiStreamWsFlags = flag.NewFlagSet("http-bidi-stream-ws", flag.ExitOnError)
 
 		testHTTPGrpcMixedNoStreamFlags    = flag.NewFlagSet("mixed-no-stream", flag.ExitOnError)
-		testHTTPGrpcMixedNoStreamBodyFlag = testHTTPGrpcMixedNoStreamFlags.String("body", "REQUIRED", "")
+		testHTTPGrpcMixedNoStreamBodyFlag = new(cliStringFlag)
 
 		testHTTPGrpcMixedServerStreamFlags = flag.NewFlagSet("mixed-server-stream", flag.ExitOnError)
 
@@ -71,6 +90,10 @@ func ParseEndpoint(
 
 		testHTTPGrpcMixedBidiStreamWsGrpcFlags = flag.NewFlagSet("mixed-bidi-stream-ws-grpc", flag.ExitOnError)
 	)
+	testHTTPGrpcHTTPNoStreamFlags.Var(testHTTPGrpcHTTPNoStreamBodyFlag, "body", "")
+	testHTTPGrpcHTTPNoStreamErrorFlags.Var(testHTTPGrpcHTTPNoStreamErrorBodyFlag, "body", "")
+	testHTTPGrpcMixedNoStreamFlags.Var(testHTTPGrpcMixedNoStreamBodyFlag, "body", "")
+
 	testHTTPGrpcFlags.Usage = testHTTPGrpcUsage
 	testHTTPGrpcHTTPNoStreamFlags.Usage = testHTTPGrpcHTTPNoStreamUsage
 	testHTTPGrpcHTTPNoStreamErrorFlags.Usage = testHTTPGrpcHTTPNoStreamErrorUsage
@@ -174,10 +197,10 @@ func ParseEndpoint(
 			switch epn {
 			case "http-no-stream":
 				endpoint = c.HTTPNoStream()
-				data, err = testhttpgrpcc.BuildHTTPNoStreamPayload(*testHTTPGrpcHTTPNoStreamBodyFlag)
+				data, err = testhttpgrpcc.BuildHTTPNoStreamPayload(testHTTPGrpcHTTPNoStreamBodyFlag.value)
 			case "http-no-stream-error":
 				endpoint = c.HTTPNoStreamError()
-				data, err = testhttpgrpcc.BuildHTTPNoStreamErrorPayload(*testHTTPGrpcHTTPNoStreamErrorBodyFlag)
+				data, err = testhttpgrpcc.BuildHTTPNoStreamErrorPayload(testHTTPGrpcHTTPNoStreamErrorBodyFlag.value)
 			case "http-server-stream-sse":
 				endpoint = c.HTTPServerStreamSse()
 			case "http-server-stream-ws":
@@ -188,7 +211,7 @@ func ParseEndpoint(
 				endpoint = c.HTTPBidiStreamWs()
 			case "mixed-no-stream":
 				endpoint = c.MixedNoStream()
-				data, err = testhttpgrpcc.BuildMixedNoStreamPayload(*testHTTPGrpcMixedNoStreamBodyFlag)
+				data, err = testhttpgrpcc.BuildMixedNoStreamPayload(testHTTPGrpcMixedNoStreamBodyFlag.value)
 			case "mixed-server-stream":
 				endpoint = c.MixedServerStream()
 			case "mixed-client-stream-ws-grpc":

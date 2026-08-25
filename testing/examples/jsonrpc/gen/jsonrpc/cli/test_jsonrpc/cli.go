@@ -34,6 +34,25 @@ func UsageExamples() string {
 		""
 }
 
+// cliStringFlag keeps an omitted command-line flag distinct from an explicitly empty flag.
+type cliStringFlag struct {
+	value *string
+}
+
+// String returns the flag text shown by the standard flag package.
+func (f *cliStringFlag) String() string {
+	if f.value == nil {
+		return ""
+	}
+	return *f.value
+}
+
+// Set records that the user supplied the flag, even when value is empty.
+func (f *cliStringFlag) Set(value string) error {
+	f.value = &value
+	return nil
+}
+
 // ParseEndpoint returns the endpoint and payload as specified on the command
 // line.
 func ParseEndpoint(
@@ -47,11 +66,14 @@ func ParseEndpoint(
 		testJsonrpcFlags = flag.NewFlagSet("test-jsonrpc", flag.ContinueOnError)
 
 		testJsonrpcJsonrpcNoStreamFlags    = flag.NewFlagSet("jsonrpc-no-stream", flag.ExitOnError)
-		testJsonrpcJsonrpcNoStreamBodyFlag = testJsonrpcJsonrpcNoStreamFlags.String("body", "REQUIRED", "")
+		testJsonrpcJsonrpcNoStreamBodyFlag = new(cliStringFlag)
 
 		testJsonrpcJsonrpcNoStreamErrorFlags    = flag.NewFlagSet("jsonrpc-no-stream-error", flag.ExitOnError)
-		testJsonrpcJsonrpcNoStreamErrorBodyFlag = testJsonrpcJsonrpcNoStreamErrorFlags.String("body", "REQUIRED", "")
+		testJsonrpcJsonrpcNoStreamErrorBodyFlag = new(cliStringFlag)
 	)
+	testJsonrpcJsonrpcNoStreamFlags.Var(testJsonrpcJsonrpcNoStreamBodyFlag, "body", "")
+	testJsonrpcJsonrpcNoStreamErrorFlags.Var(testJsonrpcJsonrpcNoStreamErrorBodyFlag, "body", "")
+
 	testJsonrpcFlags.Usage = testJsonrpcUsage
 	testJsonrpcJsonrpcNoStreamFlags.Usage = testJsonrpcJsonrpcNoStreamUsage
 	testJsonrpcJsonrpcNoStreamErrorFlags.Usage = testJsonrpcJsonrpcNoStreamErrorUsage
@@ -123,10 +145,10 @@ func ParseEndpoint(
 			switch epn {
 			case "jsonrpc-no-stream":
 				endpoint = c.JsonrpcNoStream()
-				data, err = testjsonrpcc.BuildJsonrpcNoStreamPayload(*testJsonrpcJsonrpcNoStreamBodyFlag)
+				data, err = testjsonrpcc.BuildJsonrpcNoStreamPayload(testJsonrpcJsonrpcNoStreamBodyFlag.value)
 			case "jsonrpc-no-stream-error":
 				endpoint = c.JsonrpcNoStreamError()
-				data, err = testjsonrpcc.BuildJsonrpcNoStreamErrorPayload(*testJsonrpcJsonrpcNoStreamErrorBodyFlag)
+				data, err = testjsonrpcc.BuildJsonrpcNoStreamErrorPayload(testJsonrpcJsonrpcNoStreamErrorBodyFlag.value)
 			}
 		}
 	}

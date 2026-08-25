@@ -32,6 +32,34 @@ type HTTPServerStreamSseServerStream struct {
 	attempted bool
 }
 
+// start writes the headers that identify a successful SSE response.
+func (s *HTTPServerStreamSseServerStream) start() {
+	s.once.Do(func() {
+		header := s.w.Header()
+		if header.Get("Content-Type") == "" {
+			header.Set("Content-Type", "text/event-stream")
+		}
+		if header.Get("Cache-Control") == "" {
+			header.Set("Cache-Control", "no-cache")
+		}
+		if header.Get("Connection") == "" {
+			header.Set("Connection", "keep-alive")
+		}
+		s.w.WriteHeader(http.StatusOK)
+		s.attempted = true
+	})
+}
+
+// finish writes an empty successful SSE response when the service sent no
+// events.
+func (s *HTTPServerStreamSseServerStream) finish() error {
+	if s.attempted {
+		return nil
+	}
+	s.start()
+	return nil
+}
+
 // Send Send streams instances of "testhttpgrpc.HTTPServerStreamSseResult" to
 // the "http_server_stream_sse" endpoint SSE connection.
 func (s *HTTPServerStreamSseServerStream) Send(v *testhttpgrpc.HTTPServerStreamSseResult) error {
@@ -52,22 +80,27 @@ func (s *HTTPServerStreamSseServerStream) SendWithContext(ctx context.Context, v
 		return err
 	}
 	data = string(byts)
-	s.once.Do(func() {
-		header := s.w.Header()
-		if header.Get("Content-Type") == "" {
-			header.Set("Content-Type", "text/event-stream")
-		}
-		if header.Get("Cache-Control") == "" {
-			header.Set("Cache-Control", "no-cache")
-		}
-		if header.Get("Connection") == "" {
-			header.Set("Connection", "keep-alive")
-		}
-		s.w.WriteHeader(http.StatusOK)
-		s.attempted = true
-	})
+	s.start()
 
-	if _, err := fmt.Fprintf(s.w, "data: %s\n\n", data); err != nil {
+	remaining := data
+	for {
+		lineEnd := 0
+		for lineEnd < len(remaining) && remaining[lineEnd] != '\r' && remaining[lineEnd] != '\n' {
+			lineEnd++
+		}
+		if _, err := fmt.Fprintf(s.w, "data: %s\n", remaining[:lineEnd]); err != nil {
+			return err
+		}
+		if lineEnd == len(remaining) {
+			break
+		}
+		next := lineEnd + 1
+		if remaining[lineEnd] == '\r' && next < len(remaining) && remaining[next] == '\n' {
+			next++
+		}
+		remaining = remaining[next:]
+	}
+	if _, err := fmt.Fprintln(s.w); err != nil {
 		return err
 	}
 
@@ -97,6 +130,34 @@ type MixedServerStreamServerStream struct {
 	attempted bool
 }
 
+// start writes the headers that identify a successful SSE response.
+func (s *MixedServerStreamServerStream) start() {
+	s.once.Do(func() {
+		header := s.w.Header()
+		if header.Get("Content-Type") == "" {
+			header.Set("Content-Type", "text/event-stream")
+		}
+		if header.Get("Cache-Control") == "" {
+			header.Set("Cache-Control", "no-cache")
+		}
+		if header.Get("Connection") == "" {
+			header.Set("Connection", "keep-alive")
+		}
+		s.w.WriteHeader(http.StatusOK)
+		s.attempted = true
+	})
+}
+
+// finish writes an empty successful SSE response when the service sent no
+// events.
+func (s *MixedServerStreamServerStream) finish() error {
+	if s.attempted {
+		return nil
+	}
+	s.start()
+	return nil
+}
+
 // Send Send streams instances of "testhttpgrpc.MixedServerStreamResult" to the
 // "mixed_server_stream" endpoint SSE connection.
 func (s *MixedServerStreamServerStream) Send(v *testhttpgrpc.MixedServerStreamResult) error {
@@ -117,22 +178,27 @@ func (s *MixedServerStreamServerStream) SendWithContext(ctx context.Context, v *
 		return err
 	}
 	data = string(byts)
-	s.once.Do(func() {
-		header := s.w.Header()
-		if header.Get("Content-Type") == "" {
-			header.Set("Content-Type", "text/event-stream")
-		}
-		if header.Get("Cache-Control") == "" {
-			header.Set("Cache-Control", "no-cache")
-		}
-		if header.Get("Connection") == "" {
-			header.Set("Connection", "keep-alive")
-		}
-		s.w.WriteHeader(http.StatusOK)
-		s.attempted = true
-	})
+	s.start()
 
-	if _, err := fmt.Fprintf(s.w, "data: %s\n\n", data); err != nil {
+	remaining := data
+	for {
+		lineEnd := 0
+		for lineEnd < len(remaining) && remaining[lineEnd] != '\r' && remaining[lineEnd] != '\n' {
+			lineEnd++
+		}
+		if _, err := fmt.Fprintf(s.w, "data: %s\n", remaining[:lineEnd]); err != nil {
+			return err
+		}
+		if lineEnd == len(remaining) {
+			break
+		}
+		next := lineEnd + 1
+		if remaining[lineEnd] == '\r' && next < len(remaining) && remaining[next] == '\n' {
+			next++
+		}
+		remaining = remaining[next:]
+	}
+	if _, err := fmt.Fprintln(s.w); err != nil {
 		return err
 	}
 

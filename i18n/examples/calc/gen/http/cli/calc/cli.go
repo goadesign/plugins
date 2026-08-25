@@ -34,6 +34,25 @@ func UsageExamples() string {
 		""
 }
 
+// cliStringFlag keeps an omitted command-line flag distinct from an explicitly empty flag.
+type cliStringFlag struct {
+	value *string
+}
+
+// String returns the flag text shown by the standard flag package.
+func (f *cliStringFlag) String() string {
+	if f.value == nil {
+		return ""
+	}
+	return *f.value
+}
+
+// Set records that the user supplied the flag, even when value is empty.
+func (f *cliStringFlag) Set(value string) error {
+	f.value = &value
+	return nil
+}
+
 // ParseEndpoint returns the endpoint and payload as specified on the command
 // line.
 func ParseEndpoint(
@@ -47,9 +66,12 @@ func ParseEndpoint(
 		calcFlags = flag.NewFlagSet("calc", flag.ContinueOnError)
 
 		calcAddFlags = flag.NewFlagSet("add", flag.ExitOnError)
-		calcAddAFlag = calcAddFlags.String("a", "REQUIRED", "")
-		calcAddBFlag = calcAddFlags.String("b", "REQUIRED", "")
+		calcAddAFlag = new(cliStringFlag)
+		calcAddBFlag = new(cliStringFlag)
 	)
+	calcAddFlags.Var(calcAddAFlag, "a", "")
+	calcAddFlags.Var(calcAddBFlag, "b", "")
+
 	calcFlags.Usage = calcUsage
 	calcAddFlags.Usage = calcAddUsage
 
@@ -117,7 +139,7 @@ func ParseEndpoint(
 			switch epn {
 			case "add":
 				endpoint = c.Add()
-				data, err = calcc.BuildAddPayload(*calcAddAFlag, *calcAddBFlag)
+				data, err = calcc.BuildAddPayload(calcAddAFlag.value, calcAddBFlag.value)
 			}
 		}
 	}

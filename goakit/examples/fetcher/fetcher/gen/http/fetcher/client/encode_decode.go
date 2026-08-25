@@ -83,6 +83,10 @@ func DecodeFetchResponse(decoder func(*http.Response) goahttp.Decoder, restoreBo
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("fetcher", "fetch", err)
 			}
+			err = ValidateFetchResponseBody(&body)
+			if err != nil {
+				return nil, goahttp.ErrValidationError("fetcher", "fetch", err)
+			}
 			p := NewFetchMediaViewOK(&body)
 			view := "default"
 			vres := &fetcherviews.FetchMedia{Projected: p, View: view}

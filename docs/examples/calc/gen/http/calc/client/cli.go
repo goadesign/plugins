@@ -16,12 +16,15 @@ import (
 )
 
 // BuildAddPayload builds the payload for the calc add endpoint from CLI flags.
-func BuildAddPayload(calcAddLeft string, calcAddRight string) (*calc.AddPayload, error) {
+func BuildAddPayload(calcAddLeft *string, calcAddRight *string) (*calc.AddPayload, error) {
 	var err error
 	var left int
 	{
+		if calcAddLeft == nil {
+			return nil, fmt.Errorf("missing required flag --left")
+		}
 		var v int64
-		v, err = strconv.ParseInt(calcAddLeft, 10, strconv.IntSize)
+		v, err = strconv.ParseInt(*calcAddLeft, 10, strconv.IntSize)
 		left = int(v)
 		if err != nil {
 			return nil, fmt.Errorf("invalid value for left, must be INT")
@@ -29,8 +32,11 @@ func BuildAddPayload(calcAddLeft string, calcAddRight string) (*calc.AddPayload,
 	}
 	var right int
 	{
+		if calcAddRight == nil {
+			return nil, fmt.Errorf("missing required flag --right")
+		}
 		var v int64
-		v, err = strconv.ParseInt(calcAddRight, 10, strconv.IntSize)
+		v, err = strconv.ParseInt(*calcAddRight, 10, strconv.IntSize)
 		right = int(v)
 		if err != nil {
 			return nil, fmt.Errorf("invalid value for right, must be INT")

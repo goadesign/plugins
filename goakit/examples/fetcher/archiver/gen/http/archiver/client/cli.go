@@ -19,11 +19,14 @@ import (
 
 // BuildArchivePayload builds the payload for the archiver archive endpoint
 // from CLI flags.
-func BuildArchivePayload(archiverArchiveBody string) (*archiver.ArchivePayload, error) {
+func BuildArchivePayload(archiverArchiveBody *string) (*archiver.ArchivePayload, error) {
 	var err error
 	var body ArchiveRequestBody
 	{
-		err = json.Unmarshal([]byte(archiverArchiveBody), &body)
+		if archiverArchiveBody == nil {
+			return nil, fmt.Errorf("missing required flag --body")
+		}
+		err = json.Unmarshal([]byte(*archiverArchiveBody), &body)
 		if err != nil {
 			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"body\": \"In nisi sit nihil totam dolorum.\",\n      \"status\": 200\n   }'")
 		}
@@ -44,12 +47,15 @@ func BuildArchivePayload(archiverArchiveBody string) (*archiver.ArchivePayload, 
 
 // BuildReadPayload builds the payload for the archiver read endpoint from CLI
 // flags.
-func BuildReadPayload(archiverReadID string) (*archiver.ReadPayload, error) {
+func BuildReadPayload(archiverReadID *string) (*archiver.ReadPayload, error) {
 	var err error
 	var id int
 	{
+		if archiverReadID == nil {
+			return nil, fmt.Errorf("missing required flag --id")
+		}
 		var v int64
-		v, err = strconv.ParseInt(archiverReadID, 10, strconv.IntSize)
+		v, err = strconv.ParseInt(*archiverReadID, 10, strconv.IntSize)
 		id = int(v)
 		if err != nil {
 			return nil, fmt.Errorf("invalid value for id, must be INT")

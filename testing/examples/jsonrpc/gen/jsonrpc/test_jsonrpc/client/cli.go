@@ -17,11 +17,14 @@ import (
 
 // BuildJsonrpcNoStreamPayload builds the payload for the test-jsonrpc
 // jsonrpc_no_stream endpoint from CLI flags.
-func BuildJsonrpcNoStreamPayload(testJsonrpcJsonrpcNoStreamBody string) (*testjsonrpc.JsonrpcNoStreamPayload, error) {
+func BuildJsonrpcNoStreamPayload(testJsonrpcJsonrpcNoStreamBody *string) (*testjsonrpc.JsonrpcNoStreamPayload, error) {
 	var err error
 	var body JsonrpcNoStreamRequestBody
 	{
-		err = json.Unmarshal([]byte(testJsonrpcJsonrpcNoStreamBody), &body)
+		if testJsonrpcJsonrpcNoStreamBody == nil {
+			return nil, fmt.Errorf("missing required flag --body")
+		}
+		err = json.Unmarshal([]byte(*testJsonrpcJsonrpcNoStreamBody), &body)
 		if err != nil {
 			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Enim eligendi ut.\"\n   }'")
 		}
@@ -35,11 +38,14 @@ func BuildJsonrpcNoStreamPayload(testJsonrpcJsonrpcNoStreamBody string) (*testjs
 
 // BuildJsonrpcNoStreamErrorPayload builds the payload for the test-jsonrpc
 // jsonrpc_no_stream_error endpoint from CLI flags.
-func BuildJsonrpcNoStreamErrorPayload(testJsonrpcJsonrpcNoStreamErrorBody string) (*testjsonrpc.JsonrpcNoStreamErrorPayload, error) {
+func BuildJsonrpcNoStreamErrorPayload(testJsonrpcJsonrpcNoStreamErrorBody *string) (*testjsonrpc.JsonrpcNoStreamErrorPayload, error) {
 	var err error
 	var body JsonrpcNoStreamErrorRequestBody
 	{
-		err = json.Unmarshal([]byte(testJsonrpcJsonrpcNoStreamErrorBody), &body)
+		if testJsonrpcJsonrpcNoStreamErrorBody == nil {
+			return nil, fmt.Errorf("missing required flag --body")
+		}
+		err = json.Unmarshal([]byte(*testJsonrpcJsonrpcNoStreamErrorBody), &body)
 		if err != nil {
 			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Voluptatem fuga.\"\n   }'")
 		}

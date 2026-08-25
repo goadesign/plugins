@@ -38,12 +38,13 @@ func (c *Client) BuildJsonrpcNoStreamRequest(ctx context.Context, v any) (*http.
 }
 
 // EncodeJsonrpcNoStreamRequest returns an encoder for requests sent to the
-// test-jsonrpc jsonrpc_no_stream server.
-func EncodeJsonrpcNoStreamRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, any) error {
-	return func(req *http.Request, v any) error {
+// test-jsonrpc service jsonrpc_no_stream JSON-RPC method. The encoder returns
+// the request ID written into the JSON-RPC message.
+func EncodeJsonrpcNoStreamRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, any) (string, error) {
+	return func(req *http.Request, v any) (string, error) {
 		p, ok := v.(*testjsonrpc.JsonrpcNoStreamPayload)
 		if !ok {
-			return goahttp.ErrInvalidType("test-jsonrpc", "jsonrpc_no_stream", "*testjsonrpc.JsonrpcNoStreamPayload", v)
+			return "", goahttp.ErrInvalidType("test-jsonrpc", "jsonrpc_no_stream", "*testjsonrpc.JsonrpcNoStreamPayload", v)
 		}
 		b := NewJsonrpcNoStreamRequestBody(p)
 		body := &jsonrpc.Request{
@@ -51,21 +52,21 @@ func EncodeJsonrpcNoStreamRequest(encoder func(*http.Request) goahttp.Encoder) f
 			Method:  "jsonrpc_no_stream",
 			Params:  b,
 		}
-		// No ID field in payload - always send as a request with generated ID
-		id := uuid.New().String()
-		body.ID = id
+		requestID := uuid.New().String()
+		body.ID = requestID
 		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("test-jsonrpc", "jsonrpc_no_stream", err)
+			return "", goahttp.ErrEncodingError("test-jsonrpc", "jsonrpc_no_stream", err)
 		}
-		return nil
+		return requestID, nil
 	}
 }
 
 // DecodeJsonrpcNoStreamResponse returns a decoder for responses returned by
-// the test-jsonrpc service jsonrpc_no_stream JSON-RPC method. restoreBody
-// controls whether the response body should be restored after having been read.
-func DecodeJsonrpcNoStreamResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (result any, decodeErr error) {
+// the test-jsonrpc service jsonrpc_no_stream JSON-RPC method. The decoder
+// rejects responses that do not repeat requestID. restoreBody controls whether
+// the response body should be restored after having been read.
+func DecodeJsonrpcNoStreamResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response, string) (any, error) {
+	return func(resp *http.Response, requestID string) (result any, decodeErr error) {
 		responseBody := resp.Body
 		if restoreBody {
 			b, readErr := io.ReadAll(responseBody)
@@ -97,12 +98,12 @@ func DecodeJsonrpcNoStreamResponse(decoder func(*http.Response) goahttp.Decoder,
 		if err := decoder(resp).Decode(&jresp); err != nil {
 			return nil, goahttp.ErrDecodingError("test-jsonrpc", "jsonrpc_no_stream", err)
 		}
+		if err := jresp.Validate(requestID); err != nil {
+			return nil, goahttp.ErrInvalidResponse("test-jsonrpc", "jsonrpc_no_stream", resp.StatusCode, err.Error())
+		}
 
 		if jresp.Error != nil {
-			switch jresp.Error.Code {
-			default:
-				return nil, goahttp.ErrInvalidResponse("test-jsonrpc", "jsonrpc_no_stream", resp.StatusCode, string(jresp.Error.Data))
-			}
+			return nil, jresp.Error
 		}
 		resp.Body = io.NopCloser(bytes.NewBuffer(jresp.Result))
 		var (
@@ -139,12 +140,13 @@ func (c *Client) BuildJsonrpcNoStreamErrorRequest(ctx context.Context, v any) (*
 }
 
 // EncodeJsonrpcNoStreamErrorRequest returns an encoder for requests sent to
-// the test-jsonrpc jsonrpc_no_stream_error server.
-func EncodeJsonrpcNoStreamErrorRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, any) error {
-	return func(req *http.Request, v any) error {
+// the test-jsonrpc service jsonrpc_no_stream_error JSON-RPC method. The
+// encoder returns the request ID written into the JSON-RPC message.
+func EncodeJsonrpcNoStreamErrorRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, any) (string, error) {
+	return func(req *http.Request, v any) (string, error) {
 		p, ok := v.(*testjsonrpc.JsonrpcNoStreamErrorPayload)
 		if !ok {
-			return goahttp.ErrInvalidType("test-jsonrpc", "jsonrpc_no_stream_error", "*testjsonrpc.JsonrpcNoStreamErrorPayload", v)
+			return "", goahttp.ErrInvalidType("test-jsonrpc", "jsonrpc_no_stream_error", "*testjsonrpc.JsonrpcNoStreamErrorPayload", v)
 		}
 		b := NewJsonrpcNoStreamErrorRequestBody(p)
 		body := &jsonrpc.Request{
@@ -152,22 +154,21 @@ func EncodeJsonrpcNoStreamErrorRequest(encoder func(*http.Request) goahttp.Encod
 			Method:  "jsonrpc_no_stream_error",
 			Params:  b,
 		}
-		// No ID field in payload - always send as a request with generated ID
-		id := uuid.New().String()
-		body.ID = id
+		requestID := uuid.New().String()
+		body.ID = requestID
 		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("test-jsonrpc", "jsonrpc_no_stream_error", err)
+			return "", goahttp.ErrEncodingError("test-jsonrpc", "jsonrpc_no_stream_error", err)
 		}
-		return nil
+		return requestID, nil
 	}
 }
 
 // DecodeJsonrpcNoStreamErrorResponse returns a decoder for responses returned
-// by the test-jsonrpc service jsonrpc_no_stream_error JSON-RPC method.
-// restoreBody controls whether the response body should be restored after
-// having been read.
-func DecodeJsonrpcNoStreamErrorResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (result any, decodeErr error) {
+// by the test-jsonrpc service jsonrpc_no_stream_error JSON-RPC method. The
+// decoder rejects responses that do not repeat requestID. restoreBody controls
+// whether the response body should be restored after having been read.
+func DecodeJsonrpcNoStreamErrorResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response, string) (any, error) {
+	return func(resp *http.Response, requestID string) (result any, decodeErr error) {
 		responseBody := resp.Body
 		if restoreBody {
 			b, readErr := io.ReadAll(responseBody)
@@ -199,12 +200,12 @@ func DecodeJsonrpcNoStreamErrorResponse(decoder func(*http.Response) goahttp.Dec
 		if err := decoder(resp).Decode(&jresp); err != nil {
 			return nil, goahttp.ErrDecodingError("test-jsonrpc", "jsonrpc_no_stream_error", err)
 		}
+		if err := jresp.Validate(requestID); err != nil {
+			return nil, goahttp.ErrInvalidResponse("test-jsonrpc", "jsonrpc_no_stream_error", resp.StatusCode, err.Error())
+		}
 
 		if jresp.Error != nil {
-			switch jresp.Error.Code {
-			default:
-				return nil, goahttp.ErrInvalidResponse("test-jsonrpc", "jsonrpc_no_stream_error", resp.StatusCode, string(jresp.Error.Data))
-			}
+			return nil, jresp.Error
 		}
 		resp.Body = io.NopCloser(bytes.NewBuffer(jresp.Result))
 		var (

@@ -9,17 +9,22 @@
 package client
 
 import (
+	"fmt"
+
 	goa "goa.design/goa/v3/pkg"
 	fetcher "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/fetcher"
 )
 
 // BuildFetchPayload builds the payload for the fetcher fetch endpoint from CLI
 // flags.
-func BuildFetchPayload(fetcherFetchURL string) (*fetcher.FetchPayload, error) {
+func BuildFetchPayload(fetcherFetchURL *string) (*fetcher.FetchPayload, error) {
 	var err error
 	var url_ string
 	{
-		url_ = fetcherFetchURL
+		if fetcherFetchURL == nil {
+			return nil, fmt.Errorf("missing required flag --url")
+		}
+		url_ = *fetcherFetchURL
 		err = goa.MergeErrors(err, goa.ValidateFormat("url", url_, goa.FormatURI))
 		if err != nil {
 			return nil, err

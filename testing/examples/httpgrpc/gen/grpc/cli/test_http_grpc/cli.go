@@ -33,6 +33,25 @@ func UsageExamples() string {
 		""
 }
 
+// cliStringFlag keeps an omitted command-line flag distinct from an explicitly empty flag.
+type cliStringFlag struct {
+	value *string
+}
+
+// String returns the flag text shown by the standard flag package.
+func (f *cliStringFlag) String() string {
+	if f.value == nil {
+		return ""
+	}
+	return *f.value
+}
+
+// Set records that the user supplied the flag, even when value is empty.
+func (f *cliStringFlag) Set(value string) error {
+	f.value = &value
+	return nil
+}
+
 // ParseEndpoint returns the endpoint and payload as specified on the command
 // line.
 func ParseEndpoint(
@@ -43,20 +62,20 @@ func ParseEndpoint(
 		testHTTPGrpcFlags = flag.NewFlagSet("test-http-grpc", flag.ContinueOnError)
 
 		testHTTPGrpcGrpcNoStreamFlags       = flag.NewFlagSet("grpc-no-stream", flag.ExitOnError)
-		testHTTPGrpcGrpcNoStreamMessageFlag = testHTTPGrpcGrpcNoStreamFlags.String("message", "", "")
+		testHTTPGrpcGrpcNoStreamMessageFlag = new(cliStringFlag)
 
 		testHTTPGrpcGrpcNoStreamErrorDivByZeroFlags       = flag.NewFlagSet("grpc-no-stream-error-div-by-zero", flag.ExitOnError)
-		testHTTPGrpcGrpcNoStreamErrorDivByZeroMessageFlag = testHTTPGrpcGrpcNoStreamErrorDivByZeroFlags.String("message", "", "")
+		testHTTPGrpcGrpcNoStreamErrorDivByZeroMessageFlag = new(cliStringFlag)
 
 		testHTTPGrpcGrpcServerStreamFlags       = flag.NewFlagSet("grpc-server-stream", flag.ExitOnError)
-		testHTTPGrpcGrpcServerStreamMessageFlag = testHTTPGrpcGrpcServerStreamFlags.String("message", "", "")
+		testHTTPGrpcGrpcServerStreamMessageFlag = new(cliStringFlag)
 
 		testHTTPGrpcGrpcClientStreamFlags = flag.NewFlagSet("grpc-client-stream", flag.ExitOnError)
 
 		testHTTPGrpcGrpcBidiStreamFlags = flag.NewFlagSet("grpc-bidi-stream", flag.ExitOnError)
 
 		testHTTPGrpcMixedNoStreamFlags       = flag.NewFlagSet("mixed-no-stream", flag.ExitOnError)
-		testHTTPGrpcMixedNoStreamMessageFlag = testHTTPGrpcMixedNoStreamFlags.String("message", "", "")
+		testHTTPGrpcMixedNoStreamMessageFlag = new(cliStringFlag)
 
 		testHTTPGrpcMixedServerStreamFlags = flag.NewFlagSet("mixed-server-stream", flag.ExitOnError)
 
@@ -64,6 +83,11 @@ func ParseEndpoint(
 
 		testHTTPGrpcMixedBidiStreamWsGrpcFlags = flag.NewFlagSet("mixed-bidi-stream-ws-grpc", flag.ExitOnError)
 	)
+	testHTTPGrpcGrpcNoStreamFlags.Var(testHTTPGrpcGrpcNoStreamMessageFlag, "message", "")
+	testHTTPGrpcGrpcNoStreamErrorDivByZeroFlags.Var(testHTTPGrpcGrpcNoStreamErrorDivByZeroMessageFlag, "message", "")
+	testHTTPGrpcGrpcServerStreamFlags.Var(testHTTPGrpcGrpcServerStreamMessageFlag, "message", "")
+	testHTTPGrpcMixedNoStreamFlags.Var(testHTTPGrpcMixedNoStreamMessageFlag, "message", "")
+
 	testHTTPGrpcFlags.Usage = testHTTPGrpcUsage
 	testHTTPGrpcGrpcNoStreamFlags.Usage = testHTTPGrpcGrpcNoStreamUsage
 	testHTTPGrpcGrpcNoStreamErrorDivByZeroFlags.Usage = testHTTPGrpcGrpcNoStreamErrorDivByZeroUsage
@@ -163,20 +187,20 @@ func ParseEndpoint(
 			switch epn {
 			case "grpc-no-stream":
 				endpoint = c.GrpcNoStream()
-				data, err = testhttpgrpcc.BuildGrpcNoStreamPayload(*testHTTPGrpcGrpcNoStreamMessageFlag)
+				data, err = testhttpgrpcc.BuildGrpcNoStreamPayload(testHTTPGrpcGrpcNoStreamMessageFlag.value)
 			case "grpc-no-stream-error-div-by-zero":
 				endpoint = c.GrpcNoStreamErrorDivByZero()
-				data, err = testhttpgrpcc.BuildGrpcNoStreamErrorDivByZeroPayload(*testHTTPGrpcGrpcNoStreamErrorDivByZeroMessageFlag)
+				data, err = testhttpgrpcc.BuildGrpcNoStreamErrorDivByZeroPayload(testHTTPGrpcGrpcNoStreamErrorDivByZeroMessageFlag.value)
 			case "grpc-server-stream":
 				endpoint = c.GrpcServerStream()
-				data, err = testhttpgrpcc.BuildGrpcServerStreamPayload(*testHTTPGrpcGrpcServerStreamMessageFlag)
+				data, err = testhttpgrpcc.BuildGrpcServerStreamPayload(testHTTPGrpcGrpcServerStreamMessageFlag.value)
 			case "grpc-client-stream":
 				endpoint = c.GrpcClientStream()
 			case "grpc-bidi-stream":
 				endpoint = c.GrpcBidiStream()
 			case "mixed-no-stream":
 				endpoint = c.MixedNoStream()
-				data, err = testhttpgrpcc.BuildMixedNoStreamPayload(*testHTTPGrpcMixedNoStreamMessageFlag)
+				data, err = testhttpgrpcc.BuildMixedNoStreamPayload(testHTTPGrpcMixedNoStreamMessageFlag.value)
 			case "mixed-server-stream":
 				endpoint = c.MixedServerStream()
 			case "mixed-client-stream-ws-grpc":

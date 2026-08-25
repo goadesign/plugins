@@ -18,12 +18,12 @@ import (
 
 // BuildGrpcNoStreamPayload builds the payload for the test-http-grpc
 // grpc_no_stream endpoint from CLI flags.
-func BuildGrpcNoStreamPayload(testHTTPGrpcGrpcNoStreamMessage string) (*testhttpgrpc.GrpcNoStreamPayload, error) {
+func BuildGrpcNoStreamPayload(testHTTPGrpcGrpcNoStreamMessage *string) (*testhttpgrpc.GrpcNoStreamPayload, error) {
 	var err error
 	var message test_http_grpcpb.GrpcNoStreamRequest
 	{
-		if testHTTPGrpcGrpcNoStreamMessage != "" {
-			err = protojson.Unmarshal([]byte(testHTTPGrpcGrpcNoStreamMessage), &message)
+		if testHTTPGrpcGrpcNoStreamMessage != nil {
+			err = protojson.Unmarshal([]byte(*testHTTPGrpcGrpcNoStreamMessage), &message)
 			if err != nil {
 				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Ratione earum et ut temporibus tempora praesentium.\"\n   }'")
 			}
@@ -42,12 +42,12 @@ func BuildGrpcNoStreamPayload(testHTTPGrpcGrpcNoStreamMessage string) (*testhttp
 
 // BuildGrpcNoStreamErrorDivByZeroPayload builds the payload for the
 // test-http-grpc grpc_no_stream_error_div_by_zero endpoint from CLI flags.
-func BuildGrpcNoStreamErrorDivByZeroPayload(testHTTPGrpcGrpcNoStreamErrorDivByZeroMessage string) (*testhttpgrpc.GrpcNoStreamErrorDivByZeroPayload, error) {
+func BuildGrpcNoStreamErrorDivByZeroPayload(testHTTPGrpcGrpcNoStreamErrorDivByZeroMessage *string) (*testhttpgrpc.GrpcNoStreamErrorDivByZeroPayload, error) {
 	var err error
 	var message test_http_grpcpb.GrpcNoStreamErrorDivByZeroRequest
 	{
-		if testHTTPGrpcGrpcNoStreamErrorDivByZeroMessage != "" {
-			err = protojson.Unmarshal([]byte(testHTTPGrpcGrpcNoStreamErrorDivByZeroMessage), &message)
+		if testHTTPGrpcGrpcNoStreamErrorDivByZeroMessage != nil {
+			err = protojson.Unmarshal([]byte(*testHTTPGrpcGrpcNoStreamErrorDivByZeroMessage), &message)
 			if err != nil {
 				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"dividend\": 238.4063147460167,\n      \"divisor\": -73.4004594816786\n   }'")
 			}
@@ -67,12 +67,12 @@ func BuildGrpcNoStreamErrorDivByZeroPayload(testHTTPGrpcGrpcNoStreamErrorDivByZe
 
 // BuildGrpcServerStreamPayload builds the payload for the test-http-grpc
 // grpc_server_stream endpoint from CLI flags.
-func BuildGrpcServerStreamPayload(testHTTPGrpcGrpcServerStreamMessage string) (*testhttpgrpc.GrpcServerStreamPayload, error) {
+func BuildGrpcServerStreamPayload(testHTTPGrpcGrpcServerStreamMessage *string) (*testhttpgrpc.GrpcServerStreamPayload, error) {
 	var err error
 	var message test_http_grpcpb.GrpcServerStreamRequest
 	{
-		if testHTTPGrpcGrpcServerStreamMessage != "" {
-			err = protojson.Unmarshal([]byte(testHTTPGrpcGrpcServerStreamMessage), &message)
+		if testHTTPGrpcGrpcServerStreamMessage != nil {
+			err = protojson.Unmarshal([]byte(*testHTTPGrpcGrpcServerStreamMessage), &message)
 			if err != nil {
 				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"from\": 436641374502740749\n   }'")
 			}
@@ -91,12 +91,12 @@ func BuildGrpcServerStreamPayload(testHTTPGrpcGrpcServerStreamMessage string) (*
 
 // BuildMixedNoStreamPayload builds the payload for the test-http-grpc
 // mixed_no_stream endpoint from CLI flags.
-func BuildMixedNoStreamPayload(testHTTPGrpcMixedNoStreamMessage string) (*testhttpgrpc.MixedNoStreamPayload, error) {
+func BuildMixedNoStreamPayload(testHTTPGrpcMixedNoStreamMessage *string) (*testhttpgrpc.MixedNoStreamPayload, error) {
 	var err error
 	var message test_http_grpcpb.MixedNoStreamRequest
 	{
-		if testHTTPGrpcMixedNoStreamMessage != "" {
-			err = protojson.Unmarshal([]byte(testHTTPGrpcMixedNoStreamMessage), &message)
+		if testHTTPGrpcMixedNoStreamMessage != nil {
+			err = protojson.Unmarshal([]byte(*testHTTPGrpcMixedNoStreamMessage), &message)
 			if err != nil {
 				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Ut non id provident tempora suscipit quo.\"\n   }'")
 			}

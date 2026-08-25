@@ -34,6 +34,25 @@ func UsageExamples() string {
 		""
 }
 
+// cliStringFlag keeps an omitted command-line flag distinct from an explicitly empty flag.
+type cliStringFlag struct {
+	value *string
+}
+
+// String returns the flag text shown by the standard flag package.
+func (f *cliStringFlag) String() string {
+	if f.value == nil {
+		return ""
+	}
+	return *f.value
+}
+
+// Set records that the user supplied the flag, even when value is empty.
+func (f *cliStringFlag) Set(value string) error {
+	f.value = &value
+	return nil
+}
+
 // ParseEndpoint returns the endpoint and payload as specified on the command
 // line.
 func ParseEndpoint(
@@ -49,19 +68,24 @@ func ParseEndpoint(
 		calculatorFlags = flag.NewFlagSet("calculator", flag.ContinueOnError)
 
 		calculatorAddFlags    = flag.NewFlagSet("add", flag.ExitOnError)
-		calculatorAddBodyFlag = calculatorAddFlags.String("body", "REQUIRED", "")
+		calculatorAddBodyFlag = new(cliStringFlag)
 
 		calculatorDivideFlags    = flag.NewFlagSet("divide", flag.ExitOnError)
-		calculatorDivideBodyFlag = calculatorDivideFlags.String("body", "REQUIRED", "")
+		calculatorDivideBodyFlag = new(cliStringFlag)
 
 		calculatorFactorialFlags    = flag.NewFlagSet("factorial", flag.ExitOnError)
-		calculatorFactorialBodyFlag = calculatorFactorialFlags.String("body", "REQUIRED", "")
+		calculatorFactorialBodyFlag = new(cliStringFlag)
 
 		calculatorStatisticsFlags    = flag.NewFlagSet("statistics", flag.ExitOnError)
-		calculatorStatisticsBodyFlag = calculatorStatisticsFlags.String("body", "REQUIRED", "")
+		calculatorStatisticsBodyFlag = new(cliStringFlag)
 
 		calculatorBatchAddFlags = flag.NewFlagSet("batch-add", flag.ExitOnError)
 	)
+	calculatorAddFlags.Var(calculatorAddBodyFlag, "body", "")
+	calculatorDivideFlags.Var(calculatorDivideBodyFlag, "body", "")
+	calculatorFactorialFlags.Var(calculatorFactorialBodyFlag, "body", "")
+	calculatorStatisticsFlags.Var(calculatorStatisticsBodyFlag, "body", "")
+
 	calculatorFlags.Usage = calculatorUsage
 	calculatorAddFlags.Usage = calculatorAddUsage
 	calculatorDivideFlags.Usage = calculatorDivideUsage
@@ -145,16 +169,16 @@ func ParseEndpoint(
 			switch epn {
 			case "add":
 				endpoint = c.Add()
-				data, err = calculatorc.BuildAddPayload(*calculatorAddBodyFlag)
+				data, err = calculatorc.BuildAddPayload(calculatorAddBodyFlag.value)
 			case "divide":
 				endpoint = c.Divide()
-				data, err = calculatorc.BuildDividePayload(*calculatorDivideBodyFlag)
+				data, err = calculatorc.BuildDividePayload(calculatorDivideBodyFlag.value)
 			case "factorial":
 				endpoint = c.Factorial()
-				data, err = calculatorc.BuildFactorialPayload(*calculatorFactorialBodyFlag)
+				data, err = calculatorc.BuildFactorialPayload(calculatorFactorialBodyFlag.value)
 			case "statistics":
 				endpoint = c.Statistics()
-				data, err = calculatorc.BuildStatisticsPayload(*calculatorStatisticsBodyFlag)
+				data, err = calculatorc.BuildStatisticsPayload(calculatorStatisticsBodyFlag.value)
 			case "batch-add":
 				endpoint = c.BatchAdd()
 			}

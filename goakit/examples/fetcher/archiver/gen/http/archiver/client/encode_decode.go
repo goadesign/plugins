@@ -85,6 +85,10 @@ func DecodeArchiveResponse(decoder func(*http.Response) goahttp.Decoder, restore
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("archiver", "archive", err)
 			}
+			err = ValidateArchiveResponseBody(&body)
+			if err != nil {
+				return nil, goahttp.ErrValidationError("archiver", "archive", err)
+			}
 			p := NewArchiveMediaViewOK(&body)
 			view := "default"
 			vres := &archiverviews.ArchiveMedia{Projected: p, View: view}
@@ -164,6 +168,10 @@ func DecodeReadResponse(decoder func(*http.Response) goahttp.Decoder, restoreBod
 			err = decoder(resp).Decode(&body)
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("archiver", "read", err)
+			}
+			err = ValidateReadResponseBody(&body)
+			if err != nil {
+				return nil, goahttp.ErrValidationError("archiver", "read", err)
 			}
 			p := NewReadArchiveMediaOK(&body)
 			view := "default"

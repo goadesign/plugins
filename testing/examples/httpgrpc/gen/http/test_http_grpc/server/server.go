@@ -272,6 +272,10 @@ func NewHTTPServerStreamSseHandler(
 			},
 		}
 		_, err = endpoint(ctx, v)
+		if err == nil {
+			stream := v.Stream.(*HTTPServerStreamSseServerStream)
+			err = stream.finish()
+		}
 		if err != nil {
 			stream := v.Stream.(*HTTPServerStreamSseServerStream)
 			if stream.attempted {
@@ -580,6 +584,10 @@ func NewMixedServerStreamHandler(
 			},
 		}
 		_, err = endpoint(ctx, v)
+		if err == nil {
+			stream := v.Stream.(*MixedServerStreamServerStream)
+			err = stream.finish()
+		}
 		if err != nil {
 			stream := v.Stream.(*MixedServerStreamServerStream)
 			if stream.attempted {
