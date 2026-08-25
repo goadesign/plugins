@@ -23,7 +23,6 @@ import (
 )
 
 type (
-
 	// noOutputResponseWriter accepts notification output without storing or
 	// sending it.
 	noOutputResponseWriter struct {
@@ -93,6 +92,13 @@ func New(
 
 // Service returns the name of the service served.
 func (s *Server) Service() string { return "test-jsonrpc" }
+
+// reportRejectedNotification reports a notification sent to a request-only
+// method without allowing the error handler to write a response.
+func (s *Server) reportRejectedNotification(ctx context.Context, req *jsonrpc.RawRequest) {
+	outputWriter := &noOutputResponseWriter{header: make(http.Header)}
+	s.errhandler(ctx, outputWriter, fmt.Errorf("JSON-RPC notification cannot call request method %q", req.Method))
+}
 
 // Use wraps the server handlers with the given middleware.
 func (s *Server) Use(m func(http.Handler) http.Handler) {
@@ -215,10 +221,26 @@ func (s *Server) processRequest(ctx context.Context, r *http.Request, req *jsonr
 
 	switch req.Method {
 	case "jsonrpc_no_stream":
+		if !req.HasID {
+			s.reportRejectedNotification(ctx, req)
+			return
+		}
+		if req.ID == nil {
+			s.encodeJSONRPCError(ctx, w, req, jsonrpc.InvalidRequest, "Invalid request", nil)
+			return
+		}
 		if err := s.JsonrpcNoStream(ctx, r, req, w); err != nil {
 			s.errhandler(ctx, w, fmt.Errorf("handler error for %s: %w", "jsonrpc_no_stream", err))
 		}
 	case "jsonrpc_no_stream_error":
+		if !req.HasID {
+			s.reportRejectedNotification(ctx, req)
+			return
+		}
+		if req.ID == nil {
+			s.encodeJSONRPCError(ctx, w, req, jsonrpc.InvalidRequest, "Invalid request", nil)
+			return
+		}
 		if err := s.JsonrpcNoStreamError(ctx, r, req, w); err != nil {
 			s.errhandler(ctx, w, fmt.Errorf("handler error for %s: %w", "jsonrpc_no_stream_error", err))
 		}
@@ -288,32 +310,14 @@ func NewJsonrpcNoStreamHandler(
 	return func(ctx context.Context, r *http.Request, req *jsonrpc.RawRequest, w http.ResponseWriter) error {
 		ctx = context.WithValue(ctx, goa.MethodKey, "jsonrpc_no_stream")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "test-jsonrpc")
-		outputWriter := w
-		if !req.HasID {
-			// A notification runs the same service and error reporting code without
-			// sending a response.
-			outputWriter = &noOutputResponseWriter{header: make(http.Header)}
-		}
 		params, err := decodeParams(r, req)
 		if err != nil {
-			if req.HasID {
-				encodeJSONRPCError(ctx, w, req, jsonrpc.InvalidParams, err.Error(), nil, encoder, errhandler)
-			} else {
-				errhandler(ctx, outputWriter, fmt.Errorf("failed to decode parameters: %w", err))
-			}
+			encodeJSONRPCError(ctx, w, req, jsonrpc.InvalidParams, err.Error(), nil, encoder, errhandler)
 			return nil
 		}
 		res, err := endpoint(ctx, params)
 		if err != nil {
-			if req.HasID {
-				encodeJSONRPCError(ctx, w, req, jsonrpc.InternalError, err.Error(), nil, encoder, errhandler)
-			} else {
-				errhandler(ctx, outputWriter, fmt.Errorf("endpoint error: %w", err))
-			}
-			return nil
-		}
-		if !req.HasID {
-			// A notification has no ID field and receives no response.
+			encodeJSONRPCError(ctx, w, req, jsonrpc.InternalError, err.Error(), nil, encoder, errhandler)
 			return nil
 		}
 
@@ -341,32 +345,14 @@ func NewJsonrpcNoStreamErrorHandler(
 	return func(ctx context.Context, r *http.Request, req *jsonrpc.RawRequest, w http.ResponseWriter) error {
 		ctx = context.WithValue(ctx, goa.MethodKey, "jsonrpc_no_stream_error")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "test-jsonrpc")
-		outputWriter := w
-		if !req.HasID {
-			// A notification runs the same service and error reporting code without
-			// sending a response.
-			outputWriter = &noOutputResponseWriter{header: make(http.Header)}
-		}
 		params, err := decodeParams(r, req)
 		if err != nil {
-			if req.HasID {
-				encodeJSONRPCError(ctx, w, req, jsonrpc.InvalidParams, err.Error(), nil, encoder, errhandler)
-			} else {
-				errhandler(ctx, outputWriter, fmt.Errorf("failed to decode parameters: %w", err))
-			}
+			encodeJSONRPCError(ctx, w, req, jsonrpc.InvalidParams, err.Error(), nil, encoder, errhandler)
 			return nil
 		}
 		res, err := endpoint(ctx, params)
 		if err != nil {
-			if req.HasID {
-				encodeJSONRPCError(ctx, w, req, jsonrpc.InternalError, err.Error(), nil, encoder, errhandler)
-			} else {
-				errhandler(ctx, outputWriter, fmt.Errorf("endpoint error: %w", err))
-			}
-			return nil
-		}
-		if !req.HasID {
-			// A notification has no ID field and receives no response.
+			encodeJSONRPCError(ctx, w, req, jsonrpc.InternalError, err.Error(), nil, encoder, errhandler)
 			return nil
 		}
 
