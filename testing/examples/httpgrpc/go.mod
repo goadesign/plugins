@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/gorilla/websocket v1.5.3
 	goa.design/clue v1.2.6
-	goa.design/goa/v3 v3.30.1-0.20260825202211-245bb1440866
+	goa.design/goa/v3 v3.30.1-0.20260825203937-95933f068ade
 	goa.design/plugins/v3 v3.0.0
 	google.golang.org/grpc v1.83.1
 	google.golang.org/protobuf v1.36.12
