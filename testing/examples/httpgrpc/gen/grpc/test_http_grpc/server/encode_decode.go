@@ -39,6 +39,9 @@ func DecodeGrpcNoStreamRequest(ctx context.Context, v any, md metadata.MD) (any,
 		if message, ok = v.(*test_http_grpcpb.GrpcNoStreamRequest); !ok {
 			return nil, goagrpc.ErrInvalidType("test-http-grpc", "grpc_no_stream", "*test_http_grpcpb.GrpcNoStreamRequest", v)
 		}
+		if err := ValidateGrpcNoStreamRequest(message); err != nil {
+			return nil, err
+		}
 	}
 	var payload *testhttpgrpc.GrpcNoStreamPayload
 	{
@@ -102,6 +105,9 @@ func DecodeGrpcServerStreamRequest(ctx context.Context, v any, md metadata.MD) (
 		if message, ok = v.(*test_http_grpcpb.GrpcServerStreamRequest); !ok {
 			return nil, goagrpc.ErrInvalidType("test-http-grpc", "grpc_server_stream", "*test_http_grpcpb.GrpcServerStreamRequest", v)
 		}
+		if err := ValidateGrpcServerStreamRequest(message); err != nil {
+			return nil, err
+		}
 	}
 	var payload *testhttpgrpc.GrpcServerStreamPayload
 	{
@@ -153,6 +159,9 @@ func DecodeMixedNoStreamRequest(ctx context.Context, v any, md metadata.MD) (any
 	{
 		if message, ok = v.(*test_http_grpcpb.MixedNoStreamRequest); !ok {
 			return nil, goagrpc.ErrInvalidType("test-http-grpc", "mixed_no_stream", "*test_http_grpcpb.MixedNoStreamRequest", v)
+		}
+		if err := ValidateMixedNoStreamRequest(message); err != nil {
+			return nil, err
 		}
 	}
 	var payload *testhttpgrpc.MixedNoStreamPayload

@@ -43,19 +43,8 @@ type Validators struct {
 {{ printf "Valid transport values for scenarios based on service configuration." | comment }}
 {{ printf "Methods may support different combinations of these transports." | comment }}
 var ValidTransports = []string{
-	"auto",     // Use default/first available
-	{{- if .HasHTTP }}
-	"http",     // HTTP plain (non-streaming methods only)
-	"http-sse", // HTTP Server-Sent Events (server streaming)
-	"http-ws",  // HTTP WebSocket (client/server/bidi streaming)
-	{{- end }}
-	{{- if .HasGRPC }}
-	"grpc",     // gRPC (all streaming modes)
-	{{- end }}
-	{{- if .HasJSONRPC }}
-	"jsonrpc",     // JSON-RPC over HTTP (non-streaming)
-	"jsonrpc-sse", // JSON-RPC over SSE (server streaming)
-	"jsonrpc-ws",  // JSON-RPC over WebSocket (streaming only)
+	{{- range .ValidTransports }}
+	"{{ .Name }}", // {{ .Description }}
 	{{- end }}
 }
 

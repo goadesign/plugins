@@ -1,3 +1,5 @@
+// This file renders valid payload builders and validation-edge examples for
+// generated service tests.
 package codegen
 
 import (
@@ -23,15 +25,16 @@ func generateTestData(genpkg string, svcData *service.Data, root *expr.RootExpr,
 		return nil
 	}
 
-	path := filepath.Join(testingPath(genpkg, svc), "testdata.go")
+	path := filepath.Join(testingPath(svcData), "testdata.go")
 
 	specs := []*codegen.ImportSpec{
 		{Path: "encoding/json"},
-		{Path: filepath.Join(genpkg, codegen.SnakeCase(svc.Name)), Name: svcData.PkgName},
+		{Path: filepath.Join(genpkg, svcData.PathName), Name: svcData.PkgName},
 	}
 
 	// Build per-method test data matching the template expectations
 	methods := make([]*methodTestData, 0, len(svc.Methods))
+	examples := expr.NewExampleGenerator(root.API.RandomizerFactory)
 	for _, m := range svc.Methods {
 		mtd := &methodTestData{
 			Name:      m.Name,
@@ -40,11 +43,12 @@ func generateTestData(genpkg string, svcData *service.Data, root *expr.RootExpr,
 
 		// Payload info (non-streaming)
 		if m.Payload != nil && m.Payload.Type != expr.Empty {
+			payloadExamples := examples.At(expr.MethodPayloadExampleIdentity(m))
 			ref := svcData.Scope.GoFullTypeRef(m.Payload, svcData.PkgName)
 			mtd.Payload = true
 			mtd.PayloadRef = ref
 			// Generate JSON example init if available
-			if ex := m.Payload.Example(root.API.ExampleGenerator); ex != nil {
+			if ex := m.Payload.Example(payloadExamples); ex != nil {
 				mtd.PayloadEx = true
 				if b, err := json.Marshal(ex); err == nil {
 					var buf bytes.Buffer
@@ -53,15 +57,16 @@ func generateTestData(genpkg string, svcData *service.Data, root *expr.RootExpr,
 				}
 			}
 			// Generate edge cases based on validation rules
-			mtd.EdgeCases = generateEdgeCases(m.Name, m.Payload, root.API.ExampleGenerator)
+			mtd.EdgeCases = generateEdgeCases(m.Name, m.Payload, payloadExamples)
 		}
 
 		// Streaming payload info
 		if m.StreamingPayload != nil && m.StreamingPayload.Type != expr.Empty {
+			streamingExamples := examples.At(expr.MethodStreamingPayloadExampleIdentity(m))
 			ref := svcData.Scope.GoFullTypeRef(m.StreamingPayload, svcData.PkgName)
 			mtd.Payload = true
 			mtd.PayloadRef = ref
-			if ex := m.StreamingPayload.Example(root.API.ExampleGenerator); ex != nil {
+			if ex := m.StreamingPayload.Example(streamingExamples); ex != nil {
 				mtd.PayloadEx = true
 				if b, err := json.Marshal(ex); err == nil {
 					var buf bytes.Buffer
@@ -71,7 +76,7 @@ func generateTestData(genpkg string, svcData *service.Data, root *expr.RootExpr,
 			}
 			// Generate edge cases for streaming payloads
 			if len(mtd.EdgeCases) == 0 {
-				mtd.EdgeCases = generateEdgeCases(m.Name, m.StreamingPayload, root.API.ExampleGenerator)
+				mtd.EdgeCases = generateEdgeCases(m.Name, m.StreamingPayload, streamingExamples)
 			}
 		}
 
@@ -87,7 +92,7 @@ func generateTestData(genpkg string, svcData *service.Data, root *expr.RootExpr,
 	}
 
 	sections := []*codegen.SectionTemplate{
-		codegen.Header(fmt.Sprintf("Test data generators for %s service", svc.Name), codegen.SnakeCase(svc.Name)+"test", specs),
+		codegen.Header(fmt.Sprintf("Test data generators for %s service", svc.Name), svcData.PathName+"test", specs),
 		{
 			Name:   "testdata-generators",
 			Source: testingTemplates.Read(testdataGeneratorsT),

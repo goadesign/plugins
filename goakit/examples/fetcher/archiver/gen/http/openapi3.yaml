@@ -22,7 +22,7 @@ paths:
                         schema:
                             $ref: '#/components/schemas/ArchivePayload'
                         example:
-                            body: Neque sunt.
+                            body: In nisi sit nihil totam dolorum.
                             status: 200
             responses:
                 "200":
@@ -32,7 +32,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/GoaArchive'
                             example:
-                                body: Rerum rerum aliquid dolores.
+                                body: Sint maiores.
                                 href: /archive/1
                                 status: 200
     /archive/{id}:
@@ -50,10 +50,10 @@ paths:
                   schema:
                     type: integer
                     description: ID of archive
-                    example: 1362141423305610375
+                    example: 4229100771459457146
                     format: int64
                     minimum: 0
-                  example: 1557694296985387844
+                  example: 4229100771459457146
             responses:
                 "200":
                     description: OK response.
@@ -62,7 +62,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/GoaArchive'
                             example:
-                                body: Sit placeat culpa labore eaque.
+                                body: Et enim.
                                 href: /archive/1
                                 status: 200
                 "400":
@@ -71,12 +71,26 @@ paths:
                         application/vnd.goa.error:
                             schema:
                                 $ref: '#/components/schemas/Error'
+                            example:
+                                fault: false
+                                id: 123abc
+                                message: parameter 'p' must be an integer
+                                name: bad_request
+                                temporary: false
+                                timeout: false
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/vnd.goa.error:
                             schema:
                                 $ref: '#/components/schemas/Error'
+                            example:
+                                fault: false
+                                id: 123abc
+                                message: parameter 'p' must be an integer
+                                name: not_found
+                                temporary: false
+                                timeout: false
     /health:
         get:
             tags:
@@ -91,8 +105,8 @@ paths:
                         text/plain:
                             schema:
                                 type: string
-                                example: Voluptatibus omnis sed est.
-                            example: Voluptatibus omnis sed est.
+                                example: Ut ipsa atque ad.
+                            example: Ut ipsa atque ad.
 components:
     schemas:
         ArchivePayload:
@@ -101,7 +115,7 @@ components:
                 body:
                     type: string
                     description: HTTP response body content
-                    example: Neque sunt.
+                    example: In nisi sit nihil totam dolorum.
                 status:
                     type: integer
                     description: HTTP status
@@ -110,7 +124,7 @@ components:
                     minimum: 0
             description: Request body for archive.
             example:
-                body: Neque sunt.
+                body: In nisi sit nihil totam dolorum.
                 status: 200
             required:
                 - status
@@ -121,7 +135,7 @@ components:
                 fault:
                     type: boolean
                     description: Is the error a server-side fault?
-                    example: true
+                    example: false
                 id:
                     type: string
                     description: ID is a unique identifier for this particular occurrence of the problem.
@@ -144,7 +158,7 @@ components:
                     example: false
             description: Error response result type
             example:
-                fault: true
+                fault: false
                 id: 123abc
                 message: parameter 'p' must be an integer
                 name: bad_request
@@ -163,7 +177,7 @@ components:
                 body:
                     type: string
                     description: HTTP response body content
-                    example: Consequatur nisi et rerum ipsum accusantium.
+                    example: Sint maiores.
                 href:
                     type: string
                     description: The archive resouce href
@@ -177,7 +191,7 @@ components:
                     minimum: 0
             description: Archive is an HTTP response archive
             example:
-                body: Consequatur nisi et rerum ipsum accusantium.
+                body: Sint maiores.
                 href: /archive/1
                 status: 200
             required:

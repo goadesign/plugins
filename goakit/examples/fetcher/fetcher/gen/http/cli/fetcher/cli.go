@@ -32,7 +32,7 @@ func UsageCommands() []string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + " " + "fetcher fetch --url \"http://pfeffer.biz/lucile\"" + "\n" +
+	return os.Args[0] + " " + "fetcher fetch --url \"http://deckow.org/eric_nolan\"" + "\n" +
 		os.Args[0] + " " + "health show" + "\n" +
 		""
 }
@@ -177,7 +177,7 @@ func fetcherFetchUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "fetcher fetch --url \"http://pfeffer.biz/lucile\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "fetcher fetch --url \"http://deckow.org/eric_nolan\"")
 }
 
 // healthUsage displays the usage of the health command and its subcommands.

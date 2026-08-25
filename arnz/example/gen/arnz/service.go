@@ -8,9 +8,7 @@
 
 package arnz
 
-import (
-	"context"
-)
+import "context"
 
 // Service is the Arnz service interface.
 type Service interface {

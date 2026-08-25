@@ -13,6 +13,7 @@ servers:
       variables:
         version:
             default: v1
+            description: API version
 paths:
     /add/{a}/{b}:
         get:
@@ -28,9 +29,9 @@ paths:
                   schema:
                     type: integer
                     description: Left operand
-                    example: 7101074584653383974
+                    example: 2760442282490901434
                     format: int64
-                  example: 2989948904695875606
+                  example: 2760442282490901434
                 - name: b
                   in: path
                   description: Right operand
@@ -38,9 +39,9 @@ paths:
                   schema:
                     type: integer
                     description: Right operand
-                    example: 5365422230106384248
+                    example: 8070273224127067687
                     format: int64
-                  example: 8103102529540563611
+                  example: 8070273224127067687
             responses:
                 "200":
                     description: OK response.
@@ -48,9 +49,9 @@ paths:
                         application/json:
                             schema:
                                 type: integer
-                                example: 6252541931587653406
+                                example: 7371373013862544951
                                 format: int64
-                            example: 6252541931587653406
+                            example: 7371373013862544951
     /swagger.json:
         get:
             tags:

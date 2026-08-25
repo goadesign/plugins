@@ -221,13 +221,13 @@ func (s *HTTPServerStreamSseStreamImpl) processEvent(eventData []byte) (event *t
 			continue
 		}
 		if bytes.HasPrefix(line, []byte("data:")) {
-			dataLines = append(dataLines, s.trimHeader(len("data:"), line))
+			dataLines = append(dataLines, s.trimHeader(line[len("data:"):]))
 			continue
 		}
 	}
 	if len(dataLines) > 0 {
 		dataContent := strings.Join(dataLines, "\n")
-		// Decode JSON into the struct pointer directly
+		// Decode the event data into the result value returned by Recv.
 		respBody := &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       io.NopCloser(bytes.NewReader([]byte(dataContent))),
@@ -240,12 +240,8 @@ func (s *HTTPServerStreamSseStreamImpl) processEvent(eventData []byte) (event *t
 	return
 }
 
-// trimHeader removes the header prefix and optional leading space
-func (s *HTTPServerStreamSseStreamImpl) trimHeader(size int, data []byte) string {
-	if len(data) < size {
-		return string(data)
-	}
-	data = data[size:]
+// trimHeader removes the optional space after an SSE field name.
+func (s *HTTPServerStreamSseStreamImpl) trimHeader(data []byte) string {
 	if len(data) > 0 && data[0] == ' ' {
 		data = data[1:]
 	}
@@ -452,13 +448,13 @@ func (s *MixedServerStreamStreamImpl) processEvent(eventData []byte) (event *tes
 			continue
 		}
 		if bytes.HasPrefix(line, []byte("data:")) {
-			dataLines = append(dataLines, s.trimHeader(len("data:"), line))
+			dataLines = append(dataLines, s.trimHeader(line[len("data:"):]))
 			continue
 		}
 	}
 	if len(dataLines) > 0 {
 		dataContent := strings.Join(dataLines, "\n")
-		// Decode JSON into the struct pointer directly
+		// Decode the event data into the result value returned by Recv.
 		respBody := &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       io.NopCloser(bytes.NewReader([]byte(dataContent))),
@@ -471,12 +467,8 @@ func (s *MixedServerStreamStreamImpl) processEvent(eventData []byte) (event *tes
 	return
 }
 
-// trimHeader removes the header prefix and optional leading space
-func (s *MixedServerStreamStreamImpl) trimHeader(size int, data []byte) string {
-	if len(data) < size {
-		return string(data)
-	}
-	data = data[size:]
+// trimHeader removes the optional space after an SSE field name.
+func (s *MixedServerStreamStreamImpl) trimHeader(data []byte) string {
 	if len(data) > 0 && data[0] == ' ' {
 		data = data[1:]
 	}

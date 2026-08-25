@@ -35,78 +35,78 @@ service TestHTTPGrpc {
 }
 
 message GrpcNoStreamRequest {
-	string msg = 1;
+	optional string msg = 1;
 }
 
 message GrpcNoStreamResponse {
-	string out = 1;
+	optional string out = 1;
 }
 
 message GrpcNoStreamErrorDivByZeroDivisionByZeroError {
 	// division by zero error message
-	string message_ = 1;
+	optional string message_ = 1;
 }
 
 message GrpcNoStreamErrorDivByZeroRequest {
-	double dividend = 1;
-	double divisor = 2;
+	optional double dividend = 1;
+	optional double divisor = 2;
 }
 
 message GrpcNoStreamErrorDivByZeroResponse {
-	double quotient = 1;
+	optional double quotient = 1;
 }
 
 message GrpcServerStreamRequest {
-	sint32 from = 1;
+	optional sint32 from = 1;
 }
 
 message GrpcServerStreamResponse {
-	sint32 value = 1;
+	optional sint32 value = 1;
 }
 
 message GrpcClientStreamStreamingRequest {
-	sint32 value = 1;
+	optional sint32 value = 1;
 }
 
 message GrpcClientStreamResponse {
-	sint32 sum = 1;
+	optional sint32 sum = 1;
 }
 
 message GrpcBidiStreamStreamingRequest {
-	string in = 1;
+	optional string in = 1;
 }
 
 message GrpcBidiStreamResponse {
-	string out = 1;
+	optional string out = 1;
 }
 
 message MixedNoStreamRequest {
-	string msg = 1;
+	optional string msg = 1;
 }
 
 message MixedNoStreamResponse {
-	string out = 1;
+	optional string out = 1;
 }
 
 message MixedServerStreamRequest {
 }
 
 message MixedServerStreamResponse {
-	string event = 1;
+	optional string event = 1;
 }
 
 message MixedClientStreamWsGrpcStreamingRequest {
-	string message_ = 1;
+	optional string message_ = 1;
 }
 
 message MixedClientStreamWsGrpcResponse {
-	string out = 1;
+	optional string out = 1;
 }
 
 message MixedBidiStreamWsGrpcStreamingRequest {
-	string message_ = 1;
+	optional string message_ = 1;
 }
 
 message MixedBidiStreamWsGrpcResponse {
-	string message_ = 1;
+	optional string message_ = 1;
 }

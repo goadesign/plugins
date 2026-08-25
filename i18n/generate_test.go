@@ -1,7 +1,6 @@
 package i18n_test
 
 import (
-	"os"
 	"reflect"
 	"slices"
 	"testing"
@@ -27,7 +26,7 @@ func TestPrepare(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			os.Setenv("GOA_I18N", c.Locales)
+			t.Setenv("GOA_I18N", c.Locales)
 			root := codegen.RunDSL(t, c.DSL)
 
 			roots := []eval.Root{root}
@@ -63,13 +62,17 @@ func checkExpr(roots []eval.Root, t interface{}, cb func(se interface{})) {
 }
 
 func TestGenerate(t *testing.T) {
-	os.Setenv("GOA_I18N", "en,nl")
+	t.Setenv("GOA_I18N", "en,nl")
 
 	root := codegen.RunDSL(t, testdata.SimpleI18nDSL)
 	roots := []eval.Root{root}
 	i18n.Prepare("", roots)
 
-	fs, _ := httpcodegen.OpenAPIFiles(root)
+	plan, err := httpcodegen.NewOpenAPIPlan(root, expr.NewExampleGenerator(root.API.RandomizerFactory))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fs := plan.Files()
 	gfs, _ := i18n.Generate("", roots, fs)
 
 	if len(gfs) != 12 {
@@ -86,5 +89,20 @@ func TestGenerate(t *testing.T) {
 		if !slices.Contains(paths, path) {
 			t.Errorf("Expected generated files to contain %q, got %v", path, paths)
 		}
+	}
+}
+
+func TestGenerateWithOneLocalePreservesFiles(t *testing.T) {
+	t.Setenv("GOA_I18N", "en")
+	root := codegen.RunDSL(t, testdata.SimpleI18nDSL)
+	files := []*codegen.File{{Path: "existing.go"}}
+
+	generated, err := i18n.Generate("generated.local/gen", []eval.Root{root}, files)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(generated, files) {
+		t.Fatalf("Generate returned %v, want the original files %v", generated, files)
 	}
 }

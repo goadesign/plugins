@@ -28,6 +28,8 @@ type HTTPServerStreamSseServerStream struct {
 	w http.ResponseWriter
 	// r is the HTTP request.
 	r *http.Request
+	// attempted is true after this stream writes the HTTP success status.
+	attempted bool
 }
 
 // Send Send streams instances of "testhttpgrpc.HTTPServerStreamSseResult" to
@@ -40,6 +42,16 @@ func (s *HTTPServerStreamSseServerStream) Send(v *testhttpgrpc.HTTPServerStreamS
 // "testhttpgrpc.HTTPServerStreamSseResult" to the "http_server_stream_sse"
 // endpoint SSE connection with context.
 func (s *HTTPServerStreamSseServerStream) SendWithContext(ctx context.Context, v *testhttpgrpc.HTTPServerStreamSseResult) error {
+	res := v
+
+	var data string
+	body := NewHTTPServerStreamSseResponseBody(res)
+
+	byts, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	data = string(byts)
 	s.once.Do(func() {
 		header := s.w.Header()
 		if header.Get("Content-Type") == "" {
@@ -52,65 +64,21 @@ func (s *HTTPServerStreamSseServerStream) SendWithContext(ctx context.Context, v
 			header.Set("Connection", "keep-alive")
 		}
 		s.w.WriteHeader(http.StatusOK)
+		s.attempted = true
 	})
-	res := v
 
-	var data string
-	var payload any
-	body := NewHTTPServerStreamSseResponseBody(res)
-	payload = body
-	switch v := payload.(type) {
-	case nil:
-		data = "null"
-	case string:
-		data = v
-	case []byte:
-		data = string(v)
-	case bool:
-		if v {
-			data = "true"
-		} else {
-			data = "false"
-		}
-	case int:
-		data = fmt.Sprintf("%d", v)
-	case int8:
-		data = fmt.Sprintf("%d", v)
-	case int16:
-		data = fmt.Sprintf("%d", v)
-	case int32:
-		data = fmt.Sprintf("%d", v)
-	case int64:
-		data = fmt.Sprintf("%d", v)
-	case uint:
-		data = fmt.Sprintf("%d", v)
-	case uint8:
-		data = fmt.Sprintf("%d", v)
-	case uint16:
-		data = fmt.Sprintf("%d", v)
-	case uint32:
-		data = fmt.Sprintf("%d", v)
-	case uint64:
-		data = fmt.Sprintf("%d", v)
-	case float32:
-		data = fmt.Sprintf("%g", v)
-	case float64:
-		data = fmt.Sprintf("%g", v)
-	default:
-		byts, err := json.Marshal(payload)
-		if err != nil {
-			return err
-		}
-		data = string(byts)
+	if _, err := fmt.Fprintf(s.w, "data: %s\n\n", data); err != nil {
+		return err
 	}
-	fmt.Fprintf(s.w, "data: %s\n\n", data)
 
-	http.NewResponseController(s.w).Flush()
+	if err := http.NewResponseController(s.w).Flush(); err != nil {
+		return err
+	}
 	return nil
 }
 
-// Close is a no-op for SSE. We keep the method for compatibility with other
-// stream types.
+// Close does nothing because an SSE stream closes with its HTTP response. The
+// common stream interface still requires this method.
 func (s *HTTPServerStreamSseServerStream) Close() error {
 	return nil
 }
@@ -125,6 +93,8 @@ type MixedServerStreamServerStream struct {
 	w http.ResponseWriter
 	// r is the HTTP request.
 	r *http.Request
+	// attempted is true after this stream writes the HTTP success status.
+	attempted bool
 }
 
 // Send Send streams instances of "testhttpgrpc.MixedServerStreamResult" to the
@@ -137,6 +107,16 @@ func (s *MixedServerStreamServerStream) Send(v *testhttpgrpc.MixedServerStreamRe
 // "testhttpgrpc.MixedServerStreamResult" to the "mixed_server_stream" endpoint
 // SSE connection with context.
 func (s *MixedServerStreamServerStream) SendWithContext(ctx context.Context, v *testhttpgrpc.MixedServerStreamResult) error {
+	res := v
+
+	var data string
+	body := NewMixedServerStreamResponseBody(res)
+
+	byts, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	data = string(byts)
 	s.once.Do(func() {
 		header := s.w.Header()
 		if header.Get("Content-Type") == "" {
@@ -149,65 +129,21 @@ func (s *MixedServerStreamServerStream) SendWithContext(ctx context.Context, v *
 			header.Set("Connection", "keep-alive")
 		}
 		s.w.WriteHeader(http.StatusOK)
+		s.attempted = true
 	})
-	res := v
 
-	var data string
-	var payload any
-	body := NewMixedServerStreamResponseBody(res)
-	payload = body
-	switch v := payload.(type) {
-	case nil:
-		data = "null"
-	case string:
-		data = v
-	case []byte:
-		data = string(v)
-	case bool:
-		if v {
-			data = "true"
-		} else {
-			data = "false"
-		}
-	case int:
-		data = fmt.Sprintf("%d", v)
-	case int8:
-		data = fmt.Sprintf("%d", v)
-	case int16:
-		data = fmt.Sprintf("%d", v)
-	case int32:
-		data = fmt.Sprintf("%d", v)
-	case int64:
-		data = fmt.Sprintf("%d", v)
-	case uint:
-		data = fmt.Sprintf("%d", v)
-	case uint8:
-		data = fmt.Sprintf("%d", v)
-	case uint16:
-		data = fmt.Sprintf("%d", v)
-	case uint32:
-		data = fmt.Sprintf("%d", v)
-	case uint64:
-		data = fmt.Sprintf("%d", v)
-	case float32:
-		data = fmt.Sprintf("%g", v)
-	case float64:
-		data = fmt.Sprintf("%g", v)
-	default:
-		byts, err := json.Marshal(payload)
-		if err != nil {
-			return err
-		}
-		data = string(byts)
+	if _, err := fmt.Fprintf(s.w, "data: %s\n\n", data); err != nil {
+		return err
 	}
-	fmt.Fprintf(s.w, "data: %s\n\n", data)
 
-	http.NewResponseController(s.w).Flush()
+	if err := http.NewResponseController(s.w).Flush(); err != nil {
+		return err
+	}
 	return nil
 }
 
-// Close is a no-op for SSE. We keep the method for compatibility with other
-// stream types.
+// Close does nothing because an SSE stream closes with its HTTP response. The
+// common stream interface still requires this method.
 func (s *MixedServerStreamServerStream) Close() error {
 	return nil
 }

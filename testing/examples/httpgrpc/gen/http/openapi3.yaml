@@ -20,7 +20,7 @@ paths:
                         schema:
                             $ref: '#/components/schemas/HTTPNoStreamRequestBody'
                         example:
-                            msg: Omnis animi.
+                            msg: Expedita eum recusandae non.
             responses:
                 "200":
                     description: OK response.
@@ -29,7 +29,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/HTTPNoStreamResponseBody'
                             example:
-                                out: Inventore libero laudantium veniam sunt aut.
+                                out: Et quam quia et.
     /http/no-stream-error:
         post:
             tags:
@@ -44,7 +44,7 @@ paths:
                         schema:
                             $ref: '#/components/schemas/HTTPNoStreamRequestBody'
                         example:
-                            msg: Reiciendis consequatur.
+                            msg: Ipsum asperiores omnis culpa.
             responses:
                 "200":
                     description: OK response.
@@ -53,7 +53,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/HTTPNoStreamResponseBody'
                             example:
-                                out: Aut unde laboriosam modi incidunt occaecati sed.
+                                out: Voluptatum et et incidunt.
                 "400":
                     description: 'division_by_zero: Division by zero error'
                     content:
@@ -61,7 +61,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/DivisionByZeroError'
                             example:
-                                message: Ducimus quae sed et consequatur autem.
+                                message: Dolore eum provident autem iste.
     /http/sse:
         post:
             tags:
@@ -76,7 +76,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/HTTPServerStreamSseResponseBody'
                             example:
-                                event: Vitae ipsam eum aliquam corporis sed architecto.
+                                event: Dolores cupiditate voluptatem voluptatibus accusantium sit.
     /http/ws/bidi:
         get:
             tags:
@@ -91,7 +91,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/DivisionByZeroError'
                             example:
-                                message: Quos ipsam rerum.
+                                message: Quaerat suscipit minus.
     /http/ws/client:
         get:
             tags:
@@ -106,7 +106,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/HTTPNoStreamResponseBody'
                             example:
-                                out: Id vel.
+                                out: Nihil eos.
     /http/ws/server:
         get:
             tags:
@@ -121,7 +121,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/DivisionByZeroError'
                             example:
-                                message: Modi quaerat.
+                                message: Et sunt.
     /mixed/bidi-stream/ws:
         get:
             tags:
@@ -136,7 +136,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/DivisionByZeroError'
                             example:
-                                message: Maiores magni voluptatem consequatur voluptatem sed.
+                                message: Eum qui nam rerum eveniet ducimus dolores.
     /mixed/client-stream/ws:
         get:
             tags:
@@ -151,7 +151,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/HTTPNoStreamResponseBody'
                             example:
-                                out: Ipsum et doloremque.
+                                out: Porro soluta.
     /mixed/no-stream:
         post:
             tags:
@@ -166,7 +166,7 @@ paths:
                         schema:
                             $ref: '#/components/schemas/HTTPNoStreamRequestBody'
                         example:
-                            msg: Sequi aut totam eum.
+                            msg: Repellendus fuga quisquam sunt eligendi ad praesentium.
             responses:
                 "200":
                     description: OK response.
@@ -175,7 +175,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/HTTPNoStreamResponseBody'
                             example:
-                                out: Sunt voluptatum consequatur vitae facere est.
+                                out: Alias consequuntur culpa suscipit quasi.
     /mixed/server-stream:
         post:
             tags:
@@ -190,7 +190,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/HTTPServerStreamSseResponseBody'
                             example:
-                                event: Ab est voluptas in et.
+                                event: Autem aliquid quis praesentium odit.
 components:
     schemas:
         DivisionByZeroError:
@@ -199,10 +199,9 @@ components:
                 message:
                     type: string
                     description: division by zero error message
-                    example: Ducimus quae sed et consequatur autem.
-            description: Division by zero error
+                    example: Dolore eum provident autem iste.
             example:
-                message: Ducimus quae sed et consequatur autem.
+                message: Dolore eum provident autem iste.
             required:
                 - message
         HTTPNoStreamRequestBody:
@@ -210,10 +209,10 @@ components:
             properties:
                 msg:
                     type: string
-                    example: Omnis animi.
+                    example: Expedita eum recusandae non.
             description: Request body for http_no_stream.
             example:
-                msg: Omnis animi.
+                msg: Expedita eum recusandae non.
             required:
                 - msg
         HTTPNoStreamResponseBody:
@@ -221,9 +220,9 @@ components:
             properties:
                 out:
                     type: string
-                    example: Inventore libero laudantium veniam sunt aut.
+                    example: Et quam quia et.
             example:
-                out: Inventore libero laudantium veniam sunt aut.
+                out: Et quam quia et.
             required:
                 - out
         HTTPServerStreamSseResponseBody:
@@ -231,9 +230,9 @@ components:
             properties:
                 event:
                     type: string
-                    example: Vitae ipsam eum aliquam corporis sed architecto.
+                    example: Dolores cupiditate voluptatem voluptatibus accusantium sit.
             example:
-                event: Vitae ipsam eum aliquam corporis sed architecto.
+                event: Dolores cupiditate voluptatem voluptatibus accusantium sit.
             required:
                 - event
 tags:

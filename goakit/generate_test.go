@@ -9,7 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/generator"
+	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
+	"goa.design/goa/v3/expr"
+	httpcodegen "goa.design/goa/v3/http/codegen"
 	"goa.design/plugins/v3/goakit/testdata"
 )
 
@@ -26,7 +29,7 @@ func TestGenerate(t *testing.T) {
 			root := codegen.RunDSL(t, c.DSL)
 			roots := []eval.Root{root}
 			files := generateFiles(t, roots)
-			newFiles, err := Generate("", roots, files)
+			newFiles, err := Generate("generated.local/gen", roots, files)
 			if err != nil {
 				t.Fatalf("generate error: %v", err)
 			}
@@ -36,6 +39,33 @@ func TestGenerate(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestPlannedNamesAvoidPackageCollisions verifies that go-kit wrappers use
+// the final function names selected for their generated package.
+func TestPlannedNamesAvoidPackageCollisions(t *testing.T) {
+	root := codegen.RunDSL(t, testdata.SimpleServiceDSL)
+	generation, err := codegen.NewGeneration("generated.local/gen", []eval.Root{root})
+	require.NoError(t, err)
+	servicePlan, err := service.NewPlan(root, generation, expr.NewExampleGenerator(root.API.RandomizerFactory))
+	require.NoError(t, err)
+	httpPlans, err := httpcodegen.NewPlans(generation, httpcodegen.PlanInput{Root: root, Service: servicePlan})
+	require.NoError(t, err)
+	serverPackage, err := generation.ClaimPackage("generated.local/gen/http/simple_service/kitserver")
+	require.NoError(t, err)
+	require.NoError(t, serverPackage.DeclareName(codegen.NewExactName(codegen.NameFunction, "EncodeSimpleMethodResponse")))
+	services, err := planPackages(generation, servicePlan, root)
+	require.NoError(t, err)
+	require.NoError(t, generation.Freeze())
+	require.NoError(t, servicePlan.Link())
+	require.NoError(t, httpPlans[0].Link())
+
+	planned := &goakitRootPlan{root: root, http: httpPlans[0], services: services}
+	files := encodeDecodeFiles(generation.GenPkg(), planned)
+	sections := findSections(files, "goakit-response-encoder")
+	require.Len(t, sections, 1)
+	code := codegen.SectionCode(t, sections[0])
+	require.Contains(t, code, "func EncodeSimpleMethodResponse2(")
 }
 
 func TestGoakitify(t *testing.T) {
@@ -139,16 +169,16 @@ func TestGoakitifyExample(t *testing.T) {
 }
 
 func generateFiles(t *testing.T, roots []eval.Root) []*codegen.File {
-	files, err := generator.Service("", roots)
+	files, err := generator.Service("generated.local/gen", roots)
 	require.NoError(t, err)
-	httpFiles, err := generator.Transport("", roots)
+	httpFiles, err := generator.Transport("generated.local/gen", roots)
 	require.NoError(t, err)
 	files = append(files, httpFiles...)
 	return files
 }
 
 func generateExamples(t *testing.T, roots []eval.Root) []*codegen.File {
-	files, err := generator.Example("", roots)
+	files, err := generator.Example("generated.local/gen", roots)
 	require.NoError(t, err)
 	return files
 }
@@ -171,4 +201,17 @@ func containsStdlibLogger(t *testing.T, f *codegen.File) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+// findSections returns every generated section with the requested name.
+func findSections(files []*codegen.File, name string) []*codegen.SectionTemplate {
+	var matches []*codegen.SectionTemplate
+	for _, file := range files {
+		for _, section := range file.SectionTemplates {
+			if section.Name == name {
+				matches = append(matches, section)
+			}
+		}
+	}
+	return matches
 }

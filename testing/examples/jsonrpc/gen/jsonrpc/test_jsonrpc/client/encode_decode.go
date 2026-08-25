@@ -11,6 +11,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -64,21 +65,31 @@ func EncodeJsonrpcNoStreamRequest(encoder func(*http.Request) goahttp.Encoder) f
 // the test-jsonrpc service jsonrpc_no_stream JSON-RPC method. restoreBody
 // controls whether the response body should be restored after having been read.
 func DecodeJsonrpcNoStreamResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("test-jsonrpc", "jsonrpc_no_stream", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
+		} else {
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("test-jsonrpc", "jsonrpc_no_stream", err))
+				}
+			}()
 		}
-		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("test-jsonrpc", "jsonrpc_no_stream", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("test-jsonrpc", "jsonrpc_no_stream", resp.StatusCode, string(body))
 		}
 
@@ -90,8 +101,7 @@ func DecodeJsonrpcNoStreamResponse(decoder func(*http.Response) goahttp.Decoder,
 		if jresp.Error != nil {
 			switch jresp.Error.Code {
 			default:
-				body, _ := io.ReadAll(resp.Body)
-				return nil, goahttp.ErrInvalidResponse("test-jsonrpc", "jsonrpc_no_stream", resp.StatusCode, string(body))
+				return nil, goahttp.ErrInvalidResponse("test-jsonrpc", "jsonrpc_no_stream", resp.StatusCode, string(jresp.Error.Data))
 			}
 		}
 		resp.Body = io.NopCloser(bytes.NewBuffer(jresp.Result))
@@ -157,21 +167,31 @@ func EncodeJsonrpcNoStreamErrorRequest(encoder func(*http.Request) goahttp.Encod
 // restoreBody controls whether the response body should be restored after
 // having been read.
 func DecodeJsonrpcNoStreamErrorResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("test-jsonrpc", "jsonrpc_no_stream_error", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
+		} else {
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("test-jsonrpc", "jsonrpc_no_stream_error", err))
+				}
+			}()
 		}
-		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("test-jsonrpc", "jsonrpc_no_stream_error", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("test-jsonrpc", "jsonrpc_no_stream_error", resp.StatusCode, string(body))
 		}
 
@@ -183,8 +203,7 @@ func DecodeJsonrpcNoStreamErrorResponse(decoder func(*http.Response) goahttp.Dec
 		if jresp.Error != nil {
 			switch jresp.Error.Code {
 			default:
-				body, _ := io.ReadAll(resp.Body)
-				return nil, goahttp.ErrInvalidResponse("test-jsonrpc", "jsonrpc_no_stream_error", resp.StatusCode, string(body))
+				return nil, goahttp.ErrInvalidResponse("test-jsonrpc", "jsonrpc_no_stream_error", resp.StatusCode, string(jresp.Error.Data))
 			}
 		}
 		resp.Body = io.NopCloser(bytes.NewBuffer(jresp.Result))

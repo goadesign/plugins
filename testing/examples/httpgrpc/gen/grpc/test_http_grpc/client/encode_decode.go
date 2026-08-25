@@ -49,6 +49,9 @@ func DecodeGrpcNoStreamResponse(ctx context.Context, v any, hdr, trlr metadata.M
 	if !ok {
 		return nil, goagrpc.ErrInvalidType("test-http-grpc", "grpc_no_stream", "*test_http_grpcpb.GrpcNoStreamResponse", v)
 	}
+	if err := ValidateGrpcNoStreamResponse(message); err != nil {
+		return nil, err
+	}
 	res := NewGrpcNoStreamResult(message)
 	return res, nil
 }
@@ -83,6 +86,9 @@ func DecodeGrpcNoStreamErrorDivByZeroResponse(ctx context.Context, v any, hdr, t
 	message, ok := v.(*test_http_grpcpb.GrpcNoStreamErrorDivByZeroResponse)
 	if !ok {
 		return nil, goagrpc.ErrInvalidType("test-http-grpc", "grpc_no_stream_error_div_by_zero", "*test_http_grpcpb.GrpcNoStreamErrorDivByZeroResponse", v)
+	}
+	if err := ValidateGrpcNoStreamErrorDivByZeroResponse(message); err != nil {
+		return nil, err
 	}
 	res := NewGrpcNoStreamErrorDivByZeroResult(message)
 	return res, nil
@@ -194,6 +200,9 @@ func DecodeMixedNoStreamResponse(ctx context.Context, v any, hdr, trlr metadata.
 	message, ok := v.(*test_http_grpcpb.MixedNoStreamResponse)
 	if !ok {
 		return nil, goagrpc.ErrInvalidType("test-http-grpc", "mixed_no_stream", "*test_http_grpcpb.MixedNoStreamResponse", v)
+	}
+	if err := ValidateMixedNoStreamResponse(message); err != nil {
+		return nil, err
 	}
 	res := NewMixedNoStreamResult(message)
 	return res, nil

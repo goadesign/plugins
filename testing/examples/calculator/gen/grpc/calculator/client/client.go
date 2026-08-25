@@ -151,6 +151,9 @@ func (s *BatchAddClientStream) Recv() (*calculator.BatchAddResult, error) {
 	if err != nil {
 		return res, err
 	}
+	if err = ValidateBatchAddResponse(v); err != nil {
+		return res, err
+	}
 	return NewBatchAddResponseBatchAddResult(v), nil
 }
 

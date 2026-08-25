@@ -28,44 +28,44 @@ service Calculator {
 
 message AddRequest {
 	// First number
-	double a = 1;
+	optional double a = 1;
 	// Second number
-	double b = 2;
+	optional double b = 2;
 }
 
 message AddResponse {
 	// Sum of a and b
-	double result = 1;
+	optional double result = 1;
 	// Operation performed
-	string operation = 2;
+	optional string operation = 2;
 }
 
 message DivideRequest {
 	// Number to divide
-	double dividend = 1;
+	optional double dividend = 1;
 	// Number to divide by
-	double divisor = 2;
+	optional double divisor = 2;
 }
 
 message DivideResponse {
 	// Division result
-	double result = 1;
+	optional double result = 1;
 	// Operation performed
-	string operation = 2;
+	optional string operation = 2;
 }
 
 message FactorialRequest {
 	// Number to calculate factorial of
-	sint32 n = 1;
+	optional sint32 n = 1;
 }
 
 message FactorialResponse {
 	// Factorial result
-	sint64 result = 1;
+	optional sint64 result = 1;
 	// Operation performed
-	string operation = 2;
+	optional string operation = 2;
 	// Time taken in milliseconds
-	sint32 computation_time_ms = 3;
+	optional sint32 computation_time_ms = 3;
 }
 
 message StatisticsRequest {
@@ -75,29 +75,29 @@ message StatisticsRequest {
 
 message StatisticsResponse {
 	// Average of numbers
-	double mean = 1;
+	optional double mean = 1;
 	// Median value
-	double median = 2;
+	optional double median = 2;
 	// Minimum value
-	double min = 3;
+	optional double min = 3;
 	// Maximum value
-	double max = 4;
+	optional double max = 4;
 	// Number of values
-	sint32 count = 5;
+	optional sint32 count = 5;
 	// Sum of all values
-	double sum = 6;
+	optional double sum = 6;
 }
 
 message BatchAddStreamingRequest {
 	// First number
-	double a = 1;
+	optional double a = 1;
 	// Second number
-	double b = 2;
+	optional double b = 2;
 }
 
 message BatchAddResponse {
 	// Sum
-	double result = 1;
+	optional double result = 1;
 	// Operation index
-	sint32 index = 2;
+	optional sint32 index = 2;
 }

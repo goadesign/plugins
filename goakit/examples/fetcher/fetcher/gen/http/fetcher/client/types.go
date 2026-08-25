@@ -99,7 +99,7 @@ func NewFetchInternalError(body *FetchInternalErrorResponseBody) *goa.ServiceErr
 }
 
 // ValidateFetchBadRequestResponseBody runs the validations defined on
-// fetch_bad_request_response_body
+// FetchBadRequestResponseBody
 func ValidateFetchBadRequestResponseBody(body *FetchBadRequestResponseBody) (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
@@ -123,7 +123,7 @@ func ValidateFetchBadRequestResponseBody(body *FetchBadRequestResponseBody) (err
 }
 
 // ValidateFetchInternalErrorResponseBody runs the validations defined on
-// fetch_internal_error_response_body
+// FetchInternalErrorResponseBody
 func ValidateFetchInternalErrorResponseBody(body *FetchInternalErrorResponseBody) (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))

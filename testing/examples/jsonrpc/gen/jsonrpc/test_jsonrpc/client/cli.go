@@ -23,7 +23,7 @@ func BuildJsonrpcNoStreamPayload(testJsonrpcJsonrpcNoStreamBody string) (*testjs
 	{
 		err = json.Unmarshal([]byte(testJsonrpcJsonrpcNoStreamBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Vel optio magni.\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Enim eligendi ut.\"\n   }'")
 		}
 	}
 	v := &testjsonrpc.JsonrpcNoStreamPayload{
@@ -41,7 +41,7 @@ func BuildJsonrpcNoStreamErrorPayload(testJsonrpcJsonrpcNoStreamErrorBody string
 	{
 		err = json.Unmarshal([]byte(testJsonrpcJsonrpcNoStreamErrorBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Sit qui sint culpa dolorem officia temporibus.\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Voluptatem fuga.\"\n   }'")
 		}
 	}
 	v := &testjsonrpc.JsonrpcNoStreamErrorPayload{

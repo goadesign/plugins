@@ -23,7 +23,7 @@ func BuildCreatePayload(tscapCreateBody string) (*tscap.CreatePayload, error) {
 	{
 		err = json.Unmarshal([]byte(tscapCreateBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"name\": \"Quod libero reprehenderit.\"\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"name\": \"Quo omnis quia ipsum.\"\n   }'")
 		}
 	}
 	v := &tscap.CreatePayload{

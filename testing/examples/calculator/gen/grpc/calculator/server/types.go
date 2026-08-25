@@ -14,68 +14,68 @@ import (
 	calculatorpb "goa.design/plugins/v3/testing/examples/calculator/gen/grpc/calculator/pb"
 )
 
-// NewAddPayload builds the payload of the "add" endpoint of the "calculator"
-// service from the gRPC request type.
+// NewAddPayload builds *calculator.AddPayload from *calculatorpb.AddRequest.
 func NewAddPayload(message *calculatorpb.AddRequest) *calculator.AddPayload {
 	v := &calculator.AddPayload{
-		A: message.A,
-		B: message.B,
+		A: *message.A,
+		B: *message.B,
 	}
 	return v
 }
 
-// NewProtoAddResponse builds the gRPC response type from the result of the
-// "add" endpoint of the "calculator" service.
+// NewProtoAddResponse builds *calculatorpb.AddResponse from
+// *calculator.AddResult.
 func NewProtoAddResponse(result *calculator.AddResult) *calculatorpb.AddResponse {
 	message := &calculatorpb.AddResponse{
-		Result:    result.Result,
-		Operation: result.Operation,
+		Result:    &result.Result,
+		Operation: &result.Operation,
 	}
 	return message
 }
 
-// NewDividePayload builds the payload of the "divide" endpoint of the
-// "calculator" service from the gRPC request type.
+// NewDividePayload builds *calculator.DividePayload from
+// *calculatorpb.DivideRequest.
 func NewDividePayload(message *calculatorpb.DivideRequest) *calculator.DividePayload {
 	v := &calculator.DividePayload{
-		Dividend: message.Dividend,
-		Divisor:  message.Divisor,
+		Dividend: *message.Dividend,
+		Divisor:  *message.Divisor,
 	}
 	return v
 }
 
-// NewProtoDivideResponse builds the gRPC response type from the result of the
-// "divide" endpoint of the "calculator" service.
+// NewProtoDivideResponse builds *calculatorpb.DivideResponse from
+// *calculator.DivideResult.
 func NewProtoDivideResponse(result *calculator.DivideResult) *calculatorpb.DivideResponse {
 	message := &calculatorpb.DivideResponse{
-		Result:    result.Result,
-		Operation: result.Operation,
+		Result:    &result.Result,
+		Operation: &result.Operation,
 	}
 	return message
 }
 
-// NewFactorialPayload builds the payload of the "factorial" endpoint of the
-// "calculator" service from the gRPC request type.
+// NewFactorialPayload builds *calculator.FactorialPayload from
+// *calculatorpb.FactorialRequest.
 func NewFactorialPayload(message *calculatorpb.FactorialRequest) *calculator.FactorialPayload {
 	v := &calculator.FactorialPayload{
-		N: int(message.N),
+		N: int(*message.N),
 	}
 	return v
 }
 
-// NewProtoFactorialResponse builds the gRPC response type from the result of
-// the "factorial" endpoint of the "calculator" service.
+// NewProtoFactorialResponse builds *calculatorpb.FactorialResponse from
+// *calculator.FactorialResult.
 func NewProtoFactorialResponse(result *calculator.FactorialResult) *calculatorpb.FactorialResponse {
 	message := &calculatorpb.FactorialResponse{
-		Result:            result.Result,
-		Operation:         result.Operation,
-		ComputationTimeMs: int32(result.ComputationTimeMs),
+		Result:    &result.Result,
+		Operation: &result.Operation,
 	}
+	computationTimeMs := int32(result.ComputationTimeMs)
+	message.ComputationTimeMs = &computationTimeMs
 	return message
 }
 
-// NewStatisticsPayload builds the payload of the "statistics" endpoint of the
-// "calculator" service from the gRPC request type.
+// NewStatisticsPayload builds *calculator.StatisticsPayload from
+// *calculatorpb.StatisticsRequest.
 func NewStatisticsPayload(message *calculatorpb.StatisticsRequest) *calculator.StatisticsPayload {
 	v := &calculator.StatisticsPayload{}
 	if message.Numbers != nil {
@@ -87,53 +87,77 @@ func NewStatisticsPayload(message *calculatorpb.StatisticsRequest) *calculator.S
 	return v
 }
 
-// NewProtoStatisticsResponse builds the gRPC response type from the result of
-// the "statistics" endpoint of the "calculator" service.
+// NewProtoStatisticsResponse builds *calculatorpb.StatisticsResponse from
+// *calculator.StatisticsResult.
 func NewProtoStatisticsResponse(result *calculator.StatisticsResult) *calculatorpb.StatisticsResponse {
 	message := &calculatorpb.StatisticsResponse{
-		Mean:   result.Mean,
-		Median: result.Median,
-		Min:    result.Min,
-		Max:    result.Max,
-		Count:  int32(result.Count),
-		Sum:    result.Sum,
+		Mean:   &result.Mean,
+		Median: &result.Median,
+		Min:    &result.Min,
+		Max:    &result.Max,
+		Sum:    &result.Sum,
 	}
+	count := int32(result.Count)
+	message.Count = &count
 	return message
 }
 
-// NewProtoBatchAddResponse builds the gRPC response type from the result of
-// the "batch_add" endpoint of the "calculator" service.
+// NewProtoBatchAddResponse builds *calculatorpb.BatchAddResponse from
+// *calculator.BatchAddResult.
 func NewProtoBatchAddResponse(result *calculator.BatchAddResult) *calculatorpb.BatchAddResponse {
 	message := &calculatorpb.BatchAddResponse{
-		Result: result.Result,
-		Index:  int32(result.Index),
+		Result: &result.Result,
 	}
+	index := int32(result.Index)
+	message.Index = &index
 	return message
 }
 
-func NewProtoBatchAddResultBatchAddResponse(result *calculator.BatchAddResult) *calculatorpb.BatchAddResponse {
-	v := &calculatorpb.BatchAddResponse{
-		Result: result.Result,
-		Index:  int32(result.Index),
-	}
-	return v
-}
-
+// NewBatchAddStreamingRequestBatchAddStreamingPayload builds
+// *calculator.BatchAddStreamingPayload from
+// *calculatorpb.BatchAddStreamingRequest.
 func NewBatchAddStreamingRequestBatchAddStreamingPayload(v *calculatorpb.BatchAddStreamingRequest) *calculator.BatchAddStreamingPayload {
 	spayload := &calculator.BatchAddStreamingPayload{
-		A: v.A,
-		B: v.B,
+		A: *v.A,
+		B: *v.B,
 	}
 	return spayload
 }
 
+// ValidateAddRequest runs the validations defined on AddRequest.
+func ValidateAddRequest(message *calculatorpb.AddRequest) (err error) {
+	if message.A == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("a", "message"))
+	}
+	if message.B == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("b", "message"))
+	}
+	return
+}
+
+// ValidateDivideRequest runs the validations defined on DivideRequest.
+func ValidateDivideRequest(message *calculatorpb.DivideRequest) (err error) {
+	if message.Dividend == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("dividend", "message"))
+	}
+	if message.Divisor == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("divisor", "message"))
+	}
+	return
+}
+
 // ValidateFactorialRequest runs the validations defined on FactorialRequest.
 func ValidateFactorialRequest(message *calculatorpb.FactorialRequest) (err error) {
-	if message.N < 0 {
-		err = goa.MergeErrors(err, goa.InvalidRangeError("message.n", message.N, 0, true))
+	if message.N == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("n", "message"))
 	}
-	if message.N > 20 {
-		err = goa.MergeErrors(err, goa.InvalidRangeError("message.n", message.N, 20, false))
+	if message.N != nil {
+		if *message.N < 0 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError("message.n", *message.N, 0, true))
+		}
+		if *message.N > 20 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError("message.n", *message.N, 20, false))
+		}
 	}
 	return
 }
@@ -145,6 +169,18 @@ func ValidateStatisticsRequest(message *calculatorpb.StatisticsRequest) (err err
 	}
 	if len(message.Numbers) < 1 {
 		err = goa.MergeErrors(err, goa.InvalidLengthError("message.numbers", message.Numbers, len(message.Numbers), 1, true))
+	}
+	return
+}
+
+// ValidateBatchAddStreamingRequest runs the validations defined on
+// BatchAddStreamingRequest.
+func ValidateBatchAddStreamingRequest(stream *calculatorpb.BatchAddStreamingRequest) (err error) {
+	if stream.A == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("a", "stream"))
+	}
+	if stream.B == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("b", "stream"))
 	}
 	return
 }

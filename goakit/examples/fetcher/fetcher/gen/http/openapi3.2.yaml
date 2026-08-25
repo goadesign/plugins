@@ -23,9 +23,9 @@ paths:
                   schema:
                     type: string
                     description: URL to be fetched
-                    example: http://pfeffer.biz/lucile
+                    example: http://deckow.org/eric_nolan
                     format: uri
-                  example: http://nikolaus.com/adan.kemmer
+                  example: http://deckow.org/eric_nolan
             responses:
                 "200":
                     description: OK response.
@@ -42,12 +42,26 @@ paths:
                         application/vnd.goa.error:
                             schema:
                                 $ref: '#/components/schemas/Error'
+                            example:
+                                fault: false
+                                id: 123abc
+                                message: parameter 'p' must be an integer
+                                name: bad_request
+                                temporary: false
+                                timeout: false
                 "500":
                     description: 'internal_error: Internal Server Error response.'
                     content:
                         application/vnd.goa.error:
                             schema:
                                 $ref: '#/components/schemas/Error'
+                            example:
+                                fault: false
+                                id: 123abc
+                                message: parameter 'p' must be an integer
+                                name: internal_error
+                                temporary: false
+                                timeout: false
     /health:
         get:
             tags:
@@ -62,8 +76,8 @@ paths:
                         text/plain:
                             schema:
                                 type: string
-                                example: Deserunt rerum.
-                            example: Deserunt rerum.
+                                example: Veritatis nihil.
+                            example: Veritatis nihil.
 components:
     schemas:
         Error:
@@ -92,7 +106,7 @@ components:
                 timeout:
                     type: boolean
                     description: Is the error a timeout?
-                    example: false
+                    example: true
             description: Error response result type
             example:
                 fault: true
@@ -100,7 +114,7 @@ components:
                 message: parameter 'p' must be an integer
                 name: bad_request
                 temporary: true
-                timeout: false
+                timeout: true
             required:
                 - name
                 - id

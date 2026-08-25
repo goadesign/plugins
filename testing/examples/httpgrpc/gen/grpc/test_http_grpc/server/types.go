@@ -14,222 +14,269 @@ import (
 	testhttpgrpc "goa.design/plugins/v3/testing/examples/httpgrpc/gen/test_http_grpc"
 )
 
-// NewGrpcNoStreamPayload builds the payload of the "grpc_no_stream" endpoint
-// of the "test-http-grpc" service from the gRPC request type.
+// NewGrpcNoStreamPayload builds *testhttpgrpc.GrpcNoStreamPayload from
+// *test_http_grpcpb.GrpcNoStreamRequest.
 func NewGrpcNoStreamPayload(message *test_http_grpcpb.GrpcNoStreamRequest) *testhttpgrpc.GrpcNoStreamPayload {
 	v := &testhttpgrpc.GrpcNoStreamPayload{
-		Msg: message.Msg,
+		Msg: *message.Msg,
 	}
 	return v
 }
 
-// NewProtoGrpcNoStreamResponse builds the gRPC response type from the result
-// of the "grpc_no_stream" endpoint of the "test-http-grpc" service.
+// NewProtoGrpcNoStreamResponse builds *test_http_grpcpb.GrpcNoStreamResponse
+// from *testhttpgrpc.GrpcNoStreamResult.
 func NewProtoGrpcNoStreamResponse(result *testhttpgrpc.GrpcNoStreamResult) *test_http_grpcpb.GrpcNoStreamResponse {
 	message := &test_http_grpcpb.GrpcNoStreamResponse{
-		Out: result.Out,
+		Out: &result.Out,
 	}
 	return message
 }
 
-// NewGrpcNoStreamErrorDivByZeroPayload builds the payload of the
-// "grpc_no_stream_error_div_by_zero" endpoint of the "test-http-grpc" service
-// from the gRPC request type.
+// NewGrpcNoStreamErrorDivByZeroPayload builds
+// *testhttpgrpc.GrpcNoStreamErrorDivByZeroPayload from
+// *test_http_grpcpb.GrpcNoStreamErrorDivByZeroRequest.
 func NewGrpcNoStreamErrorDivByZeroPayload(message *test_http_grpcpb.GrpcNoStreamErrorDivByZeroRequest) *testhttpgrpc.GrpcNoStreamErrorDivByZeroPayload {
 	v := &testhttpgrpc.GrpcNoStreamErrorDivByZeroPayload{
-		Dividend: message.Dividend,
-		Divisor:  message.Divisor,
+		Dividend: *message.Dividend,
+		Divisor:  *message.Divisor,
 	}
 	return v
 }
 
-// NewProtoGrpcNoStreamErrorDivByZeroResponse builds the gRPC response type
-// from the result of the "grpc_no_stream_error_div_by_zero" endpoint of the
-// "test-http-grpc" service.
+// NewProtoGrpcNoStreamErrorDivByZeroResponse builds
+// *test_http_grpcpb.GrpcNoStreamErrorDivByZeroResponse from
+// *testhttpgrpc.GrpcNoStreamErrorDivByZeroResult.
 func NewProtoGrpcNoStreamErrorDivByZeroResponse(result *testhttpgrpc.GrpcNoStreamErrorDivByZeroResult) *test_http_grpcpb.GrpcNoStreamErrorDivByZeroResponse {
 	message := &test_http_grpcpb.GrpcNoStreamErrorDivByZeroResponse{
-		Quotient: result.Quotient,
+		Quotient: &result.Quotient,
 	}
 	return message
 }
 
-// NewGrpcNoStreamErrorDivByZeroDivisionByZeroError builds the gRPC error
-// response type from the error of the "grpc_no_stream_error_div_by_zero"
-// endpoint of the "test-http-grpc" service.
+// NewGrpcNoStreamErrorDivByZeroDivisionByZeroError builds
+// *test_http_grpcpb.GrpcNoStreamErrorDivByZeroDivisionByZeroError from
+// *testhttpgrpc.DivisionByZeroError.
 func NewGrpcNoStreamErrorDivByZeroDivisionByZeroError(er *testhttpgrpc.DivisionByZeroError) *test_http_grpcpb.GrpcNoStreamErrorDivByZeroDivisionByZeroError {
 	message := &test_http_grpcpb.GrpcNoStreamErrorDivByZeroDivisionByZeroError{
-		Message_: er.Message,
+		Message_: &er.Message,
 	}
 	return message
 }
 
-// NewGrpcServerStreamPayload builds the payload of the "grpc_server_stream"
-// endpoint of the "test-http-grpc" service from the gRPC request type.
+// NewGrpcServerStreamPayload builds *testhttpgrpc.GrpcServerStreamPayload from
+// *test_http_grpcpb.GrpcServerStreamRequest.
 func NewGrpcServerStreamPayload(message *test_http_grpcpb.GrpcServerStreamRequest) *testhttpgrpc.GrpcServerStreamPayload {
 	v := &testhttpgrpc.GrpcServerStreamPayload{
-		From: int(message.From),
+		From: int(*message.From),
 	}
 	return v
 }
 
-// NewProtoGrpcServerStreamResponse builds the gRPC response type from the
-// result of the "grpc_server_stream" endpoint of the "test-http-grpc" service.
+// NewProtoGrpcServerStreamResponse builds
+// *test_http_grpcpb.GrpcServerStreamResponse from
+// *testhttpgrpc.GrpcServerStreamResult.
 func NewProtoGrpcServerStreamResponse(result *testhttpgrpc.GrpcServerStreamResult) *test_http_grpcpb.GrpcServerStreamResponse {
-	message := &test_http_grpcpb.GrpcServerStreamResponse{
-		Value: int32(result.Value),
-	}
+	message := &test_http_grpcpb.GrpcServerStreamResponse{}
+	value := int32(result.Value)
+	message.Value = &value
 	return message
 }
 
-func NewProtoGrpcServerStreamResultGrpcServerStreamResponse(result *testhttpgrpc.GrpcServerStreamResult) *test_http_grpcpb.GrpcServerStreamResponse {
-	v := &test_http_grpcpb.GrpcServerStreamResponse{
-		Value: int32(result.Value),
-	}
-	return v
-}
-
-// NewProtoGrpcClientStreamResponse builds the gRPC response type from the
-// result of the "grpc_client_stream" endpoint of the "test-http-grpc" service.
+// NewProtoGrpcClientStreamResponse builds
+// *test_http_grpcpb.GrpcClientStreamResponse from
+// *testhttpgrpc.GrpcClientStreamResult.
 func NewProtoGrpcClientStreamResponse(result *testhttpgrpc.GrpcClientStreamResult) *test_http_grpcpb.GrpcClientStreamResponse {
-	message := &test_http_grpcpb.GrpcClientStreamResponse{
-		Sum: int32(result.Sum),
-	}
+	message := &test_http_grpcpb.GrpcClientStreamResponse{}
+	sum := int32(result.Sum)
+	message.Sum = &sum
 	return message
 }
 
-func NewProtoGrpcClientStreamResultGrpcClientStreamResponse(result *testhttpgrpc.GrpcClientStreamResult) *test_http_grpcpb.GrpcClientStreamResponse {
-	v := &test_http_grpcpb.GrpcClientStreamResponse{
-		Sum: int32(result.Sum),
-	}
-	return v
-}
-
+// NewGrpcClientStreamStreamingRequestGrpcClientStreamStreamingPayload builds
+// *testhttpgrpc.GrpcClientStreamStreamingPayload from
+// *test_http_grpcpb.GrpcClientStreamStreamingRequest.
 func NewGrpcClientStreamStreamingRequestGrpcClientStreamStreamingPayload(v *test_http_grpcpb.GrpcClientStreamStreamingRequest) *testhttpgrpc.GrpcClientStreamStreamingPayload {
 	spayload := &testhttpgrpc.GrpcClientStreamStreamingPayload{
-		Value: int(v.Value),
+		Value: int(*v.Value),
 	}
 	return spayload
 }
 
-// NewProtoGrpcBidiStreamResponse builds the gRPC response type from the result
-// of the "grpc_bidi_stream" endpoint of the "test-http-grpc" service.
+// NewProtoGrpcBidiStreamResponse builds
+// *test_http_grpcpb.GrpcBidiStreamResponse from
+// *testhttpgrpc.GrpcBidiStreamResult.
 func NewProtoGrpcBidiStreamResponse(result *testhttpgrpc.GrpcBidiStreamResult) *test_http_grpcpb.GrpcBidiStreamResponse {
 	message := &test_http_grpcpb.GrpcBidiStreamResponse{
-		Out: result.Out,
+		Out: &result.Out,
 	}
 	return message
 }
 
-func NewProtoGrpcBidiStreamResultGrpcBidiStreamResponse(result *testhttpgrpc.GrpcBidiStreamResult) *test_http_grpcpb.GrpcBidiStreamResponse {
-	v := &test_http_grpcpb.GrpcBidiStreamResponse{
-		Out: result.Out,
-	}
-	return v
-}
-
+// NewGrpcBidiStreamStreamingRequestGrpcBidiStreamStreamingPayload builds
+// *testhttpgrpc.GrpcBidiStreamStreamingPayload from
+// *test_http_grpcpb.GrpcBidiStreamStreamingRequest.
 func NewGrpcBidiStreamStreamingRequestGrpcBidiStreamStreamingPayload(v *test_http_grpcpb.GrpcBidiStreamStreamingRequest) *testhttpgrpc.GrpcBidiStreamStreamingPayload {
 	spayload := &testhttpgrpc.GrpcBidiStreamStreamingPayload{
-		In: v.In,
+		In: *v.In,
 	}
 	return spayload
 }
 
-// NewMixedNoStreamPayload builds the payload of the "mixed_no_stream" endpoint
-// of the "test-http-grpc" service from the gRPC request type.
+// NewMixedNoStreamPayload builds *testhttpgrpc.MixedNoStreamPayload from
+// *test_http_grpcpb.MixedNoStreamRequest.
 func NewMixedNoStreamPayload(message *test_http_grpcpb.MixedNoStreamRequest) *testhttpgrpc.MixedNoStreamPayload {
 	v := &testhttpgrpc.MixedNoStreamPayload{
-		Msg: message.Msg,
+		Msg: *message.Msg,
 	}
 	return v
 }
 
-// NewProtoMixedNoStreamResponse builds the gRPC response type from the result
-// of the "mixed_no_stream" endpoint of the "test-http-grpc" service.
+// NewProtoMixedNoStreamResponse builds *test_http_grpcpb.MixedNoStreamResponse
+// from *testhttpgrpc.MixedNoStreamResult.
 func NewProtoMixedNoStreamResponse(result *testhttpgrpc.MixedNoStreamResult) *test_http_grpcpb.MixedNoStreamResponse {
 	message := &test_http_grpcpb.MixedNoStreamResponse{
-		Out: result.Out,
+		Out: &result.Out,
 	}
 	return message
 }
 
-// NewProtoMixedServerStreamResponse builds the gRPC response type from the
-// result of the "mixed_server_stream" endpoint of the "test-http-grpc" service.
+// NewProtoMixedServerStreamResponse builds
+// *test_http_grpcpb.MixedServerStreamResponse from
+// *testhttpgrpc.MixedServerStreamResult.
 func NewProtoMixedServerStreamResponse(result *testhttpgrpc.MixedServerStreamResult) *test_http_grpcpb.MixedServerStreamResponse {
 	message := &test_http_grpcpb.MixedServerStreamResponse{
-		Event: result.Event,
+		Event: &result.Event,
 	}
 	return message
 }
 
-func NewProtoMixedServerStreamResultMixedServerStreamResponse(result *testhttpgrpc.MixedServerStreamResult) *test_http_grpcpb.MixedServerStreamResponse {
-	v := &test_http_grpcpb.MixedServerStreamResponse{
-		Event: result.Event,
-	}
-	return v
-}
-
-// NewProtoMixedClientStreamWsGrpcResponse builds the gRPC response type from
-// the result of the "mixed_client_stream_ws_grpc" endpoint of the
-// "test-http-grpc" service.
+// NewProtoMixedClientStreamWsGrpcResponse builds
+// *test_http_grpcpb.MixedClientStreamWsGrpcResponse from
+// *testhttpgrpc.MixedClientStreamWsGrpcResult.
 func NewProtoMixedClientStreamWsGrpcResponse(result *testhttpgrpc.MixedClientStreamWsGrpcResult) *test_http_grpcpb.MixedClientStreamWsGrpcResponse {
 	message := &test_http_grpcpb.MixedClientStreamWsGrpcResponse{
-		Out: result.Out,
+		Out: &result.Out,
 	}
 	return message
 }
 
-func NewProtoMixedClientStreamWsGrpcResultMixedClientStreamWsGrpcResponse(result *testhttpgrpc.MixedClientStreamWsGrpcResult) *test_http_grpcpb.MixedClientStreamWsGrpcResponse {
-	v := &test_http_grpcpb.MixedClientStreamWsGrpcResponse{
-		Out: result.Out,
-	}
-	return v
-}
-
+// NewMixedClientStreamWsGrpcStreamingRequestMixedClientStreamWsGrpcStreamingPayload
+// builds *testhttpgrpc.MixedClientStreamWsGrpcStreamingPayload from
+// *test_http_grpcpb.MixedClientStreamWsGrpcStreamingRequest.
 func NewMixedClientStreamWsGrpcStreamingRequestMixedClientStreamWsGrpcStreamingPayload(v *test_http_grpcpb.MixedClientStreamWsGrpcStreamingRequest) *testhttpgrpc.MixedClientStreamWsGrpcStreamingPayload {
 	spayload := &testhttpgrpc.MixedClientStreamWsGrpcStreamingPayload{
-		Message: v.Message_,
+		Message: *v.Message_,
 	}
 	return spayload
 }
 
-// NewProtoMixedBidiStreamWsGrpcResponse builds the gRPC response type from the
-// result of the "mixed_bidi_stream_ws_grpc" endpoint of the "test-http-grpc"
-// service.
+// NewProtoMixedBidiStreamWsGrpcResponse builds
+// *test_http_grpcpb.MixedBidiStreamWsGrpcResponse from
+// *testhttpgrpc.MixedBidiStreamWsGrpcResult.
 func NewProtoMixedBidiStreamWsGrpcResponse(result *testhttpgrpc.MixedBidiStreamWsGrpcResult) *test_http_grpcpb.MixedBidiStreamWsGrpcResponse {
 	message := &test_http_grpcpb.MixedBidiStreamWsGrpcResponse{
-		Message_: result.Message,
+		Message_: &result.Message,
 	}
 	return message
 }
 
-func NewProtoMixedBidiStreamWsGrpcResultMixedBidiStreamWsGrpcResponse(result *testhttpgrpc.MixedBidiStreamWsGrpcResult) *test_http_grpcpb.MixedBidiStreamWsGrpcResponse {
-	v := &test_http_grpcpb.MixedBidiStreamWsGrpcResponse{
-		Message_: result.Message,
-	}
-	return v
-}
-
+// NewMixedBidiStreamWsGrpcStreamingRequestMixedBidiStreamWsGrpcStreamingPayload
+// builds *testhttpgrpc.MixedBidiStreamWsGrpcStreamingPayload from
+// *test_http_grpcpb.MixedBidiStreamWsGrpcStreamingRequest.
 func NewMixedBidiStreamWsGrpcStreamingRequestMixedBidiStreamWsGrpcStreamingPayload(v *test_http_grpcpb.MixedBidiStreamWsGrpcStreamingRequest) *testhttpgrpc.MixedBidiStreamWsGrpcStreamingPayload {
 	spayload := &testhttpgrpc.MixedBidiStreamWsGrpcStreamingPayload{
-		Message: v.Message_,
+		Message: *v.Message_,
 	}
 	return spayload
+}
+
+// ValidateGrpcNoStreamRequest runs the validations defined on
+// GrpcNoStreamRequest.
+func ValidateGrpcNoStreamRequest(message *test_http_grpcpb.GrpcNoStreamRequest) (err error) {
+	if message.Msg == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("msg", "message"))
+	}
+	return
 }
 
 // ValidateGrpcNoStreamErrorDivByZeroRequest runs the validations defined on
 // GrpcNoStreamErrorDivByZeroRequest.
 func ValidateGrpcNoStreamErrorDivByZeroRequest(message *test_http_grpcpb.GrpcNoStreamErrorDivByZeroRequest) (err error) {
-	if message.Dividend < -1000 {
-		err = goa.MergeErrors(err, goa.InvalidRangeError("message.dividend", message.Dividend, -1000, true))
+	if message.Dividend == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("dividend", "message"))
 	}
-	if message.Dividend > 1000 {
-		err = goa.MergeErrors(err, goa.InvalidRangeError("message.dividend", message.Dividend, 1000, false))
+	if message.Divisor == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("divisor", "message"))
 	}
-	if message.Divisor < -100 {
-		err = goa.MergeErrors(err, goa.InvalidRangeError("message.divisor", message.Divisor, -100, true))
+	if message.Dividend != nil {
+		if *message.Dividend < -1000 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError("message.dividend", *message.Dividend, -1000, true))
+		}
+		if *message.Dividend > 1000 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError("message.dividend", *message.Dividend, 1000, false))
+		}
 	}
-	if message.Divisor > 100 {
-		err = goa.MergeErrors(err, goa.InvalidRangeError("message.divisor", message.Divisor, 100, false))
+	if message.Divisor != nil {
+		if *message.Divisor < -100 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError("message.divisor", *message.Divisor, -100, true))
+		}
+		if *message.Divisor > 100 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError("message.divisor", *message.Divisor, 100, false))
+		}
+	}
+	return
+}
+
+// ValidateGrpcServerStreamRequest runs the validations defined on
+// GrpcServerStreamRequest.
+func ValidateGrpcServerStreamRequest(message *test_http_grpcpb.GrpcServerStreamRequest) (err error) {
+	if message.From == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("from", "message"))
+	}
+	return
+}
+
+// ValidateGrpcClientStreamStreamingRequest runs the validations defined on
+// GrpcClientStreamStreamingRequest.
+func ValidateGrpcClientStreamStreamingRequest(stream *test_http_grpcpb.GrpcClientStreamStreamingRequest) (err error) {
+	if stream.Value == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("value", "stream"))
+	}
+	return
+}
+
+// ValidateGrpcBidiStreamStreamingRequest runs the validations defined on
+// GrpcBidiStreamStreamingRequest.
+func ValidateGrpcBidiStreamStreamingRequest(stream *test_http_grpcpb.GrpcBidiStreamStreamingRequest) (err error) {
+	if stream.In == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("in", "stream"))
+	}
+	return
+}
+
+// ValidateMixedNoStreamRequest runs the validations defined on
+// MixedNoStreamRequest.
+func ValidateMixedNoStreamRequest(message *test_http_grpcpb.MixedNoStreamRequest) (err error) {
+	if message.Msg == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("msg", "message"))
+	}
+	return
+}
+
+// ValidateMixedClientStreamWsGrpcStreamingRequest runs the validations defined
+// on MixedClientStreamWsGrpcStreamingRequest.
+func ValidateMixedClientStreamWsGrpcStreamingRequest(stream *test_http_grpcpb.MixedClientStreamWsGrpcStreamingRequest) (err error) {
+	if stream.Message_ == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "stream"))
+	}
+	return
+}
+
+// ValidateMixedBidiStreamWsGrpcStreamingRequest runs the validations defined
+// on MixedBidiStreamWsGrpcStreamingRequest.
+func ValidateMixedBidiStreamWsGrpcStreamingRequest(stream *test_http_grpcpb.MixedBidiStreamWsGrpcStreamingRequest) (err error) {
+	if stream.Message_ == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "stream"))
 	}
 	return
 }

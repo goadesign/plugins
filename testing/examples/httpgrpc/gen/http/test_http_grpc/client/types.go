@@ -302,7 +302,7 @@ func NewMixedBidiStreamWsGrpcResultOK(body *MixedBidiStreamWsGrpcResponseBody) *
 }
 
 // ValidateHTTPNoStreamResponseBody runs the validations defined on
-// http_no_stream_response_body
+// HTTPNoStreamResponseBody
 func ValidateHTTPNoStreamResponseBody(body *HTTPNoStreamResponseBody) (err error) {
 	if body.Out == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("out", "body"))
@@ -311,7 +311,7 @@ func ValidateHTTPNoStreamResponseBody(body *HTTPNoStreamResponseBody) (err error
 }
 
 // ValidateHTTPNoStreamErrorResponseBody runs the validations defined on
-// http_no_stream_error_response_body
+// HTTPNoStreamErrorResponseBody
 func ValidateHTTPNoStreamErrorResponseBody(body *HTTPNoStreamErrorResponseBody) (err error) {
 	if body.Out == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("out", "body"))
@@ -320,7 +320,7 @@ func ValidateHTTPNoStreamErrorResponseBody(body *HTTPNoStreamErrorResponseBody) 
 }
 
 // ValidateHTTPServerStreamSseResponseBody runs the validations defined on
-// http_server_stream_sse_response_body
+// HTTPServerStreamSseResponseBody
 func ValidateHTTPServerStreamSseResponseBody(body *HTTPServerStreamSseResponseBody) (err error) {
 	if body.Event == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("event", "body"))
@@ -329,7 +329,7 @@ func ValidateHTTPServerStreamSseResponseBody(body *HTTPServerStreamSseResponseBo
 }
 
 // ValidateHTTPServerStreamWsResponseBody runs the validations defined on
-// http_server_stream_ws_response_body
+// HTTPServerStreamWsResponseBody
 func ValidateHTTPServerStreamWsResponseBody(body *HTTPServerStreamWsResponseBody) (err error) {
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
@@ -338,7 +338,7 @@ func ValidateHTTPServerStreamWsResponseBody(body *HTTPServerStreamWsResponseBody
 }
 
 // ValidateHTTPClientStreamWsResponseBody runs the validations defined on
-// http_client_stream_ws_response_body
+// HTTPClientStreamWsResponseBody
 func ValidateHTTPClientStreamWsResponseBody(body *HTTPClientStreamWsResponseBody) (err error) {
 	if body.Out == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("out", "body"))
@@ -347,7 +347,7 @@ func ValidateHTTPClientStreamWsResponseBody(body *HTTPClientStreamWsResponseBody
 }
 
 // ValidateHTTPBidiStreamWsResponseBody runs the validations defined on
-// http_bidi_stream_ws_response_body
+// HTTPBidiStreamWsResponseBody
 func ValidateHTTPBidiStreamWsResponseBody(body *HTTPBidiStreamWsResponseBody) (err error) {
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
@@ -356,7 +356,7 @@ func ValidateHTTPBidiStreamWsResponseBody(body *HTTPBidiStreamWsResponseBody) (e
 }
 
 // ValidateMixedNoStreamResponseBody runs the validations defined on
-// mixed_no_stream_response_body
+// MixedNoStreamResponseBody
 func ValidateMixedNoStreamResponseBody(body *MixedNoStreamResponseBody) (err error) {
 	if body.Out == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("out", "body"))
@@ -365,7 +365,7 @@ func ValidateMixedNoStreamResponseBody(body *MixedNoStreamResponseBody) (err err
 }
 
 // ValidateMixedServerStreamResponseBody runs the validations defined on
-// mixed_server_stream_response_body
+// MixedServerStreamResponseBody
 func ValidateMixedServerStreamResponseBody(body *MixedServerStreamResponseBody) (err error) {
 	if body.Event == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("event", "body"))
@@ -374,7 +374,7 @@ func ValidateMixedServerStreamResponseBody(body *MixedServerStreamResponseBody) 
 }
 
 // ValidateMixedClientStreamWsGrpcResponseBody runs the validations defined on
-// mixed_client_stream_ws_grpc_response_body
+// MixedClientStreamWsGrpcResponseBody
 func ValidateMixedClientStreamWsGrpcResponseBody(body *MixedClientStreamWsGrpcResponseBody) (err error) {
 	if body.Out == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("out", "body"))
@@ -383,7 +383,7 @@ func ValidateMixedClientStreamWsGrpcResponseBody(body *MixedClientStreamWsGrpcRe
 }
 
 // ValidateMixedBidiStreamWsGrpcResponseBody runs the validations defined on
-// mixed_bidi_stream_ws_grpc_response_body
+// MixedBidiStreamWsGrpcResponseBody
 func ValidateMixedBidiStreamWsGrpcResponseBody(body *MixedBidiStreamWsGrpcResponseBody) (err error) {
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
@@ -392,7 +392,7 @@ func ValidateMixedBidiStreamWsGrpcResponseBody(body *MixedBidiStreamWsGrpcRespon
 }
 
 // ValidateHTTPNoStreamErrorDivisionByZeroResponseBody runs the validations
-// defined on http_no_stream_error_division_by_zero_response_body
+// defined on HTTPNoStreamErrorDivisionByZeroResponseBody
 func ValidateHTTPNoStreamErrorDivisionByZeroResponseBody(body *HTTPNoStreamErrorDivisionByZeroResponseBody) (err error) {
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))

@@ -8,9 +8,7 @@
 
 package calculator
 
-import (
-	"context"
-)
+import "context"
 
 // A simple calculator service to demonstrate testing plugin features
 type Service interface {

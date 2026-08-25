@@ -13,8 +13,8 @@ import (
 
 	goahttp "goa.design/goa/v3/http"
 	"goa.design/plugins/v3/tscap/example"
-	tscapsvc "goa.design/plugins/v3/tscap/example/gen/tscap"
 	tscapsvr "goa.design/plugins/v3/tscap/example/gen/http/tscap/server"
+	tscapsvc "goa.design/plugins/v3/tscap/example/gen/tscap"
 )
 
 func main() {

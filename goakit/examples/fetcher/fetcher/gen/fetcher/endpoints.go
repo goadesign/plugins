@@ -12,6 +12,7 @@ import (
 	"context"
 
 	"github.com/go-kit/kit/endpoint"
+	fetcherviews "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
 // Endpoints wraps the "fetcher" service endpoints.
@@ -41,6 +42,9 @@ func NewFetchEndpoint(s Service) endpoint.Endpoint {
 			return nil, err
 		}
 		vres := NewViewedFetchMedia(res, "default")
+		if err := fetcherviews.ValidateFetchMedia(vres); err != nil {
+			return nil, err
+		}
 		return vres, nil
 	}
 }

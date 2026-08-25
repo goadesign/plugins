@@ -25,14 +25,14 @@ func NewTestData() *TestData {
 // ValidAddPayload generates a valid add payload.
 func (td *TestData) ValidAddPayload() *calculator.AddPayload {
 	var payload *calculator.AddPayload
-	json.Unmarshal([]byte(`{"a":0.8046048822894467,"b":0.4725920460831924}`), &payload)
+	json.Unmarshal([]byte(`{"a":0.44563671576515784,"b":0.9943820459541153}`), &payload)
 	return payload
 }
 
 // AddPayloadWithAllFields generates a add payload with all fields populated.
 func (td *TestData) AddPayloadWithAllFields() *calculator.AddPayload {
 	var payload *calculator.AddPayload
-	json.Unmarshal([]byte(`{"a":0.8046048822894467,"b":0.4725920460831924}`), &payload)
+	json.Unmarshal([]byte(`{"a":0.44563671576515784,"b":0.9943820459541153}`), &payload)
 	return payload
 }
 
@@ -55,7 +55,7 @@ func (b *AddPayloadBuilder) Build() *calculator.AddPayload {
 // ValidDividePayload generates a valid divide payload.
 func (td *TestData) ValidDividePayload() *calculator.DividePayload {
 	var payload *calculator.DividePayload
-	json.Unmarshal([]byte(`{"dividend":0.15290751445500889,"divisor":0.49929202566829306}`), &payload)
+	json.Unmarshal([]byte(`{"dividend":0.4490181783753573,"divisor":0.22489100792813552}`), &payload)
 	return payload
 }
 
@@ -63,7 +63,7 @@ func (td *TestData) ValidDividePayload() *calculator.DividePayload {
 // populated.
 func (td *TestData) DividePayloadWithAllFields() *calculator.DividePayload {
 	var payload *calculator.DividePayload
-	json.Unmarshal([]byte(`{"dividend":0.15290751445500889,"divisor":0.49929202566829306}`), &payload)
+	json.Unmarshal([]byte(`{"dividend":0.4490181783753573,"divisor":0.22489100792813552}`), &payload)
 	return payload
 }
 
@@ -86,7 +86,7 @@ func (b *DividePayloadBuilder) Build() *calculator.DividePayload {
 // ValidFactorialPayload generates a valid factorial payload.
 func (td *TestData) ValidFactorialPayload() *calculator.FactorialPayload {
 	var payload *calculator.FactorialPayload
-	json.Unmarshal([]byte(`{"n":14}`), &payload)
+	json.Unmarshal([]byte(`{"n":2}`), &payload)
 	return payload
 }
 
@@ -110,7 +110,7 @@ func (td *TestData) FactorialPayloadWithMaxValues() *calculator.FactorialPayload
 // populated.
 func (td *TestData) FactorialPayloadWithAllFields() *calculator.FactorialPayload {
 	var payload *calculator.FactorialPayload
-	json.Unmarshal([]byte(`{"n":14}`), &payload)
+	json.Unmarshal([]byte(`{"n":2}`), &payload)
 	return payload
 }
 
@@ -133,7 +133,7 @@ func (b *FactorialPayloadBuilder) Build() *calculator.FactorialPayload {
 // ValidStatisticsPayload generates a valid statistics payload.
 func (td *TestData) ValidStatisticsPayload() *calculator.StatisticsPayload {
 	var payload *calculator.StatisticsPayload
-	json.Unmarshal([]byte(`{"numbers":[0.3381990535444184,0.5267699441186475,0.5182299611503365]}`), &payload)
+	json.Unmarshal([]byte(`{"numbers":[0.7811727221500537]}`), &payload)
 	return payload
 }
 
@@ -141,7 +141,7 @@ func (td *TestData) ValidStatisticsPayload() *calculator.StatisticsPayload {
 // length strings/arrays.
 func (td *TestData) StatisticsPayloadWithMinLength() *calculator.StatisticsPayload {
 	var payload *calculator.StatisticsPayload
-	json.Unmarshal([]byte(`{"numbers":[0.37830484879441273]}`), &payload)
+	json.Unmarshal([]byte(`{"numbers":[0.6514540004476669]}`), &payload)
 	return payload
 }
 
@@ -149,7 +149,7 @@ func (td *TestData) StatisticsPayloadWithMinLength() *calculator.StatisticsPaylo
 // fields populated.
 func (td *TestData) StatisticsPayloadWithAllFields() *calculator.StatisticsPayload {
 	var payload *calculator.StatisticsPayload
-	json.Unmarshal([]byte(`{"numbers":[0.3381990535444184,0.5267699441186475,0.5182299611503365]}`), &payload)
+	json.Unmarshal([]byte(`{"numbers":[0.7811727221500537]}`), &payload)
 	return payload
 }
 
@@ -172,7 +172,7 @@ func (b *StatisticsPayloadBuilder) Build() *calculator.StatisticsPayload {
 // ValidBatchAddPayload generates a valid batch_add payload.
 func (td *TestData) ValidBatchAddPayload() *calculator.BatchAddStreamingPayload {
 	var payload *calculator.BatchAddStreamingPayload
-	json.Unmarshal([]byte(`{"a":0.03867010456428904,"b":0.5620394395461085}`), &payload)
+	json.Unmarshal([]byte(`{"a":0.46890788570126785,"b":0.8347329767479303}`), &payload)
 	return payload
 }
 
@@ -180,7 +180,7 @@ func (td *TestData) ValidBatchAddPayload() *calculator.BatchAddStreamingPayload 
 // populated.
 func (td *TestData) BatchAddPayloadWithAllFields() *calculator.BatchAddStreamingPayload {
 	var payload *calculator.BatchAddStreamingPayload
-	json.Unmarshal([]byte(`{"a":0.03867010456428904,"b":0.5620394395461085}`), &payload)
+	json.Unmarshal([]byte(`{"a":0.46890788570126785,"b":0.8347329767479303}`), &payload)
 	return payload
 }
 

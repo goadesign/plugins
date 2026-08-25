@@ -12,6 +12,7 @@ import (
 	"context"
 
 	"github.com/go-kit/kit/endpoint"
+	archiverviews "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
 // Endpoints wraps the "archiver" service endpoints.
@@ -44,6 +45,9 @@ func NewArchiveEndpoint(s Service) endpoint.Endpoint {
 			return nil, err
 		}
 		vres := NewViewedArchiveMedia(res, "default")
+		if err := archiverviews.ValidateArchiveMedia(vres); err != nil {
+			return nil, err
+		}
 		return vres, nil
 	}
 }
@@ -58,6 +62,9 @@ func NewReadEndpoint(s Service) endpoint.Endpoint {
 			return nil, err
 		}
 		vres := NewViewedArchiveMedia(res, "default")
+		if err := archiverviews.ValidateArchiveMedia(vres); err != nil {
+			return nil, err
+		}
 		return vres, nil
 	}
 }

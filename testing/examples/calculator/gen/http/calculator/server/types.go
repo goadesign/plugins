@@ -304,8 +304,6 @@ func ValidateFactorialRequestBody(body *FactorialRequestBody) (err error) {
 		if *body.N < 0 {
 			err = goa.MergeErrors(err, goa.InvalidRangeError("body.n", *body.N, 0, true))
 		}
-	}
-	if body.N != nil {
 		if *body.N > 20 {
 			err = goa.MergeErrors(err, goa.InvalidRangeError("body.n", *body.N, 20, false))
 		}
@@ -326,7 +324,7 @@ func ValidateStatisticsRequestBody(body *StatisticsRequestBody) (err error) {
 }
 
 // ValidateBatchAddStreamingBody runs the validations defined on
-// batch_add_streaming_body
+// BatchAddStreamingBody
 func ValidateBatchAddStreamingBody(body *BatchAddStreamingBody) (err error) {
 	if body.A == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("a", "body"))

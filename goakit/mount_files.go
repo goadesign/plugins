@@ -1,3 +1,5 @@
+// This file writes go-kit mount functions using the names chosen while Goa
+// planned the generated server package.
 package goakit
 
 import (
@@ -6,26 +8,47 @@ import (
 	"strings"
 
 	"goa.design/goa/v3/codegen"
-	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
+)
+
+type (
+	// goakitFileServerData contains the chosen mount name rendered by the go-kit
+	// template alongside the file server values supplied by Goa.
+	goakitFileServerData struct {
+		*httpcodegen.FileServerData
+		MountHandler string
+	}
 )
 
 // MountFiles produces the files containing the HTTP handler mount functions
 // that configure the mux to serve the requests.
 func MountFiles(root *expr.RootExpr) []*codegen.File {
-	services := httpcodegen.NewServicesData(service.NewServicesData(root), root.API.HTTP)
-	fw := make([]*codegen.File, len(root.API.HTTP.Services))
-	for i, svc := range root.API.HTTP.Services {
-		fw[i] = mountFile(svc, services)
+	plan, err := planHTTP("generated.local/gen", root)
+	if err != nil {
+		panic(err)
+	}
+	return mountFiles(plan)
+}
+
+// mountFiles builds mount functions from the HTTP names chosen for the current
+// generation run.
+func mountFiles(plan *goakitRootPlan) []*codegen.File {
+	fw := make([]*codegen.File, len(plan.root.API.HTTP.Services))
+	for i, service := range plan.root.API.HTTP.Services {
+		data := httpServiceData(plan.http, service)
+		fw[i] = mountFile(service, data, plan.services[service])
 	}
 	return fw
 }
 
 // mountFile returns the file defining the mount handler functions for the given
 // service.
-func mountFile(svc *expr.HTTPServiceExpr, services *httpcodegen.ServicesData) *codegen.File {
-	data := services.Get(svc.Name())
+func mountFile(
+	svc *expr.HTTPServiceExpr,
+	data *httpcodegen.ServiceData,
+	names *goakitServicePlan,
+) *codegen.File {
 	path := filepath.Join(codegen.Gendir, "http", data.Service.PathName, "kitserver", "mount.go")
 	title := fmt.Sprintf("%s go-kit HTTP server encoders and decoders", svc.Name())
 	sections := []*codegen.SectionTemplate{
@@ -38,16 +61,19 @@ func mountFile(svc *expr.HTTPServiceExpr, services *httpcodegen.ServicesData) *c
 		sections = append(sections, &codegen.SectionTemplate{
 			Name:   "goakit-mount-handler",
 			Source: mountHandlerT,
-			Data:   e,
+			Data:   plannedEndpointData(e, names.endpoints[e.Method.Name]),
 		})
 	}
 	fm := codegen.TemplateFuncs()
 	fm["join"] = strings.Join
-	for _, fs := range data.FileServers {
+	for index, fs := range data.FileServers {
 		sections = append(sections, &codegen.SectionTemplate{
-			Name:    "goakit-mount-file-server",
-			Source:  mountFileServerT,
-			Data:    fs,
+			Name:   "goakit-mount-file-server",
+			Source: mountFileServerT,
+			Data: &goakitFileServerData{
+				FileServerData: fs,
+				MountHandler:   names.fileServers[index].Name(),
+			},
 			FuncMap: fm,
 		})
 	}

@@ -58,8 +58,8 @@ func New(
 		encoder:              encoder,
 		errhandler:           errhandler,
 	}
-	// Default HTTP handler per transport kind
-	// Plain HTTP JSON-RPC
+	// Install the request handler required by this service's methods.
+	// ServeHTTP handles ordinary JSON-RPC request bodies.
 	s.Handler = http.HandlerFunc(s.ServeHTTP)
 	return s
 }
@@ -78,32 +78,44 @@ func (s *Server) MethodNames() []string { return testjsonrpc.MethodNames[:] }
 // ServeHTTP handles JSON-RPC requests.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.handleHTTP(w, r)
-} // handleHTTP handles JSON-RPC requests.
+}
+
+// handleHTTP reads one JSON-RPC request object or one array of requests.
 func (s *Server) handleHTTP(w http.ResponseWriter, r *http.Request) {
-	// Peek at the first byte to determine request type
-	bufReader := bufio.NewReader(r.Body)
-	peek, err := bufReader.Peek(1)
-	if err != nil && err != io.EOF {
-		r.Body.Close()
-		s.errhandler(r.Context(), w, fmt.Errorf("failed to read request body: %w", err))
-		return
+	originalBody := r.Body
+
+	// Find the first JSON byte so leading whitespace does not change whether the
+	// body is decoded as one request or an array.
+	bufReader := bufio.NewReader(originalBody)
+	var peek []byte
+	for {
+		var err error
+		peek, err = bufReader.Peek(1)
+		if err != nil && err != io.EOF {
+			closeErr := originalBody.Close()
+			s.errhandler(r.Context(), w, fmt.Errorf("failed to read request body: %w", errors.Join(err, closeErr)))
+			return
+		}
+		if len(peek) == 0 || (peek[0] != ' ' && peek[0] != '\t' && peek[0] != '\n' && peek[0] != '\r') {
+			break
+		}
+		if _, err := bufReader.Discard(1); err != nil {
+			closeErr := originalBody.Close()
+			s.errhandler(r.Context(), w, fmt.Errorf("failed to read request body: %w", errors.Join(err, closeErr)))
+			return
+		}
 	}
 
-	// Wrap the buffered reader with the original closer
-	r.Body = struct {
-		io.Reader
-		io.Closer
-	}{
-		Reader: bufReader,
-		Closer: r.Body,
-	}
-	defer func(r *http.Request) {
-		if err := r.Body.Close(); err != nil {
+	// The generated handler owns the original body. Decoders receive a wrapper
+	// whose Close method cannot close it a second time.
+	r.Body = io.NopCloser(bufReader)
+	defer func() {
+		if err := originalBody.Close(); err != nil {
 			s.errhandler(r.Context(), w, fmt.Errorf("failed to close request body: %w", err))
 		}
-	}(r)
+	}()
 
-	// Route to appropriate handler
+	// A leading '[' starts an array of requests.
 	if len(peek) > 0 && peek[0] == '[' {
 		s.handleBatch(w, r)
 		return
@@ -111,11 +123,11 @@ func (s *Server) handleHTTP(w http.ResponseWriter, r *http.Request) {
 	s.handleSingle(w, r)
 }
 
-// handleSingle handles a single JSON-RPC request.
+// handleSingle decodes and runs one JSON-RPC request.
 func (s *Server) handleSingle(w http.ResponseWriter, r *http.Request) {
 	var req jsonrpc.RawRequest
 	if err := s.decoder(r).Decode(&req); err != nil {
-		// JSON-RPC parse error with null id and generic message
+		// A request that cannot be decoded receives the JSON-RPC parse error.
 		response := jsonrpc.MakeErrorResponse(nil, jsonrpc.ParseError, "Parse error", nil)
 		if encErr := s.encoder(r.Context(), w).Encode(response); encErr != nil {
 			s.errhandler(r.Context(), w, fmt.Errorf("failed to encode parse error response: %w", encErr))
@@ -125,36 +137,46 @@ func (s *Server) handleSingle(w http.ResponseWriter, r *http.Request) {
 	s.processRequest(r.Context(), r, &req, w)
 }
 
-// handleBatch handles a batch of JSON-RPC requests.
+// handleBatch handles an array of JSON-RPC values and writes the required responses.
 func (s *Server) handleBatch(w http.ResponseWriter, r *http.Request) {
 	var reqs []jsonrpc.RawRequest
 	if err := s.decoder(r).Decode(&reqs); err != nil {
-		// JSON-RPC parse error for batch with null id and generic message
+		// An array that cannot be decoded receives the JSON-RPC parse error.
 		response := jsonrpc.MakeErrorResponse(nil, jsonrpc.ParseError, "Parse error", nil)
 		if encErr := s.encoder(r.Context(), w).Encode(response); encErr != nil {
 			s.errhandler(r.Context(), w, fmt.Errorf("failed to encode parse error response: %w", encErr))
 		}
 		return
 	}
+	if len(reqs) == 0 {
+		// JSON-RPC defines an empty request array as one invalid request.
+		response := jsonrpc.MakeErrorResponse(nil, jsonrpc.InvalidRequest, "Invalid request", nil)
+		if err := s.encoder(r.Context(), w).Encode(response); err != nil {
+			s.errhandler(r.Context(), w, fmt.Errorf("failed to encode invalid request response: %w", err))
+		}
+		return
+	}
 
-	// Write responses
+	// Write every response into one JSON array.
 	w.Header().Set("Content-Type", "application/json")
 	writer := &batchWriter{Writer: w}
 
 	for _, req := range reqs {
-		// Process the request with batch writer
+		// The writer inserts the array separators around each response.
 		s.processRequest(r.Context(), r, &req, writer)
 	}
 
-	// Close the batch array
+	// Write the closing bracket only when at least one request produced a response.
 	if writer.written {
-		writer.Writer.Write([]byte{']'})
+		if _, err := writer.Writer.Write([]byte{']'}); err != nil {
+			s.errhandler(r.Context(), w, fmt.Errorf("failed to close JSON-RPC batch response: %w", err))
+		}
 	}
 }
 
-// ProcessRequest processes a single JSON-RPC request.
+// processRequest validates the JSON-RPC version and method, then calls the matching handler.
 func (s *Server) processRequest(ctx context.Context, r *http.Request, req *jsonrpc.RawRequest, w http.ResponseWriter) {
-	if req.JSONRPC != "2.0" {
+	if req.Invalid || req.JSONRPC != "2.0" {
 		s.encodeJSONRPCError(ctx, w, req, jsonrpc.InvalidRequest, "Invalid request", nil)
 		return
 	}
@@ -174,11 +196,14 @@ func (s *Server) processRequest(ctx context.Context, r *http.Request, req *jsonr
 			s.errhandler(ctx, w, fmt.Errorf("handler error for %s: %w", "jsonrpc_no_stream_error", err))
 		}
 	default:
-		s.encodeJSONRPCError(ctx, w, req, jsonrpc.MethodNotFound, "Method not found", nil)
+		if req.HasID {
+			s.encodeJSONRPCError(ctx, w, req, jsonrpc.MethodNotFound, "Method not found", nil)
+		}
 	}
 }
 
-// batchWriter is a helper type that implements http.ResponseWriter for writing multiple JSON-RPC responses
+// batchWriter inserts JSON array separators around responses from one request
+// array.
 type batchWriter struct {
 	io.Writer
 	header     http.Header
@@ -201,18 +226,20 @@ func (rb *batchWriter) WriteHeader(statusCode int) {
 }
 
 func (rb *batchWriter) Write(data []byte) (int, error) {
+	separator := byte(',')
 	if !rb.written {
-		rb.written = true
-		rb.Writer.Write([]byte{'['})
-	} else {
-		rb.Writer.Write([]byte{','})
+		separator = '['
 	}
+	if _, err := rb.Writer.Write([]byte{separator}); err != nil {
+		return 0, err
+	}
+	rb.written = true
 	return rb.Writer.Write(data)
 }
 
 // Mount configures the mux to serve the JSON-RPC test-jsonrpc service methods.
 func Mount(mux goahttp.Muxer, h *Server) {
-	// HTTP only
+	// This server handles ordinary JSON-RPC request bodies.
 	mux.Handle("POST", "/", h.ServeHTTP)
 }
 
@@ -236,61 +263,36 @@ func NewJsonrpcNoStreamHandler(
 		ctx = context.WithValue(ctx, goa.ServiceKey, "test-jsonrpc")
 		params, err := decodeParams(r, req)
 		if err != nil {
-			// Only send error response if request has ID (not nil or empty string)
-			if req.ID != nil && req.ID != "" {
-				code := jsonrpc.InternalError
-				if _, ok := err.(*goa.ServiceError); ok {
-					code = jsonrpc.InvalidParams
-				}
-				encodeJSONRPCError(ctx, w, req, code, err.Error(), nil, encoder, errhandler)
+			if req.HasID {
+				encodeJSONRPCError(ctx, w, req, jsonrpc.InvalidParams, err.Error(), nil, encoder, errhandler)
 			} else {
-				// No ID means notification - just log error
+				// A notification receives no JSON-RPC response, so pass the decode error to the configured error handler.
 				errhandler(ctx, w, fmt.Errorf("failed to decode parameters: %w", err))
 			}
 			return nil
 		}
 		res, err := endpoint(ctx, params)
 		if err != nil {
-			// Only send error response if request has ID (not nil or empty string)
-			if req.ID != nil && req.ID != "" {
-				var en goa.GoaErrorNamer
-				if !errors.As(err, &en) {
-					encodeJSONRPCError(ctx, w, req, jsonrpc.InternalError, err.Error(), nil, encoder, errhandler)
-					return nil
-				}
-				switch en.GoaErrorName() {
-				case "invalid_params":
-					encodeJSONRPCError(ctx, w, req, jsonrpc.InvalidParams, err.Error(), nil, encoder, errhandler)
-				case "method_not_found":
-					encodeJSONRPCError(ctx, w, req, jsonrpc.MethodNotFound, err.Error(), nil, encoder, errhandler)
-				default:
-					code := jsonrpc.InternalError
-					if _, ok := err.(*goa.ServiceError); ok {
-						code = jsonrpc.InvalidParams
-					}
-					encodeJSONRPCError(ctx, w, req, code, err.Error(), nil, encoder, errhandler)
-				}
+			if req.HasID {
+				encodeJSONRPCError(ctx, w, req, jsonrpc.InternalError, err.Error(), nil, encoder, errhandler)
 			} else {
-				// No ID means notification - just log error
+				// A notification receives no JSON-RPC response, so pass the service error to the configured error handler.
 				errhandler(ctx, w, fmt.Errorf("endpoint error: %w", err))
 			}
 			return nil
 		}
-
-		// For methods with no result, check if this is a notification
+		if !req.HasID {
+			// A notification has no ID field and receives no response.
+			return nil
+		}
 
 		// For methods with results, determine the ID to use for the response
 		var id any
 		// No ID field in result - use request ID
 		id = req.ID
 
-		if id == nil || id == "" {
-			// Notification - no response
-			return nil
-		}
-
 		// Send response with the result
-		// Convert result to response body with proper JSON tags
+		// Build the response body with the fields and JSON names declared by the service.
 		body := NewJsonrpcNoStreamResponseBody(res.(*testjsonrpc.JsonrpcNoStreamResult))
 		response := jsonrpc.MakeSuccessResponse(id, body)
 		if err := encoder(ctx, w).Encode(response); err != nil {
@@ -315,61 +317,36 @@ func NewJsonrpcNoStreamErrorHandler(
 		ctx = context.WithValue(ctx, goa.ServiceKey, "test-jsonrpc")
 		params, err := decodeParams(r, req)
 		if err != nil {
-			// Only send error response if request has ID (not nil or empty string)
-			if req.ID != nil && req.ID != "" {
-				code := jsonrpc.InternalError
-				if _, ok := err.(*goa.ServiceError); ok {
-					code = jsonrpc.InvalidParams
-				}
-				encodeJSONRPCError(ctx, w, req, code, err.Error(), nil, encoder, errhandler)
+			if req.HasID {
+				encodeJSONRPCError(ctx, w, req, jsonrpc.InvalidParams, err.Error(), nil, encoder, errhandler)
 			} else {
-				// No ID means notification - just log error
+				// A notification receives no JSON-RPC response, so pass the decode error to the configured error handler.
 				errhandler(ctx, w, fmt.Errorf("failed to decode parameters: %w", err))
 			}
 			return nil
 		}
 		res, err := endpoint(ctx, params)
 		if err != nil {
-			// Only send error response if request has ID (not nil or empty string)
-			if req.ID != nil && req.ID != "" {
-				var en goa.GoaErrorNamer
-				if !errors.As(err, &en) {
-					encodeJSONRPCError(ctx, w, req, jsonrpc.InternalError, err.Error(), nil, encoder, errhandler)
-					return nil
-				}
-				switch en.GoaErrorName() {
-				case "invalid_params":
-					encodeJSONRPCError(ctx, w, req, jsonrpc.InvalidParams, err.Error(), nil, encoder, errhandler)
-				case "method_not_found":
-					encodeJSONRPCError(ctx, w, req, jsonrpc.MethodNotFound, err.Error(), nil, encoder, errhandler)
-				default:
-					code := jsonrpc.InternalError
-					if _, ok := err.(*goa.ServiceError); ok {
-						code = jsonrpc.InvalidParams
-					}
-					encodeJSONRPCError(ctx, w, req, code, err.Error(), nil, encoder, errhandler)
-				}
+			if req.HasID {
+				encodeJSONRPCError(ctx, w, req, jsonrpc.InternalError, err.Error(), nil, encoder, errhandler)
 			} else {
-				// No ID means notification - just log error
+				// A notification receives no JSON-RPC response, so pass the service error to the configured error handler.
 				errhandler(ctx, w, fmt.Errorf("endpoint error: %w", err))
 			}
 			return nil
 		}
-
-		// For methods with no result, check if this is a notification
+		if !req.HasID {
+			// A notification has no ID field and receives no response.
+			return nil
+		}
 
 		// For methods with results, determine the ID to use for the response
 		var id any
 		// No ID field in result - use request ID
 		id = req.ID
 
-		if id == nil || id == "" {
-			// Notification - no response
-			return nil
-		}
-
 		// Send response with the result
-		// Convert result to response body with proper JSON tags
+		// Build the response body with the fields and JSON names declared by the service.
 		body := NewJsonrpcNoStreamErrorResponseBody(res.(*testjsonrpc.JsonrpcNoStreamErrorResult))
 		response := jsonrpc.MakeSuccessResponse(id, body)
 		if err := encoder(ctx, w).Encode(response); err != nil {
@@ -379,14 +356,14 @@ func NewJsonrpcNoStreamErrorHandler(
 	}
 }
 
-// encodeJSONRPCError creates and sends a JSON-RPC error response (handles nil
-// ID gracefully)
+// encodeJSONRPCError writes one error, copying the request ID or using null
+// when none is available.
 func (s *Server) encodeJSONRPCError(ctx context.Context, w http.ResponseWriter, req *jsonrpc.RawRequest, code jsonrpc.Code, message string, data any) {
 	encodeJSONRPCError(ctx, w, req, code, message, data, s.encoder, s.errhandler)
 }
 
-// encodeJSONRPCError creates and sends a JSON-RPC error response (handles nil
-// ID gracefully)
+// encodeJSONRPCError writes one error, copying the request ID or using null
+// when none is available.
 func encodeJSONRPCError(
 	ctx context.Context,
 	w http.ResponseWriter,
@@ -397,10 +374,8 @@ func encodeJSONRPCError(
 	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
 	errhandler func(context.Context, http.ResponseWriter, error),
 ) {
-	if req.ID != nil {
-		response := jsonrpc.MakeErrorResponse(req.ID, code, message, data)
-		if err := encoder(ctx, w).Encode(response); err != nil {
-			errhandler(ctx, w, fmt.Errorf("failed to encode JSON-RPC response: %w", err))
-		}
+	response := jsonrpc.MakeErrorResponse(req.ID, code, message, data)
+	if err := encoder(ctx, w).Encode(response); err != nil {
+		errhandler(ctx, w, fmt.Errorf("failed to encode JSON-RPC response: %w", err))
 	}
 }

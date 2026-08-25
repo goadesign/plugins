@@ -9,72 +9,72 @@
 package client
 
 import (
+	goa "goa.design/goa/v3/pkg"
 	calculator "goa.design/plugins/v3/testing/examples/calculator/gen/calculator"
 	calculatorpb "goa.design/plugins/v3/testing/examples/calculator/gen/grpc/calculator/pb"
 )
 
-// NewProtoAddRequest builds the gRPC request type from the payload of the
-// "add" endpoint of the "calculator" service.
+// NewProtoAddRequest builds *calculatorpb.AddRequest from
+// *calculator.AddPayload.
 func NewProtoAddRequest(payload *calculator.AddPayload) *calculatorpb.AddRequest {
 	message := &calculatorpb.AddRequest{
-		A: payload.A,
-		B: payload.B,
+		A: &payload.A,
+		B: &payload.B,
 	}
 	return message
 }
 
-// NewAddResult builds the result type of the "add" endpoint of the
-// "calculator" service from the gRPC response type.
+// NewAddResult builds *calculator.AddResult from *calculatorpb.AddResponse.
 func NewAddResult(message *calculatorpb.AddResponse) *calculator.AddResult {
 	result := &calculator.AddResult{
-		Result:    message.Result,
-		Operation: message.Operation,
+		Result:    *message.Result,
+		Operation: *message.Operation,
 	}
 	return result
 }
 
-// NewProtoDivideRequest builds the gRPC request type from the payload of the
-// "divide" endpoint of the "calculator" service.
+// NewProtoDivideRequest builds *calculatorpb.DivideRequest from
+// *calculator.DividePayload.
 func NewProtoDivideRequest(payload *calculator.DividePayload) *calculatorpb.DivideRequest {
 	message := &calculatorpb.DivideRequest{
-		Dividend: payload.Dividend,
-		Divisor:  payload.Divisor,
+		Dividend: &payload.Dividend,
+		Divisor:  &payload.Divisor,
 	}
 	return message
 }
 
-// NewDivideResult builds the result type of the "divide" endpoint of the
-// "calculator" service from the gRPC response type.
+// NewDivideResult builds *calculator.DivideResult from
+// *calculatorpb.DivideResponse.
 func NewDivideResult(message *calculatorpb.DivideResponse) *calculator.DivideResult {
 	result := &calculator.DivideResult{
-		Result:    message.Result,
-		Operation: message.Operation,
+		Result:    *message.Result,
+		Operation: *message.Operation,
 	}
 	return result
 }
 
-// NewProtoFactorialRequest builds the gRPC request type from the payload of
-// the "factorial" endpoint of the "calculator" service.
+// NewProtoFactorialRequest builds *calculatorpb.FactorialRequest from
+// *calculator.FactorialPayload.
 func NewProtoFactorialRequest(payload *calculator.FactorialPayload) *calculatorpb.FactorialRequest {
-	message := &calculatorpb.FactorialRequest{
-		N: int32(payload.N),
-	}
+	message := &calculatorpb.FactorialRequest{}
+	n := int32(payload.N)
+	message.N = &n
 	return message
 }
 
-// NewFactorialResult builds the result type of the "factorial" endpoint of the
-// "calculator" service from the gRPC response type.
+// NewFactorialResult builds *calculator.FactorialResult from
+// *calculatorpb.FactorialResponse.
 func NewFactorialResult(message *calculatorpb.FactorialResponse) *calculator.FactorialResult {
 	result := &calculator.FactorialResult{
-		Result:            message.Result,
-		Operation:         message.Operation,
-		ComputationTimeMs: int(message.ComputationTimeMs),
+		Result:            *message.Result,
+		Operation:         *message.Operation,
+		ComputationTimeMs: int(*message.ComputationTimeMs),
 	}
 	return result
 }
 
-// NewProtoStatisticsRequest builds the gRPC request type from the payload of
-// the "statistics" endpoint of the "calculator" service.
+// NewProtoStatisticsRequest builds *calculatorpb.StatisticsRequest from
+// *calculator.StatisticsPayload.
 func NewProtoStatisticsRequest(payload *calculator.StatisticsPayload) *calculatorpb.StatisticsRequest {
 	message := &calculatorpb.StatisticsRequest{}
 	if payload.Numbers != nil {
@@ -86,32 +86,157 @@ func NewProtoStatisticsRequest(payload *calculator.StatisticsPayload) *calculato
 	return message
 }
 
-// NewStatisticsResult builds the result type of the "statistics" endpoint of
-// the "calculator" service from the gRPC response type.
+// NewStatisticsResult builds *calculator.StatisticsResult from
+// *calculatorpb.StatisticsResponse.
 func NewStatisticsResult(message *calculatorpb.StatisticsResponse) *calculator.StatisticsResult {
 	result := &calculator.StatisticsResult{
-		Mean:   message.Mean,
-		Median: message.Median,
-		Min:    message.Min,
-		Max:    message.Max,
-		Count:  int(message.Count),
-		Sum:    message.Sum,
+		Mean:   *message.Mean,
+		Median: *message.Median,
+		Min:    *message.Min,
+		Max:    *message.Max,
+		Count:  int(*message.Count),
+		Sum:    *message.Sum,
 	}
 	return result
 }
 
+// NewBatchAddResponseBatchAddResult builds *calculator.BatchAddResult from
+// *calculatorpb.BatchAddResponse.
 func NewBatchAddResponseBatchAddResult(v *calculatorpb.BatchAddResponse) *calculator.BatchAddResult {
 	result := &calculator.BatchAddResult{
-		Result: v.Result,
-		Index:  int(v.Index),
+		Result: *v.Result,
+		Index:  int(*v.Index),
 	}
 	return result
 }
 
+// NewProtoBatchAddStreamingPayloadBatchAddStreamingRequest builds
+// *calculatorpb.BatchAddStreamingRequest from
+// *calculator.BatchAddStreamingPayload.
 func NewProtoBatchAddStreamingPayloadBatchAddStreamingRequest(spayload *calculator.BatchAddStreamingPayload) *calculatorpb.BatchAddStreamingRequest {
 	v := &calculatorpb.BatchAddStreamingRequest{
-		A: spayload.A,
-		B: spayload.B,
+		A: &spayload.A,
+		B: &spayload.B,
 	}
 	return v
+}
+
+// ValidateAddRequest runs the validations defined on AddRequest.
+func ValidateAddRequest(message *calculatorpb.AddRequest) (err error) {
+	if message.A == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("a", "message"))
+	}
+	if message.B == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("b", "message"))
+	}
+	return
+}
+
+// ValidateAddResponse runs the validations defined on AddResponse.
+func ValidateAddResponse(message *calculatorpb.AddResponse) (err error) {
+	if message.Result == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("result", "message"))
+	}
+	if message.Operation == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("operation", "message"))
+	}
+	return
+}
+
+// ValidateDivideRequest runs the validations defined on DivideRequest.
+func ValidateDivideRequest(message *calculatorpb.DivideRequest) (err error) {
+	if message.Dividend == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("dividend", "message"))
+	}
+	if message.Divisor == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("divisor", "message"))
+	}
+	return
+}
+
+// ValidateDivideResponse runs the validations defined on DivideResponse.
+func ValidateDivideResponse(message *calculatorpb.DivideResponse) (err error) {
+	if message.Result == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("result", "message"))
+	}
+	if message.Operation == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("operation", "message"))
+	}
+	return
+}
+
+// ValidateFactorialRequest runs the validations defined on FactorialRequest.
+func ValidateFactorialRequest(message *calculatorpb.FactorialRequest) (err error) {
+	if message.N == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("n", "message"))
+	}
+	if message.N != nil {
+		if *message.N < 0 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError("message.n", *message.N, 0, true))
+		}
+		if *message.N > 20 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError("message.n", *message.N, 20, false))
+		}
+	}
+	return
+}
+
+// ValidateFactorialResponse runs the validations defined on FactorialResponse.
+func ValidateFactorialResponse(message *calculatorpb.FactorialResponse) (err error) {
+	if message.Result == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("result", "message"))
+	}
+	if message.Operation == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("operation", "message"))
+	}
+	if message.ComputationTimeMs == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("computation_time_ms", "message"))
+	}
+	return
+}
+
+// ValidateStatisticsRequest runs the validations defined on StatisticsRequest.
+func ValidateStatisticsRequest(message *calculatorpb.StatisticsRequest) (err error) {
+	if message.Numbers == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("numbers", "message"))
+	}
+	if len(message.Numbers) < 1 {
+		err = goa.MergeErrors(err, goa.InvalidLengthError("message.numbers", message.Numbers, len(message.Numbers), 1, true))
+	}
+	return
+}
+
+// ValidateStatisticsResponse runs the validations defined on
+// StatisticsResponse.
+func ValidateStatisticsResponse(message *calculatorpb.StatisticsResponse) (err error) {
+	if message.Mean == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("mean", "message"))
+	}
+	if message.Median == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("median", "message"))
+	}
+	if message.Min == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("min", "message"))
+	}
+	if message.Max == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("max", "message"))
+	}
+	if message.Count == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("count", "message"))
+	}
+	if message.Sum == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("sum", "message"))
+	}
+	return
+}
+
+// ValidateBatchAddResponse runs the validations defined on BatchAddResponse.
+func ValidateBatchAddResponse(message *calculatorpb.BatchAddResponse) (err error) {
+	if message.Result == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("result", "message"))
+	}
+	if message.Index == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("index", "message"))
+	}
+	return
 }

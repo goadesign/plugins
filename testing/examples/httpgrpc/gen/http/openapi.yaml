@@ -57,7 +57,7 @@ paths:
                         required:
                             - out
                 "400":
-                    description: Division by zero error
+                    description: 'division_by_zero: Division by zero error'
                     schema:
                         $ref: '#/definitions/DivisionByZeroError'
                         required:
@@ -204,10 +204,9 @@ definitions:
             message:
                 type: string
                 description: division by zero error message
-                example: Ducimus quae sed et consequatur autem.
-        description: Division by zero error
+                example: Dolore eum provident autem iste.
         example:
-            message: Ducimus quae sed et consequatur autem.
+            message: Dolore eum provident autem iste.
         required:
             - message
     TestHTTPGrpcHTTPBidiStreamWsResponseBody:
@@ -216,9 +215,9 @@ definitions:
         properties:
             message:
                 type: string
-                example: Quos ipsam rerum.
+                example: Quaerat suscipit minus.
         example:
-            message: Quos ipsam rerum.
+            message: Quaerat suscipit minus.
         required:
             - message
     TestHTTPGrpcHTTPClientStreamWsResponseBody:
@@ -227,9 +226,9 @@ definitions:
         properties:
             out:
                 type: string
-                example: Id vel.
+                example: Nihil eos.
         example:
-            out: Id vel.
+            out: Nihil eos.
         required:
             - out
     TestHTTPGrpcHTTPNoStreamErrorRequestBody:
@@ -238,9 +237,9 @@ definitions:
         properties:
             msg:
                 type: string
-                example: Reiciendis consequatur.
+                example: Ipsum asperiores omnis culpa.
         example:
-            msg: Reiciendis consequatur.
+            msg: Ipsum asperiores omnis culpa.
         required:
             - msg
     TestHTTPGrpcHTTPNoStreamErrorResponseBody:
@@ -249,9 +248,9 @@ definitions:
         properties:
             out:
                 type: string
-                example: Aut unde laboriosam modi incidunt occaecati sed.
+                example: Voluptatum et et incidunt.
         example:
-            out: Aut unde laboriosam modi incidunt occaecati sed.
+            out: Voluptatum et et incidunt.
         required:
             - out
     TestHTTPGrpcHTTPNoStreamRequestBody:
@@ -260,9 +259,9 @@ definitions:
         properties:
             msg:
                 type: string
-                example: Omnis animi.
+                example: Expedita eum recusandae non.
         example:
-            msg: Omnis animi.
+            msg: Expedita eum recusandae non.
         required:
             - msg
     TestHTTPGrpcHTTPNoStreamResponseBody:
@@ -271,9 +270,9 @@ definitions:
         properties:
             out:
                 type: string
-                example: Inventore libero laudantium veniam sunt aut.
+                example: Et quam quia et.
         example:
-            out: Inventore libero laudantium veniam sunt aut.
+            out: Et quam quia et.
         required:
             - out
     TestHTTPGrpcHTTPServerStreamSseResponseBody:
@@ -282,9 +281,9 @@ definitions:
         properties:
             event:
                 type: string
-                example: Vitae ipsam eum aliquam corporis sed architecto.
+                example: Dolores cupiditate voluptatem voluptatibus accusantium sit.
         example:
-            event: Vitae ipsam eum aliquam corporis sed architecto.
+            event: Dolores cupiditate voluptatem voluptatibus accusantium sit.
         required:
             - event
     TestHTTPGrpcHTTPServerStreamWsResponseBody:
@@ -293,9 +292,9 @@ definitions:
         properties:
             message:
                 type: string
-                example: Modi quaerat.
+                example: Et sunt.
         example:
-            message: Modi quaerat.
+            message: Et sunt.
         required:
             - message
     TestHTTPGrpcMixedBidiStreamWsGrpcResponseBody:
@@ -304,9 +303,9 @@ definitions:
         properties:
             message:
                 type: string
-                example: Maiores magni voluptatem consequatur voluptatem sed.
+                example: Eum qui nam rerum eveniet ducimus dolores.
         example:
-            message: Maiores magni voluptatem consequatur voluptatem sed.
+            message: Eum qui nam rerum eveniet ducimus dolores.
         required:
             - message
     TestHTTPGrpcMixedClientStreamWsGrpcResponseBody:
@@ -315,9 +314,9 @@ definitions:
         properties:
             out:
                 type: string
-                example: Ipsum et doloremque.
+                example: Porro soluta.
         example:
-            out: Ipsum et doloremque.
+            out: Porro soluta.
         required:
             - out
     TestHTTPGrpcMixedNoStreamRequestBody:
@@ -326,9 +325,9 @@ definitions:
         properties:
             msg:
                 type: string
-                example: Sequi aut totam eum.
+                example: Repellendus fuga quisquam sunt eligendi ad praesentium.
         example:
-            msg: Sequi aut totam eum.
+            msg: Repellendus fuga quisquam sunt eligendi ad praesentium.
         required:
             - msg
     TestHTTPGrpcMixedNoStreamResponseBody:
@@ -337,9 +336,9 @@ definitions:
         properties:
             out:
                 type: string
-                example: Sunt voluptatum consequatur vitae facere est.
+                example: Alias consequuntur culpa suscipit quasi.
         example:
-            out: Sunt voluptatum consequatur vitae facere est.
+            out: Alias consequuntur culpa suscipit quasi.
         required:
             - out
     TestHTTPGrpcMixedServerStreamResponseBody:
@@ -348,8 +347,8 @@ definitions:
         properties:
             event:
                 type: string
-                example: Ab est voluptas in et.
+                example: Autem aliquid quis praesentium odit.
         example:
-            event: Ab est voluptas in et.
+            event: Autem aliquid quis praesentium odit.
         required:
             - event

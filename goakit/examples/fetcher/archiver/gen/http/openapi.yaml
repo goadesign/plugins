@@ -56,13 +56,29 @@ paths:
                     schema:
                         $ref: '#/definitions/GoaArchive'
                 "400":
-                    description: Bad Request response.
+                    description: 'bad_request: Bad Request response.'
                     schema:
                         $ref: '#/definitions/ArchiverReadBadRequestResponseBody'
+                    examples:
+                        application/vnd.goa.error:
+                            fault: false
+                            id: 123abc
+                            message: parameter 'p' must be an integer
+                            name: bad_request
+                            temporary: false
+                            timeout: false
                 "404":
-                    description: Not Found response.
+                    description: 'not_found: Not Found response.'
                     schema:
                         $ref: '#/definitions/ArchiverReadNotFoundResponseBody'
+                    examples:
+                        application/vnd.goa.error:
+                            fault: false
+                            id: 123abc
+                            message: parameter 'p' must be an integer
+                            name: not_found
+                            temporary: false
+                            timeout: false
             schemes:
                 - http
     /health:
@@ -89,7 +105,7 @@ definitions:
             body:
                 type: string
                 description: HTTP response body content
-                example: Neque sunt.
+                example: In nisi sit nihil totam dolorum.
             status:
                 type: integer
                 description: HTTP status
@@ -97,7 +113,7 @@ definitions:
                 format: int64
                 minimum: 0
         example:
-            body: Neque sunt.
+            body: In nisi sit nihil totam dolorum.
             status: 200
         required:
             - status
@@ -172,7 +188,7 @@ definitions:
             timeout:
                 type: boolean
                 description: Is the error a timeout?
-                example: true
+                example: false
         description: Error response result type (default view)
         example:
             fault: false
@@ -180,7 +196,7 @@ definitions:
             message: parameter 'p' must be an integer
             name: bad_request
             temporary: true
-            timeout: true
+            timeout: false
         required:
             - name
             - id
@@ -195,7 +211,7 @@ definitions:
             body:
                 type: string
                 description: HTTP response body content
-                example: Consectetur rem atque quod temporibus vero.
+                example: Sint maiores.
             href:
                 type: string
                 description: The archive resouce href
@@ -209,7 +225,7 @@ definitions:
                 minimum: 0
         description: Archive is an HTTP response archive (default view)
         example:
-            body: Consectetur rem atque quod temporibus vero.
+            body: Sint maiores.
             href: /archive/1
             status: 200
         required:

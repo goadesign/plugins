@@ -9,11 +9,11 @@
 package client
 
 import (
-	"encoding/json"
 	"fmt"
 
 	test_http_grpcpb "goa.design/plugins/v3/testing/examples/httpgrpc/gen/grpc/test_http_grpc/pb"
 	testhttpgrpc "goa.design/plugins/v3/testing/examples/httpgrpc/gen/test_http_grpc"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // BuildGrpcNoStreamPayload builds the payload for the test-http-grpc
@@ -23,14 +23,18 @@ func BuildGrpcNoStreamPayload(testHTTPGrpcGrpcNoStreamMessage string) (*testhttp
 	var message test_http_grpcpb.GrpcNoStreamRequest
 	{
 		if testHTTPGrpcGrpcNoStreamMessage != "" {
-			err = json.Unmarshal([]byte(testHTTPGrpcGrpcNoStreamMessage), &message)
+			err = protojson.Unmarshal([]byte(testHTTPGrpcGrpcNoStreamMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Nisi unde.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Ratione earum et ut temporibus tempora praesentium.\"\n   }'")
 			}
 		}
 	}
+	if err := ValidateGrpcNoStreamRequest(&message); err != nil {
+		var zero *testhttpgrpc.GrpcNoStreamPayload
+		return zero, err
+	}
 	v := &testhttpgrpc.GrpcNoStreamPayload{
-		Msg: message.Msg,
+		Msg: *message.Msg,
 	}
 
 	return v, nil
@@ -43,15 +47,19 @@ func BuildGrpcNoStreamErrorDivByZeroPayload(testHTTPGrpcGrpcNoStreamErrorDivByZe
 	var message test_http_grpcpb.GrpcNoStreamErrorDivByZeroRequest
 	{
 		if testHTTPGrpcGrpcNoStreamErrorDivByZeroMessage != "" {
-			err = json.Unmarshal([]byte(testHTTPGrpcGrpcNoStreamErrorDivByZeroMessage), &message)
+			err = protojson.Unmarshal([]byte(testHTTPGrpcGrpcNoStreamErrorDivByZeroMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"dividend\": 512.7504790865268,\n      \"divisor\": -75.50495230788519\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"dividend\": 238.4063147460167,\n      \"divisor\": -73.4004594816786\n   }'")
 			}
 		}
 	}
+	if err := ValidateGrpcNoStreamErrorDivByZeroRequest(&message); err != nil {
+		var zero *testhttpgrpc.GrpcNoStreamErrorDivByZeroPayload
+		return zero, err
+	}
 	v := &testhttpgrpc.GrpcNoStreamErrorDivByZeroPayload{
-		Dividend: message.Dividend,
-		Divisor:  message.Divisor,
+		Dividend: *message.Dividend,
+		Divisor:  *message.Divisor,
 	}
 
 	return v, nil
@@ -64,14 +72,18 @@ func BuildGrpcServerStreamPayload(testHTTPGrpcGrpcServerStreamMessage string) (*
 	var message test_http_grpcpb.GrpcServerStreamRequest
 	{
 		if testHTTPGrpcGrpcServerStreamMessage != "" {
-			err = json.Unmarshal([]byte(testHTTPGrpcGrpcServerStreamMessage), &message)
+			err = protojson.Unmarshal([]byte(testHTTPGrpcGrpcServerStreamMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"from\": 417059585657762780\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"from\": 436641374502740749\n   }'")
 			}
 		}
 	}
+	if err := ValidateGrpcServerStreamRequest(&message); err != nil {
+		var zero *testhttpgrpc.GrpcServerStreamPayload
+		return zero, err
+	}
 	v := &testhttpgrpc.GrpcServerStreamPayload{
-		From: int(message.From),
+		From: int(*message.From),
 	}
 
 	return v, nil
@@ -84,14 +96,18 @@ func BuildMixedNoStreamPayload(testHTTPGrpcMixedNoStreamMessage string) (*testht
 	var message test_http_grpcpb.MixedNoStreamRequest
 	{
 		if testHTTPGrpcMixedNoStreamMessage != "" {
-			err = json.Unmarshal([]byte(testHTTPGrpcMixedNoStreamMessage), &message)
+			err = protojson.Unmarshal([]byte(testHTTPGrpcMixedNoStreamMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Commodi optio.\"\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"msg\": \"Ut non id provident tempora suscipit quo.\"\n   }'")
 			}
 		}
 	}
+	if err := ValidateMixedNoStreamRequest(&message); err != nil {
+		var zero *testhttpgrpc.MixedNoStreamPayload
+		return zero, err
+	}
 	v := &testhttpgrpc.MixedNoStreamPayload{
-		Msg: message.Msg,
+		Msg: *message.Msg,
 	}
 
 	return v, nil

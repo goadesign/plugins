@@ -26,9 +26,9 @@ type Requirement struct {
 
 // Gate stores the authorization requirements for a method.
 type Gate struct {
-	MethodName    string
+	MethodName     string
 	AllowAnonymous bool
-	Requirement   *Requirement
+	Requirement    *Requirement
 }
 
 // ParseCapabilities extracts capabilities from the Tailscale header.

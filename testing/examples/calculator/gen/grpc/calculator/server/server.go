@@ -159,7 +159,7 @@ func (s *Server) BatchAdd(stream calculatorpb.Calculator_BatchAddServer) error {
 // Send streams instances of "calculatorpb.BatchAddResponse" to the "batch_add"
 // endpoint gRPC stream.
 func (s *BatchAddServerStream) Send(res *calculator.BatchAddResult) error {
-	v := NewProtoBatchAddResultBatchAddResponse(res)
+	v := NewProtoBatchAddResponse(res)
 	return s.stream.Send(v)
 }
 
@@ -175,6 +175,9 @@ func (s *BatchAddServerStream) Recv() (*calculator.BatchAddStreamingPayload, err
 	var res *calculator.BatchAddStreamingPayload
 	v, err := s.stream.Recv()
 	if err != nil {
+		return res, err
+	}
+	if err = ValidateBatchAddStreamingRequest(v); err != nil {
 		return res, err
 	}
 	return NewBatchAddStreamingRequestBatchAddStreamingPayload(v), nil

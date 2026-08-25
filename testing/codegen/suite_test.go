@@ -40,7 +40,7 @@ func TestGenerateSuiteTopLevel(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			root := goacodegen.RunDSL(t, c.DSL)
 			svc := root.Services[0]
-			f := generateSuiteTopLevel("", "", root, svc)
+			f := GenerateSuiteTopLevel("generated.local/gen", "", root, svc)
 			assert.Equal(t, c.Path, f.Path)
 			for sec, secCode := range c.Code {
 				testCode(t, f, sec, secCode)

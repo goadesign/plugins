@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"goa.design/goa/v3/codegen"
-	"goa.design/goa/v3/codegen/service"
 	"goa.design/plugins/v3/testing/codegen/testdata"
 )
 
@@ -45,10 +44,10 @@ func TestGenerateScenarios(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			root := codegen.RunDSL(t, c.DSL)
-			services := service.NewServicesData(root)
+			services := plannedServiceData(t, root)
 			svc := root.Services[0]
 			svcData := services.Get(svc.Name)
-			fs := generateScenarios("", svcData, root, svc)
+			fs := generateScenarios("", svcData, root, svc, designedMethodTransports(root))
 			f := fs[0]
 			assert.Equal(t, c.Path, f.Path)
 			for sec, secCode := range c.Code {
@@ -60,10 +59,10 @@ func TestGenerateScenarios(t *testing.T) {
 
 func TestGenerateScenarios_ArrayResultTypeAssertion(t *testing.T) {
 	root := codegen.RunDSL(t, testdata.WithArrayResultDSL)
-	services := service.NewServicesData(root)
+	services := plannedServiceData(t, root)
 	svc := root.Services[0]
 	svcData := services.Get(svc.Name)
-	fs := generateScenarios("", svcData, root, svc)
+	fs := generateScenarios("", svcData, root, svc, designedMethodTransports(root))
 	f := fs[0]
 
 	sections := f.Section("scenario-runner")
@@ -110,7 +109,7 @@ func TestGenerateExampleScenarios(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			root := codegen.RunDSL(t, c.DSL)
 			svc := root.Services[0]
-			f := generateExampleScenarios("", root, svc)
+			f := GenerateExampleScenarios("generated.local/gen", root, svc)
 			assert.Equal(t, "scenarios.yaml", f.Path)
 			for sec, secCode := range c.Code {
 				sections := f.Section(sec)

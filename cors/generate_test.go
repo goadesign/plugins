@@ -9,6 +9,7 @@ import (
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
+	goaexpr "goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
 
 	"goa.design/plugins/v3/cors"
@@ -43,8 +44,7 @@ func NewCORSHandler() http.Handler {
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			root := codegen.RunDSL(t, c.DSL)
-			services := httpcodegen.NewServicesData(service.NewServicesData(root), root.API.HTTP)
-			fs := httpcodegen.ServerFiles("", services)
+			fs := serverFiles(t, root)
 			require.Len(t, fs, c.CodeGenCount)
 			cors.Generate("", []eval.Root{root}, fs)
 			expectedCodeIndex := -1
@@ -71,6 +71,22 @@ func NewCORSHandler() http.Handler {
 			}
 		})
 	}
+}
+
+// serverFiles builds the HTTP server files through the same planning steps as
+// a Goa generation run.
+func serverFiles(t *testing.T, root *goaexpr.RootExpr) []*codegen.File {
+	t.Helper()
+	generation, err := codegen.NewGeneration("generated.local/gen", []eval.Root{root})
+	require.NoError(t, err)
+	servicePlan, err := service.NewPlan(root, generation, goaexpr.NewExampleGenerator(root.API.RandomizerFactory))
+	require.NoError(t, err)
+	plans, err := httpcodegen.NewPlans(generation, httpcodegen.PlanInput{Root: root, Service: servicePlan})
+	require.NoError(t, err)
+	require.NoError(t, generation.Freeze())
+	require.NoError(t, servicePlan.Link())
+	require.NoError(t, plans[0].Link())
+	return plans[0].ServerFiles()
 }
 
 func testCode(t *testing.T, file *codegen.File, section, expCode string) {

@@ -42,10 +42,6 @@ scenarios:
 #
 # - jsonrpc
 #
-# - jsonrpc-sse
-#
-# - jsonrpc-ws
-#
 
 # Available methods and their transports:
 #

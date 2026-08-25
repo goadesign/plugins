@@ -144,7 +144,7 @@ func NewReadBadRequest(body *ReadBadRequestResponseBody) *goa.ServiceError {
 }
 
 // ValidateReadNotFoundResponseBody runs the validations defined on
-// read_not_found_response_body
+// ReadNotFoundResponseBody
 func ValidateReadNotFoundResponseBody(body *ReadNotFoundResponseBody) (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
@@ -168,7 +168,7 @@ func ValidateReadNotFoundResponseBody(body *ReadNotFoundResponseBody) (err error
 }
 
 // ValidateReadBadRequestResponseBody runs the validations defined on
-// read_bad_request_response_body
+// ReadBadRequestResponseBody
 func ValidateReadBadRequestResponseBody(body *ReadBadRequestResponseBody) (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))

@@ -104,6 +104,9 @@ func (c *Client) GrpcNoStreamErrorDivByZero() goa.Endpoint {
 			resp := goagrpc.DecodeError(err)
 			switch message := resp.(type) {
 			case *test_http_grpcpb.GrpcNoStreamErrorDivByZeroDivisionByZeroError:
+				if err := ValidateGrpcNoStreamErrorDivByZeroDivisionByZeroError(message); err != nil {
+					return nil, err
+				}
 				return nil, NewGrpcNoStreamErrorDivByZeroDivisionByZeroError(message)
 			case *goapb.ErrorResponse:
 				return nil, goagrpc.NewServiceError(message)
@@ -270,6 +273,9 @@ func (s *GrpcServerStreamClientStream) Recv() (*testhttpgrpc.GrpcServerStreamRes
 	if err != nil {
 		return res, err
 	}
+	if err = ValidateGrpcServerStreamResponse(v); err != nil {
+		return res, err
+	}
 	return NewGrpcServerStreamResponseGrpcServerStreamResult(v), nil
 }
 
@@ -286,6 +292,9 @@ func (s *GrpcClientStreamClientStream) CloseAndRecv() (*testhttpgrpc.GrpcClientS
 	var res *testhttpgrpc.GrpcClientStreamResult
 	v, err := s.stream.CloseAndRecv()
 	if err != nil {
+		return res, err
+	}
+	if err = ValidateGrpcClientStreamResponse(v); err != nil {
 		return res, err
 	}
 	return NewGrpcClientStreamResponseGrpcClientStreamResult(v), nil
@@ -319,6 +328,9 @@ func (s *GrpcBidiStreamClientStream) Recv() (*testhttpgrpc.GrpcBidiStreamResult,
 	var res *testhttpgrpc.GrpcBidiStreamResult
 	v, err := s.stream.Recv()
 	if err != nil {
+		return res, err
+	}
+	if err = ValidateGrpcBidiStreamResponse(v); err != nil {
 		return res, err
 	}
 	return NewGrpcBidiStreamResponseGrpcBidiStreamResult(v), nil
@@ -357,6 +369,9 @@ func (s *MixedServerStreamClientStream) Recv() (*testhttpgrpc.MixedServerStreamR
 	if err != nil {
 		return res, err
 	}
+	if err = ValidateMixedServerStreamResponse(v); err != nil {
+		return res, err
+	}
 	return NewMixedServerStreamResponseMixedServerStreamResult(v), nil
 }
 
@@ -374,6 +389,9 @@ func (s *MixedClientStreamWsGrpcClientStream) CloseAndRecv() (*testhttpgrpc.Mixe
 	var res *testhttpgrpc.MixedClientStreamWsGrpcResult
 	v, err := s.stream.CloseAndRecv()
 	if err != nil {
+		return res, err
+	}
+	if err = ValidateMixedClientStreamWsGrpcResponse(v); err != nil {
 		return res, err
 	}
 	return NewMixedClientStreamWsGrpcResponseMixedClientStreamWsGrpcResult(v), nil
@@ -407,6 +425,9 @@ func (s *MixedBidiStreamWsGrpcClientStream) Recv() (*testhttpgrpc.MixedBidiStrea
 	var res *testhttpgrpc.MixedBidiStreamWsGrpcResult
 	v, err := s.stream.Recv()
 	if err != nil {
+		return res, err
+	}
+	if err = ValidateMixedBidiStreamWsGrpcResponse(v); err != nil {
 		return res, err
 	}
 	return NewMixedBidiStreamWsGrpcResponseMixedBidiStreamWsGrpcResult(v), nil
