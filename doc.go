@@ -1,19 +1,19 @@
 /*
 Packages in the Plugin directory contain plugins for [goa
-v2](https://godoc.org/goa.design/goa/v3). Plugins can extend the goa DSL, generate
+v3](https://pkg.go.dev/goa.design/goa/v3). Plugins can extend the goa DSL, generate
 new artifacts and modify the output of existing generators.
 
-There are currently two plugins in the directory:
+Examples include:
 
-  * The [goakit](https://godoc.org/goa.design/plugins/goakit) plugin generates
+  - The [goakit](https://pkg.go.dev/goa.design/plugins/v3/goakit) plugin generates
     code that integrates with the [go-kit](https://github.com/go-kit/kit)
     library.
 
-  * The [cors](https://godoc.org/goa.design/plugins/cors) plugin adds new DSL to
-    define CORS policies. The plugin generates HTTP server code that respond to
+  - The [cors](https://pkg.go.dev/goa.design/plugins/v3/cors) plugin adds new DSL to
+    define CORS policies. The plugin generates HTTP server code that responds to
     CORS requests in compliance with the policies defined in the design.
 
-Writing a Plugin
+# Writing a Plugin
 
 Writing a plugin consists of two steps:
 
@@ -30,13 +30,13 @@ generation.
 
 The signature of the Generate function is:
 
-    func (genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error)
+	func (genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error)
 
 where:
 
-    "genpkg" is the Go import path to the top level generated package ("gen")
-    "roots" is the set of design roots created by the DSL.
-    "files" is the current set of generated files.
+	"genpkg" is the Go import path to the top level generated package ("gen")
+	"roots" is the set of design roots created by the DSL.
+	"files" is the current set of generated files.
 
 The function must return the entire set of generated files (even the files that
 the plugin does not modify).
@@ -47,16 +47,16 @@ package "init" function, for example:
 
 	// Register the plugin.
 	func init() {
-		codegen.RegisterPlugin("gen", Prepare, Generate)
-		codegen.RegisterPlugin("example", Prepare, Example)
+		codegen.RegisterPlugin("my-plugin", "gen", Prepare, Generate)
+		codegen.RegisterPlugin("my-plugin", "example", Prepare, Example)
 	}
 
-The first argument of RegisterPlugin must be one of "gen" or "example" and
-specifies the "goa" command that triggers the call to the plugin functions. The
-second argument is the Prepare function if any, nil otherwise. The last argument
-is the code generator function if any, nil otherwise.
+The first argument names the plugin. The second argument must be either "gen" or
+"example" and identifies the goa command that runs the plugin. The third
+argument is the Prepare function, or nil when the plugin does not change the
+design. The last argument is the required Generate function.
 
-Extending The DSL
+# Extending The DSL
 
 A plugin may introduce new DSL "keywords" (typically Go package functions). The
 DSL functions initialize the content of a design root object (an object that
