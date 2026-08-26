@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/google/uuid v1.6.0
 	goa.design/clue v1.2.6
-	goa.design/goa/v3 v3.30.1-0.20260825203937-95933f068ade
+	goa.design/goa/v3 v3.30.1-0.20260826024846-d8c8ccda06b1
 	goa.design/plugins/v3 v3.21.5
 	gopkg.in/yaml.v3 v3.0.1
 )
