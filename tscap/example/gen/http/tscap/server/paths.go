@@ -8,9 +8,7 @@
 
 package server
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // ListTscapPath returns the URL path to the tscap service list HTTP endpoint.
 func ListTscapPath() string {

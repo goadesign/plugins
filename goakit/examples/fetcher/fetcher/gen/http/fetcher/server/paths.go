@@ -8,9 +8,7 @@
 
 package server
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // FetchFetcherPath returns the URL path to the fetcher service fetch HTTP endpoint.
 func FetchFetcherPath(url_ string) string {

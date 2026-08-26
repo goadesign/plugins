@@ -8,9 +8,7 @@
 
 package server
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // ArchiveArchiverPath returns the URL path to the archiver service archive HTTP endpoint.
 func ArchiveArchiverPath() string {
