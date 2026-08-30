@@ -72,7 +72,7 @@ func main() {
 		case "http", "https":
 			err = doHTTP(context.Background(), scheme, host, timeout, debug, os.Stdout)
 		default:
-			fmt.Fprintf(os.Stderr, "invalid scheme: %q (valid schemes: grpc|grpcs|http|https)\n", scheme)
+			fmt.Fprintf(os.Stderr, "invalid scheme: %q (valid schemes: http|https)\n", scheme)
 			os.Exit(1)
 		}
 	}
@@ -121,7 +121,7 @@ Usage:
     %s [-host HOST][-url URL][-timeout SECONDS][-verbose|-v][-version VERSION] SERVICE ENDPOINT [flags]
 
     -host HOST:  server host (development). valid values: development, production
-    -url URL:    specify service URL overriding host URL (http://localhost:8080)
+    -url URL:    specify service URL overriding host URL (http://localhost:8000/calc)
     -timeout:    maximum number of seconds to wait for response (30)
     -verbose|-v: print request and response details (false)
     -version:    API version (v1)
