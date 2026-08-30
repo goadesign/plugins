@@ -29,36 +29,42 @@ type Client struct {
 // testhttpgrpc.GrpcServerStreamClientStream interface.
 type GrpcServerStreamClientStream struct {
 	stream test_http_grpcpb.TestHTTPGrpc_GrpcServerStreamClient
+	ctx    context.Context
 }
 
 // GrpcClientStreamClientStream implements the
 // testhttpgrpc.GrpcClientStreamClientStream interface.
 type GrpcClientStreamClientStream struct {
 	stream test_http_grpcpb.TestHTTPGrpc_GrpcClientStreamClient
+	ctx    context.Context
 }
 
 // GrpcBidiStreamClientStream implements the
 // testhttpgrpc.GrpcBidiStreamClientStream interface.
 type GrpcBidiStreamClientStream struct {
 	stream test_http_grpcpb.TestHTTPGrpc_GrpcBidiStreamClient
+	ctx    context.Context
 }
 
 // MixedServerStreamClientStream implements the
 // testhttpgrpc.MixedServerStreamClientStream interface.
 type MixedServerStreamClientStream struct {
 	stream test_http_grpcpb.TestHTTPGrpc_MixedServerStreamClient
+	ctx    context.Context
 }
 
 // MixedClientStreamWsGrpcClientStream implements the
 // testhttpgrpc.MixedClientStreamWsGrpcClientStream interface.
 type MixedClientStreamWsGrpcClientStream struct {
 	stream test_http_grpcpb.TestHTTPGrpc_MixedClientStreamWsGrpcClient
+	ctx    context.Context
 }
 
 // MixedBidiStreamWsGrpcClientStream implements the
 // testhttpgrpc.MixedBidiStreamWsGrpcClientStream interface.
 type MixedBidiStreamWsGrpcClientStream struct {
 	stream test_http_grpcpb.TestHTTPGrpc_MixedBidiStreamWsGrpcClient
+	ctx    context.Context
 }
 
 // NewClient instantiates gRPC client for all the test-http-grpc service
@@ -80,10 +86,13 @@ func (c *Client) GrpcNoStream() goa.Endpoint {
 			DecodeGrpcNoStreamResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -111,6 +120,9 @@ func (c *Client) GrpcNoStreamErrorDivByZero() goa.Endpoint {
 			case *goapb.ErrorResponse:
 				return nil, goagrpc.NewServiceError(message)
 			default:
+				if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+					return nil, ctxErr
+				}
 				return nil, goa.Fault("%s", err.Error())
 			}
 		}
@@ -128,10 +140,13 @@ func (c *Client) GrpcServerStream() goa.Endpoint {
 			DecodeGrpcServerStreamResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -149,10 +164,13 @@ func (c *Client) GrpcClientStream() goa.Endpoint {
 			DecodeGrpcClientStreamResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -170,10 +188,13 @@ func (c *Client) GrpcBidiStream() goa.Endpoint {
 			DecodeGrpcBidiStreamResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -191,10 +212,13 @@ func (c *Client) MixedNoStream() goa.Endpoint {
 			DecodeMixedNoStreamResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -212,10 +236,13 @@ func (c *Client) MixedServerStream() goa.Endpoint {
 			DecodeMixedServerStreamResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -233,10 +260,13 @@ func (c *Client) MixedClientStreamWsGrpc() goa.Endpoint {
 			DecodeMixedClientStreamWsGrpcResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -254,10 +284,13 @@ func (c *Client) MixedBidiStreamWsGrpc() goa.Endpoint {
 			DecodeMixedBidiStreamWsGrpcResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -271,6 +304,9 @@ func (s *GrpcServerStreamClientStream) Recv() (*testhttpgrpc.GrpcServerStreamRes
 	var res *testhttpgrpc.GrpcServerStreamResult
 	v, err := s.stream.Recv()
 	if err != nil {
+		if ctxErr := goagrpc.ContextError(s.ctx, err); ctxErr != nil {
+			return res, ctxErr
+		}
 		return res, err
 	}
 	if err = ValidateGrpcServerStreamResponse(v); err != nil {
@@ -292,6 +328,9 @@ func (s *GrpcClientStreamClientStream) CloseAndRecv() (*testhttpgrpc.GrpcClientS
 	var res *testhttpgrpc.GrpcClientStreamResult
 	v, err := s.stream.CloseAndRecv()
 	if err != nil {
+		if ctxErr := goagrpc.ContextError(s.ctx, err); ctxErr != nil {
+			return res, ctxErr
+		}
 		return res, err
 	}
 	if err = ValidateGrpcClientStreamResponse(v); err != nil {
@@ -328,6 +367,9 @@ func (s *GrpcBidiStreamClientStream) Recv() (*testhttpgrpc.GrpcBidiStreamResult,
 	var res *testhttpgrpc.GrpcBidiStreamResult
 	v, err := s.stream.Recv()
 	if err != nil {
+		if ctxErr := goagrpc.ContextError(s.ctx, err); ctxErr != nil {
+			return res, ctxErr
+		}
 		return res, err
 	}
 	if err = ValidateGrpcBidiStreamResponse(v); err != nil {
@@ -367,6 +409,9 @@ func (s *MixedServerStreamClientStream) Recv() (*testhttpgrpc.MixedServerStreamR
 	var res *testhttpgrpc.MixedServerStreamResult
 	v, err := s.stream.Recv()
 	if err != nil {
+		if ctxErr := goagrpc.ContextError(s.ctx, err); ctxErr != nil {
+			return res, ctxErr
+		}
 		return res, err
 	}
 	if err = ValidateMixedServerStreamResponse(v); err != nil {
@@ -389,6 +434,9 @@ func (s *MixedClientStreamWsGrpcClientStream) CloseAndRecv() (*testhttpgrpc.Mixe
 	var res *testhttpgrpc.MixedClientStreamWsGrpcResult
 	v, err := s.stream.CloseAndRecv()
 	if err != nil {
+		if ctxErr := goagrpc.ContextError(s.ctx, err); ctxErr != nil {
+			return res, ctxErr
+		}
 		return res, err
 	}
 	if err = ValidateMixedClientStreamWsGrpcResponse(v); err != nil {
@@ -425,6 +473,9 @@ func (s *MixedBidiStreamWsGrpcClientStream) Recv() (*testhttpgrpc.MixedBidiStrea
 	var res *testhttpgrpc.MixedBidiStreamWsGrpcResult
 	v, err := s.stream.Recv()
 	if err != nil {
+		if ctxErr := goagrpc.ContextError(s.ctx, err); ctxErr != nil {
+			return res, ctxErr
+		}
 		return res, err
 	}
 	if err = ValidateMixedBidiStreamWsGrpcResponse(v); err != nil {

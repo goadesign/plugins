@@ -185,5 +185,6 @@ func BuildBatchAddFunc(grpccli calculatorpb.CalculatorClient, cliopts ...grpc.Ca
 func DecodeBatchAddResponse(ctx context.Context, v any, hdr, trlr metadata.MD) (any, error) {
 	return &BatchAddClientStream{
 		stream: v.(calculatorpb.Calculator_BatchAddClient),
+		ctx:    ctx,
 	}, nil
 }

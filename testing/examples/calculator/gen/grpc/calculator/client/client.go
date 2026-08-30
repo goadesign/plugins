@@ -29,6 +29,7 @@ type Client struct {
 // interface.
 type BatchAddClientStream struct {
 	stream calculatorpb.Calculator_BatchAddClient
+	ctx    context.Context
 }
 
 // NewClient instantiates gRPC client for all the calculator service servers.
@@ -48,10 +49,13 @@ func (c *Client) Add() goa.Endpoint {
 			DecodeAddResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -69,10 +73,13 @@ func (c *Client) Divide() goa.Endpoint {
 			DecodeDivideResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -90,10 +97,13 @@ func (c *Client) Factorial() goa.Endpoint {
 			DecodeFactorialResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -111,10 +121,13 @@ func (c *Client) Statistics() goa.Endpoint {
 			DecodeStatisticsResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -132,10 +145,13 @@ func (c *Client) BatchAdd() goa.Endpoint {
 			DecodeBatchAddResponse)
 		res, err := inv.Invoke(ctx, v)
 		if err != nil {
-			// Try to decode a Goa error response detail before falling back to Fault.
+			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
 			resp := goagrpc.DecodeError(err)
 			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
 				return nil, goagrpc.NewServiceError(eresp)
+			}
+			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+				return nil, ctxErr
 			}
 			return nil, goa.Fault("%s", err.Error())
 		}
@@ -149,6 +165,9 @@ func (s *BatchAddClientStream) Recv() (*calculator.BatchAddResult, error) {
 	var res *calculator.BatchAddResult
 	v, err := s.stream.Recv()
 	if err != nil {
+		if ctxErr := goagrpc.ContextError(s.ctx, err); ctxErr != nil {
+			return res, ctxErr
+		}
 		return res, err
 	}
 	if err = ValidateBatchAddResponse(v); err != nil {

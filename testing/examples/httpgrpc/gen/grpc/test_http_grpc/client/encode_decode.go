@@ -123,6 +123,7 @@ func EncodeGrpcServerStreamRequest(ctx context.Context, v any, md *metadata.MD) 
 func DecodeGrpcServerStreamResponse(ctx context.Context, v any, hdr, trlr metadata.MD) (any, error) {
 	return &GrpcServerStreamClientStream{
 		stream: v.(test_http_grpcpb.TestHTTPGrpc_GrpcServerStreamClient),
+		ctx:    ctx,
 	}, nil
 }
 
@@ -145,6 +146,7 @@ func BuildGrpcClientStreamFunc(grpccli test_http_grpcpb.TestHTTPGrpcClient, clio
 func DecodeGrpcClientStreamResponse(ctx context.Context, v any, hdr, trlr metadata.MD) (any, error) {
 	return &GrpcClientStreamClientStream{
 		stream: v.(test_http_grpcpb.TestHTTPGrpc_GrpcClientStreamClient),
+		ctx:    ctx,
 	}, nil
 }
 
@@ -167,6 +169,7 @@ func BuildGrpcBidiStreamFunc(grpccli test_http_grpcpb.TestHTTPGrpcClient, cliopt
 func DecodeGrpcBidiStreamResponse(ctx context.Context, v any, hdr, trlr metadata.MD) (any, error) {
 	return &GrpcBidiStreamClientStream{
 		stream: v.(test_http_grpcpb.TestHTTPGrpc_GrpcBidiStreamClient),
+		ctx:    ctx,
 	}, nil
 }
 
@@ -227,6 +230,7 @@ func BuildMixedServerStreamFunc(grpccli test_http_grpcpb.TestHTTPGrpcClient, cli
 func DecodeMixedServerStreamResponse(ctx context.Context, v any, hdr, trlr metadata.MD) (any, error) {
 	return &MixedServerStreamClientStream{
 		stream: v.(test_http_grpcpb.TestHTTPGrpc_MixedServerStreamClient),
+		ctx:    ctx,
 	}, nil
 }
 
@@ -249,6 +253,7 @@ func BuildMixedClientStreamWsGrpcFunc(grpccli test_http_grpcpb.TestHTTPGrpcClien
 func DecodeMixedClientStreamWsGrpcResponse(ctx context.Context, v any, hdr, trlr metadata.MD) (any, error) {
 	return &MixedClientStreamWsGrpcClientStream{
 		stream: v.(test_http_grpcpb.TestHTTPGrpc_MixedClientStreamWsGrpcClient),
+		ctx:    ctx,
 	}, nil
 }
 
@@ -271,5 +276,6 @@ func BuildMixedBidiStreamWsGrpcFunc(grpccli test_http_grpcpb.TestHTTPGrpcClient,
 func DecodeMixedBidiStreamWsGrpcResponse(ctx context.Context, v any, hdr, trlr metadata.MD) (any, error) {
 	return &MixedBidiStreamWsGrpcClientStream{
 		stream: v.(test_http_grpcpb.TestHTTPGrpc_MixedBidiStreamWsGrpcClient),
+		ctx:    ctx,
 	}, nil
 }

@@ -185,5 +185,5 @@ func (e *CalculatorError) ErrorName() string {
 
 // GoaErrorName returns the error name.
 func (e *CalculatorError) GoaErrorName() string {
-	return "division_by_zero"
+	return e.Code
 }
