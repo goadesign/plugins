@@ -32,12 +32,12 @@ type Client struct {
 	decoder func(*http.Response) goahttp.Decoder
 }
 
-// bufferPool is a pool of bytes.Buffers for encoding requests.
+// bufferPool reuses byte buffers while requests are encoded.
 var bufferPool = sync.Pool{
 	New: func() any { return new(bytes.Buffer) },
 }
 
-// NewClient instantiates HTTP clients for all the test-jsonrpc service servers.
+// NewClient creates HTTP clients for all the test-jsonrpc service servers.
 func NewClient(
 	scheme string,
 	host string,
@@ -46,7 +46,6 @@ func NewClient(
 	dec func(*http.Response) goahttp.Decoder,
 	restoreBody bool,
 ) *Client {
-
 	return &Client{
 		Doer:                doer,
 		RestoreResponseBody: restoreBody,
@@ -69,14 +68,15 @@ func (c *Client) JsonrpcNoStream() goa.Endpoint {
 		if err != nil {
 			return nil, err
 		}
-		if err := encodeRequest(req, v); err != nil {
+		requestID, err := encodeRequest(req, v)
+		if err != nil {
 			return nil, err
 		}
 		resp, err := c.Doer.Do(req)
 		if err != nil {
 			return nil, goahttp.ErrRequestError("test-jsonrpc", "jsonrpc_no_stream", err)
 		}
-		return decodeResponse(resp)
+		return decodeResponse(resp, requestID)
 	}
 }
 
@@ -92,13 +92,14 @@ func (c *Client) JsonrpcNoStreamError() goa.Endpoint {
 		if err != nil {
 			return nil, err
 		}
-		if err := encodeRequest(req, v); err != nil {
+		requestID, err := encodeRequest(req, v)
+		if err != nil {
 			return nil, err
 		}
 		resp, err := c.Doer.Do(req)
 		if err != nil {
 			return nil, goahttp.ErrRequestError("test-jsonrpc", "jsonrpc_no_stream_error", err)
 		}
-		return decodeResponse(resp)
+		return decodeResponse(resp, requestID)
 	}
 }

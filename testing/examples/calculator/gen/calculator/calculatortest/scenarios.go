@@ -67,11 +67,10 @@ type Validators struct {
 // Valid transport values for scenarios based on service configuration.
 // Methods may support different combinations of these transports.
 var ValidTransports = []string{
-	"auto",     // Use default/first available
-	"http",     // HTTP plain (non-streaming methods only)
-	"http-sse", // HTTP Server-Sent Events (server streaming)
-	"http-ws",  // HTTP WebSocket (client/server/bidi streaming)
-	"grpc",     // gRPC (all streaming modes)
+	"auto",    // Use the first available transport
+	"grpc",    // gRPC
+	"http",    // HTTP
+	"http-ws", // HTTP WebSocket
 }
 
 // TransportAvailability documents which transports each method supports.
@@ -81,7 +80,9 @@ var TransportAvailability = map[string][]string{
 	"factorial":  {"grpc", "http"},
 	"statistics": {"grpc", "http"},
 	"batch_add":  {"grpc", "http-ws"},
-} // ScenarioRunner executes test scenarios.
+}
+
+// ScenarioRunner executes test scenarios.
 type ScenarioRunner struct {
 	scenarios  []Scenario
 	validators Validators // Global validator configuration
@@ -153,13 +154,12 @@ func (r *ScenarioRunner) RunNamed(t *testing.T, client *Client, name string) {
 }
 
 func (r *ScenarioRunner) runScenario(t *testing.T, client *Client, scenario Scenario) {
-	// Apply default transport if specified
-	if scenario.Transport != "" {
-		client = r.selectTransport(client, scenario.Transport)
-	}
-
 	for i, step := range scenario.Steps {
 		t.Run(fmt.Sprintf("step_%d_%s", i+1, step.Method), func(t *testing.T) {
+			// Use the scenario transport when this step does not choose one.
+			if step.Transport == "" {
+				step.Transport = scenario.Transport
+			}
 			// Apply scenario-level timeout if step doesn't override
 			if step.Timeout == "" && scenario.Timeout != "" {
 				step.Timeout = scenario.Timeout
@@ -170,27 +170,27 @@ func (r *ScenarioRunner) runScenario(t *testing.T, client *Client, scenario Scen
 }
 
 func (r *ScenarioRunner) runStep(t *testing.T, client *Client, step Step) {
-	// Apply per-step transport override
-	if step.Transport != "" {
-		client = r.selectTransport(client, step.Transport)
+	// Check the method before using its generated transport list.
+	transports, ok := TransportAvailability[step.Method]
+	if !ok {
+		t.Fatalf("unknown method %q", step.Method)
 	}
 
-	// Validate transport availability
+	// Check the selected transport before choosing its client.
 	if step.Transport != "" && step.Transport != "auto" {
-		if transports, ok := TransportAvailability[step.Method]; ok {
-			found := false
-			for _, t := range transports {
-				if t == step.Transport {
-					found = true
-					break
-				}
-			}
-			if !found {
-				t.Fatalf("method %q does not support transport %q, available: %v",
-					step.Method, step.Transport, transports)
+		found := false
+		for _, transport := range transports {
+			if transport == step.Transport {
+				found = true
+				break
 			}
 		}
+		if !found {
+			t.Fatalf("method %q does not support transport %q, available: %v",
+				step.Method, step.Transport, transports)
+		}
 	}
+	client = r.selectTransport(client, step.Transport)
 
 	// Process payload
 	payload := step.Payload
@@ -439,11 +439,13 @@ func (r *ScenarioRunner) validateStream(t *testing.T, method string, stream any,
 
 func (r *ScenarioRunner) selectTransport(client *Client, transport string) *Client {
 	switch transport {
+	case "", "auto":
+		return client
 	case "http", "http-sse", "http-ws":
 		return client.HTTP()
 	case "grpc":
 		return client.GRPC()
 	default:
-		return client // auto or unknown - use default
+		panic(fmt.Sprintf("unsupported transport %q", transport))
 	}
 }

@@ -6,10 +6,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
-	"slices"
-	"sort"
 	"strings"
 
 	goa "goa.design/goa/v3/pkg"
@@ -66,16 +65,14 @@ func main() {
 	}
 
 	var (
-		endpoint goa.Endpoint
-		payload  any
-		err      error
+		err error
 	)
 	{
 		switch scheme {
 		case "http", "https":
-			endpoint, payload, err = doHTTP(scheme, host, timeout, debug)
+			err = doHTTP(context.Background(), scheme, host, timeout, debug, os.Stdout)
 		default:
-			fmt.Fprintf(os.Stderr, "invalid scheme: %q (valid schemes: grpc|grpcs|http|https)\n", scheme)
+			fmt.Fprintf(os.Stderr, "invalid scheme: %q (valid schemes: http|https)\n", scheme)
 			os.Exit(1)
 		}
 	}
@@ -88,30 +85,43 @@ func main() {
 		os.Exit(1)
 	}
 
-	data, err := endpoint(context.Background(), payload)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
-	}
+}
 
-	if data != nil {
-		m, _ := json.MarshalIndent(data, "", "    ")
-		fmt.Println(string(m))
+// writeEndpointResult calls one normal endpoint and writes its result as JSON.
+func writeEndpointResult(ctx context.Context, stdout io.Writer, endpoint goa.Endpoint, payload any) error {
+	data, err := endpoint(ctx, payload)
+	if err != nil {
+		return err
 	}
+	return writeJSON(stdout, data)
+}
+
+// writeJSON writes one indented JSON value followed by a newline.
+func writeJSON(stdout io.Writer, data any) error {
+	if data == nil {
+		return nil
+	}
+	encoded, err := json.MarshalIndent(data, "", "    ")
+	if err != nil {
+		return fmt.Errorf("encode result: %w", err)
+	}
+	if _, err := fmt.Fprintln(stdout, string(encoded)); err != nil {
+		return fmt.Errorf("write result: %w", err)
+	}
+	return nil
 }
 
 func usage() {
-	var usageCommands []string
-	usageCommands = append(usageCommands, httpUsageCommands()...)
-	sort.Strings(usageCommands)
-	usageCommands = slices.Compact(usageCommands)
+	usageCommands := []string{
+		"calc add",
+	}
 	fmt.Fprintf(os.Stderr, `%s is a command line client for the calc API.
 
 Usage:
     %s [-host HOST][-url URL][-timeout SECONDS][-verbose|-v][-version VERSION] SERVICE ENDPOINT [flags]
 
     -host HOST:  server host (development). valid values: development, production
-    -url URL:    specify service URL overriding host URL (http://localhost:8080)
+    -url URL:    specify service URL overriding host URL (http://localhost:8000/calc)
     -timeout:    maximum number of seconds to wait for response (30)
     -verbose|-v: print request and response details (false)
     -version:    API version (v1)

@@ -41,7 +41,7 @@ paths:
                         type: array
                         items:
                             type: string
-                            example: Est quia repudiandae eos nam necessitatibus.
+                            example: Maxime dolor quidem.
             schemes:
                 - http
         post:
@@ -104,8 +104,8 @@ definitions:
             name:
                 type: string
                 description: Item name
-                example: Quod libero reprehenderit.
+                example: Quo omnis quia ipsum.
         example:
-            name: Quod libero reprehenderit.
+            name: Quo omnis quia ipsum.
         required:
             - name

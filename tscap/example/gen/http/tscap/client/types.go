@@ -8,9 +8,7 @@
 
 package client
 
-import (
-	tscap "goa.design/plugins/v3/tscap/example/gen/tscap"
-)
+import tscap "goa.design/plugins/v3/tscap/example/gen/tscap"
 
 // CreateRequestBody is the type of the "tscap" service "create" endpoint HTTP
 // request body.

@@ -20,7 +20,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ResponseBody'
                             example:
-                                action: Quaerat neque commodi cupiditate dignissimos voluptates sed.
+                                action: Qui illo.
         get:
             tags:
                 - Arnz
@@ -34,7 +34,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ResponseBody'
                             example:
-                                action: Nulla dolores est sunt autem et est.
+                                action: Accusantium est non molestiae.
         post:
             tags:
                 - Arnz
@@ -48,7 +48,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ResponseBody'
                             example:
-                                action: Autem eos aut quisquam.
+                                action: Aut sit sit repellendus nesciunt minima.
         put:
             tags:
                 - Arnz
@@ -62,7 +62,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ResponseBody'
                             example:
-                                action: Id impedit dolores.
+                                action: Consectetur recusandae.
     /health:
         get:
             tags:
@@ -77,7 +77,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ResponseBody'
                             example:
-                                action: Voluptatem impedit sunt aliquam.
+                                action: Culpa sed.
 components:
     schemas:
         ResponseBody:
@@ -85,9 +85,9 @@ components:
             properties:
                 action:
                     type: string
-                    example: Autem eos aut quisquam.
+                    example: Aut sit sit repellendus nesciunt minima.
             example:
-                action: Autem eos aut quisquam.
+                action: Aut sit sit repellendus nesciunt minima.
             required:
                 - action
 tags:

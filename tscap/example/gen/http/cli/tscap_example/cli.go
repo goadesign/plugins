@@ -34,6 +34,25 @@ func UsageExamples() string {
 		""
 }
 
+// cliStringFlag keeps an omitted command-line flag distinct from an explicitly empty flag.
+type cliStringFlag struct {
+	value *string
+}
+
+// String returns the flag text shown by the standard flag package.
+func (f *cliStringFlag) String() string {
+	if f.value == nil {
+		return ""
+	}
+	return *f.value
+}
+
+// Set records that the user supplied the flag, even when value is empty.
+func (f *cliStringFlag) Set(value string) error {
+	f.value = &value
+	return nil
+}
+
 // ParseEndpoint returns the endpoint and payload as specified on the command
 // line.
 func ParseEndpoint(
@@ -49,13 +68,16 @@ func ParseEndpoint(
 		tscapListFlags = flag.NewFlagSet("list", flag.ExitOnError)
 
 		tscapCreateFlags    = flag.NewFlagSet("create", flag.ExitOnError)
-		tscapCreateBodyFlag = tscapCreateFlags.String("body", "REQUIRED", "")
+		tscapCreateBodyFlag = new(cliStringFlag)
 
 		tscapAdminFlags  = flag.NewFlagSet("admin", flag.ExitOnError)
-		tscapAdminIDFlag = tscapAdminFlags.String("id", "REQUIRED", "Item ID")
+		tscapAdminIDFlag = new(cliStringFlag)
 
 		tscapHealthFlags = flag.NewFlagSet("health", flag.ExitOnError)
 	)
+	tscapCreateFlags.Var(tscapCreateBodyFlag, "body", "")
+	tscapAdminFlags.Var(tscapAdminIDFlag, "id", "Item ID")
+
 	tscapFlags.Usage = tscapUsage
 	tscapListFlags.Usage = tscapListUsage
 	tscapCreateFlags.Usage = tscapCreateUsage
@@ -137,10 +159,10 @@ func ParseEndpoint(
 				endpoint = c.List()
 			case "create":
 				endpoint = c.Create()
-				data, err = tscapc.BuildCreatePayload(*tscapCreateBodyFlag)
+				data, err = tscapc.BuildCreatePayload(tscapCreateBodyFlag.value)
 			case "admin":
 				endpoint = c.Admin()
-				data, err = tscapc.BuildAdminPayload(*tscapAdminIDFlag)
+				data, err = tscapc.BuildAdminPayload(tscapAdminIDFlag.value)
 			case "health":
 				endpoint = c.Health()
 			}
@@ -197,7 +219,7 @@ func tscapCreateUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "tscap create --body '{\n      \"name\": \"Quod libero reprehenderit.\"\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "tscap create --body '{\n      \"name\": \"Quo omnis quia ipsum.\"\n   }'")
 }
 
 func tscapAdminUsage() {
@@ -215,7 +237,7 @@ func tscapAdminUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "tscap admin --id \"Quidem est repellat omnis voluptatem veniam.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "tscap admin --id \"Quidem eos voluptas eveniet.\"")
 }
 
 func tscapHealthUsage() {

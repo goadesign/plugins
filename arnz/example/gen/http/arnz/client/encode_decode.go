@@ -11,6 +11,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -37,18 +38,24 @@ func (c *Client) BuildCreateRequest(ctx context.Context, v any) (*http.Request, 
 // create endpoint. restoreBody controls whether the response body should be
 // restored after having been read.
 func DecodeCreateResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("Arnz", "create", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("Arnz", "create", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -67,7 +74,10 @@ func DecodeCreateResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 			res := NewCreateResponseBodyOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("Arnz", "create", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("Arnz", "create", resp.StatusCode, string(body))
 		}
 	}
@@ -92,18 +102,24 @@ func (c *Client) BuildReadRequest(ctx context.Context, v any) (*http.Request, er
 // endpoint. restoreBody controls whether the response body should be restored
 // after having been read.
 func DecodeReadResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("Arnz", "read", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("Arnz", "read", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -122,7 +138,10 @@ func DecodeReadResponse(decoder func(*http.Response) goahttp.Decoder, restoreBod
 			res := NewReadResponseBodyOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("Arnz", "read", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("Arnz", "read", resp.StatusCode, string(body))
 		}
 	}
@@ -147,18 +166,24 @@ func (c *Client) BuildUpdateRequest(ctx context.Context, v any) (*http.Request, 
 // update endpoint. restoreBody controls whether the response body should be
 // restored after having been read.
 func DecodeUpdateResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("Arnz", "update", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("Arnz", "update", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -177,7 +202,10 @@ func DecodeUpdateResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 			res := NewUpdateResponseBodyOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("Arnz", "update", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("Arnz", "update", resp.StatusCode, string(body))
 		}
 	}
@@ -202,18 +230,24 @@ func (c *Client) BuildDeleteRequest(ctx context.Context, v any) (*http.Request, 
 // delete endpoint. restoreBody controls whether the response body should be
 // restored after having been read.
 func DecodeDeleteResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("Arnz", "delete", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("Arnz", "delete", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -232,7 +266,10 @@ func DecodeDeleteResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 			res := NewDeleteResponseBodyOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("Arnz", "delete", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("Arnz", "delete", resp.StatusCode, string(body))
 		}
 	}
@@ -257,18 +294,24 @@ func (c *Client) BuildHealthRequest(ctx context.Context, v any) (*http.Request, 
 // health endpoint. restoreBody controls whether the response body should be
 // restored after having been read.
 func DecodeHealthResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("Arnz", "health", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("Arnz", "health", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -287,7 +330,10 @@ func DecodeHealthResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 			res := NewHealthResponseBodyOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("Arnz", "health", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("Arnz", "health", resp.StatusCode, string(body))
 		}
 	}

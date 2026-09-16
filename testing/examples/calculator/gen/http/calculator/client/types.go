@@ -345,7 +345,7 @@ func ValidateStatisticsResponseBody(body *StatisticsResponseBody) (err error) {
 }
 
 // ValidateBatchAddResponseBody runs the validations defined on
-// batch_add_response_body
+// BatchAddResponseBody
 func ValidateBatchAddResponseBody(body *BatchAddResponseBody) (err error) {
 	if body.Result == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("result", "body"))
@@ -357,7 +357,7 @@ func ValidateBatchAddResponseBody(body *BatchAddResponseBody) (err error) {
 }
 
 // ValidateDivideDivisionByZeroResponseBody runs the validations defined on
-// divide_division_by_zero_response_body
+// DivideDivisionByZeroResponseBody
 func ValidateDivideDivisionByZeroResponseBody(body *DivideDivisionByZeroResponseBody) (err error) {
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
@@ -369,7 +369,7 @@ func ValidateDivideDivisionByZeroResponseBody(body *DivideDivisionByZeroResponse
 }
 
 // ValidateFactorialInvalidInputResponseBody runs the validations defined on
-// factorial_invalid_input_response_body
+// FactorialInvalidInputResponseBody
 func ValidateFactorialInvalidInputResponseBody(body *FactorialInvalidInputResponseBody) (err error) {
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
@@ -381,7 +381,7 @@ func ValidateFactorialInvalidInputResponseBody(body *FactorialInvalidInputRespon
 }
 
 // ValidateStatisticsEmptyListResponseBody runs the validations defined on
-// statistics_empty_list_response_body
+// StatisticsEmptyListResponseBody
 func ValidateStatisticsEmptyListResponseBody(body *StatisticsEmptyListResponseBody) (err error) {
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))

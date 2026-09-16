@@ -11,6 +11,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -55,18 +56,24 @@ func EncodeArchiveRequest(encoder func(*http.Request) goahttp.Encoder) func(*htt
 // archiver archive endpoint. restoreBody controls whether the response body
 // should be restored after having been read.
 func DecodeArchiveResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("archiver", "archive", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("archiver", "archive", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -78,6 +85,10 @@ func DecodeArchiveResponse(decoder func(*http.Response) goahttp.Decoder, restore
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("archiver", "archive", err)
 			}
+			err = ValidateArchiveResponseBody(&body)
+			if err != nil {
+				return nil, goahttp.ErrValidationError("archiver", "archive", err)
+			}
 			p := NewArchiveMediaViewOK(&body)
 			view := "default"
 			vres := &archiverviews.ArchiveMedia{Projected: p, View: view}
@@ -87,7 +98,10 @@ func DecodeArchiveResponse(decoder func(*http.Response) goahttp.Decoder, restore
 			res := archiver.NewArchiveMedia(vres)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("archiver", "archive", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("archiver", "archive", resp.StatusCode, string(body))
 		}
 	}
@@ -126,18 +140,24 @@ func (c *Client) BuildReadRequest(ctx context.Context, v any) (*http.Request, er
 //   - "bad_request" (type *goa.ServiceError): http.StatusBadRequest
 //   - error: internal error
 func DecodeReadResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("archiver", "read", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("archiver", "read", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -148,6 +168,10 @@ func DecodeReadResponse(decoder func(*http.Response) goahttp.Decoder, restoreBod
 			err = decoder(resp).Decode(&body)
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("archiver", "read", err)
+			}
+			err = ValidateReadResponseBody(&body)
+			if err != nil {
+				return nil, goahttp.ErrValidationError("archiver", "read", err)
 			}
 			p := NewReadArchiveMediaOK(&body)
 			view := "default"
@@ -186,7 +210,10 @@ func DecodeReadResponse(decoder func(*http.Response) goahttp.Decoder, restoreBod
 			}
 			return nil, NewReadBadRequest(&body)
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("archiver", "read", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("archiver", "read", resp.StatusCode, string(body))
 		}
 	}

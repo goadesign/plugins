@@ -24,7 +24,7 @@ func TestServerEncodeDecode(t *testing.T) {
 				"goakit-request-decoder":  {},
 				"goakit-error-encoder":    {},
 			},
-			Import: "/http/simple_service/server",
+			Import: "generated.local/gen/http/simple_service/server",
 		},
 		"with-payload": {
 			DSL: testdata.WithPayloadDSL,
@@ -33,7 +33,7 @@ func TestServerEncodeDecode(t *testing.T) {
 				"goakit-request-decoder":  {testdata.WithPayloadMethodGoakitRequestDecoderCode},
 				"goakit-error-encoder":    {},
 			},
-			Import: "/http/with_payload_service/server",
+			Import: "generated.local/gen/http/with_payload_service/server",
 		},
 		"with-error": {
 			DSL: testdata.WithErrorDSL,
@@ -42,7 +42,7 @@ func TestServerEncodeDecode(t *testing.T) {
 				"goakit-request-decoder":  {},
 				"goakit-error-encoder":    {testdata.WithErrorMethodGoakitErrorEncoderCode},
 			},
-			Import: "/http/with_error_service/server",
+			Import: "generated.local/gen/http/with_error_service/server",
 		},
 		"multi-endpoints": {
 			DSL: testdata.MultiEndpointDSL,
@@ -51,7 +51,7 @@ func TestServerEncodeDecode(t *testing.T) {
 				"goakit-request-decoder":  {testdata.Endpoint1GoakitRequestDecoderCode},
 				"goakit-error-encoder":    {testdata.Endpoint1GoakitErrorEncoderCode, testdata.Endpoint2GoakitErrorEncoderCode},
 			},
-			Import: "/http/multi_endpoint_service/server",
+			Import: "generated.local/gen/http/multi_endpoint_service/server",
 		},
 		"goifyable-service": {
 			DSL: testdata.GoifyableServiceDSL,
@@ -60,13 +60,13 @@ func TestServerEncodeDecode(t *testing.T) {
 				"goakit-request-decoder":  {},
 				"goakit-error-encoder":    {},
 			},
-			Import: "/http/goifyable_service/server",
+			Import: "generated.local/gen/http/goifyable_service/server",
 		},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			root := codegen.RunDSL(t, c.DSL)
-			fs := EncodeDecodeFiles("", root)
+			fs := EncodeDecodeFiles("generated.local/gen", root)
 			require.Len(t, fs, 2)
 			var found bool
 			for _, f := range fs {
@@ -95,7 +95,7 @@ func TestClientEncodeDecode(t *testing.T) {
 				"goakit-response-decoder": {testdata.SimpleMethodGoakitResponseDecoderCode},
 				"goakit-request-encoder":  {},
 			},
-			Import: "/http/simple_service/client",
+			Import: "generated.local/gen/http/simple_service/client",
 		},
 		"with-payload": {
 			DSL: testdata.WithPayloadDSL,
@@ -103,7 +103,7 @@ func TestClientEncodeDecode(t *testing.T) {
 				"goakit-response-decoder": {testdata.WithPayloadMethodGoakitResponseDecoderCode},
 				"goakit-request-encoder":  {testdata.WithPayloadMethodGoakitRequestEncoderCode},
 			},
-			Import: "/http/with_payload_service/client",
+			Import: "generated.local/gen/http/with_payload_service/client",
 		},
 		"with-error": {
 			DSL: testdata.WithErrorDSL,
@@ -111,7 +111,7 @@ func TestClientEncodeDecode(t *testing.T) {
 				"goakit-response-decoder": {testdata.WithErrorMethodGoakitResponseDecoderCode},
 				"goakit-request-encoder":  {},
 			},
-			Import: "/http/with_error_service/client",
+			Import: "generated.local/gen/http/with_error_service/client",
 		},
 		"multi-endpoints": {
 			DSL: testdata.MultiEndpointDSL,
@@ -119,13 +119,13 @@ func TestClientEncodeDecode(t *testing.T) {
 				"goakit-response-decoder": {testdata.Endpoint1GoakitResponseDecoderCode, testdata.Endpoint2GoakitResponseDecoderCode},
 				"goakit-request-encoder":  {testdata.Endpoint1GoakitRequestEncoderCode},
 			},
-			Import: "/http/multi_endpoint_service/client",
+			Import: "generated.local/gen/http/multi_endpoint_service/client",
 		},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			root := codegen.RunDSL(t, c.DSL)
-			fs := EncodeDecodeFiles("", root)
+			fs := EncodeDecodeFiles("generated.local/gen", root)
 			require.Len(t, fs, 2)
 			var found bool
 			for _, f := range fs {

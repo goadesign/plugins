@@ -3,20 +3,21 @@ package i18n
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/codegen/generator"
 	goadsl "goa.design/goa/v3/dsl"
 	"goa.design/goa/v3/eval"
 
 	goaexpr "goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
+	"goa.design/goa/v3/http/codegen/openapi"
 	"goa.design/plugins/v3/i18n/expr"
 )
 
 func init() {
-	codegen.RegisterPlugin("i18n", "gen", Prepare, Generate)
+	generator.RegisterPlugin("i18n", "gen", newPlugin)
 }
 
 // ENVKEY is the key used to lookup locales to use when producing translation openapi specs
@@ -83,30 +84,122 @@ func handleTitleTranslation(p eval.Expression, e []string) {
 	}, p)
 }
 
-// Generate produces additional openapi files for locales configured via
-// the system environment variable GOA_I18N
+// Generate produces additional OpenAPI files for locales configured through
+// GOA_I18N. It remains available to callers that invoke the plugin directly.
 func Generate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
-	locales, _ := getLocales()
-
-	if len(locales) <= 1 {
-		// Nothing to generate, default already contains translations of default locale
+	plans, err := openAPIPlans(roots)
+	if err != nil {
+		return nil, err
+	}
+	if len(plans) <= 1 {
 		return files, nil
 	}
-	defaultLocale := locales[0]
-	restLocales := locales[1:]
-
-	for _, locale := range restLocales {
-		walkTranslations(roots, locale)
-
-		fs, _ := httpcodegen.OpenAPIFiles(goaexpr.Root)
-		// Rename the files
-		for _, file := range fs {
-			ext := filepath.Ext(file.Path)
-			file.Path = fmt.Sprintf("%s_%s%s", strings.TrimSuffix(file.Path, ext), locale, ext)
-		}
-		files = append(files, fs...)
+	for _, plan := range plans[1:] {
+		files = append(files, plan.Files()...)
 	}
-	// Not sure if needed, but reset messages to defaultLocale
-	walkTranslations(roots, defaultLocale)
 	return files, nil
+}
+
+// newPlugin creates the state used by one Goa generation run.
+func newPlugin() generator.Plugin {
+	return generator.Plugin{
+		Prepare: Prepare,
+		Plan: func(plan *generator.Plan) error {
+			plans, err := openAPIPlans(plan.Generation().Roots())
+			if err != nil {
+				return err
+			}
+			if len(plans) <= 1 {
+				return nil
+			}
+			root := applicationRoot(plan.Generation().Roots())
+			return plan.ReplaceOpenAPI(root, plans...)
+		},
+	}
+}
+
+// openAPIPlans builds the default OpenAPI documents followed by one copy for
+// every additional locale. Each copy reads alternate values without changing
+// the evaluated design used by other generators.
+func openAPIPlans(roots []eval.Root) ([]*httpcodegen.OpenAPIPlan, error) {
+	locales, err := getLocales()
+	if err != nil {
+		return nil, err
+	}
+	if len(locales) <= 1 {
+		return nil, nil
+	}
+	root := applicationRoot(roots)
+	examples := goaexpr.NewExampleGenerator(root.API.RandomizerFactory)
+	base, err := httpcodegen.NewOpenAPIPlan(root, examples)
+	if err != nil {
+		return nil, err
+	}
+	plans := []*httpcodegen.OpenAPIPlan{base}
+	for _, locale := range locales[1:] {
+		specs, err := localizedSpecs(root, locale)
+		if err != nil {
+			return nil, err
+		}
+		localized, err := httpcodegen.NewOpenAPIPlanFromSpecs(
+			root,
+			goaexpr.NewExampleGenerator(root.API.RandomizerFactory),
+			specs,
+			localizedValues(roots, locale),
+		)
+		if err != nil {
+			return nil, err
+		}
+		plans = append(plans, localized)
+	}
+	return plans, nil
+}
+
+// applicationRoot returns the Goa design root that owns the OpenAPI files.
+func applicationRoot(roots []eval.Root) *goaexpr.RootExpr {
+	for _, root := range roots {
+		if result, ok := root.(*goaexpr.RootExpr); ok {
+			return result
+		}
+	}
+	panic("i18n: Goa design root is missing")
+}
+
+// localizedSpecs adds the locale before each OpenAPI filename extension.
+func localizedSpecs(root *goaexpr.RootExpr, locale string) ([]openapi.Spec, error) {
+	specs, err := openapi.Specs(root.API.Meta)
+	if err != nil {
+		return nil, err
+	}
+	for index := range specs {
+		specs[index].Path += "_" + locale
+	}
+	return specs, nil
+}
+
+// localizedValues returns the translated text and examples for one OpenAPI
+// document without changing the design read by other generators.
+func localizedValues(roots []eval.Root, locale string) openapi.Values {
+	values := openapi.Values{}
+	for _, root := range roots {
+		root.WalkSets(func(expressions eval.ExpressionSet) {
+			for _, target := range expressions {
+				if translation, ok := expr.Root.Description[target]; ok {
+					values = values.WithDescription(target, translation.Messages(locale)[0])
+				}
+				if translation, ok := expr.Root.Title[target]; ok {
+					values = values.WithTitle(target, translation.Messages(locale)[0])
+				}
+				if translation, ok := expr.Root.Example[target]; ok {
+					if attribute, ok := target.(*goaexpr.AttributeExpr); ok {
+						values = values.WithExamples(attribute, []*goaexpr.ExampleExpr{{
+							Summary: "default",
+							Value:   translation.Messages(locale),
+						}})
+					}
+				}
+			}
+		})
+	}
+	return values
 }

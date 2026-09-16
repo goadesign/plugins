@@ -30,8 +30,27 @@ func UsageCommands() []string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + " " + "calc add --a 7101074584653383974 --b 5365422230106384248" + "\n" +
+	return os.Args[0] + " " + "calc add --a 2760442282490901434 --b 8070273224127067687" + "\n" +
 		""
+}
+
+// cliStringFlag keeps an omitted command-line flag distinct from an explicitly empty flag.
+type cliStringFlag struct {
+	value *string
+}
+
+// String returns the flag text shown by the standard flag package.
+func (f *cliStringFlag) String() string {
+	if f.value == nil {
+		return ""
+	}
+	return *f.value
+}
+
+// Set records that the user supplied the flag, even when value is empty.
+func (f *cliStringFlag) Set(value string) error {
+	f.value = &value
+	return nil
 }
 
 // ParseEndpoint returns the endpoint and payload as specified on the command
@@ -47,9 +66,12 @@ func ParseEndpoint(
 		calcFlags = flag.NewFlagSet("calc", flag.ContinueOnError)
 
 		calcAddFlags = flag.NewFlagSet("add", flag.ExitOnError)
-		calcAddAFlag = calcAddFlags.String("a", "REQUIRED", "Left operand")
-		calcAddBFlag = calcAddFlags.String("b", "REQUIRED", "Right operand")
+		calcAddAFlag = new(cliStringFlag)
+		calcAddBFlag = new(cliStringFlag)
 	)
+	calcAddFlags.Var(calcAddAFlag, "a", "Left operand")
+	calcAddFlags.Var(calcAddBFlag, "b", "Right operand")
+
 	calcFlags.Usage = calcUsage
 	calcAddFlags.Usage = calcAddUsage
 
@@ -117,7 +139,7 @@ func ParseEndpoint(
 			switch epn {
 			case "add":
 				endpoint = c.Add()
-				data, err = calcc.BuildAddPayload(*calcAddAFlag, *calcAddBFlag)
+				data, err = calcc.BuildAddPayload(calcAddAFlag.value, calcAddBFlag.value)
 			}
 		}
 	}
@@ -155,5 +177,5 @@ func calcAddUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calc add --a 7101074584653383974 --b 5365422230106384248")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calc add --a 2760442282490901434 --b 8070273224127067687")
 }

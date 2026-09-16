@@ -101,14 +101,8 @@ func Generate(_ string, roots []eval.Root, files []*codegen.File) ([]*codegen.Fi
 	return files, nil
 }
 
-// docsDataForRoot builds the docs data for a single root while scoping
-// openapi.Definitions to that root only. The global definitions map is restored
-// before returning.
+// docsDataForRoot builds the documentation for one evaluated API.
 func docsDataForRoot(r *goaexpr.RootExpr) *data {
-	prev := openapi.Definitions
-	openapi.Definitions = make(map[string]*openapi.Schema)
-	defer func() { openapi.Definitions = prev }()
-
 	f := docsFile(r)
 	if len(f.SectionTemplates) == 0 || f.SectionTemplates[0] == nil {
 		return nil
@@ -118,17 +112,14 @@ func docsDataForRoot(r *goaexpr.RootExpr) *data {
 }
 
 func docsFile(r *goaexpr.RootExpr) *codegen.File {
-	// Per-run generation state
-	state := newGenState()
+	state := newGenState(r.API)
 	docs := &data{
 		API:      apiDocs(r.API),
 		Services: servicesDocs(r, state),
 	}
 
-	// Default behavior: use root-local OpenAPI definitions produced during
-	// payload/result schema generation to preserve golden stability.
-	defs := make(map[string]*openapi.Schema, len(openapi.Definitions))
-	for n, d := range openapi.Definitions {
+	defs := make(map[string]*openapi.Schema, len(state.definitions))
+	for n, d := range state.definitions {
 		defs[n] = dupSchema(d)
 	}
 
@@ -209,7 +200,8 @@ func forcedDefinitions(api *goaexpr.APIExpr, uts []goaexpr.UserType, state *genS
 
 	out := make(map[string]*openapi.Schema, len(seen))
 	for name, ute := range seen {
-		sch := schemaForAttribute(api, ute.AttributeExpr, state)
+		examples := state.examples.At(goaexpr.UserTypeExampleIdentity(ute))
+		sch := schemaForAttribute(api, ute.AttributeExpr, examples, state)
 		out[name] = dupSchema(sch)
 	}
 	return out
@@ -494,17 +486,17 @@ func generateMethod(api *goaexpr.APIExpr, meth *goaexpr.MethodExpr, state *genSt
 	m := &methodData{
 		Name:             meth.Name,
 		Description:      meth.Description,
-		Payload:          generatePayload(api, meth.Payload, state),
-		StreamingPayload: generatePayload(api, meth.StreamingPayload, state),
+		Payload:          generatePayload(api, meth.Payload, state.examples.At(goaexpr.MethodPayloadExampleIdentity(meth)), state),
+		StreamingPayload: generatePayload(api, meth.StreamingPayload, state.examples.At(goaexpr.MethodStreamingPayloadExampleIdentity(meth)), state),
 	}
 	if meth.Stream == goaexpr.BidirectionalStreamKind || meth.Stream == goaexpr.ServerStreamKind {
-		m.StreamingResult = generatePayload(api, meth.Result, state)
+		m.StreamingResult = generatePayload(api, meth.Result, state.examples.At(goaexpr.MethodStreamingResultExampleIdentity(meth)), state)
 	} else {
-		m.Result = generatePayload(api, meth.Result, state)
+		m.Result = generatePayload(api, meth.Result, state.examples.At(goaexpr.MethodResultExampleIdentity(meth)), state)
 	}
 	m.Errors = make(map[string]*errorData, len(meth.Errors))
 	for _, er := range meth.Errors {
-		m.Errors[er.Name] = generateError(api, er, state)
+		m.Errors[er.Name] = generateError(api, meth, er, state)
 	}
 	m.Requirements = make([]*requirementData, len(meth.Requirements))
 	for i, req := range meth.Requirements {
@@ -513,14 +505,14 @@ func generateMethod(api *goaexpr.APIExpr, meth *goaexpr.MethodExpr, state *genSt
 	return m
 }
 
-func generatePayload(api *goaexpr.APIExpr, att *goaexpr.AttributeExpr, state *genState) *payloadData {
+func generatePayload(api *goaexpr.APIExpr, att *goaexpr.AttributeExpr, examples *goaexpr.ExampleGenerator, state *genState) *payloadData {
 	// Do not generate payload for Empty
 	if ut, ok := att.Type.(*goaexpr.UserTypeExpr); ok && ut == goaexpr.Empty {
 		return nil
 	}
 
-	schema := schemaForAttribute(api, att, state)
-	ex := att.Example(api.ExampleGenerator)
+	schema := schemaForAttribute(api, att, examples, state)
+	ex := att.Example(examples)
 	if plugexpr.Root.UseJSONTags {
 		// avoid mutating shared schema nodes
 		schema = dupSchema(schema)
@@ -533,11 +525,12 @@ func generatePayload(api *goaexpr.APIExpr, att *goaexpr.AttributeExpr, state *ge
 	}
 }
 
-func generateError(api *goaexpr.APIExpr, er *goaexpr.ErrorExpr, state *genState) *errorData {
+func generateError(api *goaexpr.APIExpr, meth *goaexpr.MethodExpr, er *goaexpr.ErrorExpr, state *genState) *errorData {
 	_, temporary := er.Meta["goa:error:temporary"]
 	_, timeout := er.Meta["goa:error:timeout"]
 	_, fault := er.Meta["goa:error:fault"]
-	sch := schemaForAttribute(api, er.AttributeExpr, state)
+	examples := state.examples.At(goaexpr.MethodErrorExampleIdentity(meth, er))
+	sch := schemaForAttribute(api, er.AttributeExpr, examples, state)
 	if plugexpr.Root.UseJSONTags {
 		sch = dupSchema(sch)
 		applyJSONTagsToSchema(er.AttributeExpr, sch)

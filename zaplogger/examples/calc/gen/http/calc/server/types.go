@@ -8,9 +8,7 @@
 
 package server
 
-import (
-	calc "goa.design/plugins/v3/zaplogger/examples/calc/gen/calc"
-)
+import calc "goa.design/plugins/v3/zaplogger/examples/calc/gen/calc"
 
 // NewAddPayload builds a calc service add endpoint payload.
 func NewAddPayload(a int, b int) *calc.AddPayload {

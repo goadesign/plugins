@@ -8,9 +8,7 @@
 
 package tscap
 
-import (
-	"context"
-)
+import "context"
 
 // A service demonstrating Tailscale app capabilities
 type Service interface {

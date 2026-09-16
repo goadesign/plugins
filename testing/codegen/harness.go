@@ -1,3 +1,5 @@
+// This file renders the in-process servers and clients used by generated
+// service tests for HTTP, gRPC, and JSON-RPC transports.
 package codegen
 
 import (
@@ -40,14 +42,14 @@ type (
 )
 
 // generateHarness generates the test harness file for a service.
-func generateHarness(genpkg string, svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr) *codegen.File {
-	path := filepath.Join(testingPath(genpkg, svc), "harness.go")
+func generateHarness(genpkg string, svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr, transports *methodTransports) *codegen.File {
+	path := filepath.Join(testingPath(svcData), "harness.go")
 
 	if svcData == nil {
 		return nil
 	}
 
-	data := buildHarnessData(svcData, root, svc)
+	data := buildHarnessData(svcData, root, svc, transports)
 
 	specs := []*codegen.ImportSpec{
 		{Path: "context"},
@@ -59,7 +61,7 @@ func generateHarness(genpkg string, svcData *service.Data, root *expr.RootExpr, 
 		{Path: "strings"},
 		{Path: "testing"},
 		{Path: "time"},
-		{Path: filepath.Join(genpkg, codegen.SnakeCase(svc.Name)), Name: svcData.PkgName},
+		{Path: filepath.Join(genpkg, svcData.PathName), Name: svcData.PkgName},
 		{Path: "goa.design/goa/v3/pkg"},
 	}
 
@@ -68,8 +70,8 @@ func generateHarness(genpkg string, svcData *service.Data, root *expr.RootExpr, 
 		specs = append(specs,
 			&codegen.ImportSpec{Path: "bytes"},
 			&codegen.ImportSpec{Path: "bufio"},
-			&codegen.ImportSpec{Path: filepath.Join(genpkg, "http", codegen.SnakeCase(svc.Name), "server"), Name: "httpsvr"},
-			&codegen.ImportSpec{Path: filepath.Join(genpkg, "http", codegen.SnakeCase(svc.Name), "client"), Name: "httpcli"},
+			&codegen.ImportSpec{Path: filepath.Join(genpkg, "http", svcData.PathName, "server"), Name: "httpsvr"},
+			&codegen.ImportSpec{Path: filepath.Join(genpkg, "http", svcData.PathName, "client"), Name: "httpcli"},
 			&codegen.ImportSpec{Path: "goa.design/goa/v3/http", Name: "goahttp"},
 			&codegen.ImportSpec{Path: "net/url"},
 			&codegen.ImportSpec{Path: "github.com/gorilla/websocket"},
@@ -81,23 +83,23 @@ func generateHarness(genpkg string, svcData *service.Data, root *expr.RootExpr, 
 			&codegen.ImportSpec{Path: "google.golang.org/grpc"},
 			&codegen.ImportSpec{Path: "google.golang.org/grpc/test/bufconn"},
 			&codegen.ImportSpec{Path: "goa.design/goa/v3/grpc", Name: "goagrpc"},
-			&codegen.ImportSpec{Path: filepath.Join(genpkg, "grpc", codegen.SnakeCase(svc.Name), "server"), Name: "grpcsvr"},
-			&codegen.ImportSpec{Path: filepath.Join(genpkg, "grpc", codegen.SnakeCase(svc.Name), "client"), Name: "grpccli"},
-			&codegen.ImportSpec{Path: filepath.Join(genpkg, "grpc", codegen.SnakeCase(svc.Name), "pb"), Name: svcData.PkgName + "pb"},
+			&codegen.ImportSpec{Path: filepath.Join(genpkg, "grpc", svcData.PathName, "server"), Name: "grpcsvr"},
+			&codegen.ImportSpec{Path: filepath.Join(genpkg, "grpc", svcData.PathName, "client"), Name: "grpccli"},
+			&codegen.ImportSpec{Path: filepath.Join(genpkg, "grpc", svcData.PathName, "pb"), Name: svcData.PkgName + "pb"},
 		)
 	}
 	if data.HasJSONRPC {
 		specs = append(specs,
 			&codegen.ImportSpec{Path: "net/url"},
-			&codegen.ImportSpec{Path: filepath.Join(genpkg, "jsonrpc", codegen.SnakeCase(svc.Name), "server"), Name: "jsonrpcsvr"},
-			&codegen.ImportSpec{Path: filepath.Join(genpkg, "jsonrpc", codegen.SnakeCase(svc.Name), "client"), Name: "jsonrpccli"},
+			&codegen.ImportSpec{Path: filepath.Join(genpkg, "jsonrpc", svcData.PathName, "server"), Name: "jsonrpcsvr"},
+			&codegen.ImportSpec{Path: filepath.Join(genpkg, "jsonrpc", svcData.PathName, "client"), Name: "jsonrpccli"},
 			&codegen.ImportSpec{Path: "goa.design/goa/v3/jsonrpc", Name: "jsonrpc"},
 			&codegen.ImportSpec{Path: "goa.design/goa/v3/http", Name: "goahttp"},
 		)
 	}
 
 	sections := []*codegen.SectionTemplate{
-		codegen.Header(fmt.Sprintf("Test harness for %s service", svc.Name), codegen.SnakeCase(svc.Name)+"test", specs),
+		codegen.Header(fmt.Sprintf("Test harness for %s service", svc.Name), svcData.PathName+"test", specs),
 		{
 			Name:   "harness-struct",
 			Source: testingTemplates.Read(harnessStructT),
@@ -128,7 +130,7 @@ func generateHarness(genpkg string, svcData *service.Data, root *expr.RootExpr, 
 }
 
 // buildHarnessData builds the template data for the harness.
-func buildHarnessData(svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr) *harnessData {
+func buildHarnessData(svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr, transports *methodTransports) *harnessData {
 	// Create harness data using Goa's service.Data directly
 	data := &harnessData{
 		Data:        svcData,
@@ -145,7 +147,7 @@ func buildHarnessData(svcData *service.Data, root *expr.RootExpr, svc *expr.Serv
 		md := svcData.Methods[i]
 
 		// Build targets for this method using shared function
-		targets := buildMethodTargets(root, svc, m, md)
+		targets := buildMethodTargets(root, svc, m, transports)
 
 		// Create harness method data
 		hmd := &harnessMethodData{
@@ -197,10 +199,9 @@ func hasJSONRPCTransport(root *expr.RootExpr, svc *expr.ServiceExpr) bool {
 	return false
 }
 
-// testingPath returns the path to the testing package for the given service.
-func testingPath(_ string, svc *expr.ServiceExpr) string {
-	// Use service-specific package name to avoid import collisions
-	return filepath.Join(codegen.Gendir, codegen.SnakeCase(svc.Name), codegen.SnakeCase(svc.Name)+"test")
+// testingPath returns the output path next to the generated service package.
+func testingPath(svc *service.Data) string {
+	return filepath.Join(codegen.Gendir, svc.PathName, svc.PathName+"test")
 }
 
 // hasStreams checks if the service has streaming methods.
@@ -239,23 +240,6 @@ func hasMethodGRPC(root *expr.RootExpr, svc *expr.ServiceExpr, m *expr.MethodExp
 			}
 			for _, gm := range gs.GRPCEndpoints {
 				if gm.MethodExpr == m {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-// hasMethodJSONRPC checks whether the given method is bound to JSON-RPC transport.
-func hasMethodJSONRPC(root *expr.RootExpr, svc *expr.ServiceExpr, m *expr.MethodExpr) bool {
-	if root != nil && root.API != nil && root.API.JSONRPC != nil {
-		for _, js := range root.API.JSONRPC.Services {
-			if js.Name() != svc.Name {
-				continue
-			}
-			for _, hm := range js.HTTPEndpoints {
-				if hm.MethodExpr == m {
 					return true
 				}
 			}

@@ -8,9 +8,7 @@
 
 package health
 
-import (
-	"context"
-)
+import "context"
 
 // Service is the health service interface.
 type Service interface {

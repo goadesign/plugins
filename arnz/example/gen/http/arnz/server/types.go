@@ -8,9 +8,7 @@
 
 package server
 
-import (
-	arnz "goa.design/plugins/v3/arnz/example/gen/arnz"
-)
+import arnz "goa.design/plugins/v3/arnz/example/gen/arnz"
 
 // CreateResponseBody is the type of the "Arnz" service "create" endpoint HTTP
 // response body.

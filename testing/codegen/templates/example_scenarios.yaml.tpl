@@ -107,20 +107,20 @@ scenarios:
     {{- end }}
 
   {{- range $method := .Methods }}
-  {{- if or (eq $method.StreamKind 1) (eq $method.StreamKind 2) (eq $method.StreamKind 3) }}
+  {{- if or $method.IsClientStream $method.IsServerStream $method.IsBidirectional }}
   # Streaming test example
   - name: "streaming_{{ $method.Name }}"
     description: "Tests streaming for {{ $method.Name }}"
     steps:
       - method: {{ $method.Name }}
-        {{- if eq $method.StreamKind 1 }}
+        {{- if $method.IsClientStream }}
         # Client streaming
         send:
           - # First message
           - # Second message
         expect:
           result: {}
-        {{- else if eq $method.StreamKind 2 }}
+        {{- else if $method.IsServerStream }}
         # Server streaming
         {{- if $method.Payload }}
         payload: {}
@@ -128,7 +128,7 @@ scenarios:
         receive:
           - # Expected first message
           - # Expected second message
-        {{- else if eq $method.StreamKind 3 }}
+        {{- else if $method.IsBidirectional }}
         # Bidirectional streaming
         send:
           - # First client message
@@ -156,10 +156,10 @@ scenarios:
 
 # Transport values (based on your service configuration):
 # {{- range $transport := .ValidTransports }}
-# - {{ $transport }}
+# - {{ $transport.Name }}
 # {{- end }}
 
 # Available methods and their transports:
 # {{- range $method := .Methods }}
 # - {{ $method.Name }}: {{ range $i, $t := $method.Transports }}{{- if $i }}, {{ end }}{{ $t }}{{- end }}
-# {{- end }}
+# {{- end -}}

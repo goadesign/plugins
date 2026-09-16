@@ -124,6 +124,6 @@ var _ = Service("calculator", func() {
 var CalculatorError = Type("CalculatorError", func() {
 	Description("Calculator operation error")
 	Field(1, "message", String, "Error message")
-	Field(2, "code", String, "Error code")
+	ErrorName(2, "code", String, "Error code")
 	Required("message", "code")
 })

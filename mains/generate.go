@@ -6,427 +6,455 @@
 package mains
 
 import (
-    "path"
-    "path/filepath"
-    "strings"
+	"path"
+	"path/filepath"
+	"strings"
 
-    "goa.design/goa/v3/codegen"
-    "goa.design/goa/v3/codegen/example"
-    "goa.design/goa/v3/codegen/service"
-    "goa.design/goa/v3/eval"
-    "goa.design/goa/v3/expr"
-    httpcodegen "goa.design/goa/v3/http/codegen"
+	"goa.design/goa/v3/codegen"
+	"goa.design/goa/v3/codegen/service"
+	"goa.design/goa/v3/eval"
+	"goa.design/goa/v3/expr"
+	httpcodegen "goa.design/goa/v3/http/codegen"
 )
 
 const (
-    // pluginName is the registered plugin name.
-    pluginName = "mains"
-    // pluginCmd is the goa CLI command the plugin integrates with.
-    pluginCmd  = "example"
+	// pluginName is the registered plugin name.
+	pluginName = "mains"
+	// pluginCmd is the goa CLI command the plugin integrates with.
+	pluginCmd = "example"
 )
 
 // srvInfo stores server-level data derived from generated example files.
 type srvInfo struct {
-    Dir        string
-    APIPkg     string
-    Services   []*service.Data
-    HasWS      bool
-    HasHTTP    bool
-    HasGRPC    bool
-    ServerName string
-    // FSCounts maps service name to the number of HTTP file servers.
-    FSCounts   map[string]int
+	Dir        string
+	APIPkg     string
+	Services   []*service.Data
+	HasWS      bool
+	HasHTTP    bool
+	HasGRPC    bool
+	ServerName string
+	// FSCounts maps service name to the number of HTTP file servers.
+	FSCounts map[string]int
 }
 
 // svcT provides template data for each service imported by a server.
 type svcT struct {
-    Name         string
-    StructName   string
-    SvcVar       string
-    EpVar        string
-    SrvVar       string
-    GenPkg       string
-    GenHTTPPkg   string
-    GenGRPCPkg   string
-    GenGRPCPbPkg string
-    HasWebSocket bool
-    HasHTTP      bool
-    HasGRPC      bool
-    // FileServerNils is used by the template to emit one trailing
-    // nil argument per HTTP file server in the service.
-    FileServerNils []int
+	Name         string
+	StructName   string
+	SvcVar       string
+	EpVar        string
+	SrvVar       string
+	GenPkg       string
+	GenHTTPPkg   string
+	GenGRPCPkg   string
+	GenGRPCPbPkg string
+	HasWebSocket bool
+	HasHTTP      bool
+	HasGRPC      bool
+	// FileServerNils is used by the template to emit one trailing
+	// nil argument per HTTP file server in the service.
+	FileServerNils []int
 }
 
 // Register the plugin for the example phase.
 func init() {
-    codegen.RegisterPluginLast(pluginName, pluginCmd, nil, Generate)
+	codegen.RegisterPluginLast(pluginName, pluginCmd, nil, Generate)
 }
 
 // Generate produces golden-path mains that follow the Goa conventions and
 // pulse weather layout:
-//  - For servers with a single service: services/<svc>/cmd/<svc>/main.go
-//  - For servers with multiple services: cmd/<server>/main.go
+//   - For servers with a single service: services/<svc>/cmd/<svc>/main.go
+//   - For servers with multiple services: cmd/<server>/main.go
+//
 // It replaces the default example main and http.go files.
 func Generate(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
-    return generateExample(genpkg, roots, files)
+	return generateExample(genpkg, roots, files)
 }
 
 func generateExample(genpkg string, roots []eval.Root, files []*codegen.File) ([]*codegen.File, error) {
-    // Collect per-server services/APIPkg from example main files first
-    srvMap := map[string]*srvInfo{}
-    for _, f := range files {
-        if filepath.Base(f.Path) != "main.go" { continue }
-        segs := strings.Split(filepath.ToSlash(f.Path), "/")
-        if len(segs) < 3 || segs[0] != "cmd" { continue }
-        dir := segs[1]
-        var svcs []*service.Data
-        var apipkg string
-        for _, s := range f.SectionTemplates {
-            switch s.Name {
-            case "server-main-services":
-                if dm, ok := s.Data.(map[string]any); ok {
-                    if v, ok := dm["Services"].([]*service.Data); ok { svcs = v }
-                }
-            case "server-main-logger":
-                if dm, ok := s.Data.(map[string]any); ok {
-                    if v, ok := dm["APIPkg"].(string); ok { apipkg = v }
-                }
-            }
-        }
-        if len(svcs) == 0 { continue }
-        if apipkg == "" { apipkg = apiPkgAlias(genpkg, roots) }
-        if _, exists := srvMap[dir]; !exists {
-            srvMap[dir] = &srvInfo{Dir: dir, APIPkg: apipkg, Services: svcs}
-        }
-    }
-    // Complement with HTTP server data (WebSocket detection) and fallback if needed
-    for _, f := range files {
-        if filepath.Base(f.Path) != "http.go" { continue }
-        segs := strings.Split(filepath.ToSlash(f.Path), "/")
-        if len(segs) < 3 || segs[0] != "cmd" { continue }
-        dir := segs[1]
-        var httpSvcs []*httpcodegen.ServiceData
-        for _, s := range f.SectionTemplates {
-            if s.Name == "server-http-start" {
-                if dm, ok := s.Data.(map[string]any); ok {
-                    if v, ok := dm["Services"].([]*httpcodegen.ServiceData); ok { httpSvcs = v; break }
-                }
-            }
-        }
-        if len(httpSvcs) == 0 { continue }
-        var svcs []*service.Data
-        fsCounts := map[string]int{}
-        for _, sd := range httpSvcs {
-            if sd == nil || sd.Service == nil {
-                continue
-            }
-            svcs = append(svcs, sd.Service)
-            if sd.FileServers != nil {
-                fsCounts[sd.Service.Name] = len(sd.FileServers)
-            }
-        }
-        // Detect WebSocket usage from HTTP endpoints (streaming without SSE).
-        // NeedDialer() is for client dialers, but here we're generating server mains
-        // and need to know whether to import gorilla/websocket for the upgrader.
-        hasWS := false
-        wsBySvc := httpWebSocketByService(roots)
-        for _, sd := range httpSvcs {
-            if sd != nil && sd.Service != nil && wsBySvc[sd.Service.Name] {
-                hasWS = true
-                break
-            }
-        }
-        apipkg := apiPkgAlias(genpkg, roots)
-        if info, ok := srvMap[dir]; ok {
-            info.HasWS = hasWS
-            info.HasHTTP = true
-            if info.APIPkg == "" { info.APIPkg = apipkg }
-            if info.FSCounts == nil { info.FSCounts = map[string]int{} }
-            for k, v := range fsCounts { info.FSCounts[k] = v }
-        } else {
-            srvMap[dir] = &srvInfo{Dir: dir, APIPkg: apipkg, Services: svcs, HasWS: hasWS, HasHTTP: true, FSCounts: fsCounts}
-        }
-    }
-    // Detect gRPC servers from grpc.go files
-    for _, f := range files {
-        if filepath.Base(f.Path) != "grpc.go" { continue }
-        segs := strings.Split(filepath.ToSlash(f.Path), "/")
-        if len(segs) < 3 || segs[0] != "cmd" { continue }
-        dir := segs[1]
-        if info, ok := srvMap[dir]; ok {
-            info.HasGRPC = true
-        }
-    }
+	// Collect per-server services/APIPkg from example main files first
+	srvMap := map[string]*srvInfo{}
+	for _, f := range files {
+		if filepath.Base(f.Path) != "main.go" {
+			continue
+		}
+		segs := strings.Split(filepath.ToSlash(f.Path), "/")
+		if len(segs) < 3 || segs[0] != "cmd" {
+			continue
+		}
+		dir := segs[1]
+		var svcs []*service.Data
+		var apipkg string
+		for _, s := range f.SectionTemplates {
+			switch s.Name {
+			case "server-main-services":
+				if dm, ok := s.Data.(map[string]any); ok {
+					if v, ok := dm["Services"].([]*service.Data); ok {
+						svcs = v
+					}
+				}
+			case "server-main-logger":
+				if dm, ok := s.Data.(map[string]any); ok {
+					if v, ok := dm["APIPkg"].(string); ok {
+						apipkg = v
+					}
+				}
+			}
+		}
+		if len(svcs) == 0 {
+			continue
+		}
+		if apipkg == "" {
+			apipkg = apiPkgAlias(genpkg, roots)
+		}
+		if _, exists := srvMap[dir]; !exists {
+			srvMap[dir] = &srvInfo{Dir: dir, APIPkg: apipkg, Services: svcs}
+		}
+	}
+	// Complement with HTTP server data (WebSocket detection) and fallback if needed
+	for _, f := range files {
+		if filepath.Base(f.Path) != "http.go" {
+			continue
+		}
+		segs := strings.Split(filepath.ToSlash(f.Path), "/")
+		if len(segs) < 3 || segs[0] != "cmd" {
+			continue
+		}
+		dir := segs[1]
+		var httpSvcs []*httpcodegen.ServiceData
+		for _, s := range f.SectionTemplates {
+			if s.Name == "server-http-start" {
+				if dm, ok := s.Data.(map[string]any); ok {
+					if v, ok := dm["Services"].([]*httpcodegen.ServiceData); ok {
+						httpSvcs = v
+						break
+					}
+				}
+			}
+		}
+		if len(httpSvcs) == 0 {
+			continue
+		}
+		var svcs []*service.Data
+		fsCounts := map[string]int{}
+		for _, sd := range httpSvcs {
+			if sd == nil || sd.Service == nil {
+				continue
+			}
+			svcs = append(svcs, sd.Service)
+			if sd.FileServers != nil {
+				fsCounts[sd.Service.Name] = len(sd.FileServers)
+			}
+		}
+		// Detect WebSocket usage from HTTP endpoints (streaming without SSE).
+		// NeedDialer() is for client dialers, but here we're generating server mains
+		// and need to know whether to import gorilla/websocket for the upgrader.
+		hasWS := false
+		wsBySvc := httpWebSocketByService(roots)
+		for _, sd := range httpSvcs {
+			if sd != nil && sd.Service != nil && wsBySvc[sd.Service.Name] {
+				hasWS = true
+				break
+			}
+		}
+		apipkg := apiPkgAlias(genpkg, roots)
+		if info, ok := srvMap[dir]; ok {
+			info.HasWS = hasWS
+			info.HasHTTP = true
+			if info.APIPkg == "" {
+				info.APIPkg = apipkg
+			}
+			if info.FSCounts == nil {
+				info.FSCounts = map[string]int{}
+			}
+			for k, v := range fsCounts {
+				info.FSCounts[k] = v
+			}
+		} else {
+			srvMap[dir] = &srvInfo{Dir: dir, APIPkg: apipkg, Services: svcs, HasWS: hasWS, HasHTTP: true, FSCounts: fsCounts}
+		}
+	}
+	// Detect gRPC servers from grpc.go files
+	for _, f := range files {
+		if filepath.Base(f.Path) != "grpc.go" {
+			continue
+		}
+		segs := strings.Split(filepath.ToSlash(f.Path), "/")
+		if len(segs) < 3 || segs[0] != "cmd" {
+			continue
+		}
+		dir := segs[1]
+		if info, ok := srvMap[dir]; ok {
+			info.HasGRPC = true
+		}
+	}
 
-    if len(srvMap) == 0 {
-        return files, nil
-    }
+	if len(srvMap) == 0 {
+		return files, nil
+	}
 
-    // Filter out default example mains, http.go, and grpc.go; we'll add our own mains.
-    var out []*codegen.File
-    for _, f := range files {
-        base := filepath.Base(f.Path)
-        if strings.HasPrefix(f.Path, "cmd/") && (base == "main.go" || base == "http.go" || base == "grpc.go") {
-            continue
-        }
-        out = append(out, f)
-    }
+	// Filter out default example mains, http.go, and grpc.go; we'll add our own mains.
+	var out []*codegen.File
+	for _, f := range files {
+		base := filepath.Base(f.Path)
+		if strings.HasPrefix(f.Path, "cmd/") && (base == "main.go" || base == "http.go" || base == "grpc.go") {
+			continue
+		}
+		out = append(out, f)
+	}
 
-    // Create mains per server
-    for _, info := range srvMap {
-        if len(info.Services) == 0 {
-            continue
-        }
-        specs := []*codegen.ImportSpec{
-            {Path: "context"},
-            {Path: "flag"},
-            {Path: "fmt"},
-            {Path: "net/http"},
-            {Path: "net/http/httptrace"},
-            {Path: "os"},
-            {Path: "os/signal"},
-            {Path: "sync"},
-            {Path: "syscall"},
-            {Path: "time"},
-            {Path: "go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"},
-            {Path: "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"},
-            {Path: "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"},
-            {Path: "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"},
-            {Path: "goa.design/clue/clue"},
-            {Path: "goa.design/clue/debug"},
-            {Path: "goa.design/clue/health"},
-            {Path: "goa.design/clue/log"},
-            codegen.GoaNamedImport("http", "goahttp"),
-            {Path: "google.golang.org/grpc/credentials/insecure"},
-        }
-        if info.HasGRPC {
-            specs = append(specs,
-                &codegen.ImportSpec{Path: "net"},
-                &codegen.ImportSpec{Path: "google.golang.org/grpc"},
-                &codegen.ImportSpec{Path: "google.golang.org/grpc/reflection"},
-                &codegen.ImportSpec{Path: "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"},
-            )
-        }
-        if info.HasWS {
-            specs = append(specs, &codegen.ImportSpec{Path: "github.com/gorilla/websocket"})
-        }
-        rootPath := moduleRootFromGenpkg(genpkg)
-        specs = append(specs, &codegen.ImportSpec{Path: rootPath, Name: info.APIPkg})
+	// Create mains per server
+	for _, info := range srvMap {
+		if len(info.Services) == 0 {
+			continue
+		}
+		specs := []*codegen.ImportSpec{
+			{Path: "context"},
+			{Path: "flag"},
+			{Path: "fmt"},
+			{Path: "net/http"},
+			{Path: "net/http/httptrace"},
+			{Path: "os"},
+			{Path: "os/signal"},
+			{Path: "sync"},
+			{Path: "syscall"},
+			{Path: "time"},
+			{Path: "go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"},
+			{Path: "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"},
+			{Path: "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"},
+			{Path: "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"},
+			{Path: "goa.design/clue/clue"},
+			{Path: "goa.design/clue/debug"},
+			{Path: "goa.design/clue/health"},
+			{Path: "goa.design/clue/log"},
+			codegen.GoaNamedImport("http", "goahttp"),
+			{Path: "google.golang.org/grpc/credentials/insecure"},
+		}
+		if info.HasGRPC {
+			specs = append(specs,
+				&codegen.ImportSpec{Path: "net"},
+				&codegen.ImportSpec{Path: "google.golang.org/grpc"},
+				&codegen.ImportSpec{Path: "google.golang.org/grpc/reflection"},
+				&codegen.ImportSpec{Path: "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"},
+			)
+		}
+		if info.HasWS {
+			specs = append(specs, &codegen.ImportSpec{Path: "github.com/gorilla/websocket"})
+		}
+		rootPath := moduleRootFromGenpkg(genpkg)
+		specs = append(specs, &codegen.ImportSpec{Path: rootPath, Name: info.APIPkg})
 
-        scope := codegen.NewNameScope()
-        var svcsData []svcT
-        httpBySvc := httpServicesByName(roots)
-        grpcBySvc := grpcServicesByName(roots)
-        wsBySvc := httpWebSocketByService(roots)
-        hasAnyWS := false
-        hasAnyHTTP := false
-        hasAnyGRPC := false
-        for _, sd := range info.Services {
-            genAlias := scope.Unique(sd.PkgName, "svc")
-            hasHTTP := httpBySvc[sd.Name]
-            hasGRPC := grpcBySvc[sd.Name]
-            hws := wsBySvc[sd.Name]
+		scope := codegen.NewNameScope()
+		var svcsData []svcT
+		httpBySvc := httpServicesByName(roots)
+		grpcBySvc := grpcServicesByName(roots)
+		wsBySvc := httpWebSocketByService(roots)
+		hasAnyWS := false
+		hasAnyHTTP := false
+		hasAnyGRPC := false
+		for _, sd := range info.Services {
+			genAlias := scope.Unique(sd.PkgName, "svc")
+			hasHTTP := httpBySvc[sd.Name]
+			hasGRPC := grpcBySvc[sd.Name]
+			hws := wsBySvc[sd.Name]
 
-            var httpAlias, grpcAlias, grpcPbAlias string
+			var httpAlias, grpcAlias, grpcPbAlias string
 
-            // Always add the base service package
-            specs = append(specs, &codegen.ImportSpec{Path: path.Join(genpkg, sd.PathName), Name: genAlias})
+			// Always add the base service package
+			specs = append(specs, &codegen.ImportSpec{Path: path.Join(genpkg, sd.PathName), Name: genAlias})
 
-            // Conditionally add HTTP server imports
-            if hasHTTP {
-                httpAlias = scope.Unique(sd.PkgName+"svr", "svr")
-                specs = append(specs, &codegen.ImportSpec{Path: path.Join(genpkg, "http", sd.PathName, "server"), Name: httpAlias})
-                hasAnyHTTP = true
-            }
+			// Conditionally add HTTP server imports
+			if hasHTTP {
+				httpAlias = scope.Unique(sd.PkgName+"svr", "svr")
+				specs = append(specs, &codegen.ImportSpec{Path: path.Join(genpkg, "http", sd.PathName, "server"), Name: httpAlias})
+				hasAnyHTTP = true
+			}
 
-            // Conditionally add gRPC server imports
-            if hasGRPC {
-                grpcAlias = scope.Unique(sd.PkgName+"grpc", "grpcsvc")
-                grpcPbAlias = scope.Unique(sd.PkgName+"pb", "pb")
-                specs = append(specs,
-                    &codegen.ImportSpec{Path: path.Join(genpkg, "grpc", sd.PathName, "server"), Name: grpcAlias},
-                    &codegen.ImportSpec{Path: path.Join(genpkg, "grpc", sd.PathName, "pb"), Name: grpcPbAlias},
-                )
-                hasAnyGRPC = true
-            }
+			// Conditionally add gRPC server imports
+			if hasGRPC {
+				grpcAlias = scope.Unique(sd.PkgName+"grpc", "grpcsvc")
+				grpcPbAlias = scope.Unique(sd.PkgName+"pb", "pb")
+				specs = append(specs,
+					&codegen.ImportSpec{Path: path.Join(genpkg, "grpc", sd.PathName, "server"), Name: grpcAlias},
+					&codegen.ImportSpec{Path: path.Join(genpkg, "grpc", sd.PathName, "pb"), Name: grpcPbAlias},
+				)
+				hasAnyGRPC = true
+			}
 
-            if hws {
-                hasAnyWS = true
-            }
+			if hws {
+				hasAnyWS = true
+			}
 
-            // Determine file server count: prefer extracted counts from example
-            // HTTP files, fallback to design counts when missing.
-            fsn, ok := info.FSCounts[sd.Name]
-            if !ok {
-                fsn = httpFileServerCounts(roots)[sd.Name]
-            }
-            svcsData = append(svcsData, svcT{
-                Name:         sd.Name,
-                StructName:   sd.StructName,
-                SvcVar:       sd.VarName + "Svc",
-                EpVar:        sd.VarName + "Endpoints",
-                SrvVar:       sd.VarName + "Server",
-                GenPkg:       genAlias,
-                GenHTTPPkg:   httpAlias,
-                GenGRPCPkg:   grpcAlias,
-                GenGRPCPbPkg: grpcPbAlias,
-                HasWebSocket: hws,
-                HasHTTP:      hasHTTP,
-                HasGRPC:      hasGRPC,
-                FileServerNils: func(n int) []int { if n <= 0 { return nil }; s := make([]int, n); for i := range s { s[i] = i }; return s }(fsn),
-            })
-        }
+			// Determine file server count: prefer extracted counts from example
+			// HTTP files, fallback to design counts when missing.
+			fsn, ok := info.FSCounts[sd.Name]
+			if !ok {
+				fsn = httpFileServerCounts(roots)[sd.Name]
+			}
+			svcsData = append(svcsData, svcT{
+				Name:         sd.Name,
+				StructName:   sd.StructName,
+				SvcVar:       sd.VarName + "Svc",
+				EpVar:        sd.VarName + "Endpoints",
+				SrvVar:       sd.VarName + "Server",
+				GenPkg:       genAlias,
+				GenHTTPPkg:   httpAlias,
+				GenGRPCPkg:   grpcAlias,
+				GenGRPCPbPkg: grpcPbAlias,
+				HasWebSocket: hws,
+				HasHTTP:      hasHTTP,
+				HasGRPC:      hasGRPC,
+				FileServerNils: func(n int) []int {
+					if n <= 0 {
+						return nil
+					}
+					s := make([]int, n)
+					for i := range s {
+						s[i] = i
+					}
+					return s
+				}(fsn),
+			})
+		}
 
-        sections := []*codegen.SectionTemplate{
-            codegen.Header("", "main", specs),
-            {Name: "mains-main", Source: tmpl.Read("main"), Data: map[string]any{
-                "APIPkg":          info.APIPkg,
-                "Services":        svcsData,
-                "HasAnyWebSocket": hasAnyWS,
-                "HasHTTP":         hasAnyHTTP,
-                "HasGRPC":         hasAnyGRPC,
-                "ServiceCount":    len(svcsData),
-                "ServerLabel":     serverLabel(roots),
-            }},
-        }
+		sections := []*codegen.SectionTemplate{
+			codegen.Header("", "main", specs),
+			{Name: "mains-main", Source: tmpl.Read("main"), Data: map[string]any{
+				"APIPkg":          info.APIPkg,
+				"Services":        svcsData,
+				"HasAnyWebSocket": hasAnyWS,
+				"HasHTTP":         hasAnyHTTP,
+				"HasGRPC":         hasAnyGRPC,
+				"ServiceCount":    len(svcsData),
+				"ServerLabel":     serverLabel(roots),
+			}},
+		}
 
-        var fpath string
-        if len(info.Services) == 1 {
-            svc := info.Services[0]
-            fpath = filepath.ToSlash(filepath.Join("services", svc.PathName, "cmd", svc.PathName, "main.go"))
-        } else {
-            // Use the example server directory so people can still `go run ./cmd/<dir>` when multiple services
-            // are served from a single process.
-            // Derive server directory using same logic as example generator.
-            fpath = filepath.ToSlash(filepath.Join("cmd", example.Servers.Get(rootServer(roots), roots[0].(*expr.RootExpr)).Dir, "main.go"))
-            // But we already filtered out the default http.go/main.go, so only our main remains.
-        }
+		var fpath string
+		if len(info.Services) == 1 {
+			svc := info.Services[0]
+			fpath = filepath.ToSlash(filepath.Join("services", svc.PathName, "cmd", svc.PathName, "main.go"))
+		} else {
+			// Use the example server directory so people can still `go run ./cmd/<dir>` when multiple services
+			// are served from a single process.
+			// Derive server directory using same logic as example generator.
+			fpath = filepath.ToSlash(filepath.Join("cmd", info.Dir, "main.go"))
+			// But we already filtered out the default http.go/main.go, so only our main remains.
+		}
 
-        out = append(out, &codegen.File{Path: fpath, SectionTemplates: sections, SkipExist: true})
-    }
-    return out, nil
+		out = append(out, &codegen.File{Path: fpath, SectionTemplates: sections, SkipExist: true})
+	}
+	return out, nil
 }
 
 func apiPkgAlias(genpkg string, roots []eval.Root) string {
-    var apiName string
-    for _, r := range roots {
-        if root, ok := r.(*expr.RootExpr); ok {
-            if root != nil && root.API != nil {
-                apiName = root.API.Name
-                break
-            }
-        }
-    }
-    if apiName == "" {
-        apiName = "api"
-    }
-    scope := codegen.NewNameScope()
-    return scope.Unique(strings.ToLower(codegen.Goify(apiName, false)), "api")
+	var apiName string
+	for _, r := range roots {
+		if root, ok := r.(*expr.RootExpr); ok {
+			if root != nil && root.API != nil {
+				apiName = root.API.Name
+				break
+			}
+		}
+	}
+	if apiName == "" {
+		apiName = "api"
+	}
+	scope := codegen.NewNameScope()
+	return scope.Unique(strings.ToLower(codegen.Goify(apiName, false)), "api")
 }
 
 func serverLabel(roots []eval.Root) string {
-    for _, r := range roots {
-        if root, ok := r.(*expr.RootExpr); ok {
-            if root != nil && root.API != nil {
-                return strings.ToLower(codegen.Goify(root.API.Name, false))
-            }
-        }
-    }
-    return "goa-service"
+	for _, r := range roots {
+		if root, ok := r.(*expr.RootExpr); ok {
+			if root != nil && root.API != nil {
+				return strings.ToLower(codegen.Goify(root.API.Name, false))
+			}
+		}
+	}
+	return "goa-service"
 }
 
 func moduleRootFromGenpkg(genpkg string) string {
-    idx := strings.LastIndex(genpkg, "/")
-    if idx <= 0 {
-        return "."
-    }
-    return genpkg[:idx]
+	idx := strings.LastIndex(genpkg, "/")
+	if idx <= 0 {
+		return "."
+	}
+	return genpkg[:idx]
 }
 
 func httpWebSocketByService(roots []eval.Root) map[string]bool {
-    hasWS := map[string]bool{}
-    for _, r := range roots {
-        root, ok := r.(*expr.RootExpr)
-        if !ok || root.API == nil || root.API.HTTP == nil {
-            continue
-        }
-        for _, svc := range root.API.HTTP.Services {
-            for _, e := range svc.HTTPEndpoints {
-                if e.SSE != nil {
-                    continue
-                }
-                // Stream is 0 when no streaming is defined, and >= NoStreamKind (1) when streaming is used
-                if e.MethodExpr != nil && e.MethodExpr.Stream != 0 {
-                    hasWS[svc.Name()] = true
-                    break
-                }
-            }
-        }
-    }
-    return hasWS
-}
-
-// rootServer returns the first server expression if any.
-func rootServer(roots []eval.Root) *expr.ServerExpr {
-    for _, r := range roots {
-        if root, ok := r.(*expr.RootExpr); ok {
-            if root.API != nil && len(root.API.Servers) > 0 {
-                return root.API.Servers[0]
-            }
-        }
-    }
-    return nil
+	hasWS := map[string]bool{}
+	for _, r := range roots {
+		root, ok := r.(*expr.RootExpr)
+		if !ok || root.API == nil || root.API.HTTP == nil {
+			continue
+		}
+		for _, svc := range root.API.HTTP.Services {
+			for _, e := range svc.HTTPEndpoints {
+				if e.SSE != nil {
+					continue
+				}
+				// Stream is 0 when no streaming is defined, and >= NoStreamKind (1) when streaming is used
+				if e.MethodExpr != nil && e.MethodExpr.Stream != 0 {
+					hasWS[svc.Name()] = true
+					break
+				}
+			}
+		}
+	}
+	return hasWS
 }
 
 // httpServicesByName returns map of service names that have HTTP endpoints.
 func httpServicesByName(roots []eval.Root) map[string]bool {
-    hasHTTP := map[string]bool{}
-    for _, r := range roots {
-        root, ok := r.(*expr.RootExpr)
-        if !ok || root.API == nil || root.API.HTTP == nil {
-            continue
-        }
-        for _, svc := range root.API.HTTP.Services {
-            if len(svc.HTTPEndpoints) > 0 || len(svc.FileServers) > 0 {
-                hasHTTP[svc.Name()] = true
-            }
-        }
-    }
-    return hasHTTP
+	hasHTTP := map[string]bool{}
+	for _, r := range roots {
+		root, ok := r.(*expr.RootExpr)
+		if !ok || root.API == nil || root.API.HTTP == nil {
+			continue
+		}
+		for _, svc := range root.API.HTTP.Services {
+			if len(svc.HTTPEndpoints) > 0 || len(svc.FileServers) > 0 {
+				hasHTTP[svc.Name()] = true
+			}
+		}
+	}
+	return hasHTTP
 }
 
 // grpcServicesByName returns map of service names that have gRPC endpoints.
 func grpcServicesByName(roots []eval.Root) map[string]bool {
-    hasGRPC := map[string]bool{}
-    for _, r := range roots {
-        root, ok := r.(*expr.RootExpr)
-        if !ok || root.API == nil || root.API.GRPC == nil {
-            continue
-        }
-        for _, svc := range root.API.GRPC.Services {
-            if len(svc.GRPCEndpoints) > 0 {
-                hasGRPC[svc.Name()] = true
-            }
-        }
-    }
-    return hasGRPC
+	hasGRPC := map[string]bool{}
+	for _, r := range roots {
+		root, ok := r.(*expr.RootExpr)
+		if !ok || root.API == nil || root.API.GRPC == nil {
+			continue
+		}
+		for _, svc := range root.API.GRPC.Services {
+			if len(svc.GRPCEndpoints) > 0 {
+				hasGRPC[svc.Name()] = true
+			}
+		}
+	}
+	return hasGRPC
 }
 
 // httpFileServerCounts returns a map from service name to the number of
 // HTTP Files() endpoints defined for that service.
 func httpFileServerCounts(roots []eval.Root) map[string]int {
-    counts := map[string]int{}
-    for _, r := range roots {
-        root, ok := r.(*expr.RootExpr)
-        if !ok || root.API == nil || root.API.HTTP == nil {
-            continue
-        }
-        for _, svc := range root.API.HTTP.Services {
-            if svc == nil {
-                continue
-            }
-            counts[svc.Name()] = len(svc.FileServers)
-        }
-    }
-    return counts
+	counts := map[string]int{}
+	for _, r := range roots {
+		root, ok := r.(*expr.RootExpr)
+		if !ok || root.API == nil || root.API.HTTP == nil {
+			continue
+		}
+		for _, svc := range root.API.HTTP.Services {
+			if svc == nil {
+				continue
+			}
+			counts[svc.Name()] = len(svc.FileServers)
+		}
+	}
+	return counts
 }

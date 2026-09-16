@@ -8,9 +8,7 @@
 
 package calc
 
-import (
-	"context"
-)
+import "context"
 
 // The calc service exposes public endpoints that defines CORS policy.
 type Service interface {

@@ -9,29 +9,33 @@
 package client
 
 import (
-	"encoding/json"
 	"fmt"
 
 	calculator "goa.design/plugins/v3/testing/examples/calculator/gen/calculator"
 	calculatorpb "goa.design/plugins/v3/testing/examples/calculator/gen/grpc/calculator/pb"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // BuildAddPayload builds the payload for the calculator add endpoint from CLI
 // flags.
-func BuildAddPayload(calculatorAddMessage string) (*calculator.AddPayload, error) {
+func BuildAddPayload(calculatorAddMessage *string) (*calculator.AddPayload, error) {
 	var err error
 	var message calculatorpb.AddRequest
 	{
-		if calculatorAddMessage != "" {
-			err = json.Unmarshal([]byte(calculatorAddMessage), &message)
+		if calculatorAddMessage != nil {
+			err = protojson.Unmarshal([]byte(*calculatorAddMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"a\": 0.7564502808463504,\n      \"b\": 0.22116150789969893\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"a\": 0.22091916525730942,\n      \"b\": 0.26780525886889645\n   }'")
 			}
 		}
 	}
+	if err := ValidateAddRequest(&message); err != nil {
+		var zero *calculator.AddPayload
+		return zero, err
+	}
 	v := &calculator.AddPayload{
-		A: message.A,
-		B: message.B,
+		A: *message.A,
+		B: *message.B,
 	}
 
 	return v, nil
@@ -39,20 +43,24 @@ func BuildAddPayload(calculatorAddMessage string) (*calculator.AddPayload, error
 
 // BuildDividePayload builds the payload for the calculator divide endpoint
 // from CLI flags.
-func BuildDividePayload(calculatorDivideMessage string) (*calculator.DividePayload, error) {
+func BuildDividePayload(calculatorDivideMessage *string) (*calculator.DividePayload, error) {
 	var err error
 	var message calculatorpb.DivideRequest
 	{
-		if calculatorDivideMessage != "" {
-			err = json.Unmarshal([]byte(calculatorDivideMessage), &message)
+		if calculatorDivideMessage != nil {
+			err = protojson.Unmarshal([]byte(*calculatorDivideMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"dividend\": 0.9492693158321226,\n      \"divisor\": 0.7671133810336571\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"dividend\": 0.7331112436485956,\n      \"divisor\": 0.7550692456980171\n   }'")
 			}
 		}
 	}
+	if err := ValidateDivideRequest(&message); err != nil {
+		var zero *calculator.DividePayload
+		return zero, err
+	}
 	v := &calculator.DividePayload{
-		Dividend: message.Dividend,
-		Divisor:  message.Divisor,
+		Dividend: *message.Dividend,
+		Divisor:  *message.Divisor,
 	}
 
 	return v, nil
@@ -60,19 +68,23 @@ func BuildDividePayload(calculatorDivideMessage string) (*calculator.DividePaylo
 
 // BuildFactorialPayload builds the payload for the calculator factorial
 // endpoint from CLI flags.
-func BuildFactorialPayload(calculatorFactorialMessage string) (*calculator.FactorialPayload, error) {
+func BuildFactorialPayload(calculatorFactorialMessage *string) (*calculator.FactorialPayload, error) {
 	var err error
 	var message calculatorpb.FactorialRequest
 	{
-		if calculatorFactorialMessage != "" {
-			err = json.Unmarshal([]byte(calculatorFactorialMessage), &message)
+		if calculatorFactorialMessage != nil {
+			err = protojson.Unmarshal([]byte(*calculatorFactorialMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"n\": 11\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"n\": 0\n   }'")
 			}
 		}
 	}
+	if err := ValidateFactorialRequest(&message); err != nil {
+		var zero *calculator.FactorialPayload
+		return zero, err
+	}
 	v := &calculator.FactorialPayload{
-		N: int(message.N),
+		N: int(*message.N),
 	}
 
 	return v, nil
@@ -80,16 +92,20 @@ func BuildFactorialPayload(calculatorFactorialMessage string) (*calculator.Facto
 
 // BuildStatisticsPayload builds the payload for the calculator statistics
 // endpoint from CLI flags.
-func BuildStatisticsPayload(calculatorStatisticsMessage string) (*calculator.StatisticsPayload, error) {
+func BuildStatisticsPayload(calculatorStatisticsMessage *string) (*calculator.StatisticsPayload, error) {
 	var err error
 	var message calculatorpb.StatisticsRequest
 	{
-		if calculatorStatisticsMessage != "" {
-			err = json.Unmarshal([]byte(calculatorStatisticsMessage), &message)
+		if calculatorStatisticsMessage != nil {
+			err = protojson.Unmarshal([]byte(*calculatorStatisticsMessage), &message)
 			if err != nil {
-				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"numbers\": [\n         0.9839407167429688,\n         0.3969464125201744,\n         0.8182138429566963\n      ]\n   }'")
+				return nil, fmt.Errorf("invalid JSON for message, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"numbers\": [\n         0.3811399958331969,\n         0.21022254932918344,\n         0.7555995055194686\n      ]\n   }'")
 			}
 		}
+	}
+	if err := ValidateStatisticsRequest(&message); err != nil {
+		var zero *calculator.StatisticsPayload
+		return zero, err
 	}
 	v := &calculator.StatisticsPayload{}
 	if message.Numbers != nil {

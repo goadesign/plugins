@@ -8,9 +8,7 @@
 
 package testhttpgrpc
 
-import (
-	"context"
-)
+import "context"
 
 // Testing plugin matrix across HTTP and gRPC transports
 type Service interface {

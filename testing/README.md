@@ -257,7 +257,7 @@ scenarios:                          # Required: List of test scenarios
 |-------|------|----------|-------------|
 | `name` | string | ✅ | Unique identifier for the scenario |
 | `description` | string |   | Human-readable description for documentation |
-| `transport` | string |   | Default transport: `auto`, `http`, `grpc`, `jsonrpc`, `http-ws`, `http-sse`, `jsonrpc-ws`, `jsonrpc-sse` |
+| `transport` | string |   | Default transport: `auto`, `http`, `grpc`, `jsonrpc`, `http-ws`, `http-sse`, `jsonrpc-sse` |
 | `timeout` | duration |   | Default timeout for all steps (e.g., `10s`, `500ms`, `1m`) |
 | `steps` | []Step | ✅ | Ordered list of test steps to execute |
 
@@ -291,7 +291,6 @@ scenarios:                          # Required: List of test scenarios
 - **`jsonrpc`**: JSON-RPC over HTTP
 - **`http-ws`**: HTTP WebSocket (for streaming)
 - **`http-sse`**: HTTP Server-Sent Events
-- **`jsonrpc-ws`**: JSON-RPC over WebSocket
 - **`jsonrpc-sse`**: JSON-RPC over SSE
 
 ### Running YAML Scenarios

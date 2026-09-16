@@ -14,6 +14,7 @@ import (
 	"goa.design/goa/v3/codegen"
 	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/eval"
+	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
 	"goa.design/plugins/v3/otel/testdata"
 )
@@ -31,8 +32,16 @@ func TestOtel(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			root := codegen.RunDSL(t, c.DSL)
-			services := httpcodegen.NewServicesData(service.NewServicesData(root), root.API.HTTP)
-			serverFiles := httpcodegen.ServerFiles("gen", services)
+			generation, err := codegen.NewGeneration("generated.local/gen", []eval.Root{root})
+			require.NoError(t, err)
+			servicePlan, err := service.NewPlan(root, generation, expr.NewExampleGenerator(root.API.RandomizerFactory))
+			require.NoError(t, err)
+			plans, err := httpcodegen.NewPlans(generation, httpcodegen.PlanInput{Root: root, Service: servicePlan})
+			require.NoError(t, err)
+			require.NoError(t, generation.Freeze())
+			require.NoError(t, servicePlan.Link())
+			require.NoError(t, plans[0].Link())
+			serverFiles := plans[0].ServerFiles()
 			require.Len(t, serverFiles, 2)
 			fs, err := Generate("", []eval.Root{root}, serverFiles)
 			assert.NoError(t, err)

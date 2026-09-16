@@ -30,8 +30,27 @@ func UsageCommands() []string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + " " + "calculator add --body '{\n      \"a\": 0.7936796293863132,\n      \"b\": 0.05212966980398518\n   }'" + "\n" +
+	return os.Args[0] + " " + "calculator add --body '{\n      \"a\": 0.490314453132986,\n      \"b\": 0.6743292888632025\n   }'" + "\n" +
 		""
+}
+
+// cliStringFlag keeps an omitted command-line flag distinct from an explicitly empty flag.
+type cliStringFlag struct {
+	value *string
+}
+
+// String returns the flag text shown by the standard flag package.
+func (f *cliStringFlag) String() string {
+	if f.value == nil {
+		return ""
+	}
+	return *f.value
+}
+
+// Set records that the user supplied the flag, even when value is empty.
+func (f *cliStringFlag) Set(value string) error {
+	f.value = &value
+	return nil
 }
 
 // ParseEndpoint returns the endpoint and payload as specified on the command
@@ -49,19 +68,24 @@ func ParseEndpoint(
 		calculatorFlags = flag.NewFlagSet("calculator", flag.ContinueOnError)
 
 		calculatorAddFlags    = flag.NewFlagSet("add", flag.ExitOnError)
-		calculatorAddBodyFlag = calculatorAddFlags.String("body", "REQUIRED", "")
+		calculatorAddBodyFlag = new(cliStringFlag)
 
 		calculatorDivideFlags    = flag.NewFlagSet("divide", flag.ExitOnError)
-		calculatorDivideBodyFlag = calculatorDivideFlags.String("body", "REQUIRED", "")
+		calculatorDivideBodyFlag = new(cliStringFlag)
 
 		calculatorFactorialFlags    = flag.NewFlagSet("factorial", flag.ExitOnError)
-		calculatorFactorialBodyFlag = calculatorFactorialFlags.String("body", "REQUIRED", "")
+		calculatorFactorialBodyFlag = new(cliStringFlag)
 
 		calculatorStatisticsFlags    = flag.NewFlagSet("statistics", flag.ExitOnError)
-		calculatorStatisticsBodyFlag = calculatorStatisticsFlags.String("body", "REQUIRED", "")
+		calculatorStatisticsBodyFlag = new(cliStringFlag)
 
 		calculatorBatchAddFlags = flag.NewFlagSet("batch-add", flag.ExitOnError)
 	)
+	calculatorAddFlags.Var(calculatorAddBodyFlag, "body", "")
+	calculatorDivideFlags.Var(calculatorDivideBodyFlag, "body", "")
+	calculatorFactorialFlags.Var(calculatorFactorialBodyFlag, "body", "")
+	calculatorStatisticsFlags.Var(calculatorStatisticsBodyFlag, "body", "")
+
 	calculatorFlags.Usage = calculatorUsage
 	calculatorAddFlags.Usage = calculatorAddUsage
 	calculatorDivideFlags.Usage = calculatorDivideUsage
@@ -145,16 +169,16 @@ func ParseEndpoint(
 			switch epn {
 			case "add":
 				endpoint = c.Add()
-				data, err = calculatorc.BuildAddPayload(*calculatorAddBodyFlag)
+				data, err = calculatorc.BuildAddPayload(calculatorAddBodyFlag.value)
 			case "divide":
 				endpoint = c.Divide()
-				data, err = calculatorc.BuildDividePayload(*calculatorDivideBodyFlag)
+				data, err = calculatorc.BuildDividePayload(calculatorDivideBodyFlag.value)
 			case "factorial":
 				endpoint = c.Factorial()
-				data, err = calculatorc.BuildFactorialPayload(*calculatorFactorialBodyFlag)
+				data, err = calculatorc.BuildFactorialPayload(calculatorFactorialBodyFlag.value)
 			case "statistics":
 				endpoint = c.Statistics()
-				data, err = calculatorc.BuildStatisticsPayload(*calculatorStatisticsBodyFlag)
+				data, err = calculatorc.BuildStatisticsPayload(calculatorStatisticsBodyFlag.value)
 			case "batch-add":
 				endpoint = c.BatchAdd()
 			}
@@ -197,7 +221,7 @@ func calculatorAddUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator add --body '{\n      \"a\": 0.7936796293863132,\n      \"b\": 0.05212966980398518\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator add --body '{\n      \"a\": 0.490314453132986,\n      \"b\": 0.6743292888632025\n   }'")
 }
 
 func calculatorDivideUsage() {
@@ -215,7 +239,7 @@ func calculatorDivideUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator divide --body '{\n      \"dividend\": 0.5184906879153129,\n      \"divisor\": 0.5616730288110641\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator divide --body '{\n      \"dividend\": 0.7333985315892829,\n      \"divisor\": 0.2998442358280339\n   }'")
 }
 
 func calculatorFactorialUsage() {
@@ -233,7 +257,7 @@ func calculatorFactorialUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator factorial --body '{\n      \"n\": 10\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator factorial --body '{\n      \"n\": 12\n   }'")
 }
 
 func calculatorStatisticsUsage() {
@@ -251,7 +275,7 @@ func calculatorStatisticsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator statistics --body '{\n      \"numbers\": [\n         0.5842830148544397,\n         0.6757557090818312,\n         0.3604039578340141\n      ]\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calculator statistics --body '{\n      \"numbers\": [\n         0.1819497783049658,\n         0.6452245232691431,\n         0.01204206152248697\n      ]\n   }'")
 }
 
 func calculatorBatchAddUsage() {

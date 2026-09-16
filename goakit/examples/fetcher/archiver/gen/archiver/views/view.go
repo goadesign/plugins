@@ -8,9 +8,7 @@
 
 package views
 
-import (
-	goa "goa.design/goa/v3/pkg"
-)
+import goa "goa.design/goa/v3/pkg"
 
 // ArchiveMedia is the viewed result type that is projected based on a view.
 type ArchiveMedia struct {

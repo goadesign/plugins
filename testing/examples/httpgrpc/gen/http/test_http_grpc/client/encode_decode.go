@@ -11,6 +11,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -54,18 +55,24 @@ func EncodeHTTPNoStreamRequest(encoder func(*http.Request) goahttp.Encoder) func
 // test-http-grpc http_no_stream endpoint. restoreBody controls whether the
 // response body should be restored after having been read.
 func DecodeHTTPNoStreamResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "http_no_stream", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("test-http-grpc", "http_no_stream", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -84,7 +91,10 @@ func DecodeHTTPNoStreamResponse(decoder func(*http.Response) goahttp.Decoder, re
 			res := NewHTTPNoStreamResultOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "http_no_stream", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("test-http-grpc", "http_no_stream", resp.StatusCode, string(body))
 		}
 	}
@@ -129,18 +139,24 @@ func EncodeHTTPNoStreamErrorRequest(encoder func(*http.Request) goahttp.Encoder)
 //   - "division_by_zero" (type *testhttpgrpc.DivisionByZeroError): http.StatusBadRequest
 //   - error: internal error
 func DecodeHTTPNoStreamErrorResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "http_no_stream_error", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("test-http-grpc", "http_no_stream_error", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -173,7 +189,10 @@ func DecodeHTTPNoStreamErrorResponse(decoder func(*http.Response) goahttp.Decode
 			}
 			return nil, NewHTTPNoStreamErrorDivisionByZero(&body)
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "http_no_stream_error", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("test-http-grpc", "http_no_stream_error", resp.StatusCode, string(body))
 		}
 	}
@@ -199,18 +218,24 @@ func (c *Client) BuildHTTPServerStreamSseRequest(ctx context.Context, v any) (*h
 // by the test-http-grpc http_server_stream_sse endpoint. restoreBody controls
 // whether the response body should be restored after having been read.
 func DecodeHTTPServerStreamSseResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "http_server_stream_sse", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("test-http-grpc", "http_server_stream_sse", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -229,7 +254,10 @@ func DecodeHTTPServerStreamSseResponse(decoder func(*http.Response) goahttp.Deco
 			res := NewHTTPServerStreamSseResultOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "http_server_stream_sse", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("test-http-grpc", "http_server_stream_sse", resp.StatusCode, string(body))
 		}
 	}
@@ -262,18 +290,24 @@ func (c *Client) BuildHTTPServerStreamWsRequest(ctx context.Context, v any) (*ht
 // the test-http-grpc http_server_stream_ws endpoint. restoreBody controls
 // whether the response body should be restored after having been read.
 func DecodeHTTPServerStreamWsResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "http_server_stream_ws", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("test-http-grpc", "http_server_stream_ws", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -292,7 +326,10 @@ func DecodeHTTPServerStreamWsResponse(decoder func(*http.Response) goahttp.Decod
 			res := NewHTTPServerStreamWsResultOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "http_server_stream_ws", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("test-http-grpc", "http_server_stream_ws", resp.StatusCode, string(body))
 		}
 	}
@@ -325,18 +362,24 @@ func (c *Client) BuildHTTPClientStreamWsRequest(ctx context.Context, v any) (*ht
 // the test-http-grpc http_client_stream_ws endpoint. restoreBody controls
 // whether the response body should be restored after having been read.
 func DecodeHTTPClientStreamWsResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "http_client_stream_ws", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("test-http-grpc", "http_client_stream_ws", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -355,7 +398,10 @@ func DecodeHTTPClientStreamWsResponse(decoder func(*http.Response) goahttp.Decod
 			res := NewHTTPClientStreamWsResultOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "http_client_stream_ws", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("test-http-grpc", "http_client_stream_ws", resp.StatusCode, string(body))
 		}
 	}
@@ -388,18 +434,24 @@ func (c *Client) BuildHTTPBidiStreamWsRequest(ctx context.Context, v any) (*http
 // the test-http-grpc http_bidi_stream_ws endpoint. restoreBody controls
 // whether the response body should be restored after having been read.
 func DecodeHTTPBidiStreamWsResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "http_bidi_stream_ws", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("test-http-grpc", "http_bidi_stream_ws", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -418,7 +470,10 @@ func DecodeHTTPBidiStreamWsResponse(decoder func(*http.Response) goahttp.Decoder
 			res := NewHTTPBidiStreamWsResultOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "http_bidi_stream_ws", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("test-http-grpc", "http_bidi_stream_ws", resp.StatusCode, string(body))
 		}
 	}
@@ -459,18 +514,24 @@ func EncodeMixedNoStreamRequest(encoder func(*http.Request) goahttp.Encoder) fun
 // test-http-grpc mixed_no_stream endpoint. restoreBody controls whether the
 // response body should be restored after having been read.
 func DecodeMixedNoStreamResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "mixed_no_stream", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("test-http-grpc", "mixed_no_stream", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -489,7 +550,10 @@ func DecodeMixedNoStreamResponse(decoder func(*http.Response) goahttp.Decoder, r
 			res := NewMixedNoStreamResultOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "mixed_no_stream", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("test-http-grpc", "mixed_no_stream", resp.StatusCode, string(body))
 		}
 	}
@@ -515,18 +579,24 @@ func (c *Client) BuildMixedServerStreamRequest(ctx context.Context, v any) (*htt
 // the test-http-grpc mixed_server_stream endpoint. restoreBody controls
 // whether the response body should be restored after having been read.
 func DecodeMixedServerStreamResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "mixed_server_stream", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("test-http-grpc", "mixed_server_stream", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -545,7 +615,10 @@ func DecodeMixedServerStreamResponse(decoder func(*http.Response) goahttp.Decode
 			res := NewMixedServerStreamResultOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "mixed_server_stream", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("test-http-grpc", "mixed_server_stream", resp.StatusCode, string(body))
 		}
 	}
@@ -579,18 +652,24 @@ func (c *Client) BuildMixedClientStreamWsGrpcRequest(ctx context.Context, v any)
 // restoreBody controls whether the response body should be restored after
 // having been read.
 func DecodeMixedClientStreamWsGrpcResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "mixed_client_stream_ws_grpc", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("test-http-grpc", "mixed_client_stream_ws_grpc", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -609,7 +688,10 @@ func DecodeMixedClientStreamWsGrpcResponse(decoder func(*http.Response) goahttp.
 			res := NewMixedClientStreamWsGrpcResultOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "mixed_client_stream_ws_grpc", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("test-http-grpc", "mixed_client_stream_ws_grpc", resp.StatusCode, string(body))
 		}
 	}
@@ -642,18 +724,24 @@ func (c *Client) BuildMixedBidiStreamWsGrpcRequest(ctx context.Context, v any) (
 // by the test-http-grpc mixed_bidi_stream_ws_grpc endpoint. restoreBody
 // controls whether the response body should be restored after having been read.
 func DecodeMixedBidiStreamWsGrpcResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
+	return func(resp *http.Response) (result any, decodeErr error) {
+		responseBody := resp.Body
 		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
+			b, readErr := io.ReadAll(responseBody)
+			closeErr := responseBody.Close()
+			if err := errors.Join(readErr, closeErr); err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "mixed_bidi_stream_ws_grpc", err)
 			}
 			resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			defer func() {
 				resp.Body = io.NopCloser(bytes.NewBuffer(b))
 			}()
 		} else {
-			defer resp.Body.Close()
+			defer func() {
+				if err := responseBody.Close(); err != nil {
+					decodeErr = errors.Join(decodeErr, goahttp.ErrDecodingError("test-http-grpc", "mixed_bidi_stream_ws_grpc", err))
+				}
+			}()
 		}
 		switch resp.StatusCode {
 		case http.StatusOK:
@@ -672,7 +760,10 @@ func DecodeMixedBidiStreamWsGrpcResponse(decoder func(*http.Response) goahttp.De
 			res := NewMixedBidiStreamWsGrpcResultOK(&body)
 			return res, nil
 		default:
-			body, _ := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("test-http-grpc", "mixed_bidi_stream_ws_grpc", err)
+			}
 			return nil, goahttp.ErrInvalidResponse("test-http-grpc", "mixed_bidi_stream_ws_grpc", resp.StatusCode, string(body))
 		}
 	}

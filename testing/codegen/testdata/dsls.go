@@ -1,3 +1,4 @@
+// This file defines small Goa services used to verify generated testing code.
 package testdata
 
 import (
@@ -77,6 +78,26 @@ var WithoutStreamDSL = func() {
 		Method("WithoutStreamMethod", func() {
 			HTTP(func() {
 				GET("/")
+			})
+		})
+	})
+}
+
+var JSONRPCTransportsDSL = func() {
+	API("testing-jsonrpc", func() {
+		JSONRPC(func() {})
+	})
+	Service("JSONRPCService", func() {
+		JSONRPC(func() {
+			POST("/rpc")
+		})
+		Method("Plain", func() {
+			JSONRPC(func() {})
+		})
+		Method("Events", func() {
+			StreamingResult(String)
+			JSONRPC(func() {
+				ServerSentEvents()
 			})
 		})
 	})

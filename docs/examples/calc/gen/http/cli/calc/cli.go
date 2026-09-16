@@ -30,8 +30,27 @@ func UsageCommands() []string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + " " + "calc add --left 1292269682895376051 --right 7045955346828763739" + "\n" +
+	return os.Args[0] + " " + "calc add --left 4214196853188143223 --right 1249315168498320761" + "\n" +
 		""
+}
+
+// cliStringFlag keeps an omitted command-line flag distinct from an explicitly empty flag.
+type cliStringFlag struct {
+	value *string
+}
+
+// String returns the flag text shown by the standard flag package.
+func (f *cliStringFlag) String() string {
+	if f.value == nil {
+		return ""
+	}
+	return *f.value
+}
+
+// Set records that the user supplied the flag, even when value is empty.
+func (f *cliStringFlag) Set(value string) error {
+	f.value = &value
+	return nil
 }
 
 // ParseEndpoint returns the endpoint and payload as specified on the command
@@ -47,9 +66,12 @@ func ParseEndpoint(
 		calcFlags = flag.NewFlagSet("calc", flag.ContinueOnError)
 
 		calcAddFlags     = flag.NewFlagSet("add", flag.ExitOnError)
-		calcAddLeftFlag  = calcAddFlags.String("left", "REQUIRED", "Left operand")
-		calcAddRightFlag = calcAddFlags.String("right", "REQUIRED", "Right operand")
+		calcAddLeftFlag  = new(cliStringFlag)
+		calcAddRightFlag = new(cliStringFlag)
 	)
+	calcAddFlags.Var(calcAddLeftFlag, "left", "Left operand")
+	calcAddFlags.Var(calcAddRightFlag, "right", "Right operand")
+
 	calcFlags.Usage = calcUsage
 	calcAddFlags.Usage = calcAddUsage
 
@@ -117,7 +139,7 @@ func ParseEndpoint(
 			switch epn {
 			case "add":
 				endpoint = c.Add()
-				data, err = calcc.BuildAddPayload(*calcAddLeftFlag, *calcAddRightFlag)
+				data, err = calcc.BuildAddPayload(calcAddLeftFlag.value, calcAddRightFlag.value)
 			}
 		}
 	}
@@ -155,5 +177,5 @@ func calcAddUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calc add --left 1292269682895376051 --right 7045955346828763739")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "calc add --left 4214196853188143223 --right 1249315168498320761")
 }

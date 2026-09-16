@@ -29,6 +29,20 @@ var Validation = func() {
 	})
 }
 
+// ValidatorCollision defines a generated validator whose usual name matches
+// another authored type.
+var ValidatorCollision = func() {
+	var _ = Type("ValidateFoo", func() {
+		Attribute("value", String)
+	})
+
+	var _ = Type("Foo", func() {
+		Attribute("value", String, func() {
+			MinLength(1)
+		})
+	})
+}
+
 var Multiple = func() {
 	var AType = Type("AType", func() {
 		Attribute("attr", String, func() {

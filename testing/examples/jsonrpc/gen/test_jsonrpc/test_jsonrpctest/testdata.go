@@ -25,7 +25,7 @@ func NewTestData() *TestData {
 // ValidJsonrpcNoStreamPayload generates a valid jsonrpc_no_stream payload.
 func (td *TestData) ValidJsonrpcNoStreamPayload() *testjsonrpc.JsonrpcNoStreamPayload {
 	var payload *testjsonrpc.JsonrpcNoStreamPayload
-	json.Unmarshal([]byte(`{"msg":"Sit dolore omnis."}`), &payload)
+	json.Unmarshal([]byte(`{"msg":"Iusto totam aut."}`), &payload)
 	return payload
 }
 
@@ -33,7 +33,7 @@ func (td *TestData) ValidJsonrpcNoStreamPayload() *testjsonrpc.JsonrpcNoStreamPa
 // with all fields populated.
 func (td *TestData) JsonrpcNoStreamPayloadWithAllFields() *testjsonrpc.JsonrpcNoStreamPayload {
 	var payload *testjsonrpc.JsonrpcNoStreamPayload
-	json.Unmarshal([]byte(`{"msg":"Sit dolore omnis."}`), &payload)
+	json.Unmarshal([]byte(`{"msg":"Iusto totam aut."}`), &payload)
 	return payload
 }
 
@@ -58,7 +58,7 @@ func (b *JsonrpcNoStreamPayloadBuilder) Build() *testjsonrpc.JsonrpcNoStreamPayl
 // payload.
 func (td *TestData) ValidJsonrpcNoStreamErrorPayload() *testjsonrpc.JsonrpcNoStreamErrorPayload {
 	var payload *testjsonrpc.JsonrpcNoStreamErrorPayload
-	json.Unmarshal([]byte(`{"msg":"Pariatur corporis."}`), &payload)
+	json.Unmarshal([]byte(`{"msg":"Neque itaque qui voluptate cumque."}`), &payload)
 	return payload
 }
 
@@ -66,7 +66,7 @@ func (td *TestData) ValidJsonrpcNoStreamErrorPayload() *testjsonrpc.JsonrpcNoStr
 // payload with all fields populated.
 func (td *TestData) JsonrpcNoStreamErrorPayloadWithAllFields() *testjsonrpc.JsonrpcNoStreamErrorPayload {
 	var payload *testjsonrpc.JsonrpcNoStreamErrorPayload
-	json.Unmarshal([]byte(`{"msg":"Pariatur corporis."}`), &payload)
+	json.Unmarshal([]byte(`{"msg":"Neque itaque qui voluptate cumque."}`), &payload)
 	return payload
 }
 

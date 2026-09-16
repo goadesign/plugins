@@ -39,6 +39,9 @@ func DecodeAddRequest(ctx context.Context, v any, md metadata.MD) (any, error) {
 		if message, ok = v.(*calculatorpb.AddRequest); !ok {
 			return nil, goagrpc.ErrInvalidType("calculator", "add", "*calculatorpb.AddRequest", v)
 		}
+		if err := ValidateAddRequest(message); err != nil {
+			return nil, err
+		}
 	}
 	var payload *calculator.AddPayload
 	{
@@ -68,6 +71,9 @@ func DecodeDivideRequest(ctx context.Context, v any, md metadata.MD) (any, error
 	{
 		if message, ok = v.(*calculatorpb.DivideRequest); !ok {
 			return nil, goagrpc.ErrInvalidType("calculator", "divide", "*calculatorpb.DivideRequest", v)
+		}
+		if err := ValidateDivideRequest(message); err != nil {
+			return nil, err
 		}
 	}
 	var payload *calculator.DividePayload

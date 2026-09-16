@@ -14,7 +14,6 @@ import (
 	"goa.design/goa/v3/codegen"
 	. "goa.design/goa/v3/dsl"
 	"goa.design/goa/v3/eval"
-	openapi "goa.design/goa/v3/http/codegen/openapi"
 	"goa.design/plugins/v3/docs"
 	. "goa.design/plugins/v3/docs/dsl"
 	plugexpr "goa.design/plugins/v3/docs/expr"
@@ -27,10 +26,7 @@ var update = flag.Bool("update", false, "update golden files")
 func genDocs(t *testing.T, dsl func()) map[string]any {
 	t.Helper()
 	root := codegen.RunDSL(t, dsl)
-	prev := openapi.Definitions
-	openapi.Definitions = make(map[string]*openapi.Schema)
 	fs, err := docs.Generate("", []eval.Root{root}, nil)
-	openapi.Definitions = prev
 	require.NoError(t, err)
 	require.NotEmpty(t, fs)
 	require.NotEmpty(t, fs[0].SectionTemplates)

@@ -98,8 +98,27 @@ func NewFetchInternalError(body *FetchInternalErrorResponseBody) *goa.ServiceErr
 	return v
 }
 
+// ValidateFetchResponseBody runs the validations defined on FetchResponseBody
+func ValidateFetchResponseBody(body *FetchResponseBody) (err error) {
+	if body.Status == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("status", "body"))
+	}
+	if body.ArchiveHref == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("archive_href", "body"))
+	}
+	if body.Status != nil {
+		if *body.Status < 0 {
+			err = goa.MergeErrors(err, goa.InvalidRangeError("body.status", *body.Status, 0, true))
+		}
+	}
+	if body.ArchiveHref != nil {
+		err = goa.MergeErrors(err, goa.ValidatePattern("body.archive_href", *body.ArchiveHref, "^/archive/[0-9]+$"))
+	}
+	return
+}
+
 // ValidateFetchBadRequestResponseBody runs the validations defined on
-// fetch_bad_request_response_body
+// FetchBadRequestResponseBody
 func ValidateFetchBadRequestResponseBody(body *FetchBadRequestResponseBody) (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))
@@ -123,7 +142,7 @@ func ValidateFetchBadRequestResponseBody(body *FetchBadRequestResponseBody) (err
 }
 
 // ValidateFetchInternalErrorResponseBody runs the validations defined on
-// fetch_internal_error_response_body
+// FetchInternalErrorResponseBody
 func ValidateFetchInternalErrorResponseBody(body *FetchInternalErrorResponseBody) (err error) {
 	if body.Name == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("name", "body"))

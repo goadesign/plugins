@@ -334,7 +334,7 @@ func (s *Server) MixedBidiStreamWsGrpc(stream test_http_grpcpb.TestHTTPGrpc_Mixe
 // Send streams instances of "test_http_grpcpb.GrpcServerStreamResponse" to the
 // "grpc_server_stream" endpoint gRPC stream.
 func (s *GrpcServerStreamServerStream) Send(res *testhttpgrpc.GrpcServerStreamResult) error {
-	v := NewProtoGrpcServerStreamResultGrpcServerStreamResponse(res)
+	v := NewProtoGrpcServerStreamResponse(res)
 	return s.stream.Send(v)
 }
 
@@ -354,7 +354,7 @@ func (s *GrpcServerStreamServerStream) Close() error {
 // "test_http_grpcpb.GrpcClientStreamResponse" to the "grpc_client_stream"
 // endpoint gRPC stream.
 func (s *GrpcClientStreamServerStream) SendAndClose(res *testhttpgrpc.GrpcClientStreamResult) error {
-	v := NewProtoGrpcClientStreamResultGrpcClientStreamResponse(res)
+	v := NewProtoGrpcClientStreamResponse(res)
 	return s.stream.SendAndClose(v)
 }
 
@@ -373,6 +373,9 @@ func (s *GrpcClientStreamServerStream) Recv() (*testhttpgrpc.GrpcClientStreamStr
 	if err != nil {
 		return res, err
 	}
+	if err = ValidateGrpcClientStreamStreamingRequest(v); err != nil {
+		return res, err
+	}
 	return NewGrpcClientStreamStreamingRequestGrpcClientStreamStreamingPayload(v), nil
 }
 
@@ -386,7 +389,7 @@ func (s *GrpcClientStreamServerStream) RecvWithContext(ctx context.Context) (*te
 // Send streams instances of "test_http_grpcpb.GrpcBidiStreamResponse" to the
 // "grpc_bidi_stream" endpoint gRPC stream.
 func (s *GrpcBidiStreamServerStream) Send(res *testhttpgrpc.GrpcBidiStreamResult) error {
-	v := NewProtoGrpcBidiStreamResultGrpcBidiStreamResponse(res)
+	v := NewProtoGrpcBidiStreamResponse(res)
 	return s.stream.Send(v)
 }
 
@@ -403,6 +406,9 @@ func (s *GrpcBidiStreamServerStream) Recv() (*testhttpgrpc.GrpcBidiStreamStreami
 	var res *testhttpgrpc.GrpcBidiStreamStreamingPayload
 	v, err := s.stream.Recv()
 	if err != nil {
+		return res, err
+	}
+	if err = ValidateGrpcBidiStreamStreamingRequest(v); err != nil {
 		return res, err
 	}
 	return NewGrpcBidiStreamStreamingRequestGrpcBidiStreamStreamingPayload(v), nil
@@ -423,7 +429,7 @@ func (s *GrpcBidiStreamServerStream) Close() error {
 // Send streams instances of "test_http_grpcpb.MixedServerStreamResponse" to
 // the "mixed_server_stream" endpoint gRPC stream.
 func (s *MixedServerStreamServerStream) Send(res *testhttpgrpc.MixedServerStreamResult) error {
-	v := NewProtoMixedServerStreamResultMixedServerStreamResponse(res)
+	v := NewProtoMixedServerStreamResponse(res)
 	return s.stream.Send(v)
 }
 
@@ -443,7 +449,7 @@ func (s *MixedServerStreamServerStream) Close() error {
 // "test_http_grpcpb.MixedClientStreamWsGrpcResponse" to the
 // "mixed_client_stream_ws_grpc" endpoint gRPC stream.
 func (s *MixedClientStreamWsGrpcServerStream) SendAndClose(res *testhttpgrpc.MixedClientStreamWsGrpcResult) error {
-	v := NewProtoMixedClientStreamWsGrpcResultMixedClientStreamWsGrpcResponse(res)
+	v := NewProtoMixedClientStreamWsGrpcResponse(res)
 	return s.stream.SendAndClose(v)
 }
 
@@ -463,6 +469,9 @@ func (s *MixedClientStreamWsGrpcServerStream) Recv() (*testhttpgrpc.MixedClientS
 	if err != nil {
 		return res, err
 	}
+	if err = ValidateMixedClientStreamWsGrpcStreamingRequest(v); err != nil {
+		return res, err
+	}
 	return NewMixedClientStreamWsGrpcStreamingRequestMixedClientStreamWsGrpcStreamingPayload(v), nil
 }
 
@@ -476,7 +485,7 @@ func (s *MixedClientStreamWsGrpcServerStream) RecvWithContext(ctx context.Contex
 // Send streams instances of "test_http_grpcpb.MixedBidiStreamWsGrpcResponse"
 // to the "mixed_bidi_stream_ws_grpc" endpoint gRPC stream.
 func (s *MixedBidiStreamWsGrpcServerStream) Send(res *testhttpgrpc.MixedBidiStreamWsGrpcResult) error {
-	v := NewProtoMixedBidiStreamWsGrpcResultMixedBidiStreamWsGrpcResponse(res)
+	v := NewProtoMixedBidiStreamWsGrpcResponse(res)
 	return s.stream.Send(v)
 }
 
@@ -494,6 +503,9 @@ func (s *MixedBidiStreamWsGrpcServerStream) Recv() (*testhttpgrpc.MixedBidiStrea
 	var res *testhttpgrpc.MixedBidiStreamWsGrpcStreamingPayload
 	v, err := s.stream.Recv()
 	if err != nil {
+		return res, err
+	}
+	if err = ValidateMixedBidiStreamWsGrpcStreamingRequest(v); err != nil {
 		return res, err
 	}
 	return NewMixedBidiStreamWsGrpcStreamingRequestMixedBidiStreamWsGrpcStreamingPayload(v), nil

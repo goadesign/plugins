@@ -77,7 +77,7 @@ func NewJsonrpcNoStreamErrorResultOK(body *JsonrpcNoStreamErrorResponseBody) *te
 }
 
 // ValidateJsonrpcNoStreamResponseBody runs the validations defined on
-// jsonrpc_no_stream_response_body
+// JsonrpcNoStreamResponseBody
 func ValidateJsonrpcNoStreamResponseBody(body *JsonrpcNoStreamResponseBody) (err error) {
 	if body.Out == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("out", "body"))
@@ -86,7 +86,7 @@ func ValidateJsonrpcNoStreamResponseBody(body *JsonrpcNoStreamResponseBody) (err
 }
 
 // ValidateJsonrpcNoStreamErrorResponseBody runs the validations defined on
-// jsonrpc_no_stream_error_response_body
+// JsonrpcNoStreamErrorResponseBody
 func ValidateJsonrpcNoStreamErrorResponseBody(body *JsonrpcNoStreamErrorResponseBody) (err error) {
 	if body.Out == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("out", "body"))

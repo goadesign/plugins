@@ -21,8 +21,8 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Est exercitationem amet.
-                            example: Est exercitationem amet.
+                                example: Iure dicta.
+                            example: Iure dicta.
     /items:
         get:
             tags:
@@ -39,15 +39,13 @@ paths:
                                 type: array
                                 items:
                                     type: string
-                                    example: Provident sit.
+                                    example: Maxime dolor quidem.
                                 example:
-                                    - Provident sit.
-                                    - Dolores eveniet.
-                                    - Sit molestiae deleniti.
+                                    - Maxime dolor quidem.
+                                    - Dolores ducimus eos.
                             example:
-                                - Provident sit.
-                                - Dolores eveniet.
-                                - Sit molestiae deleniti.
+                                - Maxime dolor quidem.
+                                - Dolores ducimus eos.
         post:
             tags:
                 - tscap
@@ -62,7 +60,7 @@ paths:
                         schema:
                             $ref: '#/components/schemas/CreateRequestBody'
                         example:
-                            name: Quod libero reprehenderit.
+                            name: Quo omnis quia ipsum.
             responses:
                 "201":
                     description: Created response.
@@ -70,8 +68,8 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Voluptas omnis ea.
-                            example: Voluptas omnis ea.
+                                example: Voluptatem enim nesciunt sunt omnis.
+                            example: Voluptatem enim nesciunt sunt omnis.
     /items/{id}:
         delete:
             tags:
@@ -87,8 +85,8 @@ paths:
                   schema:
                     type: string
                     description: Item ID
-                    example: Quidem est repellat omnis voluptatem veniam.
-                  example: Inventore aliquam et.
+                    example: Quidem eos voluptas eveniet.
+                  example: Quidem eos voluptas eveniet.
             responses:
                 "204":
                     description: No Content response.
@@ -109,10 +107,10 @@ components:
                 name:
                     type: string
                     description: Item name
-                    example: Quod libero reprehenderit.
+                    example: Quo omnis quia ipsum.
             description: Request body for create.
             example:
-                name: Quod libero reprehenderit.
+                name: Quo omnis quia ipsum.
             required:
                 - name
 tags:

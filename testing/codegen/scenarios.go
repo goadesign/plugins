@@ -1,3 +1,5 @@
+// This file renders scenario runners and example scenario files from finalized
+// Goa service data and transport choices.
 package codegen
 
 import (
@@ -14,16 +16,16 @@ import (
 )
 
 // generateScenarios generates the scenario runner for a service.
-func generateScenarios(genpkg string, svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr) []*codegen.File {
+func generateScenarios(genpkg string, svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr, transports *methodTransports) []*codegen.File {
 	if svcData == nil {
 		return nil
 	}
 
-	data := buildScenariosData(svcData, root, svc)
+	data := buildScenariosData(svcData, root, svc, transports)
 	files := make([]*codegen.File, 0, 2)
 
 	// Generate main scenarios runner file
-	path := filepath.Join(testingPath(genpkg, svc), "scenarios.go")
+	path := filepath.Join(testingPath(svcData), "scenarios.go")
 	specs := []*codegen.ImportSpec{
 		{Path: "context"},
 		{Path: "encoding/json"},
@@ -33,12 +35,12 @@ func generateScenarios(genpkg string, svcData *service.Data, root *expr.RootExpr
 		{Path: "testing"},
 		{Path: "time"},
 		{Path: "gopkg.in/yaml.v3", Name: "yaml"},
-		{Path: filepath.Join(genpkg, codegen.SnakeCase(svc.Name)), Name: svcData.PkgName},
+		{Path: filepath.Join(genpkg, svcData.PathName), Name: svcData.PkgName},
 	}
 
 	// Add validator package import if specified in YAML
 	// Only add if it's different from the current package
-	currentPkgPath := filepath.Join(genpkg, codegen.SnakeCase(svc.Name), codegen.SnakeCase(svc.Name)+"test")
+	currentPkgPath := filepath.Join(genpkg, svcData.PathName, svcData.PathName+"test")
 	validatorInfo := ExtractValidatorsFromYAML()
 	if validatorInfo.Path != "" && validatorInfo.Package != "" && validatorInfo.Path != currentPkgPath {
 		specs = append(specs, &codegen.ImportSpec{
@@ -50,7 +52,7 @@ func generateScenarios(genpkg string, svcData *service.Data, root *expr.RootExpr
 	}
 
 	sections := []*codegen.SectionTemplate{
-		codegen.Header(fmt.Sprintf("Scenario runner for %s service", svc.Name), codegen.SnakeCase(svc.Name)+"test", specs),
+		codegen.Header(fmt.Sprintf("Scenario runner for %s service", svc.Name), svcData.PathName+"test", specs),
 		{
 			Name:   "scenario-types",
 			Source: testingTemplates.Read("scenario_types"),
@@ -87,8 +89,8 @@ type (
 		HasGRPC bool
 		// HasJSONRPC indicates if service has JSON-RPC transport
 		HasJSONRPC bool
-		// ValidTransports is the list of all valid transports
-		ValidTransports []string
+		// ValidTransports lists the transports used by at least one method.
+		ValidTransports []*transportData
 		// Validators found in scenarios.yaml
 		Validators map[string][]string // method -> validator names
 		// ValidatorPkg is the package name for validators
@@ -107,19 +109,29 @@ type (
 		// as seen from the generated test package (e.g. "*svc.Foo", "[]*svc.Bar").
 		// This is used in generated type assertions for custom validators.
 		ResultTypeRef string
+		// IsClientStream reports that the client sends a sequence of payloads.
+		IsClientStream bool
+		// IsServerStream reports that the server sends a sequence of results.
+		IsServerStream bool
+		// IsBidirectional reports that both client and server send sequences.
+		IsBidirectional bool
+	}
+
+	// transportData describes one scenario transport in generated help text.
+	transportData struct {
+		Name        string
+		Description string
 	}
 )
 
 // generateExampleScenarios generates an example scenarios.yaml file for a service.
-func generateExampleScenarios(_ string, root *expr.RootExpr, svc *expr.ServiceExpr) *codegen.File {
+func generateExampleScenarios(_ string, svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr, transports *methodTransports) *codegen.File {
 	path := filepath.Join(codegen.Gendir, "..", "scenarios.yaml")
-
-	svcData := service.NewServicesData(root).Get(svc.Name)
 	if svcData == nil {
 		return nil
 	}
 
-	data := buildScenariosData(svcData, root, svc)
+	data := buildScenariosData(svcData, root, svc, transports)
 
 	// For YAML files, we need to read the template directly since it's not a .go.tpl file
 	tmplContent, err := templateFS.ReadFile("templates/example_scenarios.yaml.tpl")
@@ -142,7 +154,7 @@ func generateExampleScenarios(_ string, root *expr.RootExpr, svc *expr.ServiceEx
 	}
 }
 
-func buildScenariosData(svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr) *scenariosData {
+func buildScenariosData(svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr, transports *methodTransports) *scenariosData {
 	// Extract validator info from YAML
 	validatorInfo := ExtractValidatorsFromYAML()
 
@@ -153,40 +165,33 @@ func buildScenariosData(svcData *service.Data, root *expr.RootExpr, svc *expr.Se
 		HasHTTP:         hasHTTPTransport(root, svc),
 		HasGRPC:         hasGRPCTransport(root, svc),
 		HasJSONRPC:      hasJSONRPCTransport(root, svc),
-		ValidTransports: make([]string, 0),
+		ValidTransports: make([]*transportData, 0),
 		Validators:      validatorInfo.Validators,
 		ValidatorPkg:    "", // Will be set below if it's a different package
 		ValidatorPath:   validatorInfo.Path,
 	}
 
-	// Build list of valid transports
-	transportSet := make(map[string]bool)
-	transportSet["auto"] = true
-	if data.HasHTTP {
-		transportSet["http"] = true
-		transportSet["http-sse"] = true
-		transportSet["http-ws"] = true
-	}
-	if data.HasGRPC {
-		transportSet["grpc"] = true
-	}
-	if data.HasJSONRPC {
-		transportSet["jsonrpc"] = true
-		transportSet["jsonrpc-sse"] = true
-		transportSet["jsonrpc-ws"] = true
-	}
-	data.ValidTransports = slices.Sorted(maps.Keys(transportSet))
+	// Collect only transports that at least one generated method can use.
+	allTransports := map[string]bool{"auto": true}
 
 	// Build method data with available transports
 	for i, m := range svc.Methods {
 		methodData := svcData.Methods[i]
 
 		// Build targets for this method using shared function
-		targets := buildMethodTargets(root, svc, m, methodData)
+		targets := buildMethodTargets(root, svc, m, transports)
 
 		md := &scenarioMethodData{
 			MethodData: methodData,
 			Transports: make([]string, 0),
+		}
+		switch m.Stream {
+		case expr.ClientStreamKind:
+			md.IsClientStream = true
+		case expr.ServerStreamKind:
+			md.IsServerStream = true
+		case expr.BidirectionalStreamKind:
+			md.IsBidirectional = true
 		}
 		// Compute fully qualified result type reference for type assertions.
 		// This properly handles composite types like ArrayOf(...) without producing
@@ -196,33 +201,62 @@ func buildScenariosData(svcData *service.Data, root *expr.RootExpr, svc *expr.Se
 		}
 
 		// Build list of valid transport strings based on targets
-		transportSet := make(map[string]bool)
+		methodTransports := make(map[string]bool)
 		for _, target := range targets {
 			switch {
 			case target.IsGRPC:
-				transportSet["grpc"] = true
+				methodTransports["grpc"] = true
 			case target.IsHTTPPlain:
-				transportSet["http"] = true
+				methodTransports["http"] = true
 			case target.IsHTTPServerSent:
-				transportSet["http-sse"] = true
+				methodTransports["http-sse"] = true
 			case target.IsHTTPWebSocket:
-				transportSet["http-ws"] = true
+				methodTransports["http-ws"] = true
 			case target.IsJSONRPCPlain:
-				transportSet["jsonrpc"] = true
+				methodTransports["jsonrpc"] = true
 			case target.IsJSONRPCSSE:
-				transportSet["jsonrpc-sse"] = true
-			case target.IsJSONRPCWS:
-				transportSet["jsonrpc-ws"] = true
+				methodTransports["jsonrpc-sse"] = true
 			}
 		}
 
 		// Convert set to sorted list
-		md.Transports = slices.Sorted(maps.Keys(transportSet))
+		md.Transports = slices.Sorted(maps.Keys(methodTransports))
+		for transport := range methodTransports {
+			allTransports[transport] = true
+		}
 
 		data.Methods = append(data.Methods, md)
 	}
+	for _, transport := range slices.Sorted(maps.Keys(allTransports)) {
+		data.ValidTransports = append(data.ValidTransports, &transportData{
+			Name:        transport,
+			Description: transportDescription(transport),
+		})
+	}
 
 	return data
+}
+
+// transportDescription explains one generated scenario transport.
+func transportDescription(transport string) string {
+	switch transport {
+	case "auto":
+		return "Use the first available transport"
+	case "grpc":
+		return "gRPC"
+	case "http":
+		return "HTTP"
+	case "http-sse":
+		return "HTTP server-sent events"
+	case "http-ws":
+		return "HTTP WebSocket"
+	case "jsonrpc":
+		return "JSON-RPC over HTTP"
+	case "jsonrpc-sse":
+		return "JSON-RPC over server-sent events"
+	default:
+		panic(fmt.Sprintf("testing plugin has no description for transport %q", transport))
+	}
 }
 
 // ValidatorInfo holds validator configuration

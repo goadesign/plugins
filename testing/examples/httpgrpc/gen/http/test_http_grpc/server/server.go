@@ -272,7 +272,18 @@ func NewHTTPServerStreamSseHandler(
 			},
 		}
 		_, err = endpoint(ctx, v)
+		if err == nil {
+			stream := v.Stream.(*HTTPServerStreamSseServerStream)
+			err = stream.finish()
+		}
 		if err != nil {
+			stream := v.Stream.(*HTTPServerStreamSseServerStream)
+			if stream.attempted {
+				if errhandler != nil {
+					errhandler(ctx, w, err)
+				}
+				return
+			}
 			if err := encodeError(ctx, w, err); err != nil && errhandler != nil {
 				errhandler(ctx, w, err)
 			}
@@ -573,7 +584,18 @@ func NewMixedServerStreamHandler(
 			},
 		}
 		_, err = endpoint(ctx, v)
+		if err == nil {
+			stream := v.Stream.(*MixedServerStreamServerStream)
+			err = stream.finish()
+		}
 		if err != nil {
+			stream := v.Stream.(*MixedServerStreamServerStream)
+			if stream.attempted {
+				if errhandler != nil {
+					errhandler(ctx, w, err)
+				}
+				return
+			}
 			if err := encodeError(ctx, w, err); err != nil && errhandler != nil {
 				errhandler(ctx, w, err)
 			}

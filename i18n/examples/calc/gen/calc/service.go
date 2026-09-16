@@ -8,9 +8,7 @@
 
 package calc
 
-import (
-	"context"
-)
+import "context"
 
 // The calc service exposes public endpoints to do basic mathematical
 // calculations.

@@ -8,9 +8,7 @@
 
 package calc
 
-import (
-	"context"
-)
+import "context"
 
 // The calc service exposes public endpoints that uses go-kit.
 type Service interface {

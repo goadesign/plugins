@@ -18,13 +18,16 @@ import (
 
 // BuildAddPayload builds the payload for the calculator add endpoint from CLI
 // flags.
-func BuildAddPayload(calculatorAddBody string) (*calculator.AddPayload, error) {
+func BuildAddPayload(calculatorAddBody *string) (*calculator.AddPayload, error) {
 	var err error
 	var body AddRequestBody
 	{
-		err = json.Unmarshal([]byte(calculatorAddBody), &body)
+		if calculatorAddBody == nil {
+			return nil, fmt.Errorf("missing required flag --body")
+		}
+		err = json.Unmarshal([]byte(*calculatorAddBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"a\": 0.7936796293863132,\n      \"b\": 0.05212966980398518\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"a\": 0.490314453132986,\n      \"b\": 0.6743292888632025\n   }'")
 		}
 	}
 	v := &calculator.AddPayload{
@@ -37,13 +40,16 @@ func BuildAddPayload(calculatorAddBody string) (*calculator.AddPayload, error) {
 
 // BuildDividePayload builds the payload for the calculator divide endpoint
 // from CLI flags.
-func BuildDividePayload(calculatorDivideBody string) (*calculator.DividePayload, error) {
+func BuildDividePayload(calculatorDivideBody *string) (*calculator.DividePayload, error) {
 	var err error
 	var body DivideRequestBody
 	{
-		err = json.Unmarshal([]byte(calculatorDivideBody), &body)
+		if calculatorDivideBody == nil {
+			return nil, fmt.Errorf("missing required flag --body")
+		}
+		err = json.Unmarshal([]byte(*calculatorDivideBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"dividend\": 0.5184906879153129,\n      \"divisor\": 0.5616730288110641\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"dividend\": 0.7333985315892829,\n      \"divisor\": 0.2998442358280339\n   }'")
 		}
 	}
 	v := &calculator.DividePayload{
@@ -56,13 +62,16 @@ func BuildDividePayload(calculatorDivideBody string) (*calculator.DividePayload,
 
 // BuildFactorialPayload builds the payload for the calculator factorial
 // endpoint from CLI flags.
-func BuildFactorialPayload(calculatorFactorialBody string) (*calculator.FactorialPayload, error) {
+func BuildFactorialPayload(calculatorFactorialBody *string) (*calculator.FactorialPayload, error) {
 	var err error
 	var body FactorialRequestBody
 	{
-		err = json.Unmarshal([]byte(calculatorFactorialBody), &body)
+		if calculatorFactorialBody == nil {
+			return nil, fmt.Errorf("missing required flag --body")
+		}
+		err = json.Unmarshal([]byte(*calculatorFactorialBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"n\": 10\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"n\": 12\n   }'")
 		}
 		if body.N < 0 {
 			err = goa.MergeErrors(err, goa.InvalidRangeError("body.n", body.N, 0, true))
@@ -83,13 +92,16 @@ func BuildFactorialPayload(calculatorFactorialBody string) (*calculator.Factoria
 
 // BuildStatisticsPayload builds the payload for the calculator statistics
 // endpoint from CLI flags.
-func BuildStatisticsPayload(calculatorStatisticsBody string) (*calculator.StatisticsPayload, error) {
+func BuildStatisticsPayload(calculatorStatisticsBody *string) (*calculator.StatisticsPayload, error) {
 	var err error
 	var body StatisticsRequestBody
 	{
-		err = json.Unmarshal([]byte(calculatorStatisticsBody), &body)
+		if calculatorStatisticsBody == nil {
+			return nil, fmt.Errorf("missing required flag --body")
+		}
+		err = json.Unmarshal([]byte(*calculatorStatisticsBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"numbers\": [\n         0.5842830148544397,\n         0.6757557090818312,\n         0.3604039578340141\n      ]\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"numbers\": [\n         0.1819497783049658,\n         0.6452245232691431,\n         0.01204206152248697\n      ]\n   }'")
 		}
 		if body.Numbers == nil {
 			err = goa.MergeErrors(err, goa.MissingFieldError("numbers", "body"))

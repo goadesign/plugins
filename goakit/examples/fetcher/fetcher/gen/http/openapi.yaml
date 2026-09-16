@@ -33,13 +33,29 @@ paths:
                     schema:
                         $ref: '#/definitions/GoaFetch'
                 "400":
-                    description: Bad Request response.
+                    description: 'bad_request: Bad Request response.'
                     schema:
                         $ref: '#/definitions/FetcherFetchBadRequestResponseBody'
+                    examples:
+                        application/vnd.goa.error:
+                            fault: false
+                            id: 123abc
+                            message: parameter 'p' must be an integer
+                            name: bad_request
+                            temporary: false
+                            timeout: false
                 "500":
-                    description: Internal Server Error response.
+                    description: 'internal_error: Internal Server Error response.'
                     schema:
                         $ref: '#/definitions/FetcherFetchInternalErrorResponseBody'
+                    examples:
+                        application/vnd.goa.error:
+                            fault: false
+                            id: 123abc
+                            message: parameter 'p' must be an integer
+                            name: internal_error
+                            temporary: false
+                            timeout: false
             schemes:
                 - http
     /health:

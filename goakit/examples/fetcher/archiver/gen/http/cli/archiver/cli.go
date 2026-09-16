@@ -32,9 +32,28 @@ func UsageCommands() []string {
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + " " + "archiver archive --body '{\n      \"body\": \"Neque sunt.\",\n      \"status\": 200\n   }'" + "\n" +
+	return os.Args[0] + " " + "archiver archive --body '{\n      \"body\": \"In nisi sit nihil totam dolorum.\",\n      \"status\": 200\n   }'" + "\n" +
 		os.Args[0] + " " + "health show" + "\n" +
 		""
+}
+
+// cliStringFlag keeps an omitted command-line flag distinct from an explicitly empty flag.
+type cliStringFlag struct {
+	value *string
+}
+
+// String returns the flag text shown by the standard flag package.
+func (f *cliStringFlag) String() string {
+	if f.value == nil {
+		return ""
+	}
+	return *f.value
+}
+
+// Set records that the user supplied the flag, even when value is empty.
+func (f *cliStringFlag) Set(value string) error {
+	f.value = &value
+	return nil
 }
 
 // ParseEndpoint returns the endpoint and payload as specified on the command
@@ -50,15 +69,18 @@ func ParseEndpoint(
 		archiverFlags = flag.NewFlagSet("archiver", flag.ContinueOnError)
 
 		archiverArchiveFlags    = flag.NewFlagSet("archive", flag.ExitOnError)
-		archiverArchiveBodyFlag = archiverArchiveFlags.String("body", "REQUIRED", "")
+		archiverArchiveBodyFlag = new(cliStringFlag)
 
 		archiverReadFlags  = flag.NewFlagSet("read", flag.ExitOnError)
-		archiverReadIDFlag = archiverReadFlags.String("id", "REQUIRED", "ID of archive")
+		archiverReadIDFlag = new(cliStringFlag)
 
 		healthFlags = flag.NewFlagSet("health", flag.ContinueOnError)
 
 		healthShowFlags = flag.NewFlagSet("show", flag.ExitOnError)
 	)
+	archiverArchiveFlags.Var(archiverArchiveBodyFlag, "body", "")
+	archiverReadFlags.Var(archiverReadIDFlag, "id", "ID of archive")
+
 	archiverFlags.Usage = archiverUsage
 	archiverArchiveFlags.Usage = archiverArchiveUsage
 	archiverReadFlags.Usage = archiverReadUsage
@@ -142,10 +164,10 @@ func ParseEndpoint(
 			switch epn {
 			case "archive":
 				endpoint = c.Archive()
-				data, err = archiverc.BuildArchivePayload(*archiverArchiveBodyFlag)
+				data, err = archiverc.BuildArchivePayload(archiverArchiveBodyFlag.value)
 			case "read":
 				endpoint = c.Read()
-				data, err = archiverc.BuildReadPayload(*archiverReadIDFlag)
+				data, err = archiverc.BuildReadPayload(archiverReadIDFlag.value)
 			}
 		case "health":
 			c := healthc.NewClient(scheme, host, doer, enc, dec, restore)
@@ -188,7 +210,7 @@ func archiverArchiveUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "archiver archive --body '{\n      \"body\": \"Neque sunt.\",\n      \"status\": 200\n   }'")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "archiver archive --body '{\n      \"body\": \"In nisi sit nihil totam dolorum.\",\n      \"status\": 200\n   }'")
 }
 
 func archiverReadUsage() {
@@ -206,7 +228,7 @@ func archiverReadUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "archiver read --id 1362141423305610375")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "archiver read --id 4229100771459457146")
 }
 
 // healthUsage displays the usage of the health command and its subcommands.

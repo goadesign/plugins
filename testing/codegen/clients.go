@@ -1,3 +1,5 @@
+// This file renders a typed test client with one method branch for each
+// transport selected by the Goa design.
 package codegen
 
 import (
@@ -46,44 +48,44 @@ type (
 )
 
 // generateClient generates the test client file for a service.
-func generateClient(genpkg string, svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr) *codegen.File {
-	path := filepath.Join(testingPath(genpkg, svc), "client.go")
+func generateClient(genpkg string, svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr, transports *methodTransports) *codegen.File {
+	path := filepath.Join(testingPath(svcData), "client.go")
 
 	if svcData == nil {
 		return nil
 	}
 
-	data := buildClientData(svcData, root, svc)
+	data := buildClientData(svcData, root, svc, transports)
 
 	specs := []*codegen.ImportSpec{
 		{Path: "context"},
 		{Path: "fmt"},
 		{Path: "testing"},
 		{Path: "time"},
-		{Path: filepath.Join(genpkg, codegen.SnakeCase(svc.Name)), Name: svcData.PkgName},
+		{Path: filepath.Join(genpkg, svcData.PathName), Name: svcData.PkgName},
 	}
 
 	// Add transport-specific imports based on what the service uses
 	if data.HasHTTP {
 		specs = append(specs,
-			&codegen.ImportSpec{Path: filepath.Join(genpkg, "http", codegen.SnakeCase(svc.Name), "client"), Name: "httpcli"},
+			&codegen.ImportSpec{Path: filepath.Join(genpkg, "http", svcData.PathName, "client"), Name: "httpcli"},
 			&codegen.ImportSpec{Path: "goa.design/goa/v3/http", Name: "goahttp"},
 		)
 	}
 	if data.HasGRPC {
 		specs = append(specs,
-			&codegen.ImportSpec{Path: filepath.Join(genpkg, "grpc", codegen.SnakeCase(svc.Name), "client"), Name: "grpccli"},
+			&codegen.ImportSpec{Path: filepath.Join(genpkg, "grpc", svcData.PathName, "client"), Name: "grpccli"},
 			&codegen.ImportSpec{Path: "google.golang.org/grpc"},
 		)
 	}
 	if data.HasJSONRPC {
 		specs = append(specs,
-			&codegen.ImportSpec{Path: filepath.Join(genpkg, "jsonrpc", codegen.SnakeCase(svc.Name), "client"), Name: "jsonrpccli"},
+			&codegen.ImportSpec{Path: filepath.Join(genpkg, "jsonrpc", svcData.PathName, "client"), Name: "jsonrpccli"},
 		)
 	}
 
 	sections := []*codegen.SectionTemplate{
-		codegen.Header(fmt.Sprintf("Test client for %s service", svc.Name), codegen.SnakeCase(svc.Name)+"test", specs),
+		codegen.Header(fmt.Sprintf("Test client for %s service", svc.Name), svcData.PathName+"test", specs),
 		{
 			Name:   "client-struct",
 			Source: testingTemplates.Read("client_struct"),
@@ -113,7 +115,7 @@ func generateClient(genpkg string, svcData *service.Data, root *expr.RootExpr, s
 }
 
 // buildClientData builds the template data for the client.
-func buildClientData(svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr) *clientData {
+func buildClientData(svcData *service.Data, root *expr.RootExpr, svc *expr.ServiceExpr, transports *methodTransports) *clientData {
 	// Create client data using Goa's service.Data directly
 	data := &clientData{
 		Data:        svcData,
@@ -133,7 +135,7 @@ func buildClientData(svcData *service.Data, root *expr.RootExpr, svc *expr.Servi
 		md := svcData.Methods[i]
 
 		// Build targets for this method
-		targets := buildMethodTargets(root, svc, m, md)
+		targets := buildMethodTargets(root, svc, m, transports)
 
 		// Create client method data
 		cmd := &clientMethodData{
@@ -156,7 +158,7 @@ func buildClientData(svcData *service.Data, root *expr.RootExpr, svc *expr.Servi
 			if target.IsHTTPPlain || target.IsHTTPServerSent || target.IsHTTPWebSocket {
 				cmd.HasHTTP = true
 			}
-			if target.IsJSONRPCPlain || target.IsJSONRPCSSE || target.IsJSONRPCWS {
+			if target.IsJSONRPCPlain || target.IsJSONRPCSSE {
 				cmd.HasJSONRPC = true
 			}
 		}
@@ -169,7 +171,7 @@ func buildClientData(svcData *service.Data, root *expr.RootExpr, svc *expr.Servi
 
 // buildMethodTargets builds the transport targets for a method.
 // This is shared between harness and client generation.
-func buildMethodTargets(root *expr.RootExpr, svc *expr.ServiceExpr, m *expr.MethodExpr, md *service.MethodData) []*suiteTarget {
+func buildMethodTargets(root *expr.RootExpr, svc *expr.ServiceExpr, m *expr.MethodExpr, transports *methodTransports) []*suiteTarget {
 	var targets []*suiteTarget
 
 	// Check gRPC transport
@@ -224,24 +226,10 @@ func buildMethodTargets(root *expr.RootExpr, svc *expr.ServiceExpr, m *expr.Meth
 	}
 
 	// Check JSON-RPC transport
-	if hasMethodJSONRPC(root, svc, m) && md != nil {
-		switch {
-		case md.IsJSONRPCSSE:
+	if transport, ok := transports.jsonRPC[m]; ok {
+		if transport.serverSentEvents {
 			targets = append(targets, &suiteTarget{IsJSONRPCSSE: true, IsServerStream: true})
-		}
-		if md.IsJSONRPCWebSocket {
-			ws := &suiteTarget{IsJSONRPCWS: true}
-			switch m.Stream {
-			case expr.ClientStreamKind:
-				ws.IsClientStream = true
-			case expr.ServerStreamKind:
-				ws.IsServerStream = true
-			case expr.BidirectionalStreamKind:
-				ws.IsBidirectional = true
-			}
-			targets = append(targets, ws)
-		}
-		if !md.IsJSONRPCSSE && !md.IsJSONRPCWebSocket {
+		} else {
 			targets = append(targets, &suiteTarget{IsJSONRPCPlain: true, IsNoStream: true})
 		}
 	}

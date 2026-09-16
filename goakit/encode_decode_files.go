@@ -1,3 +1,5 @@
+// This file writes go-kit request and response wrappers using the names chosen
+// while Goa planned the generated client and server packages.
 package goakit
 
 import (
@@ -5,29 +7,63 @@ import (
 	"path/filepath"
 
 	"goa.design/goa/v3/codegen"
-	"goa.design/goa/v3/codegen/service"
 	"goa.design/goa/v3/expr"
 	httpcodegen "goa.design/goa/v3/http/codegen"
+)
+
+type (
+	// goakitEndpointData contains the chosen names rendered by go-kit templates
+	// alongside the HTTP method data supplied by Goa.
+	goakitEndpointData struct {
+		*httpcodegen.EndpointData
+		MountHandler, RequestDecoder, ResponseEncoder string
+		ErrorEncoder, RequestEncoder, ResponseDecoder string
+	}
 )
 
 // EncodeDecodeFiles produces a set of go-kit transport encoders and decoders
 // that wrap the corresponding generated goa functions.
 func EncodeDecodeFiles(genpkg string, root *expr.RootExpr) []*codegen.File {
-	services := httpcodegen.NewServicesData(service.NewServicesData(root), root.API.HTTP)
-	fw := make([]*codegen.File, 2*len(root.API.HTTP.Services))
-	for i, r := range root.API.HTTP.Services {
-		fw[i] = serverEncodeDecode(genpkg, r, services)
+	plan, err := planHTTP(genpkg, root)
+	if err != nil {
+		panic(err)
 	}
-	for i, r := range root.API.HTTP.Services {
-		fw[i+len(root.API.HTTP.Services)] = clientEncodeDecode(genpkg, r, services)
+	return encodeDecodeFiles(genpkg, plan)
+}
+
+// encodeDecodeFiles builds go-kit codecs from the HTTP names chosen for the
+// current generation run.
+func encodeDecodeFiles(genpkg string, plan *goakitRootPlan) []*codegen.File {
+	fw := make([]*codegen.File, 2*len(plan.root.API.HTTP.Services))
+	for i, service := range plan.root.API.HTTP.Services {
+		data := httpServiceData(plan.http, service)
+		fw[i] = serverEncodeDecode(genpkg, service, data, plan.services[service])
+	}
+	for i, service := range plan.root.API.HTTP.Services {
+		data := httpServiceData(plan.http, service)
+		fw[i+len(plan.root.API.HTTP.Services)] = clientEncodeDecode(genpkg, service, data, plan.services[service])
 	}
 	return fw
 }
 
+// httpServiceData returns the linked HTTP data for a service already listed
+// by the same design root. Its absence means the Goa plan is inconsistent.
+func httpServiceData(plan *httpcodegen.Plan, service *expr.HTTPServiceExpr) *httpcodegen.ServiceData {
+	data, ok := plan.Service(service)
+	if !ok {
+		panic(fmt.Sprintf("goakit: HTTP service %q is missing from its plan", service.Name()))
+	}
+	return data
+}
+
 // serverEncodeDecode returns the file defining the go-kit HTTP server encoding
 // and decoding logic.
-func serverEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr, services *httpcodegen.ServicesData) *codegen.File {
-	data := services.Get(svc.Name())
+func serverEncodeDecode(
+	genpkg string,
+	svc *expr.HTTPServiceExpr,
+	data *httpcodegen.ServiceData,
+	names *goakitServicePlan,
+) *codegen.File {
 	svcName := data.Service.PathName
 	path := filepath.Join(codegen.Gendir, "http", svcName, "kitserver", "encode_decode.go")
 	title := fmt.Sprintf("%s go-kit HTTP server encoders and decoders", svc.Name())
@@ -44,17 +80,18 @@ func serverEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr, services *http
 	}
 
 	for _, e := range data.Endpoints {
+		endpoint := plannedEndpointData(e, names.endpoints[e.Method.Name])
 		sections = append(sections, &codegen.SectionTemplate{
 			Name:   "goakit-response-encoder",
 			Source: responseEncoderT,
-			Data:   e,
+			Data:   endpoint,
 		})
 
 		if e.Payload.Ref != "" {
 			sections = append(sections, &codegen.SectionTemplate{
 				Name:   "goakit-request-decoder",
 				Source: requestDecoderT,
-				Data:   e,
+				Data:   endpoint,
 			})
 		}
 
@@ -62,7 +99,7 @@ func serverEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr, services *http
 			sections = append(sections, &codegen.SectionTemplate{
 				Name:   "goakit-error-encoder",
 				Source: errorEncoderT,
-				Data:   e,
+				Data:   endpoint,
 			})
 		}
 	}
@@ -72,8 +109,12 @@ func serverEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr, services *http
 
 // clientEncodeDecode returns the file defining the go-kit HTTP client encoding
 // and decoding logic.
-func clientEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr, services *httpcodegen.ServicesData) *codegen.File {
-	data := services.Get(svc.Name())
+func clientEncodeDecode(
+	genpkg string,
+	svc *expr.HTTPServiceExpr,
+	data *httpcodegen.ServiceData,
+	names *goakitServicePlan,
+) *codegen.File {
 	svcName := data.Service.PathName
 	path := filepath.Join(codegen.Gendir, "http", svcName, "kitclient", "encode_decode.go")
 	title := fmt.Sprintf("%s go-kit HTTP client encoders and decoders", svc.Name())
@@ -90,23 +131,49 @@ func clientEncodeDecode(genpkg string, svc *expr.HTTPServiceExpr, services *http
 	}
 
 	for _, e := range data.Endpoints {
+		endpoint := plannedEndpointData(e, names.endpoints[e.Method.Name])
 		if e.RequestEncoder != "" {
 			sections = append(sections, &codegen.SectionTemplate{
 				Name:   "goakit-request-encoder",
 				Source: requestEncoderT,
-				Data:   e,
+				Data:   endpoint,
 			})
 		}
 		if e.Result != nil || len(e.Errors) > 0 {
 			sections = append(sections, &codegen.SectionTemplate{
 				Name:   "goakit-response-decoder",
 				Source: responseDecoderT,
-				Data:   e,
+				Data:   endpoint,
 			})
 		}
 	}
 
 	return &codegen.File{Path: path, SectionTemplates: sections}
+}
+
+// plannedEndpointData combines Goa's linked HTTP values with the wrapper names
+// declared by this plugin before generation was frozen.
+func plannedEndpointData(endpoint *httpcodegen.EndpointData, names *goakitEndpointNames) *goakitEndpointData {
+	data := &goakitEndpointData{EndpointData: endpoint}
+	if names.mountHandler != nil {
+		data.MountHandler = names.mountHandler.Name()
+	}
+	if names.requestDecoder != nil {
+		data.RequestDecoder = names.requestDecoder.Name()
+	}
+	if names.responseEncoder != nil {
+		data.ResponseEncoder = names.responseEncoder.Name()
+	}
+	if names.errorEncoder != nil {
+		data.ErrorEncoder = names.errorEncoder.Name()
+	}
+	if names.requestEncoder != nil {
+		data.RequestEncoder = names.requestEncoder.Name()
+	}
+	if names.responseDecoder != nil {
+		data.ResponseDecoder = names.responseDecoder.Name()
+	}
+	return data
 }
 
 // input: EndpointData

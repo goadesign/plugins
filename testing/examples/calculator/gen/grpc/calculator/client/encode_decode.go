@@ -47,6 +47,9 @@ func DecodeAddResponse(ctx context.Context, v any, hdr, trlr metadata.MD) (any, 
 	if !ok {
 		return nil, goagrpc.ErrInvalidType("calculator", "add", "*calculatorpb.AddResponse", v)
 	}
+	if err := ValidateAddResponse(message); err != nil {
+		return nil, err
+	}
 	res := NewAddResult(message)
 	return res, nil
 }
@@ -79,6 +82,9 @@ func DecodeDivideResponse(ctx context.Context, v any, hdr, trlr metadata.MD) (an
 	message, ok := v.(*calculatorpb.DivideResponse)
 	if !ok {
 		return nil, goagrpc.ErrInvalidType("calculator", "divide", "*calculatorpb.DivideResponse", v)
+	}
+	if err := ValidateDivideResponse(message); err != nil {
+		return nil, err
 	}
 	res := NewDivideResult(message)
 	return res, nil
@@ -115,6 +121,9 @@ func DecodeFactorialResponse(ctx context.Context, v any, hdr, trlr metadata.MD) 
 	if !ok {
 		return nil, goagrpc.ErrInvalidType("calculator", "factorial", "*calculatorpb.FactorialResponse", v)
 	}
+	if err := ValidateFactorialResponse(message); err != nil {
+		return nil, err
+	}
 	res := NewFactorialResult(message)
 	return res, nil
 }
@@ -150,6 +159,9 @@ func DecodeStatisticsResponse(ctx context.Context, v any, hdr, trlr metadata.MD)
 	if !ok {
 		return nil, goagrpc.ErrInvalidType("calculator", "statistics", "*calculatorpb.StatisticsResponse", v)
 	}
+	if err := ValidateStatisticsResponse(message); err != nil {
+		return nil, err
+	}
 	res := NewStatisticsResult(message)
 	return res, nil
 }
@@ -173,5 +185,6 @@ func BuildBatchAddFunc(grpccli calculatorpb.CalculatorClient, cliopts ...grpc.Ca
 func DecodeBatchAddResponse(ctx context.Context, v any, hdr, trlr metadata.MD) (any, error) {
 	return &BatchAddClientStream{
 		stream: v.(calculatorpb.Calculator_BatchAddClient),
+		ctx:    ctx,
 	}, nil
 }

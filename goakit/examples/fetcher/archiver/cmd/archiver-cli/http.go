@@ -1,16 +1,18 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
-	"github.com/go-kit/kit/endpoint"
 	goahttp "goa.design/goa/v3/http"
 	cli "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/http/cli/archiver"
 )
 
-func doHTTP(scheme, host string, timeout int, debug bool) (endpoint.Endpoint, any, error) {
+func doHTTP(ctx context.Context, scheme, host string, timeout int, debug bool, stdout io.Writer) error {
 	var (
 		doer goahttp.Doer
 	)
@@ -30,13 +32,24 @@ func doHTTP(scheme, host string, timeout int, debug bool) (endpoint.Endpoint, an
 		debug,
 	)
 	if err != nil {
-		return nil, nil, fmt.Errorf("parse endpoint: %w", err)
+		return fmt.Errorf("parse endpoint: %w", err)
 	}
-	return endpoint, payload, nil
-}
 
-func httpUsageCommands() []string {
-	return cli.UsageCommands()
+	switch flag.Arg(0) {
+	case "archiver":
+		switch flag.Arg(1) {
+		case "archive":
+			return writeEndpointResult(ctx, stdout, endpoint, payload)
+		case "read":
+			return writeEndpointResult(ctx, stdout, endpoint, payload)
+		}
+	case "health":
+		switch flag.Arg(1) {
+		case "show":
+			return writeEndpointResult(ctx, stdout, endpoint, payload)
+		}
+	}
+	panic("parsed HTTP command has no generated result writer")
 }
 
 func httpUsageExamples() string {

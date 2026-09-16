@@ -34,7 +34,7 @@ func generateErrors(genpkg string, svcData *service.Data, root *expr.RootExpr, s
 		return nil
 	}
 
-	path := filepath.Join(testingPath(genpkg, svc), "errors.go")
+	path := filepath.Join(testingPath(svcData), "errors.go")
 
 	if svcData == nil {
 		return nil
@@ -48,7 +48,7 @@ func generateErrors(genpkg string, svcData *service.Data, root *expr.RootExpr, s
 	}
 
 	sections := []*codegen.SectionTemplate{
-		codegen.Header(fmt.Sprintf("Error test helpers for %s service", svc.Name), codegen.SnakeCase(svc.Name)+"test", specs),
+		codegen.Header(fmt.Sprintf("Error test helpers for %s service", svc.Name), svcData.PathName+"test", specs),
 		{
 			Name:   "error-helpers",
 			Source: testingTemplates.Read(errorHelpersT),
