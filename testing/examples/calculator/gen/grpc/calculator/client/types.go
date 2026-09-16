@@ -197,9 +197,6 @@ func ValidateFactorialResponse(message *calculatorpb.FactorialResponse) (err err
 
 // ValidateStatisticsRequest runs the validations defined on StatisticsRequest.
 func ValidateStatisticsRequest(message *calculatorpb.StatisticsRequest) (err error) {
-	if message.Numbers == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("numbers", "message"))
-	}
 	if len(message.Numbers) < 1 {
 		err = goa.MergeErrors(err, goa.InvalidLengthError("message.numbers", message.Numbers, len(message.Numbers), 1, true))
 	}
