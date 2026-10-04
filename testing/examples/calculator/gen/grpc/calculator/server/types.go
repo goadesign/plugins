@@ -78,11 +78,9 @@ func NewProtoFactorialResponse(result *calculator.FactorialResult) *calculatorpb
 // *calculatorpb.StatisticsRequest.
 func NewStatisticsPayload(message *calculatorpb.StatisticsRequest) *calculator.StatisticsPayload {
 	v := &calculator.StatisticsPayload{}
-	if message.Numbers != nil {
-		v.Numbers = make([]float64, len(message.Numbers))
-		for i, val := range message.Numbers {
-			v.Numbers[i] = val
-		}
+	v.Numbers = make([]float64, len(message.Numbers))
+	for i, val := range message.Numbers {
+		v.Numbers[i] = val
 	}
 	return v
 }

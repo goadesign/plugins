@@ -12,6 +12,7 @@ import (
 	"context"
 
 	"github.com/go-kit/kit/endpoint"
+	goa "goa.design/goa/v3/pkg"
 	fetcherviews "goa.design/plugins/v3/goakit/examples/fetcher/fetcher/gen/fetcher/views"
 )
 
@@ -40,6 +41,9 @@ func NewFetchEndpoint(s Service) endpoint.Endpoint {
 		res, err := s.Fetch(ctx, p)
 		if err != nil {
 			return nil, err
+		}
+		if res == nil {
+			return nil, goa.Fault("service returned a missing result")
 		}
 		vres := NewViewedFetchMedia(res, "default")
 		if err := fetcherviews.ValidateFetchMedia(vres); err != nil {

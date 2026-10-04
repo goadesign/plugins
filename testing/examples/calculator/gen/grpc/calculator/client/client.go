@@ -43,23 +43,28 @@ func NewClient(cc *grpc.ClientConn, opts ...grpc.CallOption) *Client {
 // Add calls the "Add" function in calculatorpb.CalculatorClient interface.
 func (c *Client) Add() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildAddFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildAddFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, opts ...grpc.CallOption) (any, error) {
+				res, err := remote(ctx, request, opts...)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			EncodeAddRequest,
 			DecodeAddResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
@@ -67,23 +72,28 @@ func (c *Client) Add() goa.Endpoint {
 // interface.
 func (c *Client) Divide() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildDivideFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildDivideFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, opts ...grpc.CallOption) (any, error) {
+				res, err := remote(ctx, request, opts...)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			EncodeDivideRequest,
 			DecodeDivideResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
@@ -91,23 +101,28 @@ func (c *Client) Divide() goa.Endpoint {
 // interface.
 func (c *Client) Factorial() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildFactorialFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildFactorialFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, opts ...grpc.CallOption) (any, error) {
+				res, err := remote(ctx, request, opts...)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			EncodeFactorialRequest,
 			DecodeFactorialResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
@@ -115,23 +130,28 @@ func (c *Client) Factorial() goa.Endpoint {
 // interface.
 func (c *Client) Statistics() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildStatisticsFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildStatisticsFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, opts ...grpc.CallOption) (any, error) {
+				res, err := remote(ctx, request, opts...)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			EncodeStatisticsRequest,
 			DecodeStatisticsResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
@@ -139,23 +159,31 @@ func (c *Client) Statistics() goa.Endpoint {
 // interface.
 func (c *Client) BatchAdd() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildBatchAddFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildBatchAddFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, _ ...grpc.CallOption) (any, error) {
+				// Opening a stream does not wait for completion, so omit
+				// the invoker's unary header/trailer capture options. The
+				// remote builder still applies the client's own options.
+				res, err := remote(ctx, request)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			nil,
 			DecodeBatchAddResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 	"context"
 
 	"github.com/go-kit/kit/endpoint"
+	goa "goa.design/goa/v3/pkg"
 	archiverviews "goa.design/plugins/v3/goakit/examples/fetcher/archiver/gen/archiver/views"
 )
 
@@ -44,6 +45,9 @@ func NewArchiveEndpoint(s Service) endpoint.Endpoint {
 		if err != nil {
 			return nil, err
 		}
+		if res == nil {
+			return nil, goa.Fault("service returned a missing result")
+		}
 		vres := NewViewedArchiveMedia(res, "default")
 		if err := archiverviews.ValidateArchiveMedia(vres); err != nil {
 			return nil, err
@@ -60,6 +64,9 @@ func NewReadEndpoint(s Service) endpoint.Endpoint {
 		res, err := s.Read(ctx, p)
 		if err != nil {
 			return nil, err
+		}
+		if res == nil {
+			return nil, goa.Fault("service returned a missing result")
 		}
 		vres := NewViewedArchiveMedia(res, "default")
 		if err := archiverviews.ValidateArchiveMedia(vres); err != nil {

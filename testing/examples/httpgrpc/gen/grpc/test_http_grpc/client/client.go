@@ -80,23 +80,28 @@ func NewClient(cc *grpc.ClientConn, opts ...grpc.CallOption) *Client {
 // test_http_grpcpb.TestHTTPGrpcClient interface.
 func (c *Client) GrpcNoStream() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildGrpcNoStreamFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildGrpcNoStreamFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, opts ...grpc.CallOption) (any, error) {
+				res, err := remote(ctx, request, opts...)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			EncodeGrpcNoStreamRequest,
 			DecodeGrpcNoStreamResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
@@ -104,29 +109,34 @@ func (c *Client) GrpcNoStream() goa.Endpoint {
 // in test_http_grpcpb.TestHTTPGrpcClient interface.
 func (c *Client) GrpcNoStreamErrorDivByZero() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildGrpcNoStreamErrorDivByZeroFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildGrpcNoStreamErrorDivByZeroFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, opts ...grpc.CallOption) (any, error) {
+				res, err := remote(ctx, request, opts...)
+				if err != nil {
+					resp := goagrpc.DecodeError(err)
+					switch message := resp.(type) {
+					case *test_http_grpcpb.GrpcNoStreamErrorDivByZeroDivisionByZeroError:
+						if err := ValidateGrpcNoStreamErrorDivByZeroDivisionByZeroError(message); err != nil {
+							return nil, err
+						}
+						return nil, NewGrpcNoStreamErrorDivByZeroDivisionByZeroError(message)
+					case *goapb.ErrorResponse:
+						return nil, goagrpc.NewServiceErrorWithCause(err, message)
+					default:
+						if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+							return nil, ctxErr
+						}
+						return nil, goa.Fault("%s", err.Error())
+					}
+				}
+				return res, nil
+			},
 			EncodeGrpcNoStreamErrorDivByZeroRequest,
 			DecodeGrpcNoStreamErrorDivByZeroResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			resp := goagrpc.DecodeError(err)
-			switch message := resp.(type) {
-			case *test_http_grpcpb.GrpcNoStreamErrorDivByZeroDivisionByZeroError:
-				if err := ValidateGrpcNoStreamErrorDivByZeroDivisionByZeroError(message); err != nil {
-					return nil, err
-				}
-				return nil, NewGrpcNoStreamErrorDivByZeroDivisionByZeroError(message)
-			case *goapb.ErrorResponse:
-				return nil, goagrpc.NewServiceError(message)
-			default:
-				if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-					return nil, ctxErr
-				}
-				return nil, goa.Fault("%s", err.Error())
-			}
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
@@ -134,23 +144,31 @@ func (c *Client) GrpcNoStreamErrorDivByZero() goa.Endpoint {
 // test_http_grpcpb.TestHTTPGrpcClient interface.
 func (c *Client) GrpcServerStream() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildGrpcServerStreamFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildGrpcServerStreamFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, _ ...grpc.CallOption) (any, error) {
+				// Opening a stream does not wait for completion, so omit
+				// the invoker's unary header/trailer capture options. The
+				// remote builder still applies the client's own options.
+				res, err := remote(ctx, request)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			EncodeGrpcServerStreamRequest,
 			DecodeGrpcServerStreamResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
@@ -158,23 +176,31 @@ func (c *Client) GrpcServerStream() goa.Endpoint {
 // test_http_grpcpb.TestHTTPGrpcClient interface.
 func (c *Client) GrpcClientStream() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildGrpcClientStreamFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildGrpcClientStreamFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, _ ...grpc.CallOption) (any, error) {
+				// Opening a stream does not wait for completion, so omit
+				// the invoker's unary header/trailer capture options. The
+				// remote builder still applies the client's own options.
+				res, err := remote(ctx, request)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			nil,
 			DecodeGrpcClientStreamResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
@@ -182,23 +208,31 @@ func (c *Client) GrpcClientStream() goa.Endpoint {
 // test_http_grpcpb.TestHTTPGrpcClient interface.
 func (c *Client) GrpcBidiStream() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildGrpcBidiStreamFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildGrpcBidiStreamFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, _ ...grpc.CallOption) (any, error) {
+				// Opening a stream does not wait for completion, so omit
+				// the invoker's unary header/trailer capture options. The
+				// remote builder still applies the client's own options.
+				res, err := remote(ctx, request)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			nil,
 			DecodeGrpcBidiStreamResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
@@ -206,23 +240,28 @@ func (c *Client) GrpcBidiStream() goa.Endpoint {
 // test_http_grpcpb.TestHTTPGrpcClient interface.
 func (c *Client) MixedNoStream() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildMixedNoStreamFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildMixedNoStreamFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, opts ...grpc.CallOption) (any, error) {
+				res, err := remote(ctx, request, opts...)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			EncodeMixedNoStreamRequest,
 			DecodeMixedNoStreamResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
@@ -230,23 +269,31 @@ func (c *Client) MixedNoStream() goa.Endpoint {
 // test_http_grpcpb.TestHTTPGrpcClient interface.
 func (c *Client) MixedServerStream() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildMixedServerStreamFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildMixedServerStreamFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, _ ...grpc.CallOption) (any, error) {
+				// Opening a stream does not wait for completion, so omit
+				// the invoker's unary header/trailer capture options. The
+				// remote builder still applies the client's own options.
+				res, err := remote(ctx, request)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			nil,
 			DecodeMixedServerStreamResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
@@ -254,23 +301,31 @@ func (c *Client) MixedServerStream() goa.Endpoint {
 // test_http_grpcpb.TestHTTPGrpcClient interface.
 func (c *Client) MixedClientStreamWsGrpc() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildMixedClientStreamWsGrpcFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildMixedClientStreamWsGrpcFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, _ ...grpc.CallOption) (any, error) {
+				// Opening a stream does not wait for completion, so omit
+				// the invoker's unary header/trailer capture options. The
+				// remote builder still applies the client's own options.
+				res, err := remote(ctx, request)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			nil,
 			DecodeMixedClientStreamWsGrpcResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
@@ -278,23 +333,31 @@ func (c *Client) MixedClientStreamWsGrpc() goa.Endpoint {
 // test_http_grpcpb.TestHTTPGrpcClient interface.
 func (c *Client) MixedBidiStreamWsGrpc() goa.Endpoint {
 	return func(ctx context.Context, v any) (any, error) {
+		remote := BuildMixedBidiStreamWsGrpcFunc(c.grpccli, c.opts...)
+		// Convert errors from the RPC call here so local encoding and decoding
+		// errors keep their original types and validation details.
 		inv := goagrpc.NewInvoker(
-			BuildMixedBidiStreamWsGrpcFunc(c.grpccli, c.opts...),
+			func(ctx context.Context, request any, _ ...grpc.CallOption) (any, error) {
+				// Opening a stream does not wait for completion, so omit
+				// the invoker's unary header/trailer capture options. The
+				// remote builder still applies the client's own options.
+				res, err := remote(ctx, request)
+				if err != nil {
+					// Decode a Goa error detail before returning a matching context error or falling back to Fault.
+					resp := goagrpc.DecodeError(err)
+					if eresp, ok := resp.(*goapb.ErrorResponse); ok {
+						return nil, goagrpc.NewServiceErrorWithCause(err, eresp)
+					}
+					if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
+						return nil, ctxErr
+					}
+					return nil, goa.Fault("%s", err.Error())
+				}
+				return res, nil
+			},
 			nil,
 			DecodeMixedBidiStreamWsGrpcResponse)
-		res, err := inv.Invoke(ctx, v)
-		if err != nil {
-			// Decode a Goa error detail before returning a matching context error or falling back to Fault.
-			resp := goagrpc.DecodeError(err)
-			if eresp, ok := resp.(*goapb.ErrorResponse); ok {
-				return nil, goagrpc.NewServiceError(eresp)
-			}
-			if ctxErr := goagrpc.ContextError(ctx, err); ctxErr != nil {
-				return nil, ctxErr
-			}
-			return nil, goa.Fault("%s", err.Error())
-		}
-		return res, nil
+		return inv.Invoke(ctx, v)
 	}
 }
 
