@@ -47,7 +47,9 @@ func NewFetchEndpoint(s Service) endpoint.Endpoint {
 		}
 		vres := NewViewedFetchMedia(res, "default")
 		if err := fetcherviews.ValidateFetchMedia(vres); err != nil {
-			return nil, err
+			// The returned fields failed the selected view. Report a server fault
+			// and keep the validation error available through errors.Unwrap.
+			return nil, goa.NewServiceError(err, "fault", false, false, true)
 		}
 		return vres, nil
 	}

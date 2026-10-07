@@ -50,7 +50,9 @@ func NewArchiveEndpoint(s Service) endpoint.Endpoint {
 		}
 		vres := NewViewedArchiveMedia(res, "default")
 		if err := archiverviews.ValidateArchiveMedia(vres); err != nil {
-			return nil, err
+			// The returned fields failed the selected view. Report a server fault
+			// and keep the validation error available through errors.Unwrap.
+			return nil, goa.NewServiceError(err, "fault", false, false, true)
 		}
 		return vres, nil
 	}
@@ -70,7 +72,9 @@ func NewReadEndpoint(s Service) endpoint.Endpoint {
 		}
 		vres := NewViewedArchiveMedia(res, "default")
 		if err := archiverviews.ValidateArchiveMedia(vres); err != nil {
-			return nil, err
+			// The returned fields failed the selected view. Report a server fault
+			// and keep the validation error available through errors.Unwrap.
+			return nil, goa.NewServiceError(err, "fault", false, false, true)
 		}
 		return vres, nil
 	}
