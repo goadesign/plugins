@@ -12,6 +12,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -35,7 +36,9 @@ func (c *Client) BuildAddRequest(ctx context.Context, v any) (*http.Request, err
 		left = p.Left
 		right = p.Right
 	}
-	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: AddCalcPath(left, right)}
+
+	rawPath := fmt.Sprintf("/add/%v/%v", url.PathEscape(fmt.Sprint(left)), url.PathEscape(fmt.Sprint(right)))
+	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: AddCalcPath(left, right), RawPath: rawPath}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("calc", "add", u.String(), err)

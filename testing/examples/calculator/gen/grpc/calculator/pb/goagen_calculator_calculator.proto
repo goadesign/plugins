@@ -15,15 +15,15 @@ option go_package = "/calculatorpb";
 // A simple calculator service to demonstrate testing plugin features
 service Calculator {
 	// Add two numbers
-	rpc Add (AddRequest) returns (AddResponse);
+	rpc Add (.calculator.AddRequest) returns (.calculator.AddResponse);
 	// Divide two numbers
-	rpc Divide (DivideRequest) returns (DivideResponse);
+	rpc Divide (.calculator.DivideRequest) returns (.calculator.DivideResponse);
 	// Calculate factorial of a number
-	rpc Factorial (FactorialRequest) returns (FactorialResponse);
+	rpc Factorial (.calculator.FactorialRequest) returns (.calculator.FactorialResponse);
 	// Calculate statistics for a list of numbers
-	rpc Statistics (StatisticsRequest) returns (StatisticsResponse);
+	rpc Statistics (.calculator.StatisticsRequest) returns (.calculator.StatisticsResponse);
 	// Add multiple pairs of numbers using streaming
-	rpc BatchAdd (stream BatchAddStreamingRequest) returns (stream BatchAddResponse);
+	rpc BatchAdd (stream .calculator.BatchAddStreamingRequest) returns (stream .calculator.BatchAddResponse);
 }
 
 message AddRequest {

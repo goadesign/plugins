@@ -12,6 +12,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -34,7 +35,9 @@ func (c *Client) BuildFetchRequest(ctx context.Context, v any) (*http.Request, e
 		}
 		url_ = p.URL
 	}
-	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: FetchFetcherPath(url_)}
+
+	rawPath := fmt.Sprintf("/fetch/%v", (&url.URL{Path: fmt.Sprint(url_)}).EscapedPath())
+	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: FetchFetcherPath(url_), RawPath: rawPath}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, goahttp.ErrInvalidURL("fetcher", "fetch", u.String(), err)

@@ -15,23 +15,23 @@ option go_package = "/test_http_grpcpb";
 // Testing plugin matrix across HTTP and gRPC transports
 service TestHTTPGrpc {
 	// GrpcNoStream implements grpc_no_stream.
-	rpc GrpcNoStream (GrpcNoStreamRequest) returns (GrpcNoStreamResponse);
+	rpc GrpcNoStream (.test_http_grpc.GrpcNoStreamRequest) returns (.test_http_grpc.GrpcNoStreamResponse);
 	// GrpcNoStreamErrorDivByZero implements grpc_no_stream_error_div_by_zero.
-	rpc GrpcNoStreamErrorDivByZero (GrpcNoStreamErrorDivByZeroRequest) returns (GrpcNoStreamErrorDivByZeroResponse);
+	rpc GrpcNoStreamErrorDivByZero (.test_http_grpc.GrpcNoStreamErrorDivByZeroRequest) returns (.test_http_grpc.GrpcNoStreamErrorDivByZeroResponse);
 	// GrpcServerStream implements grpc_server_stream.
-	rpc GrpcServerStream (GrpcServerStreamRequest) returns (stream GrpcServerStreamResponse);
+	rpc GrpcServerStream (.test_http_grpc.GrpcServerStreamRequest) returns (stream .test_http_grpc.GrpcServerStreamResponse);
 	// GrpcClientStream implements grpc_client_stream.
-	rpc GrpcClientStream (stream GrpcClientStreamStreamingRequest) returns (GrpcClientStreamResponse);
+	rpc GrpcClientStream (stream .test_http_grpc.GrpcClientStreamStreamingRequest) returns (.test_http_grpc.GrpcClientStreamResponse);
 	// GrpcBidiStream implements grpc_bidi_stream.
-	rpc GrpcBidiStream (stream GrpcBidiStreamStreamingRequest) returns (stream GrpcBidiStreamResponse);
+	rpc GrpcBidiStream (stream .test_http_grpc.GrpcBidiStreamStreamingRequest) returns (stream .test_http_grpc.GrpcBidiStreamResponse);
 	// MixedNoStream implements mixed_no_stream.
-	rpc MixedNoStream (MixedNoStreamRequest) returns (MixedNoStreamResponse);
+	rpc MixedNoStream (.test_http_grpc.MixedNoStreamRequest) returns (.test_http_grpc.MixedNoStreamResponse);
 	// MixedServerStream implements mixed_server_stream.
-	rpc MixedServerStream (MixedServerStreamRequest) returns (stream MixedServerStreamResponse);
+	rpc MixedServerStream (.test_http_grpc.MixedServerStreamRequest) returns (stream .test_http_grpc.MixedServerStreamResponse);
 	// MixedClientStreamWsGrpc implements mixed_client_stream_ws_grpc.
-	rpc MixedClientStreamWsGrpc (stream MixedClientStreamWsGrpcStreamingRequest) returns (MixedClientStreamWsGrpcResponse);
+	rpc MixedClientStreamWsGrpc (stream .test_http_grpc.MixedClientStreamWsGrpcStreamingRequest) returns (.test_http_grpc.MixedClientStreamWsGrpcResponse);
 	// MixedBidiStreamWsGrpc implements mixed_bidi_stream_ws_grpc.
-	rpc MixedBidiStreamWsGrpc (stream MixedBidiStreamWsGrpcStreamingRequest) returns (stream MixedBidiStreamWsGrpcResponse);
+	rpc MixedBidiStreamWsGrpc (stream .test_http_grpc.MixedBidiStreamWsGrpcStreamingRequest) returns (stream .test_http_grpc.MixedBidiStreamWsGrpcResponse);
 }
 
 message GrpcNoStreamRequest {
